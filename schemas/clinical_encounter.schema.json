@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oris.local/schemas/clinical_encounter.schema.json",
+  "title": "ClinicalEncounter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "encounter_id",
+    "patient_id",
+    "practitioner_id",
+    "started_at",
+    "ended_at",
+    "status",
+    "object_version",
+    "facts",
+    "treatment_plan",
+    "procedures",
+    "warnings"
+  ],
+  "properties": {
+    "encounter_id": {
+      "type": "string"
+    },
+    "patient_id": {
+      "type": "string"
+    },
+    "practitioner_id": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "ended_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "recording",
+        "paused",
+        "finalizing",
+        "processing",
+        "review",
+        "validated",
+        "exported",
+        "archived",
+        "audio_error",
+        "upload_interrupted",
+        "transcription_failed",
+        "generation_failed"
+      ]
+    },
+    "object_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "facts": {
+      "type": "array",
+      "items": {
+        "$ref": "clinical_fact.schema.json"
+      }
+    },
+    "treatment_plan": {
+      "anyOf": [
+        {
+          "$ref": "treatment_plan.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "procedures": {
+      "type": "array",
+      "items": {
+        "$ref": "procedure.schema.json"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "severity",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "review",
+              "critical"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

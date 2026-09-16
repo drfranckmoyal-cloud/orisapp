@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oris.local/schemas/treatment_plan.schema.json",
+  "title": "TreatmentPlan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "plan_id",
+    "status",
+    "goals",
+    "items",
+    "notes"
+  ],
+  "properties": {
+    "plan_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "review",
+        "validated",
+        "superseded"
+      ]
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "item_id",
+          "teeth",
+          "problem",
+          "action",
+          "status",
+          "priority",
+          "sequence",
+          "alternatives",
+          "prerequisites",
+          "uncertainties",
+          "evidence_fact_ids"
+        ],
+        "properties": {
+          "item_id": {
+            "type": "string"
+          },
+          "teeth": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "problem": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "action": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "discussed",
+              "proposed",
+              "accepted",
+              "refused",
+              "deferred",
+              "planned",
+              "completed"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "urgent",
+              "high",
+              "routine",
+              "low",
+              "unspecified"
+            ]
+          },
+          "sequence": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "alternatives": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "prerequisites": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "uncertainties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence_fact_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

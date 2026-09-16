@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oris.local/schemas/clinical_fact.schema.json",
+  "title": "ClinicalFact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "fact_id",
+    "category",
+    "concept",
+    "value",
+    "teeth",
+    "surfaces",
+    "assertion",
+    "temporality",
+    "clinical_status",
+    "speaker_role",
+    "certainty",
+    "source_type",
+    "evidence_segment_ids",
+    "confidence",
+    "manually_validated"
+  ],
+  "properties": {
+    "fact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "chief_complaint",
+        "history",
+        "symptom",
+        "clinical_finding",
+        "radiographic_finding",
+        "assessment",
+        "diagnosis",
+        "treatment_option",
+        "treatment_decision",
+        "procedure",
+        "material",
+        "medication",
+        "patient_information",
+        "follow_up",
+        "other"
+      ]
+    },
+    "concept": {
+      "type": "string",
+      "minLength": 1
+    },
+    "value": {},
+    "teeth": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^(?:1[1-8]|2[1-8]|3[1-8]|4[1-8]|5[1-5]|6[1-5]|7[1-5]|8[1-5])$"
+      },
+      "uniqueItems": true
+    },
+    "surfaces": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "M",
+          "D",
+          "O",
+          "V",
+          "B",
+          "L",
+          "P",
+          "I",
+          "C"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "assertion": {
+      "type": "string",
+      "enum": [
+        "present",
+        "absent",
+        "uncertain"
+      ]
+    },
+    "temporality": {
+      "type": "string",
+      "enum": [
+        "past",
+        "current",
+        "future"
+      ]
+    },
+    "clinical_status": {
+      "type": "string",
+      "enum": [
+        "patient_reported",
+        "observed",
+        "clinician_assessment",
+        "differential",
+        "discussed",
+        "proposed",
+        "accepted",
+        "refused",
+        "deferred",
+        "planned",
+        "performed"
+      ]
+    },
+    "speaker_role": {
+      "type": "string",
+      "enum": [
+        "practitioner",
+        "patient",
+        "assistant",
+        "companion",
+        "unknown",
+        "manual"
+      ]
+    },
+    "certainty": {
+      "type": "string",
+      "enum": [
+        "certain",
+        "probable",
+        "possible",
+        "unknown"
+      ]
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "audio",
+        "manual",
+        "prior_record",
+        "system_test"
+      ]
+    },
+    "evidence_segment_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "manually_validated": {
+      "type": "boolean"
+    }
+  }
+}

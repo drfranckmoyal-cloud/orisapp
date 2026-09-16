@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oris.local/schemas/practitioner_learning_profile.schema.json",
+  "title": "PractitionerLearningProfile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "user_id",
+    "preferred_document_length",
+    "preferred_style",
+    "preferred_terms",
+    "frequent_materials",
+    "speech_aliases",
+    "document_preferences",
+    "last_updated_at"
+  ],
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "preferred_document_length": {
+      "type": "string",
+      "enum": [
+        "short",
+        "standard",
+        "detailed"
+      ]
+    },
+    "preferred_style": {
+      "type": "string",
+      "enum": [
+        "sentences",
+        "semi_telegraphic"
+      ]
+    },
+    "preferred_terms": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "frequent_materials": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "speech_aliases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "heard",
+          "canonical"
+        ],
+        "properties": {
+          "heard": {
+            "type": "string"
+          },
+          "canonical": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "document_preferences": {
+      "type": "object"
+    },
+    "last_updated_at": {
+      "type": "string"
+    }
+  }
+}

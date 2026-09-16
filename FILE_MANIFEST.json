@@ -1,0 +1,217 @@
+[
+  {
+    "path": "CLAUDE.md",
+    "size": 2487,
+    "sha256": "c8f92b7456eb079b6ac330c15ab322a0783c7ccee8e978d5f9bfb3d81c169557"
+  },
+  {
+    "path": "HANDOFF_CHECKLIST.md",
+    "size": 790,
+    "sha256": "88ac5d9330d0aa239ef577e629e534e4c3f98f81d814202bc0dfd94ce75c3678"
+  },
+  {
+    "path": "ORIS_MASTER_SPEC_V1_2.md",
+    "size": 98980,
+    "sha256": "b8e127323573987d60c53a43dae6fff8bbfad815def9a8123fead4885b891d29"
+  },
+  {
+    "path": "README.md",
+    "size": 572,
+    "sha256": "04ea0d179494eb702348be1d5ef64b2a6b116db88e91b44cf89127abd2e0ece3"
+  },
+  {
+    "path": "START_HERE.md",
+    "size": 1146,
+    "sha256": "cf465affe52cedf037e85e6b6bd47716bc07eb123ceeab8648f5526d0d224e3c"
+  },
+  {
+    "path": "assets/README.md",
+    "size": 301,
+    "sha256": "d899b17b956aee34cacc98e25457857858364b85a8bf9b98b20c0001cebcbdfc"
+  },
+  {
+    "path": "assets/oris_brand_system_and_interface_board.png",
+    "size": 1289033,
+    "sha256": "a96e140d77cb4b7a5c8ab07637b5e57a4c0fca3761cb0ea066b635c7335608e8"
+  },
+  {
+    "path": "assets/oris_clinical_ai_brand_identity_board.png",
+    "size": 1436815,
+    "sha256": "8eba514bd9b0d734134be49ce808fccae676e97894dfe8e08c50dc68b3c07eb2"
+  },
+  {
+    "path": "assets/oris_logo_concept_transparent.png",
+    "size": 182067,
+    "sha256": "bfb0eee6f70cfff33f1861fc926dda666d80ae05862514d32e349409d26715af"
+  },
+  {
+    "path": "assets/oris_symbol_concept.png",
+    "size": 43220,
+    "sha256": "78b0f32b5cba0005c83c56fb8aa588e9d7289f469bd9d7d8889a4cf65d0c8987"
+  },
+  {
+    "path": "assets/oris_une_dentisterie_plus_fluide.png",
+    "size": 1565790,
+    "sha256": "3b565a7c8261c75f1fcc0464cc3db784e4b63873f5710db431ca23954dbf1ebc"
+  },
+  {
+    "path": "assets/oris_visual_identity_board.png",
+    "size": 1448818,
+    "sha256": "b0d3a01bdd69bf3a2a3edb50ebffd2f1c40369291245309927099478541e3aaa"
+  },
+  {
+    "path": "config/.env.example",
+    "size": 314,
+    "sha256": "af160b55de4c1d83c55ff02095fa270e77ee094e6175c2fa2b27542eefa7a08f"
+  },
+  {
+    "path": "corpus/README.md",
+    "size": 799,
+    "sha256": "1f57c3915619f4d173c3125092981da02564d8d35fdc842fc468be89a8d70fca"
+  },
+  {
+    "path": "corpus/index.csv",
+    "size": 7328,
+    "sha256": "6253e4ae4b43140d2381c57160e61e43dfecfa4bb3ebd71901038ebc11e7dbbb"
+  },
+  {
+    "path": "corpus/manifest.json",
+    "size": 432,
+    "sha256": "25a33251000991e961ff4232630612a3deaa04e04f082299124aaf3d03e5b061"
+  },
+  {
+    "path": "corpus/synthetic_case.schema.json",
+    "size": 1821,
+    "sha256": "2c65497e21b21479dd1ab89f30dc8ab9ad16b2465c6112dbceb100c36842c1f0"
+  },
+  {
+    "path": "corpus/synthetic_consultations_100.jsonl",
+    "size": 436121,
+    "sha256": "70d2475b1afbbe73d1d189e1f1eba723c42453ca190457d9a47bbbddefe965a9"
+  },
+  {
+    "path": "design/tokens.json",
+    "size": 1426,
+    "sha256": "a3889bb94ea3ff4d4ca59ad7f2ab7bdeed60ae7bd75b54e9c48399ebaf204948"
+  },
+  {
+    "path": "docs/ACCEPTANCE_CRITERIA.md",
+    "size": 1831,
+    "sha256": "2af15fea50773faa98e759672a7320bed85f830ad55af0e712754e99be0fad2c"
+  },
+  {
+    "path": "docs/AI_ARCHITECTURE.md",
+    "size": 1449,
+    "sha256": "585f7ade0fe922e61d6adef9653a42455ccd67fdf6dd8d81bdf53d2d6f17ec87"
+  },
+  {
+    "path": "docs/AUDIT_V1_1_TO_V1_2.md",
+    "size": 1967,
+    "sha256": "42c899536fd3507be86fcc2f3f257d72a29c54d0b6dae619d98827f68429d07a"
+  },
+  {
+    "path": "docs/BACKLOG.md",
+    "size": 2391,
+    "sha256": "392f926b47aa6f9daf2807a876d93080c07f770fcb98416b288d072ef4c4888f"
+  },
+  {
+    "path": "docs/CHANGELOG.md",
+    "size": 303,
+    "sha256": "518dcdcbb962c850850d74681379bb172f13cf6eff12b9edaa5a9291e219db8d"
+  },
+  {
+    "path": "docs/DECISIONS.md",
+    "size": 1392,
+    "sha256": "42e6d4148062886de21a17847071e476190e0be698826b8549fed7ee5b0f607e"
+  },
+  {
+    "path": "docs/DESIGN_SYSTEM.md",
+    "size": 2641,
+    "sha256": "eb92a4a66e575db4ebd883a4f4960a098e6d5b8d066a33edac0e71b4c4071933"
+  },
+  {
+    "path": "docs/IMPLEMENTATION_PLAN.md",
+    "size": 2376,
+    "sha256": "d48eed1e5da7fa026306ad92b75911478d1254bca9e605a34c4ff859b6197e77"
+  },
+  {
+    "path": "docs/KNOWN_LIMITATIONS.md",
+    "size": 462,
+    "sha256": "3da014a34e52c46439807d20b71a3dba774b991c1c673a3d0f1f09321a11c7b4"
+  },
+  {
+    "path": "docs/SECURITY.md",
+    "size": 1530,
+    "sha256": "14dd3ce2995d62da84cae8c74b16598fe37508df39d6870003b5134ff894fb04"
+  },
+  {
+    "path": "docs/TECHNICAL_BENCHMARK.md",
+    "size": 5142,
+    "sha256": "78cc83444c671becfbc9c561d10ed1558da027b63ce6a152c2dff5fb2757ca1b"
+  },
+  {
+    "path": "docs/UI_SCREEN_SPEC.md",
+    "size": 6029,
+    "sha256": "081fcf454b8e39337f552ab4958bbbdccda7cf58daac2893a08f6eae7e4ad4e6"
+  },
+  {
+    "path": "evals/critical_regression_cases.jsonl",
+    "size": 16603,
+    "sha256": "b649509323e69a05842b4d90b2a0595b7b026ee4b3877cf7de69e928e2794b8c"
+  },
+  {
+    "path": "prompts/CLAUDE_CODE_PROMPTS.md",
+    "size": 2976,
+    "sha256": "d196bbc2e02443d102a8f468dfb568d53318a0fcecd16a427a9338564cb8449c"
+  },
+  {
+    "path": "schemas/README.md",
+    "size": 352,
+    "sha256": "a03a31066636a92ab36632be76387a298175a5a74576cf71259602c7119ebe83"
+  },
+  {
+    "path": "schemas/clinical_encounter.schema.json",
+    "size": 2150,
+    "sha256": "2cad8aade801b75f7f1285aa7ec8dba287150e5b4255de201002c9c9b5af32a5"
+  },
+  {
+    "path": "schemas/clinical_fact.schema.json",
+    "size": 2978,
+    "sha256": "7a5c9934feb26c371f4d2c32b77de288d71f2f8af739494b9ee0ba90cc5f1161"
+  },
+  {
+    "path": "schemas/document.schema.json",
+    "size": 1073,
+    "sha256": "a0432422098354a13d7cb4ad2d7eb3077dbc8dee9d4f27218898ce408c594ea7"
+  },
+  {
+    "path": "schemas/evaluation_run.schema.json",
+    "size": 981,
+    "sha256": "1676e4337ad225fad038bfaaeeb5e5e52a43af2e20e454edf99eb68a356785a4"
+  },
+  {
+    "path": "schemas/learning_event.schema.json",
+    "size": 2457,
+    "sha256": "c4738c586eda1acac79a627bb1ac183d920aacef30387cbc3a1b97f191bbeca8"
+  },
+  {
+    "path": "schemas/practitioner_learning_profile.schema.json",
+    "size": 1481,
+    "sha256": "4938fb8718cf28f93bd291888a6dbfbec90831dfdd25d5ae47cc5658a05024c6"
+  },
+  {
+    "path": "schemas/procedure.schema.json",
+    "size": 1063,
+    "sha256": "a69a72f034627505892413e58a9ede1bcdd71cab0e1450fe61c1fadf82c7e67b"
+  },
+  {
+    "path": "schemas/transcript_segment.schema.json",
+    "size": 923,
+    "sha256": "f3726c7f84645febf00f5502ba25fcf00b5c0b7dfd32d04c547e0d3a88cf05db"
+  },
+  {
+    "path": "schemas/treatment_plan.schema.json",
+    "size": 2747,
+    "sha256": "ca36a989e8e4ff7a0633a147b89e95e15fba0000aed91d2b34b4212984f480b1"
+  }
+]

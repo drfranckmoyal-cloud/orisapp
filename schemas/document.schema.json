@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oris.local/schemas/document.schema.json",
+  "title": "Document",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "document_id",
+    "document_type",
+    "status",
+    "encounter_object_version",
+    "content",
+    "supported_fact_ids"
+  ],
+  "properties": {
+    "document_id": {
+      "type": "string"
+    },
+    "document_type": {
+      "type": "string",
+      "enum": [
+        "consultation_note",
+        "treatment_plan_text",
+        "operative_note",
+        "patient_summary",
+        "referral_letter"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft_ai",
+        "needs_review",
+        "validated",
+        "exported",
+        "superseded",
+        "outdated"
+      ]
+    },
+    "encounter_object_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "content": {
+      "type": "string"
+    },
+    "supported_fact_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

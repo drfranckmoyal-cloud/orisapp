@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SyntheticOrisCase",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "case_id",
+    "domain",
+    "patient",
+    "transcript_segments",
+    "expected",
+    "tags"
+  ],
+  "properties": {
+    "case_id": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    },
+    "patient": {
+      "type": "object",
+      "required": [
+        "first_name",
+        "last_name"
+      ],
+      "properties": {
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        }
+      }
+    },
+    "transcript_segments": {
+      "type": "array",
+      "items": {
+        "$ref": "../schemas/transcript_segment.schema.json"
+      }
+    },
+    "expected": {
+      "type": "object",
+      "required": [
+        "facts",
+        "treatment_plan",
+        "procedures",
+        "warnings",
+        "consultation_note"
+      ],
+      "properties": {
+        "facts": {
+          "type": "array",
+          "items": {
+            "$ref": "../schemas/clinical_fact.schema.json"
+          }
+        },
+        "treatment_plan": {
+          "anyOf": [
+            {
+              "$ref": "../schemas/treatment_plan.schema.json"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "procedures": {
+          "type": "array",
+          "items": {
+            "$ref": "../schemas/procedure.schema.json"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "consultation_note": {
+          "type": "string"
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

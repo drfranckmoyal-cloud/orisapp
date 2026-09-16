@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oris.local/schemas/learning_event.schema.json",
+  "title": "LearningEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "learning_event_id",
+    "organization_id",
+    "user_id",
+    "encounter_id",
+    "event_type",
+    "scope",
+    "source_version",
+    "before",
+    "after",
+    "validated_by_practitioner",
+    "created_at",
+    "eligible_for_global_learning",
+    "learning_status"
+  ],
+  "properties": {
+    "learning_event_id": {
+      "type": "string"
+    },
+    "organization_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "encounter_id": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "transcript_word_correction",
+        "tooth_number_correction",
+        "speaker_role_correction",
+        "clinical_fact_added",
+        "clinical_fact_removed",
+        "clinical_fact_corrected",
+        "negation_correction",
+        "temporality_correction",
+        "certainty_correction",
+        "treatment_status_correction",
+        "treatment_sequence_correction",
+        "procedure_type_correction",
+        "material_name_correction",
+        "document_text_edit",
+        "document_section_deleted",
+        "document_section_added",
+        "warning_confirmed",
+        "warning_dismissed",
+        "glossary_term_added",
+        "style_preference_detected",
+        "document_validated_unchanged",
+        "document_validated_after_minor_edit",
+        "document_validated_after_major_edit",
+        "generation_rejected"
+      ]
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "user",
+        "organization",
+        "global_candidate"
+      ]
+    },
+    "source_version": {
+      "type": "string"
+    },
+    "before": {},
+    "after": {},
+    "reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "confidence_before": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "validated_by_practitioner": {
+      "type": "boolean"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "eligible_for_global_learning": {
+      "type": "boolean"
+    },
+    "learning_status": {
+      "type": "string",
+      "enum": [
+        "captured",
+        "reviewed",
+        "promoted",
+        "rejected",
+        "purged"
+      ]
+    }
+  }
+}

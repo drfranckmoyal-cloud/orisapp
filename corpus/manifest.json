@@ -1,0 +1,16 @@
+{
+  "name": "oris_synthetic_consultations",
+  "version": "1.0",
+  "case_count": 100,
+  "domains": {
+    "aesthetic_consultation": 20,
+    "tooth_wear_consultation": 20,
+    "composite_procedure": 20,
+    "veneer_procedure": 20,
+    "extraction_procedure": 10,
+    "adversarial": 10
+  },
+  "synthetic_only": true,
+  "contains_real_patient_data": false,
+  "sha256": "70d2475b1afbbe73d1d189e1f1eba723c42453ca190457d9a47bbbddefe965a9"
+}

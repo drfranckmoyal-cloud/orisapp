@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oris.local/schemas/evaluation_run.schema.json",
+  "title": "EvaluationRun",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evaluation_run_id",
+    "component",
+    "candidate_version",
+    "dataset_version",
+    "metrics",
+    "critical_regressions",
+    "created_at",
+    "release_gate_passed"
+  ],
+  "properties": {
+    "evaluation_run_id": {
+      "type": "string"
+    },
+    "component": {
+      "type": "string"
+    },
+    "candidate_version": {
+      "type": "string"
+    },
+    "dataset_version": {
+      "type": "string"
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "critical_regressions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "release_gate_passed": {
+      "type": "boolean"
+    }
+  }
+}

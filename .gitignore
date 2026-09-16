@@ -1,0 +1,32 @@
+# Secrets et configuration locale
+.env
+.env.*
+!.env.example
+
+# Bases de données locales
+*.db
+*.sqlite
+*.sqlite3
+
+# Python
+.venv/
+.venv.nosync/
+__pycache__/
+*.pyc
+
+# Node / Next.js
+node_modules/
+.next/
+
+# iOS / Xcode
+DerivedData/
+xcuserdata/
+
+# Audio : jamais dans le dépôt (audio éphémère, D010)
+*.wav
+*.m4a
+*.mp3
+*.caf
+
+# macOS
+.DS_Store

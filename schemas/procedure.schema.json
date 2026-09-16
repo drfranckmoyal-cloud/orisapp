@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oris.local/schemas/procedure.schema.json",
+  "title": "Procedure",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "procedure_id",
+    "procedure_type",
+    "status",
+    "teeth",
+    "structured_data",
+    "evidence_fact_ids"
+  ],
+  "properties": {
+    "procedure_id": {
+      "type": "string"
+    },
+    "procedure_type": {
+      "type": "string",
+      "enum": [
+        "composite",
+        "direct_aesthetic",
+        "veneer_preparation",
+        "veneer_bonding",
+        "wear_additive",
+        "extraction",
+        "minor_surgery_generic"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "performed",
+        "cancelled"
+      ]
+    },
+    "teeth": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "structured_data": {
+      "type": "object"
+    },
+    "evidence_fact_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
