@@ -1,0 +1,22 @@
+# PostgreSQL de développement pour les postes équipés de Docker.
+# Même DATABASE_URL que scripts/dev_postgres.py : postgresql://oris:oris@localhost:5432/oris
+# Identifiants de développement uniquement, jamais réutilisés ailleurs.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: oris
+      POSTGRES_PASSWORD: oris
+      POSTGRES_DB: oris
+    ports:
+      - "5432:5432"
+    volumes:
+      - oris-postgres:/var/lib/postgresql/data
+      - ./init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oris"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  oris-postgres:

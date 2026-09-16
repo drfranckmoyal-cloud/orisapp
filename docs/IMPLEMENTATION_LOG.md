@@ -53,7 +53,7 @@ Les fichiers générés sont commités et la CI vérifie qu'ils sont à jour
 
 - `config.py` : réglages par variables d'environnement (`.env.example`).
   Les fournisseurs IA valent `mock` ; toute autre valeur est refusée en M0.
-- `logging.py` : journalisation PHI-safe — format JSON, liste blanche de champs
+- `observability.py` : journalisation PHI-safe — format JSON, liste blanche de champs
   (identifiants stables, durées, codes), jamais de corps de requête.
 - `providers/` : interfaces `SpeechToTextProvider`, `ClinicalExtractionProvider`,
   `DocumentGenerationProvider`, `ClinicalValidationProvider` (Protocol) +
@@ -95,3 +95,24 @@ décodage des contrats. Build + tests via `xcodebuild` sur simulateur.
 
 Authentification/MFA, CRUD patient, cycle de vie consultation, WebSocket,
 audio, Redis, worker, tout fournisseur IA réel.
+
+### Résultat M0 (2026-09-17)
+
+Fonctionne : base locale, migration aller-retour sans écart avec les modèles,
+API `/health` et `/health/ready`, site web relié à l'API (vérifié dans le
+navigateur), app iPhone compilée et testée sur simulateur.
+
+Contrôles : API ruff + mypy strict + 45 tests ; web eslint + tsc + 8 tests +
+build ; iOS 9 tests (Swift 6, warnings = erreurs) ; générateurs `--check` à jour.
+
+Choix faits en cours de route :
+- iOS 18 minimum (API `Tab` de SwiftUI) ; bundle id provisoire `fr.oris.app`.
+- `node_modules` réel exclu d'iCloud par attribut étendu : un lien symbolique
+  `node_modules.nosync` provoquait 113 avertissements Turbopack.
+- CI iOS dans un workflow séparé filtré par chemins (coût des minutes macOS).
+- Journaux : le champ `event` reprend le gabarit du message sans l'interpoler
+  (ex. uvicorn `Uvicorn running on %s://%s:%d`) — voulu, les arguments ne sont
+  jamais écrits.
+
+Manque (hors M0) : tout le périmètre M1 (voir IMPLEMENTATION_PLAN.md).
+

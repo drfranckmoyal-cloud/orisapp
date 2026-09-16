@@ -19,3 +19,9 @@ Ce dossier est le paquet de bascule officiel vers Claude Code.
 ## Règle
 
 Ne pas commencer par connecter une API IA. Commencer par un vertical slice synthétique avec MockProviders et les schémas fournis.
+
+## Développement
+
+Le code vit à côté de la spécification : `services/api` (FastAPI), `apps/web`
+(Next.js), `apps/ios` (SwiftUI). Installation, lancement et contrôles :
+`docs/DEVELOPMENT.md`. Choix d'implémentation : `docs/IMPLEMENTATION_LOG.md`.

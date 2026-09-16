@@ -1,0 +1,33 @@
+name: iOS
+
+# Les minutes macOS coûtent 10× plus cher sur un dépôt privé :
+# ce workflow ne tourne que si l'app iOS ou ses contrats changent.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/ios/**"
+      - "schemas/**"
+      - "corpus/**"
+      - "design/tokens.json"
+      - ".github/workflows/ios.yml"
+  pull_request:
+    paths:
+      - "apps/ios/**"
+      - "schemas/**"
+      - "corpus/**"
+      - "design/tokens.json"
+      - ".github/workflows/ios.yml"
+
+jobs:
+  ios:
+    name: iOS (build et tests)
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tests unitaires sur simulateur
+        working-directory: apps/ios
+        run: |
+          set -o pipefail
+          xcodebuild test -project Oris.xcodeproj -scheme Oris \
+            -destination 'platform=iOS Simulator,name=iPhone 17' | tail -30
