@@ -9,6 +9,7 @@
 *.sqlite3
 
 # Python
+.venv
 .venv/
 .venv.nosync/
 __pycache__/
@@ -30,3 +31,9 @@ xcuserdata/
 
 # macOS
 .DS_Store
+
+# Caches outils
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/

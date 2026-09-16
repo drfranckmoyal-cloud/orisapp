@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "oris-api"
+version = "0.1.0"
+description = "Oris — API commune iPhone/web : domaine clinique, fournisseurs IA, persistance."
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "sqlalchemy>=2.0.36",
+  "alembic>=1.14",
+  "psycopg[binary]>=3.2",
+  "pydantic>=2.9",
+  "pydantic-settings>=2.6",
+  "jsonschema>=4.23",
+  "referencing>=0.35",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3",
+  "httpx>=0.27",
+  "ruff>=0.8",
+  "mypy>=1.13",
+  "types-jsonschema",
+]
+# PostgreSQL embarqué pour les postes sans Docker (scripts/dev_postgres.py).
+localdb = ["pixeltable-pgserver>=0.6"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/oris_api"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["src/oris_api/contracts/generated.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "SIM", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003"]  # typographie française (’ « » …)
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+"alembic/**" = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+files = ["src", "tests", "alembic"]
+
+[[tool.mypy.overrides]]
+module = ["pixeltable_pgserver.*"]
+ignore_missing_imports = true
