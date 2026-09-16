@@ -16,7 +16,11 @@ __pycache__/
 *.pyc
 
 # Node / Next.js
+node_modules
 node_modules/
+node_modules.nosync/
+*.tsbuildinfo
+next-env.d.ts
 .next/
 
 # iOS / Xcode

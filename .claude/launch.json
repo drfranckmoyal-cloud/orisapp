@@ -1,0 +1,25 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "oris-api",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "cd services/api && .venv/bin/python ../../scripts/dev_postgres.py start && exec .venv/bin/uvicorn oris_api.main:app --port 8000 --no-access-log"
+      ],
+      "port": 8000
+    },
+    {
+      "name": "oris-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "apps/web",
+        "run",
+        "dev"
+      ],
+      "port": 3000
+    }
+  ]
+}

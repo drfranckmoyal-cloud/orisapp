@@ -1,0 +1,22 @@
+/* Généré par scripts/generate_tokens.py depuis design/tokens.json — ne pas modifier à la main. */
+
+:root {
+  --color-deep-blue: #0F2D46;
+  --color-oris-blue: #3B82F6;
+  --color-misty-teal: #7DD3C7;
+  --color-cloud: #EAF1F6;
+  --color-graphite: #1F2937;
+  --color-white: #FFFFFF;
+  --color-warning: #B7791F;
+  --color-danger: #B42318;
+  --color-success: #067647;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --radius-card: 16px;
+  --radius-button: 14px;
+}

@@ -1,0 +1,31 @@
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.detail {
+  margin: var(--space-8) 0 0;
+  font-size: 14px;
+  color: var(--color-graphite);
+  opacity: 0.8;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--color-graphite);
+}
+
+.dot[data-state="reachable"] {
+  background: var(--color-success);
+}
+
+.dot[data-state="unreachable"] {
+  background: var(--color-danger);
+}
