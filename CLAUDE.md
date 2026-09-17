@@ -54,7 +54,8 @@ Before implementing a milestone:
 2. state files/modules to change in IMPLEMENTATION_LOG.md;
 3. implement smallest coherent slice;
 4. run tests/lint/typecheck;
-5. update CHANGELOG and KNOWN_LIMITATIONS;
+5. update CHANGELOG, KNOWN_LIMITATIONS and PROJET-MAITRE.md (état du projet, en
+   français simple, pour le praticien qui pilote le projet) ;
 6. do not silently expand scope.
 
 ## Stop conditions
