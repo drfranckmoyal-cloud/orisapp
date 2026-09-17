@@ -169,7 +169,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Finish */
+        /**
+         * Finish
+         * @description Fin de l'écoute puis traitement. 409 AUDIO_CHUNKS_MISSING s'il manque des segments.
+         */
         post: operations["finish_encounters__encounter_id__finish_post"];
         delete?: never;
         options?: never;
@@ -371,6 +374,77 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/encounters/{encounter_id}/audio/chunks/{sequence}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put Chunk
+         * @description Idempotent : renvoyer le même segment est sans effet.
+         */
+        put: operations["put_chunk_encounters__encounter_id__audio_chunks__sequence__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/encounters/{encounter_id}/audio/gaps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Report Gap */
+        post: operations["report_gap_encounters__encounter_id__audio_gaps_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/encounters/{encounter_id}/audio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Audio */
+        get: operations["get_audio_encounters__encounter_id__audio_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/config/client": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Client Config */
+        get: operations["client_config_config_client_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -384,6 +458,62 @@ export interface components {
             operation: "add_fact";
             fact: components["schemas"]["NewFact"];
         };
+        /** AudioGapOut */
+        AudioGapOut: {
+            /** Duration Ms */
+            duration_ms: number | null;
+        };
+        /** AudioGapReport */
+        AudioGapReport: {
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "microphone_lost" | "page_reloaded" | "capture_error";
+            /** Duration Ms */
+            duration_ms?: number | null;
+        };
+        /** AudioSessionOut */
+        AudioSessionOut: {
+            /** Status */
+            status: string;
+            /** Audio Format */
+            audio_format: string;
+            /** Received Count */
+            received_count: number;
+            /** Last Sequence */
+            last_sequence: number | null;
+            /** Next Sequence */
+            next_sequence: number;
+            /** Next Timestamp Ms */
+            next_timestamp_ms: number;
+            /** Missing Sequences */
+            missing_sequences: number[];
+            /** Received Duration Ms */
+            received_duration_ms: number;
+            /** Gaps */
+            gaps: components["schemas"]["AudioGapOut"][];
+            /** Reported Gap Reasons */
+            reported_gap_reasons: string[];
+            /** Purge Status */
+            purge_status: string;
+            /** Finalized At */
+            finalized_at: string | null;
+            /** Purged At */
+            purged_at: string | null;
+            /** Last Received At */
+            last_received_at: string | null;
+        };
+        /** ChunkReceiptOut */
+        ChunkReceiptOut: {
+            /** Sequence */
+            sequence: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "stored" | "duplicate";
+        };
         /** ClaimOut */
         ClaimOut: {
             /** Section */
@@ -394,6 +524,30 @@ export interface components {
             fact_ids: string[];
             /** Warning Codes */
             warning_codes: string[];
+        };
+        /** ClientConfigOut */
+        ClientConfigOut: {
+            /** Environment */
+            environment: string;
+            /** Audio Format */
+            audio_format: string;
+            /** Sample Rate */
+            sample_rate: number;
+            /** Chunk Duration Ms */
+            chunk_duration_ms: number;
+            /** Max Chunk Bytes */
+            max_chunk_bytes: number;
+            /** Max Session Minutes */
+            max_session_minutes: number;
+            /** Warn Session Minutes */
+            warn_session_minutes: number;
+            /**
+             * Patient Information Mode
+             * @enum {string}
+             */
+            patient_information_mode: "none" | "confirm";
+            /** Test Audio Source Enabled */
+            test_audio_source_enabled: boolean;
         };
         /** ClinicalEncounter */
         ClinicalEncounter: {
@@ -576,6 +730,18 @@ export interface components {
             /** Synthetic Case Id */
             synthetic_case_id?: string | null;
         };
+        /** EncounterFinish */
+        EncounterFinish: {
+            /** Final Sequence */
+            final_sequence?: number | null;
+            /** Client Recorded Ms */
+            client_recorded_ms?: number | null;
+            /**
+             * Accept Gaps
+             * @default false
+             */
+            accept_gaps: boolean;
+        };
         /** EncounterOut */
         EncounterOut: {
             /**
@@ -608,6 +774,14 @@ export interface components {
             critical_warning_count: number;
             /** Documents */
             documents: components["schemas"]["DocumentSummary"][];
+        };
+        /** EncounterStart */
+        EncounterStart: {
+            /**
+             * Patient Informed
+             * @default false
+             */
+            patient_informed: boolean;
         };
         /** EncounterWarning */
         EncounterWarning: {
@@ -1302,7 +1476,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EncounterStart"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -1395,7 +1573,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EncounterFinish"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -1782,6 +1964,139 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_chunk_encounters__encounter_id__audio_chunks__sequence__put: {
+        parameters: {
+            query?: never;
+            header: {
+                "content-type": string;
+                "x-chunk-timestamp-ms": number;
+                "x-chunk-checksum": string;
+            };
+            path: {
+                encounter_id: string;
+                sequence: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "audio/pcm;rate=16000;channels=1;encoding=s16le": string;
+            };
+        };
+        responses: {
+            /** @description Segment déjà reçu à l'identique */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChunkReceiptOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    report_gap_encounters__encounter_id__audio_gaps_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AudioGapReport"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AudioSessionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_audio_encounters__encounter_id__audio_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AudioSessionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    client_config_config_client_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientConfigOut"];
                 };
             };
         };

@@ -46,7 +46,11 @@ def test_manual_lifecycle_and_idempotent_processing(api: Any) -> None:
     eid = encounter["id"]
     assert encounter["status"] == "draft"
     assert api.post(f"/encounters/{eid}/finish").json()["code"] == "INVALID_TRANSITION"
-    for action, status in [("start", "recording"), ("pause", "paused"), ("resume", "recording")]:
+    refused = api.post(f"/encounters/{eid}/start")
+    assert refused.json()["code"] == "PATIENT_INFORMATION_REQUIRED"
+    started = api.post(f"/encounters/{eid}/start", json={"patient_informed": True})
+    assert started.json()["status"] == "recording"
+    for action, status in [("pause", "paused"), ("resume", "recording")]:
         assert api.post(f"/encounters/{eid}/{action}").json()["status"] == status
     finished = api.post(f"/encounters/{eid}/finish").json()
     assert finished["status"] == "review"
@@ -62,7 +66,7 @@ def test_manual_lifecycle_and_idempotent_processing(api: Any) -> None:
 def test_consultation_without_audio_fails_visibly_and_can_be_retried(api: Any) -> None:
     patient = api.post("/patients", json={"first_name": "Test", "last_name": "Muet"}).json()
     eid = api.post("/encounters", json={"patient_id": patient["id"]}).json()["id"]
-    api.post(f"/encounters/{eid}/start")
+    api.post(f"/encounters/{eid}/start", json={"patient_informed": True})
     failed = api.post(f"/encounters/{eid}/finish").json()
     assert failed["status"] == "transcription_failed"
     assert failed["processing_errors"][0]["rule"] == "NO_TRANSCRIPT"

@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy import select
 
-from oris_api.api.dependencies import ActorDep, ProvidersDep, SessionDep
+from oris_api.api.dependencies import ActorDep, ProvidersDep, SessionDep, SinkDep
 from oris_api.api.presenters import encounter_out
 from oris_api.api.schemas import EncounterOut, SyntheticCaseOut
 from oris_api.config import Settings, get_settings
@@ -47,7 +47,12 @@ def list_cases(corpus: CorpusDep, actor: ActorDep) -> list[SyntheticCaseOut]:
     "/{case_id}/encounters", response_model=EncounterOut, status_code=status.HTTP_201_CREATED
 )
 def run_case(
-    case_id: str, corpus: CorpusDep, session: SessionDep, actor: ActorDep, providers: ProvidersDep
+    case_id: str,
+    corpus: CorpusDep,
+    session: SessionDep,
+    actor: ActorDep,
+    providers: ProvidersDep,
+    sink: SinkDep,
 ) -> EncounterOut:
     """Consultation complète en un appel : patient fictif, démarrage, fin, traitement."""
     case = corpus.get(case_id)
@@ -62,5 +67,5 @@ def run_case(
     ) or patients.create_patient(session, actor, case.patient_first_name, case.patient_last_name)
     encounter = encounters.create_encounter(session, actor, patient.id, case.case_id)
     encounters.transition(session, actor, encounter, "recording")
-    encounters.finish(session, actor, encounter, providers)
+    encounters.finish(session, actor, encounter, providers, sink)
     return encounter_out(session, encounter)

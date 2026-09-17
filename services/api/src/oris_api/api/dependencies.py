@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from oris_api.config import Settings, get_settings
 from oris_api.db.session import get_session
 from oris_api.providers import ProviderSet
+from oris_api.services.audio_sink import AudioSink
 from oris_api.services.identity import Actor, demo_actor
 
 
@@ -38,5 +39,12 @@ def providers(request: Request) -> ProviderSet:
     return provider_set
 
 
+def audio_sink(request: Request) -> AudioSink:
+    sink: AudioSink = request.app.state.audio_sink
+    return sink
+
+
 ActorDep = Annotated[Actor, Depends(current_actor)]
+SettingsDep = Annotated[Settings, Depends(get_settings)]
+SinkDep = Annotated[AudioSink, Depends(audio_sink)]
 ProvidersDep = Annotated[ProviderSet, Depends(providers)]

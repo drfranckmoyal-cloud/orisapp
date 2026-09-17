@@ -98,9 +98,14 @@ def api(migrated_engine: Engine) -> Iterator[Any]:
         with factory() as session:
             yield session
 
+    from oris_api.services.audio_sink import MemoryAudioSink
+
     app.dependency_overrides[get_session] = session_override
+    original_sink = app.state.audio_sink
+    app.state.audio_sink = MemoryAudioSink()
     with TestClient(app) as client:
         yield client
+    app.state.audio_sink = original_sink
     app.dependency_overrides.clear()
     truncate_all(migrated_engine)
 

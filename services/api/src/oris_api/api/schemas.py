@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
@@ -164,3 +164,59 @@ class SyntheticCaseOut(BaseModel):
     patient_first_name: str
     patient_last_name: str
     segment_count: int
+
+
+class EncounterStart(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    patient_informed: bool = False
+
+
+class EncounterFinish(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    final_sequence: Annotated[int, Field(ge=-1)] | None = None
+    client_recorded_ms: Annotated[int, Field(ge=0)] | None = None
+    accept_gaps: bool = False
+
+
+class ChunkReceiptOut(BaseModel):
+    sequence: int
+    status: Literal["stored", "duplicate"]
+
+
+class AudioGapReport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    reason: Literal["microphone_lost", "page_reloaded", "capture_error"]
+    duration_ms: Annotated[int, Field(ge=0)] | None = None
+
+
+class AudioGapOut(BaseModel):
+    duration_ms: int | None
+
+
+class AudioSessionOut(BaseModel):
+    status: str
+    audio_format: str
+    received_count: int
+    last_sequence: int | None
+    next_sequence: int
+    next_timestamp_ms: int
+    missing_sequences: list[int]
+    received_duration_ms: int
+    gaps: list[AudioGapOut]
+    reported_gap_reasons: list[str]
+    purge_status: str
+    finalized_at: datetime | None
+    purged_at: datetime | None
+    last_received_at: datetime | None
+
+
+class ClientConfigOut(BaseModel):
+    environment: str
+    audio_format: str
+    sample_rate: int
+    chunk_duration_ms: int
+    max_chunk_bytes: int
+    max_session_minutes: int
+    warn_session_minutes: int
+    patient_information_mode: Literal["none", "confirm"]
+    test_audio_source_enabled: bool

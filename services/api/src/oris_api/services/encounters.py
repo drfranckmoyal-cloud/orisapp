@@ -10,15 +10,17 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from oris_api.config import Settings
 from oris_api.contracts import ClinicalEncounter
 from oris_api.contracts.generated import ClinicalEncounterStatus
 from oris_api.db.models import Encounter
 from oris_api.domain.lifecycle import TransitionError, ensure_transition
 from oris_api.domain.resolver import resolve
-from oris_api.domain.types import AudioChunk
+from oris_api.domain.types import AudioChunk, AudioGap
 from oris_api.domain.warnings import compute_warnings
 from oris_api.providers import ProviderSet
-from oris_api.services import async_bridge, audit, documents
+from oris_api.services import async_bridge, audio, audit, documents
+from oris_api.services.audio_sink import AudioSink
 from oris_api.services.clinical_store import replace_segments, save_version
 from oris_api.services.errors import Conflict, NotFound
 from oris_api.services.identity import Actor
@@ -104,11 +106,13 @@ def transition(
     session.flush()
 
 
-def audio_chunks(encounter: Encounter) -> list[AudioChunk]:
-    """M1 : seule une consultation synthétique a une « source audio »."""
+def audio_input(
+    session: Session, sink: AudioSink, encounter: Encounter
+) -> tuple[list[AudioChunk], list[AudioGap]]:
+    """Consultation fictive : charge synthétique. Sinon : segments captés et trous connus."""
     case_id = encounter.metadata_json.get("synthetic_case_id")
     if not isinstance(case_id, str):
-        return []
+        return audio.load_for_transcription(session, sink, encounter)
     payload = SYNTHETIC_PAYLOAD_PREFIX + case_id.encode()
     return [
         AudioChunk(
@@ -118,7 +122,7 @@ def audio_chunks(encounter: Encounter) -> list[AudioChunk]:
             checksum=hashlib.sha256(payload).hexdigest(),
             payload=payload,
         )
-    ]
+    ], []
 
 
 def set_processing_errors(encounter: Encounter, errors: list[dict[str, str]]) -> None:
@@ -131,7 +135,11 @@ def set_processing_errors(encounter: Encounter, errors: list[dict[str, str]]) ->
 
 
 def process(
-    session: Session, actor: Actor, encounter: Encounter, providers: ProviderSet
+    session: Session,
+    actor: Actor,
+    encounter: Encounter,
+    providers: ProviderSet,
+    sink: AudioSink,
 ) -> Encounter:
     """Transcript → faits → résolveur → objet v1 → documents. Rejouable sans doublon."""
     if encounter.status in ALREADY_PROCESSED:
@@ -139,9 +147,12 @@ def process(
     transition(session, actor, encounter, "processing")
     started = datetime.now(UTC)
 
+    chunks, capture_gaps = audio_input(session, sink, encounter)
     transcription = async_bridge.run(
-        lambda: providers.speech_to_text.transcribe(audio_chunks(encounter), LOCALE, [])
+        lambda: providers.speech_to_text.transcribe(chunks, LOCALE, [])
     )
+    # D010 : l'audio est éphémère ; il n'est plus conservé une fois transmis au STT.
+    audio.purge(session, sink, encounter)
     if not transcription.segments:
         set_processing_errors(
             encounter, [{"rule": "NO_TRANSCRIPT", "subject_id": str(encounter.id)}]
@@ -185,7 +196,7 @@ def process(
         facts=extraction.facts,
         treatment_plan=extraction.treatment_plan,
         procedures=extraction.procedures,
-        warnings=compute_warnings(transcription.gaps),
+        warnings=compute_warnings([*capture_gaps, *transcription.gaps]),
     )
     save_version(session, encounter, clinical_object, "extraction", created_by=None)
     documents.generate(session, encounter, clinical_object, providers)
@@ -200,11 +211,45 @@ def process(
     return encounter
 
 
-def finish(
-    session: Session, actor: Actor, encounter: Encounter, providers: ProviderSet
+def start(
+    session: Session,
+    actor: Actor,
+    encounter: Encounter,
+    settings: Settings,
+    patient_informed: bool,
 ) -> Encounter:
+    """Début de l'écoute. L'information du patient est une condition paramétrable (§65)."""
+    if settings.patient_information_mode == "confirm" and not patient_informed:
+        raise Conflict("PATIENT_INFORMATION_REQUIRED", str(encounter.id))
+    transition(session, actor, encounter, "recording")
+    audio.open_session(session, encounter)
+    if patient_informed:
+        encounter.metadata_json = {
+            **encounter.metadata_json,
+            "patient_informed_at": datetime.now(UTC).isoformat(),
+        }
+        audit.record(session, actor, "encounter.patient_informed", "encounter", encounter.id)
+    session.flush()
+    return encounter
+
+
+def finish(
+    session: Session,
+    actor: Actor,
+    encounter: Encounter,
+    providers: ProviderSet,
+    sink: AudioSink,
+    final_sequence: int | None = None,
+    client_recorded_ms: int | None = None,
+    accept_gaps: bool = False,
+) -> Encounter:
+    if encounter.status in {"finalizing", "transcription_failed", "generation_failed"}:
+        return process(session, actor, encounter, providers, sink)  # reprise sans doublon
+    if encounter.status not in {"recording", "paused"}:
+        raise Conflict("INVALID_TRANSITION", str(encounter.id), [encounter.status, "finalizing"])
+    audio.finalize(session, actor, encounter, final_sequence, client_recorded_ms, accept_gaps)
     transition(session, actor, encounter, "finalizing")
-    return process(session, actor, encounter, providers)
+    return process(session, actor, encounter, providers, sink)
 
 
 def validate_encounter(session: Session, actor: Actor, encounter: Encounter) -> Encounter:

@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, status
 
-from oris_api.api.dependencies import ActorDep, ProvidersDep, SessionDep
+from oris_api.api.dependencies import ActorDep, ProvidersDep, SessionDep, SettingsDep, SinkDep
 from oris_api.api.presenters import document_out, encounter_out
 from oris_api.api.schemas import (
     ClinicalObjectOut,
@@ -14,7 +14,9 @@ from oris_api.api.schemas import (
     DocumentOut,
     DocumentValidate,
     EncounterCreate,
+    EncounterFinish,
     EncounterOut,
+    EncounterStart,
     LearningEventOut,
     ObjectVersionOut,
     TranscriptOut,
@@ -58,8 +60,17 @@ def _transition(
 
 
 @router.post("/encounters/{encounter_id}/start", response_model=EncounterOut)
-def start(encounter_id: UUID, session: SessionDep, actor: ActorDep) -> EncounterOut:
-    return _transition(encounter_id, "recording", session, actor)
+def start(
+    encounter_id: UUID,
+    session: SessionDep,
+    actor: ActorDep,
+    settings: SettingsDep,
+    body: EncounterStart | None = None,
+) -> EncounterOut:
+    encounter = encounters.get_encounter(session, actor, encounter_id)
+    informed = body.patient_informed if body else False
+    encounters.start(session, actor, encounter, settings, informed)
+    return encounter_out(session, encounter)
 
 
 @router.post("/encounters/{encounter_id}/pause", response_model=EncounterOut)
@@ -74,20 +85,40 @@ def resume(encounter_id: UUID, session: SessionDep, actor: ActorDep) -> Encounte
 
 @router.post("/encounters/{encounter_id}/finish", response_model=EncounterOut)
 def finish(
-    encounter_id: UUID, session: SessionDep, actor: ActorDep, providers: ProvidersDep
+    encounter_id: UUID,
+    session: SessionDep,
+    actor: ActorDep,
+    providers: ProvidersDep,
+    sink: SinkDep,
+    body: EncounterFinish | None = None,
 ) -> EncounterOut:
+    """Fin de l'écoute puis traitement. 409 AUDIO_CHUNKS_MISSING s'il manque des segments."""
     encounter = encounters.get_encounter(session, actor, encounter_id)
-    encounters.finish(session, actor, encounter, providers)
+    options = body or EncounterFinish()
+    encounters.finish(
+        session,
+        actor,
+        encounter,
+        providers,
+        sink,
+        final_sequence=options.final_sequence,
+        client_recorded_ms=options.client_recorded_ms,
+        accept_gaps=options.accept_gaps,
+    )
     return encounter_out(session, encounter)
 
 
 @router.post("/encounters/{encounter_id}/process", response_model=EncounterOut)
 def process(
-    encounter_id: UUID, session: SessionDep, actor: ActorDep, providers: ProvidersDep
+    encounter_id: UUID,
+    session: SessionDep,
+    actor: ActorDep,
+    providers: ProvidersDep,
+    sink: SinkDep,
 ) -> EncounterOut:
     """Relance du traitement après une erreur ; sans effet si déjà traité."""
     encounter = encounters.get_encounter(session, actor, encounter_id)
-    encounters.process(session, actor, encounter, providers)
+    encounters.process(session, actor, encounter, providers, sink)
     return encounter_out(session, encounter)
 
 

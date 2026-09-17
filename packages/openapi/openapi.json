@@ -419,6 +419,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/EncounterStart"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -535,6 +552,7 @@
           "encounters"
         ],
         "summary": "Finish",
+        "description": "Fin de l'écoute puis traitement. 409 AUDIO_CHUNKS_MISSING s'il manque des segments.",
         "operationId": "finish_encounters__encounter_id__finish_post",
         "parameters": [
           {
@@ -548,6 +566,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/EncounterFinish"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1100,6 +1135,220 @@
           }
         }
       }
+    },
+    "/encounters/{encounter_id}/audio/chunks/{sequence}": {
+      "put": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Put Chunk",
+        "description": "Idempotent : renvoyer le même segment est sans effet.",
+        "operationId": "put_chunk_encounters__encounter_id__audio_chunks__sequence__put",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          },
+          {
+            "name": "sequence",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Sequence"
+            }
+          },
+          {
+            "name": "content-type",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Content-Type"
+            }
+          },
+          {
+            "name": "x-chunk-timestamp-ms",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "X-Chunk-Timestamp-Ms"
+            }
+          },
+          {
+            "name": "x-chunk-checksum",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 64,
+              "maxLength": 64,
+              "title": "X-Chunk-Checksum"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "audio/pcm;rate=16000;channels=1;encoding=s16le": {
+              "schema": {
+                "type": "string",
+                "contentMediaType": "application/octet-stream",
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChunkReceiptOut"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Segment déjà reçu à l'identique"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/audio/gaps": {
+      "post": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Report Gap",
+        "operationId": "report_gap_encounters__encounter_id__audio_gaps_post",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioGapReport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/audio": {
+      "get": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Get Audio",
+        "operationId": "get_audio_encounters__encounter_id__audio_get",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/config/client": {
+      "get": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Client Config",
+        "operationId": "client_config_config_client_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientConfigOut"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1122,6 +1371,197 @@
           "fact"
         ],
         "title": "AddFact"
+      },
+      "AudioGapOut": {
+        "properties": {
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "duration_ms"
+        ],
+        "title": "AudioGapOut"
+      },
+      "AudioGapReport": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "microphone_lost",
+              "page_reloaded",
+              "capture_error"
+            ],
+            "title": "Reason"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "title": "AudioGapReport"
+      },
+      "AudioSessionOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "audio_format": {
+            "type": "string",
+            "title": "Audio Format"
+          },
+          "received_count": {
+            "type": "integer",
+            "title": "Received Count"
+          },
+          "last_sequence": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Sequence"
+          },
+          "next_sequence": {
+            "type": "integer",
+            "title": "Next Sequence"
+          },
+          "next_timestamp_ms": {
+            "type": "integer",
+            "title": "Next Timestamp Ms"
+          },
+          "missing_sequences": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Missing Sequences"
+          },
+          "received_duration_ms": {
+            "type": "integer",
+            "title": "Received Duration Ms"
+          },
+          "gaps": {
+            "items": {
+              "$ref": "#/components/schemas/AudioGapOut"
+            },
+            "type": "array",
+            "title": "Gaps"
+          },
+          "reported_gap_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reported Gap Reasons"
+          },
+          "purge_status": {
+            "type": "string",
+            "title": "Purge Status"
+          },
+          "finalized_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finalized At"
+          },
+          "purged_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purged At"
+          },
+          "last_received_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Received At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "audio_format",
+          "received_count",
+          "last_sequence",
+          "next_sequence",
+          "next_timestamp_ms",
+          "missing_sequences",
+          "received_duration_ms",
+          "gaps",
+          "reported_gap_reasons",
+          "purge_status",
+          "finalized_at",
+          "purged_at",
+          "last_received_at"
+        ],
+        "title": "AudioSessionOut"
+      },
+      "ChunkReceiptOut": {
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "title": "Sequence"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "stored",
+              "duplicate"
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sequence",
+          "status"
+        ],
+        "title": "ChunkReceiptOut"
       },
       "ClaimOut": {
         "properties": {
@@ -1156,6 +1596,63 @@
           "warning_codes"
         ],
         "title": "ClaimOut"
+      },
+      "ClientConfigOut": {
+        "properties": {
+          "environment": {
+            "type": "string",
+            "title": "Environment"
+          },
+          "audio_format": {
+            "type": "string",
+            "title": "Audio Format"
+          },
+          "sample_rate": {
+            "type": "integer",
+            "title": "Sample Rate"
+          },
+          "chunk_duration_ms": {
+            "type": "integer",
+            "title": "Chunk Duration Ms"
+          },
+          "max_chunk_bytes": {
+            "type": "integer",
+            "title": "Max Chunk Bytes"
+          },
+          "max_session_minutes": {
+            "type": "integer",
+            "title": "Max Session Minutes"
+          },
+          "warn_session_minutes": {
+            "type": "integer",
+            "title": "Warn Session Minutes"
+          },
+          "patient_information_mode": {
+            "type": "string",
+            "enum": [
+              "none",
+              "confirm"
+            ],
+            "title": "Patient Information Mode"
+          },
+          "test_audio_source_enabled": {
+            "type": "boolean",
+            "title": "Test Audio Source Enabled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "environment",
+          "audio_format",
+          "sample_rate",
+          "chunk_duration_ms",
+          "max_chunk_bytes",
+          "max_session_minutes",
+          "warn_session_minutes",
+          "patient_information_mode",
+          "test_audio_source_enabled"
+        ],
+        "title": "ClientConfigOut"
       },
       "ClinicalEncounter": {
         "properties": {
@@ -1696,6 +2193,42 @@
         ],
         "title": "EncounterCreate"
       },
+      "EncounterFinish": {
+        "properties": {
+          "final_sequence": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Final Sequence"
+          },
+          "client_recorded_ms": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Recorded Ms"
+          },
+          "accept_gaps": {
+            "type": "boolean",
+            "title": "Accept Gaps",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EncounterFinish"
+      },
       "EncounterOut": {
         "properties": {
           "id": {
@@ -1803,6 +2336,18 @@
           "documents"
         ],
         "title": "EncounterOut"
+      },
+      "EncounterStart": {
+        "properties": {
+          "patient_informed": {
+            "type": "boolean",
+            "title": "Patient Informed",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EncounterStart"
       },
       "EncounterWarning": {
         "properties": {

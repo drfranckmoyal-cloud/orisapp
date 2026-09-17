@@ -59,6 +59,8 @@ from oris_api.db.base import Base, contract_enum, created_at, updated_at, uuid_p
 
 UserRole = Literal["practitioner", "assistant", "admin"]  # spec §62
 ObjectChangeKind = Literal["extraction", "correction", "status_change"]
+AudioSessionStatus = Literal["open", "finalized"]
+AudioPurgeStatus = Literal["retained", "purged"]
 
 LEARNING_SCHEMA = "learning"
 
@@ -378,6 +380,50 @@ class EncounterObjectVersion(Base):
     change_kind: Mapped[str] = mapped_column(contract_enum(ObjectChangeKind, "object_change_kind"))
     created_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = created_at()
+
+
+# --- Audio (métadonnées seulement ; le son vit dans un stockage transitoire) ----------
+
+
+class AudioSession(Base):
+    __tablename__ = "audio_sessions"
+
+    id: Mapped[UUID] = uuid_pk()
+    encounter_id: Mapped[UUID] = mapped_column(
+        ForeignKey("encounters.id", ondelete="CASCADE"), unique=True
+    )
+    status: Mapped[str] = mapped_column(contract_enum(AudioSessionStatus, "audio_session_status"))
+    audio_format: Mapped[str] = mapped_column(String(100))
+    final_sequence: Mapped[int | None] = mapped_column(Integer)
+    client_recorded_ms: Mapped[int | None] = mapped_column(Integer)
+    # Interruptions signalées par le client : [{"reason", "duration_ms"}].
+    reported_gaps: Mapped[list[dict[str, Any]]] = jsonb(list)
+    purge_status: Mapped[str] = mapped_column(
+        contract_enum(AudioPurgeStatus, "audio_purge_status"), default="retained"
+    )
+    started_at: Mapped[datetime] = created_at()
+    finalized_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    purged_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class AudioChunkRow(Base):
+    __tablename__ = "audio_chunks"
+    __table_args__ = (
+        UniqueConstraint("audio_session_id", "sequence", name="uq_audio_chunks_sequence"),
+        CheckConstraint("sequence >= 0", name="sequence_positive"),
+        CheckConstraint("timestamp_ms >= 0 AND duration_ms > 0", name="timing_valid"),
+    )
+
+    id: Mapped[UUID] = uuid_pk()
+    audio_session_id: Mapped[UUID] = mapped_column(
+        ForeignKey("audio_sessions.id", ondelete="CASCADE"), index=True
+    )
+    sequence: Mapped[int] = mapped_column(Integer)
+    timestamp_ms: Mapped[int] = mapped_column(Integer)
+    duration_ms: Mapped[int] = mapped_column(Integer)
+    byte_size: Mapped[int] = mapped_column(Integer)
+    checksum: Mapped[str] = mapped_column(String(64))
+    received_at: Mapped[datetime] = created_at()
 
 
 # --- Audit (identifiants uniquement, jamais de contenu clinique) ------------------------

@@ -226,3 +226,68 @@ Choix et corrections faits en cours de route :
   normalisées dans `apps/ios/OrisTests/Fixtures`, décodées par `APIContractTests`.
 - iPhone vérifié par tests uniquement : l'accès au simulateur n'a pas été accordé.
 
+
+---
+
+## M2 — Web audio capture (2026-09-17)
+
+Critères lus : ACCEPTANCE_CRITERIA (global, active consultation), spec §10–13,
+§59, §65, §68–69, §71, UI_SCREEN_SPEC S03, S05, S06. Règles cliniques inchangées.
+
+### Format audio
+
+PCM 16 bits signé, 16 kHz, mono (`audio/pcm;rate=16000;channels=1;encoding=s16le`),
+en segments indépendants de 2 s. Raisons : format accepté par les STT de parole,
+chaque segment décodable seul (un segment perdu ne corrompt pas les suivants, ce
+qui n'est pas le cas de WebM/Opus via MediaRecorder), et durée exacte déduite du
+nombre d'échantillons, donc détection exacte des trous. Coût : ~1,9 Mo/min.
+
+### Serveur
+
+- Tables `audio_sessions` (une par consultation) et `audio_chunks` (métadonnées :
+  séquence, horodatage, durée, taille, SHA-256, réception). Le son lui-même n'est
+  jamais en base.
+- `AudioSink` : `memory` (tests) et `local_temp` (dev, hors iCloud, dans
+  ~/Library/Caches/Oris/audio). Purge à la fin du traitement (D010, audio éphémère) ;
+  les métadonnées restent pour l'audit de couverture.
+- `PUT /encounters/{id}/audio/chunks/{sequence}` : idempotent (même séquence + même
+  empreinte = doublon accepté ; empreinte différente = conflit), empreinte vérifiée,
+  accepté en `recording` et `paused`.
+- `POST /encounters/{id}/audio/gaps` : interruption signalée par le client (micro
+  débranché, page rechargée pendant l'écoute).
+- `GET /encounters/{id}/audio` : couverture (séquences manquantes, trous, durée),
+  utilisée aussi pour reprendre après rechargement.
+- `domain/audio_coverage.py` (pur) : séquences manquantes, discontinuités
+  d'horodatage (> 50 ms), trous signalés → `AudioGap`.
+- `finish` : refuse (409 `AUDIO_CHUNKS_MISSING` + liste) s'il manque des segments,
+  sauf `accept_gaps=true` (perte irrécupérable assumée) → alerte `AUDIO_GAP`.
+- Pipeline : les trous de capture s'ajoutent aux trous du STT ; purge audio ensuite.
+- Information patient : `PATIENT_INFORMATION_MODE` = `confirm` (défaut) | `none`.
+  En `confirm`, `start` exige `patient_informed=true` (tracé dans l'audit). Aucune
+  interprétation juridique figée : c'est un paramètre (§65).
+- `GET /config/client` : format audio, durée maximale (90 min, alerte à 80),
+  mode d'information patient, sources de test autorisées.
+- Pas de WebSocket en M2 : envoi HTTP ordonné avec reprise, suffisant sans
+  transcription en direct (prévu avec le STT streaming, M4).
+
+### Web
+
+`src/lib/audio/` en TypeScript pur, testé sans navigateur :
+- `pcm.ts` (rééchantillonnage 16 kHz, Int16), `chunker.ts` (segments 2 s horodatés
+  à l'échantillon près), `checksum.ts` (SHA-256), `uploader.ts` (file ordonnée
+  segments + événements pause/reprise/trou, une requête à la fois, nouvelle
+  tentative avec attente croissante, suppression locale seulement après accusé de
+  réception), `sources.ts` (micro via AudioWorklet ; source de test sans micro en
+  local), `controller.ts` (états : prêt, autorisation, écoute, pause, reconnexion,
+  erreur micro, envoi final, traitement).
+- Écran `/consultations/{id}/ecoute` : pré-écran (patient, micro, réseau,
+  information patient, « Commencer l'écoute ») puis écoute (chronomètre, niveau
+  sonore, état micro, état réseau, Pause/Reprendre, Terminer).
+- Révision : résumé audio (durée reçue, trous, purge) et explication claire tant
+  que la transcription n'est pas branchée.
+
+### Honnêteté
+
+Sans STT (M4), une consultation au micro aboutit à `transcription_failed`
+(`NO_TRANSCRIPT`) : l'audio est reçu, contrôlé puis purgé. Les tests de fusion
+des trous dans l'objet clinique utilisent un STT de test.
