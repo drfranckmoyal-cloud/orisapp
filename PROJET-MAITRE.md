@@ -4,7 +4,7 @@
 fonctionne, ce qui bloque et ce qui est attendu de vous. Mis à jour à la fin de
 chaque jalon.
 
-Dernière mise à jour : 18 septembre 2026 (fin du jalon M4).
+Dernière mise à jour : 18 septembre 2026 (premier banc d'essai réel exécuté).
 Dépôt : `drfranckmoyal-cloud/orisapp` (privé) · Dossier : `~/Desktop/Claude-Projects/ORIS`
 
 ---
@@ -30,7 +30,7 @@ traitement et les comptes rendus opératoires. Trois principes tiennent tout :
 | M1 | Consultation fictive de bout en bout : faits, compte rendu, plan, corrections, validation | **Terminé** |
 | M2 | Écoute au micro sur le site | **Terminé** |
 | M3 | Écoute sur iPhone (appels, écouteurs, écran verrouillé) | **Terminé, non vu à l'écran** |
-| M4 | Banc d'essai des services de transcription (Azure, Deepgram) | **Codé, jamais exécuté en vrai** |
+| M4 | Banc d'essai des services de transcription (Azure, Deepgram) | **Terminé** — Deepgram mesuré le 18 sept. sur 100 consultations |
 | M5 | Extraction clinique par une vraie IA | À faire — prochain |
 | M6 à M11 | Interface clinique, opératoire, correction vocale, apprentissage, sécurisation, validation clinique | À faire |
 
@@ -68,7 +68,8 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 
 | Quoi | Pourquoi | Quand |
 |---|---|---|
-| **Clés Deepgram et Azure Speech** dans `services/api/.env` | Sans elles, aucune transcription réelle, donc pas de comparaison ni de M5 | Maintenant, c'est le seul vrai blocage |
+| **Clé Anthropic** (console.anthropic.com) dans `services/api/.env` | Nécessaire pour M5 : transformer la parole en faits cliniques | Maintenant, c'est le seul vrai blocage |
+| Clé Azure Speech (optionnel) | Comparer Deepgram à un fournisseur certifié HDS | Avant de choisir |
 | Autoriser le **simulateur iPhone** (« Let Claude use it ») | Pour que je vérifie l'app à l'écran, pas seulement par les tests | Quand vous voulez |
 | **Enregistrements de consultations jouées** par des praticiens | Les voix de synthèse ne suffisent pas pour choisir un fournisseur | Avant de choisir |
 | **Tarifs et statut de conformité** des fournisseurs (`benchmarks/providers.json`) | Je n'invente aucun prix ni aucune conformité | Avant de choisir |
@@ -149,6 +150,7 @@ Détails, tests et banc d'essai : `docs/DEVELOPMENT.md` et `benchmarks/README.md
 | 17 sept. 2026 | M2 — écoute au micro sur le site | 126 · 33 · 14 |
 | 17 sept. 2026 | M3 — écoute sur iPhone | 129 · 33 · 39 |
 | 17 sept. 2026 | M4 — banc d'essai transcription (code) | 174 · 33 · 39 |
+| 18 sept. 2026 | M4 — premier banc réel : Deepgram Nova-3, 100 consultations lues | dents 100 %, négations 100 %, WER 8,2 %, voix 86,9 % |
 
 **Défauts trouvés et corrigés en cours de route** (le détail est dans le journal) :
 faits affichés « vérifiés par le praticien » sans l'être ; refus d'une décision

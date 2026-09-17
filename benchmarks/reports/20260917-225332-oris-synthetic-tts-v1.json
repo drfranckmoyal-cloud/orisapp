@@ -1,0 +1,30 @@
+[
+  {
+    "evaluation_run_id": "c9b8ac4c-f32a-47d2-943f-c31622e2bfd9",
+    "component": "stt:deepgram",
+    "candidate_version": "nova-3-prerecorded",
+    "dataset_version": "oris-synthetic-tts-v1@1",
+    "metrics": {
+      "items": 3.0,
+      "reliability": 1.0,
+      "wer": 0.03170822826188475,
+      "tooth_number_accuracy": 1.0,
+      "hallucinated_teeth": 0.0,
+      "critical_term_recall": 1.0,
+      "negation_preservation": 1.0,
+      "speaker_accuracy": 0.7286670358598797,
+      "role_accuracy": 0.7286670358598797,
+      "finalization_latency_p50_s": 6.617875625030138,
+      "finalization_latency_p95_s": 6.807809249963611,
+      "finalization_rtf_p95": 0.23660408195056518,
+      "glossary_gain_term_recall": 0.0,
+      "glossary_gain_tooth_accuracy": 0.0,
+      "glossary_gain_wer": 0.003875968992248062,
+      "weighted_score": 0.9431952342786769,
+      "weighted_score_coverage": 0.95
+    },
+    "critical_regressions": [],
+    "created_at": "2026-09-17T22:53:32.873521+00:00",
+    "release_gate_passed": false
+  }
+]

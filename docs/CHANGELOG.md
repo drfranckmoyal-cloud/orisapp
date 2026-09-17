@@ -1,5 +1,12 @@
 # Changelog
 
+## M4bis — 2026-09-18 — premier banc d'essai réel
+- Deepgram Nova-3 mesuré sur les 100 consultations synthétiques (35 min d'audio) :
+  numéros de dent 100 % (243 mentions, 0 inventé), négations 100 %, WER 8,2 %,
+  termes dentaires 81 % (dont +13,4 points apportés par le glossaire), séparation
+  des voix 86,9 %, rôles 83,7 %, délai médian 1,7 s, 100 % de requêtes abouties ;
+- conformité non évaluée → aucun fournisseur retenu (gate).
+
 ## M4 — 2026-09-17 — STT benchmark adapter
 - adaptateurs Azure AI Speech (transcription rapide `2025-10-15` + SDK temps réel
   `ConversationTranscriber`) et Deepgram Nova-3 (fichier + WebSocket) derrière
