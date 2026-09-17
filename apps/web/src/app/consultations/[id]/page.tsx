@@ -160,6 +160,19 @@ export default function ReviewPage() {
             .map((e) => PROCESSING_RULE[e.rule])
             .filter(Boolean)
             .join(" ")}
+          {data.processing_errors.some((e) => e.rule === "STT_UNAVAILABLE") && (
+            <div>
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() =>
+                  act(`/encounters/${id}/process`, undefined, "Traitement relancé.")
+                }
+              >
+                Relancer le traitement
+              </button>
+            </div>
+          )}
         </div>
       )}
       {data.processing_errors.some((e) => !PROCESSING_RULE[e.rule]) && (

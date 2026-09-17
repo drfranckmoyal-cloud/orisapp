@@ -136,6 +136,8 @@ const ERRORS: Record<string, string> = {
 };
 
 export const PROCESSING_RULE: Record<string, string> = {
+  STT_UNAVAILABLE:
+    "Le service de transcription n’a pas répondu. L’audio est conservé : relancez le traitement plus tard.",
   NO_TRANSCRIPT:
     "Aucune transcription : le moteur de transcription automatique n’est pas encore branché (étape M4). Aucun document ne peut être rédigé.",
 };

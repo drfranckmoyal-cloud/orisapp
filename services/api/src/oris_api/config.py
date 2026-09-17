@@ -1,7 +1,8 @@
 """Configuration par environnement (spec §85–86).
 
 Les fournisseurs IA sont de la configuration, jamais de la logique métier.
-Tant que le Milestone M5 n'est pas atteint, seul `mock` est accepté.
+STT : `mock`, `azure_speech` ou `deepgram` (banc d'essai M4, aucun choisi par défaut).
+Extraction, rédaction, validation : `mock` jusqu'à M5.
 """
 
 from __future__ import annotations
@@ -10,11 +11,12 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, field_validator
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 AppEnv = Literal["local", "test", "staging", "production"]
 ProviderName = Literal["mock"]
+SttProviderName = Literal["mock", "azure_speech", "deepgram"]
 
 
 class Settings(BaseSettings):
@@ -24,7 +26,14 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://oris:oris@localhost:5432/oris"
     redis_url: str | None = None
 
-    stt_provider: ProviderName = "mock"
+    stt_provider: SttProviderName = "mock"
+    # Envoyer de l'audio à un service extérieur exige un accord explicite (spec §66).
+    allow_external_stt: bool = False
+    stt_use_glossary: bool = True
+    azure_speech_key: SecretStr | None = None
+    azure_speech_endpoint: str | None = None  # https://<ressource>.cognitiveservices.azure.com
+    deepgram_api_key: SecretStr | None = None
+    deepgram_base_url: str = "https://api.deepgram.com"
     clinical_extraction_provider: ProviderName = "mock"
     document_generation_provider: ProviderName = "mock"
     clinical_validation_provider: ProviderName = "mock"
@@ -48,6 +57,12 @@ class Settings(BaseSettings):
     enable_advanced_warnings: bool = False
 
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+
+    @field_validator("azure_speech_key", "azure_speech_endpoint", "deepgram_api_key", mode="before")
+    @classmethod
+    def empty_means_missing(cls, value: object) -> object:
+        """Une clé laissée vide dans .env est une clé absente."""
+        return None if isinstance(value, str) and not value.strip() else value
 
     @field_validator("database_url")
     @classmethod

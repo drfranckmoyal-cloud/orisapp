@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+from dataclasses import replace
 from datetime import UTC, datetime
 from uuid import UUID
 
@@ -16,9 +17,11 @@ from oris_api.contracts.generated import ClinicalEncounterStatus
 from oris_api.db.models import Encounter
 from oris_api.domain.lifecycle import TransitionError, ensure_transition
 from oris_api.domain.resolver import resolve
+from oris_api.domain.speaker_roles import apply_roles
 from oris_api.domain.types import AudioChunk, AudioGap
 from oris_api.domain.warnings import compute_warnings
 from oris_api.providers import ProviderSet
+from oris_api.providers.base import TranscriptionUnavailable
 from oris_api.services import async_bridge, audio, audit, documents
 from oris_api.services.audio_sink import AudioSink
 from oris_api.services.clinical_store import replace_segments, save_version
@@ -148,11 +151,30 @@ def process(
     started = datetime.now(UTC)
 
     chunks, capture_gaps = audio_input(session, sink, encounter)
-    transcription = async_bridge.run(
-        lambda: providers.speech_to_text.transcribe(chunks, LOCALE, [])
-    )
-    # D010 : l'audio est éphémère ; il n'est plus conservé une fois transmis au STT.
+    try:
+        transcription = async_bridge.run(
+            lambda: providers.speech_to_text.transcribe(chunks, LOCALE, [])
+        )
+    except TranscriptionUnavailable as error:
+        # Panne du fournisseur : l'audio est conservé pour relancer le traitement.
+        set_processing_errors(encounter, [{"rule": "STT_UNAVAILABLE", "subject_id": error.code}])
+        transition(session, actor, encounter, "transcription_failed")
+        logger.warning(
+            "pipeline.stt_unavailable",
+            extra={
+                "encounter_id": str(encounter.id),
+                "provider": providers.speech_to_text.info.name,
+                "error_code": error.code,
+            },
+        )
+        return encounter
+    # D010 : l'audio est éphémère ; purgé dès que la transcription a abouti.
     audio.purge(session, sink, encounter)
+    if transcription.speaker_labels:
+        transcription = replace(
+            transcription,
+            segments=apply_roles(transcription.segments, transcription.speaker_labels),
+        )
     if not transcription.segments:
         set_processing_errors(
             encounter, [{"rule": "NO_TRANSCRIPT", "subject_id": str(encounter.id)}]

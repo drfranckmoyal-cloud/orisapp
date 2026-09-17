@@ -6,8 +6,9 @@ LLM) est un adaptateur choisi par configuration, après benchmark (D019, D020).
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
-from typing import Protocol, runtime_checkable
+from typing import Literal, Protocol, runtime_checkable
 
 from oris_api.contracts import ClinicalEncounter, TranscriptSegment
 from oris_api.contracts.generated import DocumentDocumentType
@@ -36,6 +37,39 @@ class SpeechToTextProvider(Protocol):
         self, chunks: list[AudioChunk], locale: str, glossary: list[GlossaryHint]
     ) -> TranscriptionResult:
         """Segments finaux et trous audio non récupérés, jamais masqués."""
+        ...
+
+
+class TranscriptionUnavailable(RuntimeError):
+    """Échec temporaire du fournisseur (réseau, quota, panne) : l'audio est conservé.
+
+    `code` est un code technique stable ; jamais de contenu audio ni de texte.
+    """
+
+    def __init__(self, code: str) -> None:
+        self.code = code
+        super().__init__(code)
+
+
+@dataclass(frozen=True)
+class StreamEvent:
+    """Résultat temps réel. `audio_end_ms` : fin de la parole reconnue dans l'audio."""
+
+    kind: Literal["interim", "final", "gap", "reconnected"]
+    segment: TranscriptSegment | None
+    speaker_label: str | None
+    audio_end_ms: int
+    received_monotonic: float
+
+
+@runtime_checkable
+class StreamingSpeechToTextProvider(Protocol):
+    info: ProviderInfo
+
+    def stream(
+        self, chunks: AsyncIterator[AudioChunk], locale: str, glossary: list[GlossaryHint]
+    ) -> AsyncIterator[StreamEvent]:
+        """Transcription progressive. Un trou (reconnexion) est émis, jamais masqué."""
         ...
 
 

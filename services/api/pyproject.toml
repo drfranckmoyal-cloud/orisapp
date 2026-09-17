@@ -17,6 +17,8 @@ dependencies = [
   "pydantic-settings>=2.6",
   "jsonschema>=4.23",
   "referencing>=0.35",
+  "httpx>=0.27",
+  "websockets>=15",
 ]
 
 [project.optional-dependencies]
@@ -27,6 +29,8 @@ dev = [
   "mypy>=1.13",
   "types-jsonschema",
 ]
+# SDK Azure Speech (temps réel, banc d'essai) : bibliothèque native, installée à part.
+stt = ["azure-cognitiveservices-speech>=1.45"]
 # PostgreSQL embarqué pour les postes sans Docker (scripts/dev_postgres.py).
 localdb = ["pixeltable-pgserver>=0.6"]
 
@@ -47,8 +51,9 @@ select = ["E", "F", "I", "B", "UP", "S", "SIM", "RUF"]
 ignore = ["RUF001", "RUF002", "RUF003"]  # typographie française (’ « » …)
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101"]
+"tests/**" = ["S101", "E501"]  # données de test lisibles sur une ligne
 "alembic/**" = ["E501"]
+"src/oris_api/benchmark/report.py" = ["E501"]  # phrases du rapport en français
 
 [tool.mypy]
 python_version = "3.12"
@@ -57,5 +62,5 @@ plugins = ["pydantic.mypy"]
 files = ["src", "tests", "alembic"]
 
 [[tool.mypy.overrides]]
-module = ["pixeltable_pgserver.*"]
+module = ["pixeltable_pgserver.*", "azure.*", "websockets.*"]
 ignore_missing_imports = true

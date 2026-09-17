@@ -51,6 +51,20 @@ Par l'API : `POST /synthetic-cases/ORIS-SYN-091/encounters`.
 3. `cd services/api && ORIS_UPDATE_FIXTURES=1 .venv/bin/pytest tests/test_client_fixtures.py`
    (réponses figées pour iOS), puis les tests iOS.
 
+## Banc d'essai transcription (M4)
+
+Voir `benchmarks/README.md`. En bref :
+
+```bash
+services/api/.venv/bin/python scripts/stt_benchmark.py generate   # 100 enregistrements synthétiques (~6 min)
+services/api/.venv/bin/python scripts/stt_benchmark.py check      # contrôle hors ligne, aucun envoi
+services/api/.venv/bin/python scripts/stt_benchmark.py run --providers deepgram,azure_speech --limit 10
+```
+
+Les clés vont dans `services/api/.env` (privé, ignoré par git), jamais ailleurs.
+Pour utiliser un vrai STT dans l'application : `STT_PROVIDER=deepgram` ou `azure_speech`
+et `ALLOW_EXTERNAL_STT=true` — uniquement avec de l'audio synthétique ou consenti.
+
 ## Modifier un contrat
 
 1. Modifier `schemas/*.schema.json` (décision consignée dans `docs/DECISIONS.md` si besoin).

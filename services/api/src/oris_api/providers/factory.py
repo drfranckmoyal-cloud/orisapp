@@ -17,6 +17,8 @@ from oris_api.providers.mock import (
     MockDocumentGenerationProvider,
     MockSpeechToTextProvider,
 )
+from oris_api.stt.azure_speech import AzureFastTranscriptionProvider
+from oris_api.stt.deepgram import DeepgramPrerecordedProvider
 from oris_api.synthetic.corpus import SyntheticCorpus, default_corpus
 
 
@@ -34,7 +36,6 @@ class ProviderSet:
 
 def build_providers(settings: Settings, corpus: SyntheticCorpus | None = None) -> ProviderSet:
     configured = {
-        "STT_PROVIDER": settings.stt_provider,
         "CLINICAL_EXTRACTION_PROVIDER": settings.clinical_extraction_provider,
         "DOCUMENT_GENERATION_PROVIDER": settings.document_generation_provider,
         "CLINICAL_VALIDATION_PROVIDER": settings.clinical_validation_provider,
@@ -46,8 +47,32 @@ def build_providers(settings: Settings, corpus: SyntheticCorpus | None = None) -
     if corpus is None:
         corpus = SyntheticCorpus([])
     return ProviderSet(
-        speech_to_text=MockSpeechToTextProvider(corpus),
+        speech_to_text=build_speech_to_text(settings, corpus),
         clinical_extraction=MockClinicalExtractionProvider(corpus),
         document_generation=MockDocumentGenerationProvider(),
         clinical_validation=MockClinicalValidationProvider(),
+    )
+
+
+def build_speech_to_text(settings: Settings, corpus: SyntheticCorpus) -> SpeechToTextProvider:
+    if settings.stt_provider == "mock":
+        return MockSpeechToTextProvider(corpus)
+    if not settings.allow_external_stt:
+        raise ProviderConfigurationError(
+            "STT_PROVIDER externe refusé : ALLOW_EXTERNAL_STT=true requis (envoi d'audio hors Oris)"
+        )
+    if settings.stt_provider == "deepgram":
+        if settings.deepgram_api_key is None:
+            raise ProviderConfigurationError("DEEPGRAM_API_KEY manquante")
+        return DeepgramPrerecordedProvider(
+            settings.deepgram_api_key.get_secret_value(),
+            settings.deepgram_base_url,
+            use_glossary=settings.stt_use_glossary,
+        )
+    if settings.azure_speech_key is None or not settings.azure_speech_endpoint:
+        raise ProviderConfigurationError("AZURE_SPEECH_KEY ou AZURE_SPEECH_ENDPOINT manquante")
+    return AzureFastTranscriptionProvider(
+        settings.azure_speech_key.get_secret_value(),
+        settings.azure_speech_endpoint,
+        use_glossary=settings.stt_use_glossary,
     )

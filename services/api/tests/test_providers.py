@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 
 import pytest
+from pydantic import SecretStr
 
 from oris_api.config import Settings
 from oris_api.contracts import ClinicalEncounter
@@ -124,3 +125,28 @@ def test_validation_provider_flags_unsupported_claims() -> None:
     codes = {(i.code, i.fact_id) for i in issues}
     assert ("unknown_fact_id", "f999") in codes
     assert ("unsupported_claim", None) in codes
+
+
+def test_external_stt_requires_explicit_permission_and_keys() -> None:
+    from oris_api.providers import ProviderConfigurationError
+    from oris_api.stt.deepgram import DeepgramPrerecordedProvider
+
+    with pytest.raises(ProviderConfigurationError, match="ALLOW_EXTERNAL_STT"):
+        build_providers(Settings(_env_file=None, stt_provider="deepgram"))
+    with pytest.raises(ProviderConfigurationError, match="DEEPGRAM_API_KEY"):
+        build_providers(Settings(_env_file=None, stt_provider="deepgram", allow_external_stt=True))
+    with pytest.raises(ProviderConfigurationError, match="AZURE_SPEECH"):
+        build_providers(
+            Settings(_env_file=None, stt_provider="azure_speech", allow_external_stt=True)
+        )
+    providers = build_providers(
+        Settings(
+            _env_file=None,
+            stt_provider="deepgram",
+            allow_external_stt=True,
+            deepgram_api_key=SecretStr("k"),
+        )
+    )
+    assert isinstance(providers.speech_to_text, DeepgramPrerecordedProvider)
+    blank = Settings(_env_file=None, deepgram_api_key="  ")
+    assert blank.deepgram_api_key is None

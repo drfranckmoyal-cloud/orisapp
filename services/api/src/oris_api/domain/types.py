@@ -36,6 +36,10 @@ class AudioGap:
 class TranscriptionResult:
     segments: list[TranscriptSegment]
     gaps: list[AudioGap] = field(default_factory=list)
+    # Étiquette brute du locuteur par segment (« 0 », « Guest-1 ») avant attribution des rôles.
+    speaker_labels: dict[str, str] = field(default_factory=dict)
+    # Identifiants techniques du fournisseur (requête, modèle) ; jamais de contenu.
+    provider_request_id: str | None = None
 
 
 @dataclass(frozen=True)

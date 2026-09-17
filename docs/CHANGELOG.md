@@ -1,5 +1,22 @@
 # Changelog
 
+## M4 — 2026-09-17 — STT benchmark adapter
+- adaptateurs Azure AI Speech (transcription rapide `2025-10-15` + SDK temps réel
+  `ConversationTranscriber`) et Deepgram Nova-3 (fichier + WebSocket) derrière
+  `SpeechToTextProvider` / `StreamingSpeechToTextProvider` ;
+- diarisation : étiquettes brutes séparées, rôles praticien/patient attribués par
+  heuristique prudente (`unknown` si doute) ;
+- glossaire dentaire (≤ 50 termes) poussé en phrase list / keyterms ;
+- temps réel Deepgram : reconnexion avec renvoi de l'audio non confirmé ;
+- garde-fou : STT externe seulement avec `ALLOW_EXTERNAL_STT=true` et clés locales ;
+- panne du fournisseur : `STT_UNAVAILABLE`, audio conservé, bouton « Relancer le
+  traitement » sur le web ;
+- numéros de dent dits en lettres → chiffres FDI (`domain/dental_numbers.py`) ;
+- banc d'essai : jeu synthétique (100 consultations, voix macOS), métriques de la note
+  technique, score pondéré, conformité en préalable, `EvaluationRun` + rapport français,
+  contrôle hors ligne `check` ;
+- tests : API 171, web 33, iOS 39.
+
 ## M3 — 2026-09-17 — iOS audio capture
 - écoute iPhone : AVAudioSession (parole, micro AirPods) + AVAudioEngine, même
   contrat audio que le web (PCM 16 kHz mono, segments de 2 s, SHA-256) ;

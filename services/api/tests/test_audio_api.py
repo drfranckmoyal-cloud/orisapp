@@ -252,3 +252,90 @@ def test_ios_interruption_reasons_are_accepted(api: Any, reason: str) -> None:
     assert response.status_code == 200
     assert response.json()["reported_gap_reasons"] == [reason]
     assert len(response.json()["gaps"]) == 1
+
+
+class DownSpeechToText:
+    def __init__(self, inner: Any) -> None:
+        self.info = inner.info
+
+    async def transcribe(self, chunks: Any, locale: str, glossary: Any) -> TranscriptionResult:
+        from oris_api.providers.base import TranscriptionUnavailable
+
+        raise TranscriptionUnavailable("DEEPGRAM_HTTP_503")
+
+
+def test_provider_outage_keeps_audio_for_retry(api: Any) -> None:
+    original: ProviderSet = app.state.providers
+    app.state.providers = ProviderSet(
+        speech_to_text=DownSpeechToText(original.speech_to_text),
+        clinical_extraction=original.clinical_extraction,
+        document_generation=original.document_generation,
+        clinical_validation=original.clinical_validation,
+    )
+    try:
+        eid = new_encounter(api)
+        put_chunk(api, eid, 0, pcm())
+        failed = api.post(f"/encounters/{eid}/finish", json={"final_sequence": 0}).json()
+        assert failed["status"] == "transcription_failed"
+        assert failed["processing_errors"] == [
+            {"rule": "STT_UNAVAILABLE", "subject_id": "DEEPGRAM_HTTP_503"}
+        ]
+        assert api.get(f"/encounters/{eid}/audio").json()["purge_status"] == "retained"
+
+        # Le fournisseur revient : relance sans perte, puis purge.
+        app.state.providers = ProviderSet(
+            speech_to_text=EchoSpeechToText(original.speech_to_text),
+            clinical_extraction=original.clinical_extraction,
+            document_generation=original.document_generation,
+            clinical_validation=original.clinical_validation,
+        )
+        retried = api.post(f"/encounters/{eid}/process").json()
+        assert retried["status"] == "review"
+        assert api.get(f"/encounters/{eid}/audio").json()["purge_status"] == "purged"
+    finally:
+        app.state.providers = original
+
+
+def test_speaker_labels_become_roles_in_pipeline(api: Any) -> None:
+    from oris_api.contracts import TranscriptSegment
+
+    class LabelledSpeechToText:
+        def __init__(self, inner: Any) -> None:
+            self.info = inner.info
+
+        async def transcribe(self, chunks: Any, locale: str, glossary: Any) -> TranscriptionResult:
+            texts = [
+                "Bonjour, j'ai un peu mal quand je bois froid depuis hier soir.",
+                "Je note une fissure possible sur la dent, examen et composite proposé.",
+            ]
+            segments = [
+                TranscriptSegment(
+                    segment_id=f"t{i}",
+                    start_ms=i * 1000,
+                    end_ms=i * 1000 + 900,
+                    speaker_role="unknown",
+                    text=t,
+                    confidence=0.9,
+                    is_final=True,
+                )
+                for i, t in enumerate(texts)
+            ]
+            return TranscriptionResult(segments, speaker_labels={"t0": "1", "t1": "0"})
+
+    original: ProviderSet = app.state.providers
+    app.state.providers = ProviderSet(
+        speech_to_text=LabelledSpeechToText(original.speech_to_text),
+        clinical_extraction=original.clinical_extraction,
+        document_generation=original.document_generation,
+        clinical_validation=original.clinical_validation,
+    )
+    try:
+        eid = new_encounter(api)
+        put_chunk(api, eid, 0, pcm())
+        api.post(f"/encounters/{eid}/finish", json={"final_sequence": 0})
+        roles = [
+            s["speaker_role"] for s in api.get(f"/encounters/{eid}/transcript").json()["segments"]
+        ]
+        assert roles == ["patient", "practitioner"]
+    finally:
+        app.state.providers = original

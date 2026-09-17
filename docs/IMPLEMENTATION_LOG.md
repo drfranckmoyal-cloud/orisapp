@@ -374,3 +374,74 @@ Choix en cours de route :
   chiffrés à écrire).
 - Écoute non vérifiée à l'écran : accès au simulateur toujours non accordé.
 
+
+---
+
+## M4 — STT benchmark adapter (2026-09-17)
+
+Critères lus : docs/TECHNICAL_BENCHMARK.md, AI_ARCHITECTURE §1–2, spec §14–16,
+§26, §66, BACKLOG E07. Aucun fournisseur choisi par défaut (D020).
+
+### Candidats
+
+Azure AI Speech et Deepgram Nova-3, la paire recommandée par la note technique
+(« Azure Speech + one of Deepgram/Speechmatics ») : Azure = référence conformité
+(périmètre HDS à vérifier), Deepgram = latence et mots-clés. Speechmatics et OpenAI
+restent candidats ; l'interface permet de les ajouter sans toucher au domaine.
+
+### Adaptateurs (`oris_api/stt/`), données fournisseur jamais dans le domaine
+
+- Finalisation (fichier entier) : Azure *fast transcription*
+  (`/speechtotext/transcriptions:transcribe`, `api-version=2025-10-15`, diarisation,
+  `phraseList`) ; Deepgram `POST /v1/listen` (`nova-3`, `language=fr`, `diarize`,
+  `utterances`, `keyterm` répété).
+- Temps réel : Deepgram WebSocket (`interim_results`, `Finalize`, `CloseStream`,
+  reconnexion avec trou signalé) ; Azure SDK `ConversationTranscriber` + flux poussé
+  (extra optionnel `stt`).
+- Sortie commune : `TranscriptionResult` (segments, trous, étiquettes de locuteur,
+  identifiant de requête). Rôles : `domain/speaker_roles.py` (densité de vocabulaire
+  dentaire ; en dessous du seuil de confiance → `unknown`, jamais deviné).
+- Glossaire dentaire (`ontology/stt_glossary.py`) : ≤ 50 termes (limite Deepgram).
+- Garde-fou : un STT externe exige `ALLOW_EXTERNAL_STT=true` et ses clés (fichier
+  `.env` local, jamais dans le dépôt ni dans le chat). Par défaut : `mock`.
+- Pipeline : erreur temporaire du fournisseur → `transcription_failed`
+  (`STT_UNAVAILABLE`), audio **conservé** pour relance ; purge après transcription
+  réussie ou absence de parole (correction de la limite M2).
+
+### Banc d'essai (`oris_api/benchmark/`, `scripts/stt_benchmark.py`)
+
+- Jeu synthétique : les 100 transcripts du corpus lus par les voix françaises de
+  macOS (praticien Thomas, patient Aurélie, assistant(e) Jacques, accompagnant Flo),
+  segments horodatés → vérité exacte des mots, dents, négations et locuteurs. Audio
+  régénérable, hors dépôt. **Non décisionnel** : voix de synthèse ≠ cabinet réel.
+- Le banc refuse tout jeu non marqué `synthetic_only` ou `consent_documented`.
+- Métriques (TECHNICAL_BENCHMARK) : WER dentaire (nombres normalisés), exactitude
+  des numéros de dent, rappel matériaux/marques, conservation des négations,
+  attribution des locuteurs (meilleure correspondance), latence finale et
+  intermédiaire p50/p95, reconnexion, gain du glossaire, coût pour 30 min (tarifs à
+  renseigner depuis le contrat, jamais inventés), score pondéré ; conformité = gate.
+- Sortie : `EvaluationRun` (schéma existant) + rapport Markdown en français.
+
+### Résultat M4 (2026-09-17)
+
+Fait : adaptateurs Azure (fichier + temps réel) et Deepgram (fichier + temps réel),
+garde-fou d'envoi externe, conservation de l'audio en cas de panne, banc d'essai
+complet, jeu synthétique de 100 enregistrements (35 min, voix macOS), rapport français.
+
+Vérifié hors ligne : `stt_benchmark.py check` sur les 100 enregistrements avec le
+fournisseur « référence » → 100 % (243 numéros de dent, 212 négations, 268 termes
+examinés). Aucun fournisseur réel appelé : clés absentes.
+
+Contrôles : API 174 tests (dont faux serveur WebSocket coupant la connexion) ; web 33 ;
+iOS 39 (inchangé).
+
+Trouvé et corrigé grâce au contrôle hors ligne :
+- l'attribution des rôles par densité de vocabulaire ne trouvait le bon rôle que
+  34 % du temps **et se trompait avec assurance dans 10 consultations** (patient pris
+  pour le praticien, en comptant « je » et « on »). Remplacée par des tournures propres
+  à chaque rôle, avec abstention en cas de doute : 97,9 % justes, 0 faux, plus des
+  tests de phrases pièges écrites hors corpus ;
+- une clé vide dans `.env` était prise pour une clé présente ; les tests lisaient le
+  `.env` privé du poste (désormais isolés, STT factice forcé).
+- `say` (macOS) se bloque parfois : délai maximal et nouvel essai par phrase.
+

@@ -13,6 +13,12 @@ from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.exc import OperationalError
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+
+# Les tests n'utilisent jamais les réglages privés du poste (services/api/.env) :
+# aucun fournisseur externe, quelles que soient les clés présentes.
+os.environ["STT_PROVIDER"] = "mock"
+os.environ["ALLOW_EXTERNAL_STT"] = "false"
+os.environ["APP_ENV"] = "local"
 DEFAULT_TEST_DATABASE_URL = "postgresql+psycopg://oris:oris@localhost:5432/oris_test"
 
 

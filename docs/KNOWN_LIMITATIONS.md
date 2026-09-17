@@ -72,3 +72,28 @@
 - La durée d'une interruption après fermeture de l'app est estimée depuis la dernière
   réception serveur (horloges différentes, ordre de grandeur seulement).
 
+## Après M4 (2026-09-17)
+
+- **Aucun fournisseur réel n'a encore été appelé** : pas de clés. Les adaptateurs sont
+  testés contre les formats documentés (réponses simulées, faux serveur WebSocket) ;
+  un écart de format réel reste possible au premier appel.
+- **Jeu synthétique non décisionnel** : voix de synthèse, sans bruit de cabinet, sans
+  aspiration ni masque. Le choix exige des consultations simulées par des
+  professionnels (`consent_documented`).
+- Temps réel Azure non testé automatiquement (bibliothèque native) : seule la
+  traduction des événements l'est.
+- Point de terminaison européen Deepgram non vérifié ; conformité HDS / contrats de
+  chaque fournisseur **non évaluée** (gate `not_reviewed` → aucun choix possible).
+- Tarifs non renseignés : le coût est exclu du score tant qu'ils ne sont pas recopiés
+  depuis les contrats.
+- La reconnexion Deepgram renvoie l'audio non confirmé : quelques mots peuvent être
+  répétés dans le texte intermédiaire.
+- Rôles des locuteurs : tournures propres au praticien / au patient. Sur le corpus :
+  97,9 % justes, 0 faux (reste « inconnu ») — **score flatteur**, une partie des
+  tournures ayant été choisie en lisant ce corpus ; à remesurer sur audio réel.
+  Correction manuelle du rôle pas encore proposée.
+- Nombres « deux six » (chiffre par chiffre) et « première molaire maxillaire gauche »
+  non convertis (§16.1) : prévu avec l'extraction clinique (M5).
+- Audio conservé après une panne du fournisseur : pas encore de purge automatique à
+  échéance si le traitement n'est jamais relancé.
+

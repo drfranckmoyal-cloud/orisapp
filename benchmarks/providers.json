@@ -1,0 +1,15 @@
+{
+  "_note": "Tarifs à recopier depuis le contrat ou la page de prix officielle, avec la date. Ne jamais estimer. compliance_gate : not_reviewed | passed | failed (revue HDS/contrat/DPA, spec §66).",
+  "deepgram": {
+    "usd_per_minute": null,
+    "pricing_source": null,
+    "pricing_verified_on": null,
+    "compliance_gate": "not_reviewed"
+  },
+  "azure_speech": {
+    "usd_per_minute": null,
+    "pricing_source": null,
+    "pricing_verified_on": null,
+    "compliance_gate": "not_reviewed"
+  }
+}

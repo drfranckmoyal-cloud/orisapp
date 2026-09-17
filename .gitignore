@@ -41,3 +41,6 @@ xcuserdata/
 .mypy_cache/
 .ruff_cache/
 *.egg-info/
+
+# Banc d essai : rapports de contrôle locaux
+benchmarks/reports/checks/

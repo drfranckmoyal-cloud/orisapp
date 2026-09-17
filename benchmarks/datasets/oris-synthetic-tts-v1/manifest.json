@@ -1,0 +1,3691 @@
+{
+  "name": "oris-synthetic-tts-v1",
+  "version": "1",
+  "locale": "fr-FR",
+  "synthetic_only": true,
+  "consent_documented": false,
+  "created_with": "macOS say, 16 kHz mono PCM",
+  "voices": {
+    "practitioner": "Thomas",
+    "patient": "Aurélie (Enhanced)",
+    "assistant": "Jacques",
+    "companion": "Flo (Français (France))",
+    "unknown": "Thomas"
+  },
+  "items": [
+    {
+      "audio_id": "ORIS-SYN-001",
+      "audio_file": "audio/ORIS-SYN-001.wav",
+      "source_case_id": "ORIS-SYN-001",
+      "duration_ms": 28773,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3737,
+          "text": "Je voudrais surtout fermer un diastème, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4137,
+          "end_ms": 12213,
+          "text": "Sur 23 et 11, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12613,
+          "end_ms": 17940,
+          "text": "On a discuté de blanchiment puis composites et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 18340,
+          "end_ms": 21311,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 21711,
+          "end_ms": 28373,
+          "text": "On retient les composites additifs comme option proposée. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-002",
+      "audio_file": "audio/ORIS-SYN-002.wav",
+      "source_case_id": "ORIS-SYN-002",
+      "duration_ms": 28715,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3737,
+          "text": "Je voudrais surtout fermer un diastème, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4137,
+          "end_ms": 12155,
+          "text": "Sur 13 et 22, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12555,
+          "end_ms": 17696,
+          "text": "On a discuté de composites additifs et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 18096,
+          "end_ms": 21068,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 21468,
+          "end_ms": 28315,
+          "text": "On retient les composites additifs comme option à planifier. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-003",
+      "audio_file": "audio/ORIS-SYN-003.wav",
+      "source_case_id": "ORIS-SYN-003",
+      "duration_ms": 30213,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 4538,
+          "text": "Je voudrais surtout allonger légèrement les bords incisifs, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4938,
+          "end_ms": 12956,
+          "text": "Sur 13 et 22, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13356,
+          "end_ms": 18335,
+          "text": "On a discuté de facettes céramiques et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 18735,
+          "end_ms": 21706,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 22106,
+          "end_ms": 29813,
+          "text": "On retient facettes céramiques comme option à reconsidérer après réflexion. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-004",
+      "audio_file": "audio/ORIS-SYN-004.wav",
+      "source_case_id": "ORIS-SYN-004",
+      "duration_ms": 29109,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 4538,
+          "text": "Je voudrais surtout allonger légèrement les bords incisifs, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4938,
+          "end_ms": 12967,
+          "text": "Sur 21 et 12, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13367,
+          "end_ms": 18346,
+          "text": "On a discuté de facettes céramiques et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 18746,
+          "end_ms": 21717,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 22117,
+          "end_ms": 28709,
+          "text": "On retient facettes céramiques comme option à planifier. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-005",
+      "audio_file": "audio/ORIS-SYN-005.wav",
+      "source_case_id": "ORIS-SYN-005",
+      "duration_ms": 28471,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3737,
+          "text": "Je voudrais surtout fermer un diastème, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4137,
+          "end_ms": 12329,
+          "text": "Sur 23 et 22, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12729,
+          "end_ms": 17707,
+          "text": "On a discuté de facettes céramiques et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 18107,
+          "end_ms": 21079,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 21479,
+          "end_ms": 28071,
+          "text": "On retient facettes céramiques comme option à planifier. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-006",
+      "audio_file": "audio/ORIS-SYN-006.wav",
+      "source_case_id": "ORIS-SYN-006",
+      "duration_ms": 28959,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3737,
+          "text": "Je voudrais surtout fermer un diastème, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4137,
+          "end_ms": 12213,
+          "text": "Sur 23 et 11, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12613,
+          "end_ms": 17940,
+          "text": "On a discuté de blanchiment puis composites et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 18340,
+          "end_ms": 21311,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 21711,
+          "end_ms": 28559,
+          "text": "On retient les composites additifs comme option à planifier. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-007",
+      "audio_file": "audio/ORIS-SYN-007.wav",
+      "source_case_id": "ORIS-SYN-007",
+      "duration_ms": 28912,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 4538,
+          "text": "Je voudrais surtout allonger légèrement les bords incisifs, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4938,
+          "end_ms": 12944,
+          "text": "Sur 22 et 21, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13344,
+          "end_ms": 18323,
+          "text": "On a discuté de facettes céramiques et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 18723,
+          "end_ms": 21694,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 22094,
+          "end_ms": 28512,
+          "text": "On retient facettes céramiques comme option proposée. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-008",
+      "audio_file": "audio/ORIS-SYN-008.wav",
+      "source_case_id": "ORIS-SYN-008",
+      "duration_ms": 29249,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 4538,
+          "text": "Je voudrais surtout allonger légèrement les bords incisifs, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4938,
+          "end_ms": 12875,
+          "text": "Sur 12 et 13, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13275,
+          "end_ms": 18416,
+          "text": "On a discuté de composites additifs et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 18816,
+          "end_ms": 21787,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 22187,
+          "end_ms": 28849,
+          "text": "On retient les composites additifs comme option proposée. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-009",
+      "audio_file": "audio/ORIS-SYN-009.wav",
+      "source_case_id": "ORIS-SYN-009",
+      "duration_ms": 27879,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3737,
+          "text": "Je voudrais surtout fermer un diastème, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4137,
+          "end_ms": 11912,
+          "text": "Sur 11 et 12, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12312,
+          "end_ms": 17290,
+          "text": "On a discuté de facettes céramiques et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 17690,
+          "end_ms": 20661,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 21061,
+          "end_ms": 27479,
+          "text": "On retient facettes céramiques comme option proposée. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-010",
+      "audio_file": "audio/ORIS-SYN-010.wav",
+      "source_case_id": "ORIS-SYN-010",
+      "duration_ms": 29678,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 4526,
+          "text": "Je voudrais surtout éclaircir puis corriger la forme, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4926,
+          "end_ms": 13118,
+          "text": "Sur 23 et 22, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13518,
+          "end_ms": 18845,
+          "text": "On a discuté de blanchiment puis composites et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 19245,
+          "end_ms": 22216,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 22616,
+          "end_ms": 29278,
+          "text": "On retient les composites additifs comme option proposée. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-011",
+      "audio_file": "audio/ORIS-SYN-011.wav",
+      "source_case_id": "ORIS-SYN-011",
+      "duration_ms": 29110,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 4526,
+          "text": "Je voudrais surtout éclaircir puis corriger la forme, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4926,
+          "end_ms": 12968,
+          "text": "Sur 22 et 13, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13368,
+          "end_ms": 18347,
+          "text": "On a discuté de facettes céramiques et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 18747,
+          "end_ms": 21718,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 22118,
+          "end_ms": 28710,
+          "text": "On retient facettes céramiques comme option à planifier. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-012",
+      "audio_file": "audio/ORIS-SYN-012.wav",
+      "source_case_id": "ORIS-SYN-012",
+      "duration_ms": 29667,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 4526,
+          "text": "Je voudrais surtout éclaircir puis corriger la forme, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4926,
+          "end_ms": 12922,
+          "text": "Sur 12 et 23, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13322,
+          "end_ms": 18649,
+          "text": "On a discuté de blanchiment puis composites et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 19049,
+          "end_ms": 22020,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 22420,
+          "end_ms": 29267,
+          "text": "On retient les composites additifs comme option à planifier. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-013",
+      "audio_file": "audio/ORIS-SYN-013.wav",
+      "source_case_id": "ORIS-SYN-013",
+      "duration_ms": 29400,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 4514,
+          "text": "Je voudrais surtout harmoniser la forme des incisives, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4914,
+          "end_ms": 12840,
+          "text": "Sur 11 et 23, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13240,
+          "end_ms": 18567,
+          "text": "On a discuté de blanchiment puis composites et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 18967,
+          "end_ms": 21938,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 22338,
+          "end_ms": 29000,
+          "text": "On retient les composites additifs comme option proposée. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-014",
+      "audio_file": "audio/ORIS-SYN-014.wav",
+      "source_case_id": "ORIS-SYN-014",
+      "duration_ms": 29794,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 4538,
+          "text": "Je voudrais surtout allonger légèrement les bords incisifs, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4938,
+          "end_ms": 13049,
+          "text": "Sur 21 et 13, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13449,
+          "end_ms": 18776,
+          "text": "On a discuté de blanchiment puis composites et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 19176,
+          "end_ms": 22147,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 22547,
+          "end_ms": 29394,
+          "text": "On retient les composites additifs comme option à planifier. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-015",
+      "audio_file": "audio/ORIS-SYN-015.wav",
+      "source_case_id": "ORIS-SYN-015",
+      "duration_ms": 28634,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3737,
+          "text": "Je voudrais surtout fermer un diastème, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4137,
+          "end_ms": 12074,
+          "text": "Sur 12 et 13, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12474,
+          "end_ms": 17801,
+          "text": "On a discuté de blanchiment puis composites et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 18201,
+          "end_ms": 21172,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 21572,
+          "end_ms": 28234,
+          "text": "On retient les composites additifs comme option proposée. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-016",
+      "audio_file": "audio/ORIS-SYN-016.wav",
+      "source_case_id": "ORIS-SYN-016",
+      "duration_ms": 29470,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 4538,
+          "text": "Je voudrais surtout allonger légèrement les bords incisifs, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4938,
+          "end_ms": 12724,
+          "text": "Sur 12 et 11, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13124,
+          "end_ms": 18451,
+          "text": "On a discuté de blanchiment puis composites et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 18851,
+          "end_ms": 21822,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 22222,
+          "end_ms": 29070,
+          "text": "On retient les composites additifs comme option à planifier. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-017",
+      "audio_file": "audio/ORIS-SYN-017.wav",
+      "source_case_id": "ORIS-SYN-017",
+      "duration_ms": 30097,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 4538,
+          "text": "Je voudrais surtout allonger légèrement les bords incisifs, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4938,
+          "end_ms": 12840,
+          "text": "Sur 12 et 22, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13240,
+          "end_ms": 18219,
+          "text": "On a discuté de facettes céramiques et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 18619,
+          "end_ms": 21590,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 21990,
+          "end_ms": 29697,
+          "text": "On retient facettes céramiques comme option à reconsidérer après réflexion. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-018",
+      "audio_file": "audio/ORIS-SYN-018.wav",
+      "source_case_id": "ORIS-SYN-018",
+      "duration_ms": 30642,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 4526,
+          "text": "Je voudrais surtout éclaircir puis corriger la forme, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4926,
+          "end_ms": 12817,
+          "text": "Sur 12 et 21, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13217,
+          "end_ms": 18543,
+          "text": "On a discuté de blanchiment puis composites et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 18943,
+          "end_ms": 21914,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 22314,
+          "end_ms": 30242,
+          "text": "On retient les composites additifs comme option à reconsidérer après réflexion. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-019",
+      "audio_file": "audio/ORIS-SYN-019.wav",
+      "source_case_id": "ORIS-SYN-019",
+      "duration_ms": 29551,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 4538,
+          "text": "Je voudrais surtout allonger légèrement les bords incisifs, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4938,
+          "end_ms": 12806,
+          "text": "Sur 11 et 13, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13206,
+          "end_ms": 18532,
+          "text": "On a discuté de blanchiment puis composites et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 18932,
+          "end_ms": 21903,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 22303,
+          "end_ms": 29151,
+          "text": "On retient les composites additifs comme option à planifier. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-020",
+      "audio_file": "audio/ORIS-SYN-020.wav",
+      "source_case_id": "ORIS-SYN-020",
+      "duration_ms": 30166,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 4538,
+          "text": "Je voudrais surtout allonger légèrement les bords incisifs, mais je veux quelque chose de naturel."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4938,
+          "end_ms": 12909,
+          "text": "Sur 21 et 11, je note surtout une asymétrie de forme et une demande esthétique. Je ne vois pas de raison de parler de couronnes aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13309,
+          "end_ms": 18288,
+          "text": "On a discuté de facettes céramiques et aussi de la possibilité de ne rien faire pour le moment."
+        },
+        {
+          "role": "patient",
+          "start_ms": 18688,
+          "end_ms": 21659,
+          "text": "Je préfère une solution la plus conservatrice possible."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 22059,
+          "end_ms": 29766,
+          "text": "On retient facettes céramiques comme option à reconsidérer après réflexion. Photos et scan seront réalisés avant décision définitive."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-021",
+      "audio_file": "audio/ORIS-SYN-021.wav",
+      "source_case_id": "ORIS-SYN-021",
+      "duration_ms": 30194,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9696,
+          "text": "Je constate des signes d'usure sur 12, 22, 13, 11 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10096,
+          "end_ms": 13553,
+          "text": "Concernant les habitudes, consommation fréquente de boissons acides."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13953,
+          "end_ms": 18723,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 19123,
+          "end_ms": 26690,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 27090,
+          "end_ms": 29794,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-022",
+      "audio_file": "audio/ORIS-SYN-022.wav",
+      "source_case_id": "ORIS-SYN-022",
+      "duration_ms": 30032,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9777,
+          "text": "Je constate des signes d'usure sur 23, 11, 13, 12 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10177,
+          "end_ms": 13391,
+          "text": "Concernant les habitudes, bruxisme nocturne rapporté."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13791,
+          "end_ms": 18560,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 18960,
+          "end_ms": 26528,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 26928,
+          "end_ms": 29632,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-023",
+      "audio_file": "audio/ORIS-SYN-023.wav",
+      "source_case_id": "ORIS-SYN-023",
+      "duration_ms": 30496,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9998,
+          "text": "Je constate des signes d'usure sur 11, 22, 23, 13 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10398,
+          "end_ms": 13855,
+          "text": "Concernant les habitudes, consommation fréquente de boissons acides."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 14255,
+          "end_ms": 19024,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 19424,
+          "end_ms": 26992,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 27392,
+          "end_ms": 30096,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-024",
+      "audio_file": "audio/ORIS-SYN-024.wav",
+      "source_case_id": "ORIS-SYN-024",
+      "duration_ms": 30763,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9963,
+          "text": "Je constate des signes d'usure sur 11, 12, 22, 23 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10363,
+          "end_ms": 14122,
+          "text": "Concernant les habitudes, aucun facteur étiologique clairement identifié."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 14522,
+          "end_ms": 19291,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 19691,
+          "end_ms": 27259,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 27659,
+          "end_ms": 30363,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-025",
+      "audio_file": "audio/ORIS-SYN-025.wav",
+      "source_case_id": "ORIS-SYN-025",
+      "duration_ms": 30008,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9754,
+          "text": "Je constate des signes d'usure sur 23, 22, 12, 11 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10154,
+          "end_ms": 13367,
+          "text": "Concernant les habitudes, bruxisme nocturne rapporté."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13767,
+          "end_ms": 18537,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 18937,
+          "end_ms": 26504,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 26904,
+          "end_ms": 29608,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-026",
+      "audio_file": "audio/ORIS-SYN-026.wav",
+      "source_case_id": "ORIS-SYN-026",
+      "duration_ms": 30299,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9801,
+          "text": "Je constate des signes d'usure sur 13, 23, 12, 11 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10201,
+          "end_ms": 13658,
+          "text": "Concernant les habitudes, consommation fréquente de boissons acides."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 14058,
+          "end_ms": 18827,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 19227,
+          "end_ms": 26795,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 27195,
+          "end_ms": 29899,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-027",
+      "audio_file": "audio/ORIS-SYN-027.wav",
+      "source_case_id": "ORIS-SYN-027",
+      "duration_ms": 30519,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 10021,
+          "text": "Je constate des signes d'usure sur 13, 23, 11, 21 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10421,
+          "end_ms": 13878,
+          "text": "Concernant les habitudes, consommation fréquente de boissons acides."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 14278,
+          "end_ms": 19048,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 19448,
+          "end_ms": 27015,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 27415,
+          "end_ms": 30119,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-028",
+      "audio_file": "audio/ORIS-SYN-028.wav",
+      "source_case_id": "ORIS-SYN-028",
+      "duration_ms": 30299,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 10044,
+          "text": "Je constate des signes d'usure sur 21, 22, 12, 23 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10444,
+          "end_ms": 13658,
+          "text": "Concernant les habitudes, bruxisme nocturne rapporté."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 14058,
+          "end_ms": 18827,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 19227,
+          "end_ms": 26795,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 27195,
+          "end_ms": 29899,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-029",
+      "audio_file": "audio/ORIS-SYN-029.wav",
+      "source_case_id": "ORIS-SYN-029",
+      "duration_ms": 30043,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9789,
+          "text": "Je constate des signes d'usure sur 11, 13, 12, 21 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10189,
+          "end_ms": 13402,
+          "text": "Concernant les habitudes, bruxisme nocturne rapporté."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13802,
+          "end_ms": 18572,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 18972,
+          "end_ms": 26539,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 26939,
+          "end_ms": 29643,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-030",
+      "audio_file": "audio/ORIS-SYN-030.wav",
+      "source_case_id": "ORIS-SYN-030",
+      "duration_ms": 30136,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9882,
+          "text": "Je constate des signes d'usure sur 23, 21, 11, 13 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10282,
+          "end_ms": 13495,
+          "text": "Concernant les habitudes, bruxisme nocturne rapporté."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13895,
+          "end_ms": 18665,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 19065,
+          "end_ms": 26632,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 27032,
+          "end_ms": 29736,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-031",
+      "audio_file": "audio/ORIS-SYN-031.wav",
+      "source_case_id": "ORIS-SYN-031",
+      "duration_ms": 29927,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9673,
+          "text": "Je constate des signes d'usure sur 13, 12, 21, 11 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10073,
+          "end_ms": 13286,
+          "text": "Concernant les habitudes, bruxisme nocturne rapporté."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13686,
+          "end_ms": 18456,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 18856,
+          "end_ms": 26423,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 26823,
+          "end_ms": 29527,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-032",
+      "audio_file": "audio/ORIS-SYN-032.wav",
+      "source_case_id": "ORIS-SYN-032",
+      "duration_ms": 30531,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9731,
+          "text": "Je constate des signes d'usure sur 21, 12, 23, 11 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10131,
+          "end_ms": 13890,
+          "text": "Concernant les habitudes, aucun facteur étiologique clairement identifié."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 14290,
+          "end_ms": 19059,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 19459,
+          "end_ms": 27027,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 27427,
+          "end_ms": 30131,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-033",
+      "audio_file": "audio/ORIS-SYN-033.wav",
+      "source_case_id": "ORIS-SYN-033",
+      "duration_ms": 29242,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9812,
+          "text": "Je constate des signes d'usure sur 21, 13, 12, 22 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10212,
+          "end_ms": 12601,
+          "text": "Concernant les habitudes, reflux rapporté."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13001,
+          "end_ms": 17771,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 18171,
+          "end_ms": 25738,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 26138,
+          "end_ms": 28842,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-034",
+      "audio_file": "audio/ORIS-SYN-034.wav",
+      "source_case_id": "ORIS-SYN-034",
+      "duration_ms": 30543,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9743,
+          "text": "Je constate des signes d'usure sur 12, 11, 21, 22 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10143,
+          "end_ms": 13901,
+          "text": "Concernant les habitudes, aucun facteur étiologique clairement identifié."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 14301,
+          "end_ms": 19071,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 19471,
+          "end_ms": 27038,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 27438,
+          "end_ms": 30143,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-035",
+      "audio_file": "audio/ORIS-SYN-035.wav",
+      "source_case_id": "ORIS-SYN-035",
+      "duration_ms": 29347,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9917,
+          "text": "Je constate des signes d'usure sur 12, 21, 22, 13 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10317,
+          "end_ms": 12706,
+          "text": "Concernant les habitudes, reflux rapporté."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13106,
+          "end_ms": 17875,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 18275,
+          "end_ms": 25843,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 26243,
+          "end_ms": 28947,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-036",
+      "audio_file": "audio/ORIS-SYN-036.wav",
+      "source_case_id": "ORIS-SYN-036",
+      "duration_ms": 29138,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9708,
+          "text": "Je constate des signes d'usure sur 22, 21, 13, 11 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10108,
+          "end_ms": 12497,
+          "text": "Concernant les habitudes, reflux rapporté."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12897,
+          "end_ms": 17666,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 18066,
+          "end_ms": 25634,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 26034,
+          "end_ms": 28738,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-037",
+      "audio_file": "audio/ORIS-SYN-037.wav",
+      "source_case_id": "ORIS-SYN-037",
+      "duration_ms": 30287,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9789,
+          "text": "Je constate des signes d'usure sur 13, 22, 21, 11 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10189,
+          "end_ms": 13646,
+          "text": "Concernant les habitudes, consommation fréquente de boissons acides."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 14046,
+          "end_ms": 18816,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 19216,
+          "end_ms": 26783,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 27183,
+          "end_ms": 29887,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-038",
+      "audio_file": "audio/ORIS-SYN-038.wav",
+      "source_case_id": "ORIS-SYN-038",
+      "duration_ms": 29138,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9708,
+          "text": "Je constate des signes d'usure sur 21, 22, 11, 12 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10108,
+          "end_ms": 12497,
+          "text": "Concernant les habitudes, reflux rapporté."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12897,
+          "end_ms": 17666,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 18066,
+          "end_ms": 25634,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 26034,
+          "end_ms": 28738,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-039",
+      "audio_file": "audio/ORIS-SYN-039.wav",
+      "source_case_id": "ORIS-SYN-039",
+      "duration_ms": 30426,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 9928,
+          "text": "Je constate des signes d'usure sur 23, 12, 21, 13 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10328,
+          "end_ms": 13785,
+          "text": "Concernant les habitudes, consommation fréquente de boissons acides."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 14185,
+          "end_ms": 18955,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 19355,
+          "end_ms": 26922,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 27322,
+          "end_ms": 30026,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-040",
+      "audio_file": "audio/ORIS-SYN-040.wav",
+      "source_case_id": "ORIS-SYN-040",
+      "duration_ms": 29498,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 3120,
+          "text": "J'ai l'impression que mes dents de devant raccourcissent depuis quelques années."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3520,
+          "end_ms": 10068,
+          "text": "Je constate des signes d'usure sur 21, 22, 23, 13 avec perte de longueur incisive."
+        },
+        {
+          "role": "patient",
+          "start_ms": 10468,
+          "end_ms": 12856,
+          "text": "Concernant les habitudes, reflux rapporté."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 13256,
+          "end_ms": 18026,
+          "text": "On va documenter avec photos et scan. Je ne conclus pas aujourd'hui à une cause unique."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 18426,
+          "end_ms": 25994,
+          "text": "On a discuté d'une prise en charge préventive et, si nécessaire, de restaurations additives en composite après analyse."
+        },
+        {
+          "role": "patient",
+          "start_ms": 26394,
+          "end_ms": 29098,
+          "text": "Je préfère commencer par le bilan et décider ensuite."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-041",
+      "audio_file": "audio/ORIS-SYN-041.wav",
+      "source_case_id": "ORIS-SYN-041",
+      "duration_ms": 17681,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 4305,
+          "text": "Aujourd'hui restauration composite sur 46, surface M."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4705,
+          "end_ms": 6374,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6774,
+          "end_ms": 10972,
+          "text": "Protocole adhésif avec G-Premio BOND. Composite G-ænial A’CHORD."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11372,
+          "end_ms": 16197,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 16597,
+          "end_ms": 17281,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-042",
+      "audio_file": "audio/ORIS-SYN-042.wav",
+      "source_case_id": "ORIS-SYN-042",
+      "duration_ms": 17402,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 4026,
+          "text": "Aujourd'hui restauration composite sur 36, surface I."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4426,
+          "end_ms": 6096,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6496,
+          "end_ms": 10693,
+          "text": "Protocole adhésif avec Scotchbond Universal Plus. Composite Essentia."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11093,
+          "end_ms": 15918,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 16318,
+          "end_ms": 17002,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-043",
+      "audio_file": "audio/ORIS-SYN-043.wav",
+      "source_case_id": "ORIS-SYN-043",
+      "duration_ms": 18412,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 3655,
+          "text": "Aujourd'hui restauration composite sur 21, surface O."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4055,
+          "end_ms": 5724,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6124,
+          "end_ms": 11703,
+          "text": "Protocole adhésif avec Clearfil Universal Bond Quick. Composite Filtek Supreme XTE."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12103,
+          "end_ms": 16928,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 17328,
+          "end_ms": 18012,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-044",
+      "audio_file": "audio/ORIS-SYN-044.wav",
+      "source_case_id": "ORIS-SYN-044",
+      "duration_ms": 17599,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 3887,
+          "text": "Aujourd'hui restauration composite sur 24, surface D."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4287,
+          "end_ms": 5956,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6356,
+          "end_ms": 10891,
+          "text": "Protocole adhésif avec G-Premio BOND. Composite Clearfil Majesty ES-2."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11291,
+          "end_ms": 16116,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 16516,
+          "end_ms": 17199,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-045",
+      "audio_file": "audio/ORIS-SYN-045.wav",
+      "source_case_id": "ORIS-SYN-045",
+      "duration_ms": 17727,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 3678,
+          "text": "Aujourd'hui restauration composite sur 21, surface I."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4078,
+          "end_ms": 5747,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6147,
+          "end_ms": 11019,
+          "text": "Protocole adhésif avec Scotchbond Universal Plus. Composite G-ænial A’CHORD."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11419,
+          "end_ms": 16243,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 16643,
+          "end_ms": 17327,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-046",
+      "audio_file": "audio/ORIS-SYN-046.wav",
+      "source_case_id": "ORIS-SYN-046",
+      "duration_ms": 17576,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 3701,
+          "text": "Aujourd'hui restauration composite sur 15, surface D."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4101,
+          "end_ms": 5771,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6171,
+          "end_ms": 10868,
+          "text": "Protocole adhésif avec Clearfil Universal Bond Quick. Composite Essentia."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11268,
+          "end_ms": 16092,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 16492,
+          "end_ms": 17176,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-047",
+      "audio_file": "audio/ORIS-SYN-047.wav",
+      "source_case_id": "ORIS-SYN-047",
+      "duration_ms": 17588,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 3991,
+          "text": "Aujourd'hui restauration composite sur 35, surface D."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4391,
+          "end_ms": 6061,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6461,
+          "end_ms": 10879,
+          "text": "Protocole adhésif avec G-Premio BOND. Composite Filtek Supreme XTE."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11279,
+          "end_ms": 16104,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 16504,
+          "end_ms": 17188,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-048",
+      "audio_file": "audio/ORIS-SYN-048.wav",
+      "source_case_id": "ORIS-SYN-048",
+      "duration_ms": 18087,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 3701,
+          "text": "Aujourd'hui restauration composite sur 22, surface I."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4101,
+          "end_ms": 5771,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6171,
+          "end_ms": 11378,
+          "text": "Protocole adhésif avec Scotchbond Universal Plus. Composite Clearfil Majesty ES-2."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11778,
+          "end_ms": 16603,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 17003,
+          "end_ms": 17687,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-049",
+      "audio_file": "audio/ORIS-SYN-049.wav",
+      "source_case_id": "ORIS-SYN-049",
+      "duration_ms": 18575,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 4026,
+          "text": "Aujourd'hui restauration composite sur 36, surface I."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4426,
+          "end_ms": 6096,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6496,
+          "end_ms": 11866,
+          "text": "Protocole adhésif avec Clearfil Universal Bond Quick. Composite G-ænial A’CHORD."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12266,
+          "end_ms": 17091,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 17491,
+          "end_ms": 18175,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-050",
+      "audio_file": "audio/ORIS-SYN-050.wav",
+      "source_case_id": "ORIS-SYN-050",
+      "duration_ms": 16415,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 3713,
+          "text": "Aujourd'hui restauration composite sur 16, surface D."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4113,
+          "end_ms": 5782,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6182,
+          "end_ms": 9707,
+          "text": "Protocole adhésif avec G-Premio BOND. Composite Essentia."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 10107,
+          "end_ms": 14931,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 15331,
+          "end_ms": 16015,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-051",
+      "audio_file": "audio/ORIS-SYN-051.wav",
+      "source_case_id": "ORIS-SYN-051",
+      "duration_ms": 18482,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 4212,
+          "text": "Aujourd'hui restauration composite sur 36, surface M."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4612,
+          "end_ms": 6281,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6681,
+          "end_ms": 11773,
+          "text": "Protocole adhésif avec Scotchbond Universal Plus. Composite Filtek Supreme XTE."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12173,
+          "end_ms": 16998,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 17398,
+          "end_ms": 18082,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-052",
+      "audio_file": "audio/ORIS-SYN-052.wav",
+      "source_case_id": "ORIS-SYN-052",
+      "duration_ms": 18633,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 3759,
+          "text": "Aujourd'hui restauration composite sur 13, surface D."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4159,
+          "end_ms": 5829,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6229,
+          "end_ms": 11924,
+          "text": "Protocole adhésif avec Clearfil Universal Bond Quick. Composite Clearfil Majesty ES-2."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12324,
+          "end_ms": 17149,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 17549,
+          "end_ms": 18233,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-053",
+      "audio_file": "audio/ORIS-SYN-053.wav",
+      "source_case_id": "ORIS-SYN-053",
+      "duration_ms": 17402,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 4026,
+          "text": "Aujourd'hui restauration composite sur 36, surface I."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4426,
+          "end_ms": 6096,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6496,
+          "end_ms": 10693,
+          "text": "Protocole adhésif avec G-Premio BOND. Composite G-ænial A’CHORD."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11093,
+          "end_ms": 15918,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 16318,
+          "end_ms": 17002,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-054",
+      "audio_file": "audio/ORIS-SYN-054.wav",
+      "source_case_id": "ORIS-SYN-054",
+      "duration_ms": 16972,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 3597,
+          "text": "Aujourd'hui restauration composite sur 11, surface I."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 3997,
+          "end_ms": 5666,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6066,
+          "end_ms": 10264,
+          "text": "Protocole adhésif avec Scotchbond Universal Plus. Composite Essentia."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 10664,
+          "end_ms": 15489,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 15889,
+          "end_ms": 16572,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-055",
+      "audio_file": "audio/ORIS-SYN-055.wav",
+      "source_case_id": "ORIS-SYN-055",
+      "duration_ms": 18749,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 3991,
+          "text": "Aujourd'hui restauration composite sur 35, surface D."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4391,
+          "end_ms": 6061,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6461,
+          "end_ms": 12040,
+          "text": "Protocole adhésif avec Clearfil Universal Bond Quick. Composite Filtek Supreme XTE."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12440,
+          "end_ms": 17265,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 17665,
+          "end_ms": 18349,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-056",
+      "audio_file": "audio/ORIS-SYN-056.wav",
+      "source_case_id": "ORIS-SYN-056",
+      "duration_ms": 17681,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 3968,
+          "text": "Aujourd'hui restauration composite sur 34, surface D."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4368,
+          "end_ms": 6038,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6438,
+          "end_ms": 10972,
+          "text": "Protocole adhésif avec G-Premio BOND. Composite Clearfil Majesty ES-2."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11372,
+          "end_ms": 16197,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 16597,
+          "end_ms": 17281,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-057",
+      "audio_file": "audio/ORIS-SYN-057.wav",
+      "source_case_id": "ORIS-SYN-057",
+      "duration_ms": 17831,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 3782,
+          "text": "Aujourd'hui restauration composite sur 11, surface M."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4182,
+          "end_ms": 5852,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6252,
+          "end_ms": 11123,
+          "text": "Protocole adhésif avec Scotchbond Universal Plus. Composite G-ænial A’CHORD."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11523,
+          "end_ms": 16348,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 16748,
+          "end_ms": 17431,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-058",
+      "audio_file": "audio/ORIS-SYN-058.wav",
+      "source_case_id": "ORIS-SYN-058",
+      "duration_ms": 17797,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 3922,
+          "text": "Aujourd'hui restauration composite sur 14, surface I."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4322,
+          "end_ms": 5991,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6391,
+          "end_ms": 11088,
+          "text": "Protocole adhésif avec Clearfil Universal Bond Quick. Composite Essentia."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11488,
+          "end_ms": 16313,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 16713,
+          "end_ms": 17397,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-059",
+      "audio_file": "audio/ORIS-SYN-059.wav",
+      "source_case_id": "ORIS-SYN-059",
+      "duration_ms": 17483,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 3887,
+          "text": "Aujourd'hui restauration composite sur 16, surface M."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4287,
+          "end_ms": 5956,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6356,
+          "end_ms": 10775,
+          "text": "Protocole adhésif avec G-Premio BOND. Composite Filtek Supreme XTE."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11175,
+          "end_ms": 15999,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 16399,
+          "end_ms": 17083,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-060",
+      "audio_file": "audio/ORIS-SYN-060.wav",
+      "source_case_id": "ORIS-SYN-060",
+      "duration_ms": 18249,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 3864,
+          "text": "Aujourd'hui restauration composite sur 21, surface M."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4264,
+          "end_ms": 5933,
+          "text": "Isolation mise en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6333,
+          "end_ms": 11541,
+          "text": "Protocole adhésif avec Scotchbond Universal Plus. Composite Clearfil Majesty ES-2."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11941,
+          "end_ms": 16766,
+          "text": "Finition, polissage et contrôle occlusal réalisés. Pas de complication."
+        },
+        {
+          "role": "patient",
+          "start_ms": 17166,
+          "end_ms": 17849,
+          "text": "D'accord."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-061",
+      "audio_file": "audio/ORIS-SYN-061.wav",
+      "source_case_id": "ORIS-SYN-061",
+      "duration_ms": 16617,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 4824,
+          "text": "Préparation de facettes aujourd'hui sur 12, 22, 11, 21."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 5224,
+          "end_ms": 7555,
+          "text": "Le mock-up a servi de guide de réduction."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 7955,
+          "end_ms": 12048,
+          "text": "Scan réalisé après préparation. Teinte communiquée au laboratoire."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12448,
+          "end_ms": 16217,
+          "text": "Provisoires réalisés. Prochain rendez-vous pour essayage et collage."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-062",
+      "audio_file": "audio/ORIS-SYN-062.wav",
+      "source_case_id": "ORIS-SYN-062",
+      "duration_ms": 16791,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 4998,
+          "text": "Préparation de facettes aujourd'hui sur 13, 23, 11, 22."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 5398,
+          "end_ms": 7729,
+          "text": "Le mock-up a servi de guide de réduction."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8129,
+          "end_ms": 12223,
+          "text": "Scan réalisé après préparation. Teinte communiquée au laboratoire."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12623,
+          "end_ms": 16391,
+          "text": "Provisoires réalisés. Prochain rendez-vous pour essayage et collage."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-063",
+      "audio_file": "audio/ORIS-SYN-063.wav",
+      "source_case_id": "ORIS-SYN-063",
+      "duration_ms": 16884,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 5091,
+          "text": "Préparation de facettes aujourd'hui sur 23, 22, 13, 21."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 5491,
+          "end_ms": 7822,
+          "text": "Le mock-up a servi de guide de réduction."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8222,
+          "end_ms": 12315,
+          "text": "Scan réalisé après préparation. Teinte communiquée au laboratoire."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12715,
+          "end_ms": 16484,
+          "text": "Provisoires réalisés. Prochain rendez-vous pour essayage et collage."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-064",
+      "audio_file": "audio/ORIS-SYN-064.wav",
+      "source_case_id": "ORIS-SYN-064",
+      "duration_ms": 16768,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 4975,
+          "text": "Préparation de facettes aujourd'hui sur 23, 21, 11, 13."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 5375,
+          "end_ms": 7706,
+          "text": "Le mock-up a servi de guide de réduction."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8106,
+          "end_ms": 12199,
+          "text": "Scan réalisé après préparation. Teinte communiquée au laboratoire."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12599,
+          "end_ms": 16368,
+          "text": "Provisoires réalisés. Prochain rendez-vous pour essayage et collage."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-065",
+      "audio_file": "audio/ORIS-SYN-065.wav",
+      "source_case_id": "ORIS-SYN-065",
+      "duration_ms": 16640,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 4847,
+          "text": "Préparation de facettes aujourd'hui sur 13, 21, 11, 12."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 5247,
+          "end_ms": 7578,
+          "text": "Le mock-up a servi de guide de réduction."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 7978,
+          "end_ms": 12072,
+          "text": "Scan réalisé après préparation. Teinte communiquée au laboratoire."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12472,
+          "end_ms": 16240,
+          "text": "Provisoires réalisés. Prochain rendez-vous pour essayage et collage."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-066",
+      "audio_file": "audio/ORIS-SYN-066.wav",
+      "source_case_id": "ORIS-SYN-066",
+      "duration_ms": 16663,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 4871,
+          "text": "Préparation de facettes aujourd'hui sur 22, 12, 23, 11."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 5271,
+          "end_ms": 7602,
+          "text": "Le mock-up a servi de guide de réduction."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8002,
+          "end_ms": 12095,
+          "text": "Scan réalisé après préparation. Teinte communiquée au laboratoire."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12495,
+          "end_ms": 16263,
+          "text": "Provisoires réalisés. Prochain rendez-vous pour essayage et collage."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-067",
+      "audio_file": "audio/ORIS-SYN-067.wav",
+      "source_case_id": "ORIS-SYN-067",
+      "duration_ms": 16953,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 5161,
+          "text": "Préparation de facettes aujourd'hui sur 13, 22, 23, 12."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 5561,
+          "end_ms": 7892,
+          "text": "Le mock-up a servi de guide de réduction."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8292,
+          "end_ms": 12385,
+          "text": "Scan réalisé après préparation. Teinte communiquée au laboratoire."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12785,
+          "end_ms": 16553,
+          "text": "Provisoires réalisés. Prochain rendez-vous pour essayage et collage."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-068",
+      "audio_file": "audio/ORIS-SYN-068.wav",
+      "source_case_id": "ORIS-SYN-068",
+      "duration_ms": 16826,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 5033,
+          "text": "Préparation de facettes aujourd'hui sur 11, 21, 22, 23."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 5433,
+          "end_ms": 7764,
+          "text": "Le mock-up a servi de guide de réduction."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8164,
+          "end_ms": 12257,
+          "text": "Scan réalisé après préparation. Teinte communiquée au laboratoire."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12657,
+          "end_ms": 16426,
+          "text": "Provisoires réalisés. Prochain rendez-vous pour essayage et collage."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-069",
+      "audio_file": "audio/ORIS-SYN-069.wav",
+      "source_case_id": "ORIS-SYN-069",
+      "duration_ms": 16802,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 5010,
+          "text": "Préparation de facettes aujourd'hui sur 22, 21, 12, 23."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 5410,
+          "end_ms": 7741,
+          "text": "Le mock-up a servi de guide de réduction."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8141,
+          "end_ms": 12234,
+          "text": "Scan réalisé après préparation. Teinte communiquée au laboratoire."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12634,
+          "end_ms": 16402,
+          "text": "Provisoires réalisés. Prochain rendez-vous pour essayage et collage."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-070",
+      "audio_file": "audio/ORIS-SYN-070.wav",
+      "source_case_id": "ORIS-SYN-070",
+      "duration_ms": 16768,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 4975,
+          "text": "Préparation de facettes aujourd'hui sur 23, 21, 11, 13."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 5375,
+          "end_ms": 7706,
+          "text": "Le mock-up a servi de guide de réduction."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8106,
+          "end_ms": 12199,
+          "text": "Scan réalisé après préparation. Teinte communiquée au laboratoire."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12599,
+          "end_ms": 16368,
+          "text": "Provisoires réalisés. Prochain rendez-vous pour essayage et collage."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-071",
+      "audio_file": "audio/ORIS-SYN-071.wav",
+      "source_case_id": "ORIS-SYN-071",
+      "duration_ms": 18171,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 5547,
+          "text": "Essayage puis collage des facettes sur 12, 22, 13, 23 aujourd'hui."
+        },
+        {
+          "role": "patient",
+          "start_ms": 5947,
+          "end_ms": 7687,
+          "text": "La forme et la couleur me conviennent."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8087,
+          "end_ms": 11533,
+          "text": "Isolation mise en place. Collage avec G-CEM Veneer."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11933,
+          "end_ms": 17771,
+          "text": "Excès éliminés, finition et contrôle des contacts et de l'occlusion réalisés. Pas de complication."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-072",
+      "audio_file": "audio/ORIS-SYN-072.wav",
+      "source_case_id": "ORIS-SYN-072",
+      "duration_ms": 18008,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 5361,
+          "text": "Essayage puis collage des facettes sur 21, 13, 23, 12 aujourd'hui."
+        },
+        {
+          "role": "patient",
+          "start_ms": 5761,
+          "end_ms": 7501,
+          "text": "La forme et la couleur me conviennent."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 7901,
+          "end_ms": 11370,
+          "text": "Isolation mise en place. Collage avec RelyX Veneer."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11770,
+          "end_ms": 17608,
+          "text": "Excès éliminés, finition et contrôle des contacts et de l'occlusion réalisés. Pas de complication."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-073",
+      "audio_file": "audio/ORIS-SYN-073.wav",
+      "source_case_id": "ORIS-SYN-073",
+      "duration_ms": 18403,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 5408,
+          "text": "Essayage puis collage des facettes sur 21, 22, 23, 12 aujourd'hui."
+        },
+        {
+          "role": "patient",
+          "start_ms": 5808,
+          "end_ms": 7548,
+          "text": "La forme et la couleur me conviennent."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 7948,
+          "end_ms": 11765,
+          "text": "Isolation mise en place. Collage avec Variolink Esthetic."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 12165,
+          "end_ms": 18003,
+          "text": "Excès éliminés, finition et contrôle des contacts et de l'occlusion réalisés. Pas de complication."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-074",
+      "audio_file": "audio/ORIS-SYN-074.wav",
+      "source_case_id": "ORIS-SYN-074",
+      "duration_ms": 17857,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 5233,
+          "text": "Essayage puis collage des facettes sur 13, 12, 23, 11 aujourd'hui."
+        },
+        {
+          "role": "patient",
+          "start_ms": 5633,
+          "end_ms": 7374,
+          "text": "La forme et la couleur me conviennent."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 7774,
+          "end_ms": 11220,
+          "text": "Isolation mise en place. Collage avec G-CEM Veneer."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11620,
+          "end_ms": 17457,
+          "text": "Excès éliminés, finition et contrôle des contacts et de l'occlusion réalisés. Pas de complication."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-075",
+      "audio_file": "audio/ORIS-SYN-075.wav",
+      "source_case_id": "ORIS-SYN-075",
+      "duration_ms": 17973,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 5326,
+          "text": "Essayage puis collage des facettes sur 13, 21, 11, 22 aujourd'hui."
+        },
+        {
+          "role": "patient",
+          "start_ms": 5726,
+          "end_ms": 7466,
+          "text": "La forme et la couleur me conviennent."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 7866,
+          "end_ms": 11336,
+          "text": "Isolation mise en place. Collage avec RelyX Veneer."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11736,
+          "end_ms": 17573,
+          "text": "Excès éliminés, finition et contrôle des contacts et de l'occlusion réalisés. Pas de complication."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-076",
+      "audio_file": "audio/ORIS-SYN-076.wav",
+      "source_case_id": "ORIS-SYN-076",
+      "duration_ms": 18229,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 5233,
+          "text": "Essayage puis collage des facettes sur 12, 21, 11, 22 aujourd'hui."
+        },
+        {
+          "role": "patient",
+          "start_ms": 5633,
+          "end_ms": 7374,
+          "text": "La forme et la couleur me conviennent."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 7774,
+          "end_ms": 11591,
+          "text": "Isolation mise en place. Collage avec Variolink Esthetic."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11991,
+          "end_ms": 17829,
+          "text": "Excès éliminés, finition et contrôle des contacts et de l'occlusion réalisés. Pas de complication."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-077",
+      "audio_file": "audio/ORIS-SYN-077.wav",
+      "source_case_id": "ORIS-SYN-077",
+      "duration_ms": 17950,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 5326,
+          "text": "Essayage puis collage des facettes sur 22, 11, 13, 21 aujourd'hui."
+        },
+        {
+          "role": "patient",
+          "start_ms": 5726,
+          "end_ms": 7466,
+          "text": "La forme et la couleur me conviennent."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 7866,
+          "end_ms": 11312,
+          "text": "Isolation mise en place. Collage avec G-CEM Veneer."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11712,
+          "end_ms": 17550,
+          "text": "Excès éliminés, finition et contrôle des contacts et de l'occlusion réalisés. Pas de complication."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-078",
+      "audio_file": "audio/ORIS-SYN-078.wav",
+      "source_case_id": "ORIS-SYN-078",
+      "duration_ms": 17880,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 5233,
+          "text": "Essayage puis collage des facettes sur 21, 22, 11, 13 aujourd'hui."
+        },
+        {
+          "role": "patient",
+          "start_ms": 5633,
+          "end_ms": 7374,
+          "text": "La forme et la couleur me conviennent."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 7774,
+          "end_ms": 11243,
+          "text": "Isolation mise en place. Collage avec RelyX Veneer."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11643,
+          "end_ms": 17480,
+          "text": "Excès éliminés, finition et contrôle des contacts et de l'occlusion réalisés. Pas de complication."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-079",
+      "audio_file": "audio/ORIS-SYN-079.wav",
+      "source_case_id": "ORIS-SYN-079",
+      "duration_ms": 18089,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 5094,
+          "text": "Essayage puis collage des facettes sur 12, 13, 21, 11 aujourd'hui."
+        },
+        {
+          "role": "patient",
+          "start_ms": 5494,
+          "end_ms": 7234,
+          "text": "La forme et la couleur me conviennent."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 7634,
+          "end_ms": 11452,
+          "text": "Isolation mise en place. Collage avec Variolink Esthetic."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11852,
+          "end_ms": 17689,
+          "text": "Excès éliminés, finition et contrôle des contacts et de l'occlusion réalisés. Pas de complication."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-080",
+      "audio_file": "audio/ORIS-SYN-080.wav",
+      "source_case_id": "ORIS-SYN-080",
+      "duration_ms": 18171,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 5547,
+          "text": "Essayage puis collage des facettes sur 13, 12, 22, 23 aujourd'hui."
+        },
+        {
+          "role": "patient",
+          "start_ms": 5947,
+          "end_ms": 7687,
+          "text": "La forme et la couleur me conviennent."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8087,
+          "end_ms": 11533,
+          "text": "Isolation mise en place. Collage avec G-CEM Veneer."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 11933,
+          "end_ms": 17771,
+          "text": "Excès éliminés, finition et contrôle des contacts et de l'occlusion réalisés. Pas de complication."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-081",
+      "audio_file": "audio/ORIS-SYN-081.wav",
+      "source_case_id": "ORIS-SYN-081",
+      "duration_ms": 14643,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 1750,
+          "text": "Avulsion de 18 aujourd'hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 2150,
+          "end_ms": 3866,
+          "text": "Anesthésie locale réalisée."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4266,
+          "end_ms": 6910,
+          "text": "Lambeau et ostéotomie réalisés avant avulsion."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 7310,
+          "end_ms": 8434,
+          "text": "Hémostase obtenue."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8834,
+          "end_ms": 10352,
+          "text": "Sutures mises en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 10752,
+          "end_ms": 14243,
+          "text": "Consignes postopératoires données. Aucun incident signalé."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-082",
+      "audio_file": "audio/ORIS-SYN-082.wav",
+      "source_case_id": "ORIS-SYN-082",
+      "duration_ms": 14313,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 1808,
+          "text": "Avulsion de 38 aujourd'hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 2208,
+          "end_ms": 3924,
+          "text": "Anesthésie locale réalisée."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4324,
+          "end_ms": 6492,
+          "text": "Avulsion simple réalisée sans lambeau."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6892,
+          "end_ms": 8016,
+          "text": "Hémostase obtenue."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8416,
+          "end_ms": 10021,
+          "text": "Pas de suture nécessaire."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 10421,
+          "end_ms": 13913,
+          "text": "Consignes postopératoires données. Aucun incident signalé."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-083",
+      "audio_file": "audio/ORIS-SYN-083.wav",
+      "source_case_id": "ORIS-SYN-083",
+      "duration_ms": 14643,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 1750,
+          "text": "Avulsion de 18 aujourd'hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 2150,
+          "end_ms": 3866,
+          "text": "Anesthésie locale réalisée."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4266,
+          "end_ms": 6910,
+          "text": "Lambeau et ostéotomie réalisés avant avulsion."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 7310,
+          "end_ms": 8434,
+          "text": "Hémostase obtenue."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8834,
+          "end_ms": 10352,
+          "text": "Sutures mises en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 10752,
+          "end_ms": 14243,
+          "text": "Consignes postopératoires données. Aucun incident signalé."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-084",
+      "audio_file": "audio/ORIS-SYN-084.wav",
+      "source_case_id": "ORIS-SYN-084",
+      "duration_ms": 14394,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 1889,
+          "text": "Avulsion de 48 aujourd'hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 2289,
+          "end_ms": 4005,
+          "text": "Anesthésie locale réalisée."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4405,
+          "end_ms": 6574,
+          "text": "Avulsion simple réalisée sans lambeau."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6974,
+          "end_ms": 8097,
+          "text": "Hémostase obtenue."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8497,
+          "end_ms": 10103,
+          "text": "Pas de suture nécessaire."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 10503,
+          "end_ms": 13994,
+          "text": "Consignes postopératoires données. Aucun incident signalé."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-085",
+      "audio_file": "audio/ORIS-SYN-085.wav",
+      "source_case_id": "ORIS-SYN-085",
+      "duration_ms": 14701,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 1808,
+          "text": "Avulsion de 38 aujourd'hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 2208,
+          "end_ms": 3924,
+          "text": "Anesthésie locale réalisée."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4324,
+          "end_ms": 6968,
+          "text": "Lambeau et ostéotomie réalisés avant avulsion."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 7368,
+          "end_ms": 8492,
+          "text": "Hémostase obtenue."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8892,
+          "end_ms": 10410,
+          "text": "Sutures mises en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 10810,
+          "end_ms": 14301,
+          "text": "Consignes postopératoires données. Aucun incident signalé."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-086",
+      "audio_file": "audio/ORIS-SYN-086.wav",
+      "source_case_id": "ORIS-SYN-086",
+      "duration_ms": 14081,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 1576,
+          "text": "Avulsion de 16 aujourd'hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 1976,
+          "end_ms": 3692,
+          "text": "Anesthésie locale réalisée."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4092,
+          "end_ms": 6260,
+          "text": "Avulsion simple réalisée sans lambeau."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6660,
+          "end_ms": 7784,
+          "text": "Hémostase obtenue."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8184,
+          "end_ms": 9789,
+          "text": "Pas de suture nécessaire."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 10189,
+          "end_ms": 13681,
+          "text": "Consignes postopératoires données. Aucun incident signalé."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-087",
+      "audio_file": "audio/ORIS-SYN-087.wav",
+      "source_case_id": "ORIS-SYN-087",
+      "duration_ms": 14701,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 1808,
+          "text": "Avulsion de 36 aujourd'hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 2208,
+          "end_ms": 3924,
+          "text": "Anesthésie locale réalisée."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4324,
+          "end_ms": 6968,
+          "text": "Lambeau et ostéotomie réalisés avant avulsion."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 7368,
+          "end_ms": 8492,
+          "text": "Hémostase obtenue."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8892,
+          "end_ms": 10410,
+          "text": "Sutures mises en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 10810,
+          "end_ms": 14301,
+          "text": "Consignes postopératoires données. Aucun incident signalé."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-088",
+      "audio_file": "audio/ORIS-SYN-088.wav",
+      "source_case_id": "ORIS-SYN-088",
+      "duration_ms": 14255,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 1750,
+          "text": "Avulsion de 18 aujourd'hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 2150,
+          "end_ms": 3866,
+          "text": "Anesthésie locale réalisée."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4266,
+          "end_ms": 6434,
+          "text": "Avulsion simple réalisée sans lambeau."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6834,
+          "end_ms": 7958,
+          "text": "Hémostase obtenue."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8358,
+          "end_ms": 9963,
+          "text": "Pas de suture nécessaire."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 10363,
+          "end_ms": 13855,
+          "text": "Consignes postopératoires données. Aucun incident signalé."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-089",
+      "audio_file": "audio/ORIS-SYN-089.wav",
+      "source_case_id": "ORIS-SYN-089",
+      "duration_ms": 14794,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 1901,
+          "text": "Avulsion de 46 aujourd'hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 2301,
+          "end_ms": 4017,
+          "text": "Anesthésie locale réalisée."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4417,
+          "end_ms": 7061,
+          "text": "Lambeau et ostéotomie réalisés avant avulsion."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 7461,
+          "end_ms": 8585,
+          "text": "Hémostase obtenue."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8985,
+          "end_ms": 10503,
+          "text": "Sutures mises en place."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 10903,
+          "end_ms": 14394,
+          "text": "Consignes postopératoires données. Aucun incident signalé."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-090",
+      "audio_file": "audio/ORIS-SYN-090.wav",
+      "source_case_id": "ORIS-SYN-090",
+      "duration_ms": 14289,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 1785,
+          "text": "Avulsion de 26 aujourd'hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 2185,
+          "end_ms": 3901,
+          "text": "Anesthésie locale réalisée."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4301,
+          "end_ms": 6469,
+          "text": "Avulsion simple réalisée sans lambeau."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6869,
+          "end_ms": 7993,
+          "text": "Hémostase obtenue."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 8393,
+          "end_ms": 9998,
+          "text": "Pas de suture nécessaire."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 10398,
+          "end_ms": 13889,
+          "text": "Consignes postopératoires données. Aucun incident signalé."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-091",
+      "audio_file": "audio/ORIS-SYN-091.wav",
+      "source_case_id": "ORIS-SYN-091",
+      "duration_ms": 10490,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 5917,
+          "text": "Sur la 26… pardon, la 27, on retrouve l’ancienne restauration fracturée."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 6317,
+          "end_ms": 10090,
+          "text": "Je propose de déposer la restauration sur 27 et de réévaluer."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-092",
+      "audio_file": "audio/ORIS-SYN-092.wav",
+      "source_case_id": "ORIS-SYN-092",
+      "duration_ms": 7307,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 2471,
+          "text": "Je n’ai pas de douleur nocturne, uniquement au froid."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 2871,
+          "end_ms": 6907,
+          "text": "Sensibilité au froid rapportée sur 16, sans douleur nocturne."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-093",
+      "audio_file": "audio/ORIS-SYN-093.wav",
+      "source_case_id": "ORIS-SYN-093",
+      "duration_ms": 7343,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 4270,
+          "text": "Il y a peut-être une fissure sur 16, je ne peux pas l’affirmer aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4670,
+          "end_ms": 6943,
+          "text": "On va compléter l’examen avant de décider."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-094",
+      "audio_file": "audio/ORIS-SYN-094.wav",
+      "source_case_id": "ORIS-SYN-094",
+      "duration_ms": 8612,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 6118,
+          "text": "J’avais proposé des facettes la dernière fois, mais aujourd’hui on part plutôt sur des composites sur 11 et 21."
+        },
+        {
+          "role": "patient",
+          "start_ms": 6518,
+          "end_ms": 8212,
+          "text": "Oui, je préfère cette option."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-095",
+      "audio_file": "audio/ORIS-SYN-095.wav",
+      "source_case_id": "ORIS-SYN-095",
+      "duration_ms": 5529,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 5129,
+          "text": "Aujourd’hui on fait seulement les photos. La prochaine fois on fera les composites sur 11 et 21."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-096",
+      "audio_file": "audio/ORIS-SYN-096.wav",
+      "source_case_id": "ORIS-SYN-096",
+      "duration_ms": 8832,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 1995,
+          "text": "Je pense que j’ai une carie sur la dent du fond."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 2395,
+          "end_ms": 8432,
+          "text": "Je note votre impression. À l’examen aujourd’hui, je ne pose pas ce diagnostic sans compléter le bilan."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-097",
+      "audio_file": "audio/ORIS-SYN-097.wav",
+      "source_case_id": "ORIS-SYN-097",
+      "duration_ms": 4453,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 1646,
+          "text": "Vous prenez toujours de l’Eliquis ?"
+        },
+        {
+          "role": "patient",
+          "start_ms": 2046,
+          "end_ms": 4053,
+          "text": "Non, je ne le prends plus depuis six mois."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-098",
+      "audio_file": "audio/ORIS-SYN-098.wav",
+      "source_case_id": "ORIS-SYN-098",
+      "duration_ms": 7425,
+      "reference_segments": [
+        {
+          "role": "patient",
+          "start_ms": 0,
+          "end_ms": 1995,
+          "text": "Je crois que c’est la 26 qui me fait mal."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 2395,
+          "end_ms": 7025,
+          "text": "À l’examen, la douleur est reproduite sur 27, pas sur 26."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-099",
+      "audio_file": "audio/ORIS-SYN-099.wav",
+      "source_case_id": "ORIS-SYN-099",
+      "duration_ms": 6219,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 1646,
+          "text": "On commence la consultation."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 4046,
+          "end_ms": 5819,
+          "text": "Très bien, on termine ici."
+        }
+      ]
+    },
+    {
+      "audio_id": "ORIS-SYN-100",
+      "audio_file": "audio/ORIS-SYN-100.wav",
+      "source_case_id": "ORIS-SYN-100",
+      "duration_ms": 4950,
+      "reference_segments": [
+        {
+          "role": "practitioner",
+          "start_ms": 0,
+          "end_ms": 2144,
+          "text": "Composite réalisé sur 11 aujourd’hui."
+        },
+        {
+          "role": "practitioner",
+          "start_ms": 2544,
+          "end_ms": 4550,
+          "text": "Finition et polissage réalisés."
+        }
+      ]
+    }
+  ]
+}
