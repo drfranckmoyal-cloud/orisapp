@@ -116,3 +116,82 @@ Choix faits en cours de route :
 
 Manque (hors M0) : tout le périmètre M1 (voir IMPLEMENTATION_PLAN.md).
 
+
+---
+
+## M1 — Synthetic vertical slice (2026-09-17)
+
+Critères lus : ACCEPTANCE_CRITERIA (global, extraction, note, plan, learning),
+spec §20–25, §29–34, §46–52, §57–58, §74, §116–118, §127.
+
+### Flux
+
+`Patient → Encounter (draft) → start → finish → [pipeline] → review →
+correction (patch) → régénération → validation document → validation consultation`
+
+Pipeline synchrone (pas de worker en M1), dans `services/pipeline.py` :
+
+1. **STT** (`SpeechToTextProvider`) → `TranscriptionResult(segments, gaps)`.
+   Le mock reçoit un chunk dont la charge utile est `oris-synthetic:<case_id>` et
+   renvoie le transcript du corpus ; un segment `[coupure audio …]` devient un
+   `AudioGap`. Sans source, la consultation passe en `transcription_failed`.
+2. **Extraction** (`ClinicalExtractionProvider`) → `ExtractionResult(facts, plan,
+   procedures)`. Le mock retrouve le cas par empreinte du transcript et rejoue les
+   faits attendus ; transcript inconnu → résultat vide.
+3. **Résolveur déterministe** (`domain/resolver.py`) : preuves existantes, pas de
+   fait « réalisé » au futur, pas de statut praticien porté par le patient,
+   incertitude cohérente, plan et actes appuyés par des faits de même statut,
+   données d'acte appuyées par des faits. Toute violation → sortie **rejetée**
+   (`generation_failed`), jamais corrigée.
+4. **Alertes** (`domain/warnings.py`) : trou audio → `AUDIO_GAP` critique.
+5. **Assemblage** : `ClinicalEncounter` v1 validé contre le schéma.
+6. **Documents** : compte rendu + plan (si items), rendus depuis l'objet seul par
+   un générateur à gabarits français (`documents/renderer.py`), chaque phrase
+   portant ses `fact_ids`.
+7. **Validateur factuel** (`domain/factual_validator.py`) : phrase sans appui,
+   fait inconnu, dent citée non portée par les faits, « Réalisé » sans fait
+   réalisé, fait non restitué.
+
+### Stockage des versions
+
+- `encounter_object_versions` (nouvelle table, append-only) : l'objet clinique
+  complet par version = **source de vérité et historique** (§57).
+- Tables normalisées M0 (faits, plan, actes, liens de preuve) = projection de la
+  version courante, reconstruite à chaque version, pour requêtes et intégrité.
+- `document_versions` : texte, phrases avec `fact_ids`, problèmes de validation,
+  version d'objet source. `document_version_facts` est supprimée : une version de
+  document cite les faits d'une version d'objet donnée, pas des lignes mutables.
+
+### Corrections (D016)
+
+`PATCH /encounters/{id}/clinical-object` avec `expected_object_version` et des
+opérations : `replace_tooth`, `update_fact`, `set_plan_item_status`, `add_fact`,
+`remove_fact`. Application pure sur l'objet → résolveur → version +1 → documents
+`outdated` → régénération (par défaut) → LearningEvent(s) typés dans le store
+`learning`. Validation d'un document sans modification → LearningEvent
+`document_validated_unchanged` (signal faible, §127).
+
+### Validation
+
+Explicite uniquement. Refusée si le document est périmé, a un problème critique,
+ou si une alerte critique n'est pas explicitement reconnue par le praticien.
+
+### Identité
+
+Pas d'authentification en M1 : organisation et praticien de démonstration créés
+en `local`/`test` ; l'API refuse de servir en `staging`/`production`.
+
+### Clients
+
+- Web : patients, nouvelle consultation synthétique, écran de révision
+  (document 65 % / alertes + faits 35 %, source d'une phrase, correction de dent
+  et de statut, validation).
+- iOS : liste des consultations et consultation en lecture (Compte rendu | Plan,
+  À vérifier), depuis la même API.
+
+### Honnêteté des tests critiques A–J
+
+Avec un extracteur mock, A–I vérifient que la chaîne **conserve** dent, négation,
+incertitude, temporalité et statut de l'extraction jusqu'aux documents, et que
+le résolveur **rejette** les sorties qui les violent (cas mutés). Ils ne prouvent
+pas qu'un modèle extrait correctement depuis la parole : c'est l'objet de M5.

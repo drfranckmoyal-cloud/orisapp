@@ -5,14 +5,23 @@ Lancement local : `uvicorn oris_api.main:app --reload --no-access-log`
 
 from __future__ import annotations
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from oris_api import __version__
-from oris_api.api import health
+from oris_api.api import encounters, health, patients, synthetic
+from oris_api.api.schemas import ApiErrorBody
 from oris_api.config import get_settings
 from oris_api.observability import configure_logging, request_logging_middleware
 from oris_api.providers import build_providers
+from oris_api.services.errors import ServiceError
+
+
+async def service_error_handler(request: Request, error: Exception) -> JSONResponse:
+    assert isinstance(error, ServiceError)  # noqa: S101
+    body = ApiErrorBody(code=error.code, subject_id=error.subject_id, details=error.details)
+    return JSONResponse(status_code=error.status_code, content=body.model_dump())
 
 
 def create_app() -> FastAPI:
@@ -28,7 +37,11 @@ def create_app() -> FastAPI:
         allow_methods=["GET", "POST", "PATCH", "DELETE"],
         allow_headers=["Authorization", "Content-Type"],
     )
+    app.add_exception_handler(ServiceError, service_error_handler)
     app.include_router(health.router)
+    app.include_router(patients.router)
+    app.include_router(encounters.router)
+    app.include_router(synthetic.router)
     return app
 
 

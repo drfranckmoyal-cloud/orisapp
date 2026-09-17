@@ -7,8 +7,11 @@ Deux stores logiquement séparés (ACCEPTANCE_CRITERIA §Learning) :
 Les faits, plans, actes et documents gardent la clé de contrat (`fact_id`,
 `item_id`…) utilisée dans l'objet clinique JSON, unique par consultation, en
 plus d'une clé primaire UUID interne. Les liens de preuve (fait -> segment,
-élément de plan / acte / version de document -> fait) sont des tables à clés
-étrangères : un document ne peut pas citer un fait qui n'existe pas.
+élément de plan / acte -> fait) sont des tables à clés étrangères.
+
+L'objet clinique complet de chaque version est conservé dans
+`encounter_object_versions` (source de vérité et historique) ; les tables de
+faits, plan et actes en sont la projection pour la version courante.
 """
 
 from __future__ import annotations
@@ -55,6 +58,7 @@ from oris_api.contracts.generated import (
 from oris_api.db.base import Base, contract_enum, created_at, updated_at, uuid_pk
 
 UserRole = Literal["practitioner", "assistant", "admin"]  # spec §62
+ObjectChangeKind = Literal["extraction", "correction", "status_change"]
 
 LEARNING_SCHEMA = "learning"
 
@@ -303,7 +307,12 @@ class ProcedureEvidence(Base):
 
 
 class DocumentRow(Base):
+    """Un document par type et par consultation ; son contenu vit dans ses versions."""
+
     __tablename__ = "documents"
+    __table_args__ = (
+        UniqueConstraint("encounter_id", "document_type", name="uq_documents_encounter_type"),
+    )
 
     id: Mapped[UUID] = uuid_pk()
     encounter_id: Mapped[UUID] = mapped_column(
@@ -319,6 +328,12 @@ class DocumentRow(Base):
 
 
 class DocumentVersion(Base):
+    """Version immuable d'un document, rattachée à la version d'objet qui l'a produite.
+
+    `claims` : phrases et faits/alertes qui les appuient (provenance, §30).
+    `supported_fact_ids` : clés de faits de l'objet `generated_from_object_version`.
+    """
+
     __tablename__ = "document_versions"
     __table_args__ = (
         UniqueConstraint("document_id", "version", name="uq_document_versions_version"),
@@ -332,24 +347,37 @@ class DocumentVersion(Base):
     )
     version: Mapped[int] = mapped_column(Integer)
     content: Mapped[str] = mapped_column(Text)
+    claims: Mapped[list[dict[str, Any]]] = jsonb(list)
+    supported_fact_ids: Mapped[list[str]] = jsonb(list)
+    validation_issues: Mapped[list[dict[str, Any]]] = jsonb(list)
     generated_from_object_version: Mapped[int] = mapped_column(Integer)
     # NULL si produit par un fournisseur ; l'identité du générateur est dans generator.
     created_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"))
     generator: Mapped[str] = mapped_column(String(100))
     created_at: Mapped[datetime] = created_at()
+    validated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    validated_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"))
+    acknowledged_warning_codes: Mapped[list[str]] = jsonb(list)
 
 
-class DocumentVersionFact(Base):
-    """Faits sur lesquels s'appuie une version de document (supported_fact_ids)."""
+class EncounterObjectVersion(Base):
+    """Objet clinique complet à une version donnée : source de vérité, append-only (§57)."""
 
-    __tablename__ = "document_version_facts"
-
-    document_version_id: Mapped[UUID] = mapped_column(
-        ForeignKey("document_versions.id", ondelete="CASCADE"), primary_key=True
+    __tablename__ = "encounter_object_versions"
+    __table_args__ = (
+        UniqueConstraint("encounter_id", "version", name="uq_encounter_object_versions_version"),
+        CheckConstraint("version >= 1", name="version_positive"),
     )
-    fact_id: Mapped[UUID] = mapped_column(
-        ForeignKey("clinical_facts.id", ondelete="RESTRICT"), primary_key=True
+
+    id: Mapped[UUID] = uuid_pk()
+    encounter_id: Mapped[UUID] = mapped_column(
+        ForeignKey("encounters.id", ondelete="CASCADE"), index=True
     )
+    version: Mapped[int] = mapped_column(Integer)
+    clinical_object: Mapped[dict[str, Any]] = jsonb(dict)
+    change_kind: Mapped[str] = mapped_column(contract_enum(ObjectChangeKind, "object_change_kind"))
+    created_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"))
+    created_at: Mapped[datetime] = created_at()
 
 
 # --- Audit (identifiants uniquement, jamais de contenu clinique) ------------------------

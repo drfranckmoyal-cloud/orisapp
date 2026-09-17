@@ -64,4 +64,28 @@ def test_request_log_uses_route_template_without_query_string() -> None:
     assert "Dupont" not in output
     routes = [json.loads(line).get("route") for line in output.splitlines() if line]
     assert "/health" in routes
-    assert "unmatched" in routes
+    # Chemin brut contenant un nom : seul le gabarit de route est écrit.
+    assert "/patients/{patient_id}" in routes
+
+
+def test_full_consultation_flow_logs_no_clinical_content(api: object) -> None:
+    from oris_api.synthetic.corpus import default_corpus
+    from tests.conftest import documents_by_type, run_synthetic
+
+    case = default_corpus().get("ORIS-SYN-001")
+    assert case is not None
+    forbidden = [case.patient_first_name, case.patient_last_name, "diastème", "asymétrie"]
+    forbidden += [segment.text[:30] for segment in case.segments]
+
+    stream, handler = capture()
+    try:
+        encounter = run_synthetic(api, case.case_id)
+        docs = documents_by_type(api, encounter["id"])
+        api.post(f"/documents/{docs['consultation_note']['id']}/validate", json={})  # type: ignore[attr-defined]
+        api.get("/patients", params={"q": case.patient_last_name})  # type: ignore[attr-defined]
+    finally:
+        logging.getLogger().removeHandler(handler)
+    output = stream.getvalue()
+    assert "pipeline.completed" in output
+    for text in forbidden:
+        assert text not in output

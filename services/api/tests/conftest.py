@@ -50,3 +50,76 @@ def db_engine(test_database_url: str) -> Iterator[Engine]:
         )
     yield engine
     engine.dispose()
+
+
+# --- API sur base de test ------------------------------------------------------------
+
+API_ROOT = Path(__file__).resolve().parents[1]
+
+
+@pytest.fixture(scope="session")
+def migrated_engine(db_engine: Engine, test_database_url: str) -> Engine:
+    from alembic.config import Config
+
+    from alembic import command
+
+    config = Config(str(API_ROOT / "alembic.ini"))
+    config.attributes["database_url"] = test_database_url
+    config.attributes["configure_logger"] = False
+    command.upgrade(config, "head")
+    return db_engine
+
+
+def truncate_all(engine: Engine) -> None:
+    with engine.begin() as connection:
+        tables = connection.execute(
+            text(
+                "SELECT quote_ident(schemaname) || '.' || quote_ident(tablename) FROM pg_tables "
+                "WHERE schemaname IN ('public', 'learning') AND tablename <> 'alembic_version'"
+            )
+        ).scalars()
+        names = ", ".join(tables)
+        if names:
+            connection.execute(text(f"TRUNCATE {names} CASCADE"))
+
+
+@pytest.fixture
+def api(migrated_engine: Engine) -> Iterator[Any]:
+    from fastapi.testclient import TestClient
+    from sqlalchemy.orm import Session, sessionmaker
+
+    from oris_api.db.session import get_session
+    from oris_api.main import app
+
+    truncate_all(migrated_engine)
+    factory = sessionmaker(bind=migrated_engine, expire_on_commit=False)
+
+    def session_override() -> Iterator[Session]:
+        with factory() as session:
+            yield session
+
+    app.dependency_overrides[get_session] = session_override
+    with TestClient(app) as client:
+        yield client
+    app.dependency_overrides.clear()
+    truncate_all(migrated_engine)
+
+
+def run_synthetic(api: Any, case_id: str) -> dict[str, Any]:
+    response = api.post(f"/synthetic-cases/{case_id}/encounters")
+    assert response.status_code == 201, response.text
+    body: dict[str, Any] = response.json()
+    return body
+
+
+def documents_by_type(api: Any, encounter_id: str) -> dict[str, dict[str, Any]]:
+    response = api.get(f"/encounters/{encounter_id}/documents")
+    assert response.status_code == 200, response.text
+    return {doc["document_type"]: doc for doc in response.json()}
+
+
+def clinical_object(api: Any, encounter_id: str) -> dict[str, Any]:
+    response = api.get(f"/encounters/{encounter_id}/clinical-object")
+    assert response.status_code == 200, response.text
+    body: dict[str, Any] = response.json()["clinical_object"]
+    return body

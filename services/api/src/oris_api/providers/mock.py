@@ -1,103 +1,108 @@
 """Fournisseurs factices, déterministes, pour le développement et les tests.
 
-Ils ne font aucun appel réseau et n'inventent rien : sans script, ils renvoient
+Aucun appel réseau. Ils n'inventent rien : hors corpus synthétique, ils renvoient
 un résultat vide. Toute sortie passe par la validation de contrat.
 """
 
 from __future__ import annotations
 
-from oris_api.contracts import (
-    ClinicalEncounter,
-    ClinicalFact,
-    TranscriptSegment,
-    validate_contract,
-)
+from oris_api.contracts import ClinicalEncounter, TranscriptSegment, validate_contract
 from oris_api.contracts.generated import DocumentDocumentType
-from oris_api.providers.base import (
+from oris_api.documents.renderer import render_consultation_note, render_treatment_plan
+from oris_api.domain.factual_validator import validate_document
+from oris_api.domain.resolver import is_gap_marker
+from oris_api.domain.types import (
     AudioChunk,
+    AudioGap,
+    ExtractionResult,
     GeneratedDocument,
     GlossaryHint,
-    ProviderInfo,
+    TranscriptionResult,
     ValidationIssue,
 )
+from oris_api.providers.base import ProviderInfo
+from oris_api.synthetic.corpus import SYNTHETIC_PAYLOAD_PREFIX, SyntheticCorpus
 
-MOCK_VERSION = "mock-0.1"
+MOCK_VERSION = "mock-0.2"
 
 
 class MockSpeechToTextProvider:
-    """Renvoie un transcript synthétique scripté, quel que soit l'audio reçu."""
+    """« Décode » un chunk synthétique `oris-synthetic:<case_id>` en transcript du corpus.
 
-    info = ProviderInfo(name="mock", version=MOCK_VERSION, capabilities=["scripted_transcript"])
+    Un segment `[coupure audio …]` du corpus est restitué comme trou audio.
+    """
 
-    def __init__(self, scripted_segments: list[TranscriptSegment] | None = None) -> None:
-        self._segments = list(scripted_segments or [])
+    info = ProviderInfo(name="mock", version=MOCK_VERSION, capabilities=["synthetic_corpus"])
+
+    def __init__(self, corpus: SyntheticCorpus) -> None:
+        self._corpus = corpus
 
     async def transcribe(
         self, chunks: list[AudioChunk], locale: str, glossary: list[GlossaryHint]
-    ) -> list[TranscriptSegment]:
-        for segment in self._segments:
-            validate_contract("TranscriptSegment", segment.model_dump(mode="json"))
-        return list(self._segments)
+    ) -> TranscriptionResult:
+        segments: list[TranscriptSegment] = []
+        gaps: list[AudioGap] = []
+        for chunk in sorted(chunks, key=lambda c: c.sequence):
+            if not chunk.payload.startswith(SYNTHETIC_PAYLOAD_PREFIX):
+                continue
+            case = self._corpus.get(chunk.payload.removeprefix(SYNTHETIC_PAYLOAD_PREFIX).decode())
+            if case is None:
+                continue
+            previous: str | None = None
+            for segment in case.segments:
+                validate_contract("TranscriptSegment", segment.model_dump(mode="json"))
+                segments.append(segment)
+                if is_gap_marker(segment):
+                    gaps.append(AudioGap(after_segment_id=previous, duration_ms=None))
+                previous = segment.segment_id
+        return TranscriptionResult(segments, gaps)
 
 
 class MockClinicalExtractionProvider:
-    """Renvoie des faits scriptés, filtrés aux segments effectivement fournis."""
+    """Rejoue l'extraction attendue du corpus pour un transcript reconnu à l'identique."""
 
-    info = ProviderInfo(name="mock", version=MOCK_VERSION, capabilities=["scripted_facts"])
+    info = ProviderInfo(name="mock", version=MOCK_VERSION, capabilities=["synthetic_corpus"])
 
-    def __init__(self, scripted_facts: list[ClinicalFact] | None = None) -> None:
-        self._facts = list(scripted_facts or [])
+    def __init__(self, corpus: SyntheticCorpus) -> None:
+        self._corpus = corpus
 
     async def extract(
         self, segments: list[TranscriptSegment], glossary: list[GlossaryHint]
-    ) -> list[ClinicalFact]:
-        available = {segment.segment_id for segment in segments}
-        facts = []
-        for fact in self._facts:
-            validate_contract("ClinicalFact", fact.model_dump(mode="json"))
-            # Un fait audio sans preuve présente dans ce transcript n'est pas émis.
-            if fact.source_type == "audio" and not set(fact.evidence_segment_ids) <= available:
-                continue
-            facts.append(fact)
-        return facts
+    ) -> ExtractionResult:
+        case = self._corpus.by_transcript(segments)
+        if case is None:
+            return ExtractionResult(facts=[])
+        return ExtractionResult(
+            facts=[f.model_copy(deep=True) for f in case.facts],
+            treatment_plan=case.treatment_plan.model_copy(deep=True)
+            if case.treatment_plan
+            else None,
+            procedures=[p.model_copy(deep=True) for p in case.procedures],
+        )
 
 
 class MockDocumentGenerationProvider:
-    """Projection littérale des faits : une ligne par fait, sans reformulation."""
+    """Rédaction par gabarits français déterministes (documents/renderer.py)."""
 
-    info = ProviderInfo(name="mock", version=MOCK_VERSION, capabilities=["literal_projection"])
+    info = ProviderInfo(name="mock", version=MOCK_VERSION, capabilities=["french_templates"])
 
     async def generate(
         self, encounter: ClinicalEncounter, document_type: DocumentDocumentType
     ) -> GeneratedDocument:
-        lines = []
-        for fact in encounter.facts:
-            teeth = f" [{', '.join(fact.teeth)}]" if fact.teeth else ""
-            lines.append(
-                f"- {fact.concept}{teeth} : {fact.value} "
-                f"({fact.assertion}, {fact.clinical_status}, {fact.certainty})"
-            )
-        return GeneratedDocument(
-            document_type=document_type,
-            content="\n".join(lines),
-            supported_fact_ids=[fact.fact_id for fact in encounter.facts],
-        )
+        match document_type:
+            case "consultation_note":
+                return render_consultation_note(encounter)
+            case "treatment_plan_text":
+                return render_treatment_plan(encounter)
+        raise NotImplementedError(document_type)
 
 
 class MockClinicalValidationProvider:
-    """Contrôle déterministe : chaque fait cité par le document doit exister."""
+    """Délègue au validateur factuel déterministe."""
 
-    info = ProviderInfo(name="mock", version=MOCK_VERSION, capabilities=["fact_id_support"])
+    info = ProviderInfo(name="mock", version=MOCK_VERSION, capabilities=["factual_validator"])
 
     async def validate(
         self, document: GeneratedDocument, encounter: ClinicalEncounter
     ) -> list[ValidationIssue]:
-        known = {fact.fact_id for fact in encounter.facts}
-        issues = [
-            ValidationIssue(code="unknown_fact_id", severity="critical", fact_id=fact_id)
-            for fact_id in document.supported_fact_ids
-            if fact_id not in known
-        ]
-        if document.content.strip() and not document.supported_fact_ids:
-            issues.append(ValidationIssue(code="empty_support", severity="critical"))
-        return issues
+        return validate_document(document, encounter)

@@ -1,0 +1,182 @@
+"""Génération, invalidation et validation des documents (spec §50, D008, D009)."""
+
+from __future__ import annotations
+
+from dataclasses import asdict
+from datetime import UTC, datetime
+from functools import partial
+from uuid import UUID
+
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from oris_api.contracts import ClinicalEncounter
+from oris_api.contracts.generated import DocumentDocumentType
+from oris_api.db.models import DocumentRow, DocumentVersion, Encounter
+from oris_api.domain.types import GeneratedDocument, ValidationIssue
+from oris_api.providers import ProviderSet
+from oris_api.services import async_bridge, audit, learning
+from oris_api.services.clinical_store import load_current
+from oris_api.services.errors import Conflict, NotFound
+from oris_api.services.identity import Actor
+
+VALIDATABLE = frozenset({"draft_ai", "needs_review"})
+
+
+def document_types_for(obj: ClinicalEncounter) -> list[DocumentDocumentType]:
+    types: list[DocumentDocumentType] = ["consultation_note"]
+    if obj.treatment_plan is not None and obj.treatment_plan.items:
+        types.append("treatment_plan_text")
+    return types
+
+
+async def generate_and_check(
+    providers: ProviderSet, obj: ClinicalEncounter, document_type: DocumentDocumentType
+) -> tuple[GeneratedDocument, list[ValidationIssue]]:
+    generated = await providers.document_generation.generate(obj, document_type)
+    return generated, await providers.clinical_validation.validate(generated, obj)
+
+
+def list_documents(session: Session, encounter_id: UUID) -> list[DocumentRow]:
+    return list(
+        session.scalars(
+            select(DocumentRow)
+            .where(DocumentRow.encounter_id == encounter_id)
+            .order_by(DocumentRow.document_type)
+        )
+    )
+
+
+def current_version(session: Session, document: DocumentRow) -> DocumentVersion | None:
+    if document.current_version_id is None:
+        return None
+    return session.get(DocumentVersion, document.current_version_id)
+
+
+def generate(
+    session: Session, encounter: Encounter, obj: ClinicalEncounter, providers: ProviderSet
+) -> list[DocumentRow]:
+    """Produit une nouvelle version de chaque document pour la version d'objet donnée."""
+    existing = {doc.document_type: doc for doc in list_documents(session, encounter.id)}
+    wanted = document_types_for(obj)
+    produced: list[DocumentRow] = []
+
+    for document_type in wanted:
+        generated, issues = async_bridge.run(
+            partial(generate_and_check, providers, obj, document_type)
+        )
+        document = existing.get(document_type)
+        if document is None:
+            document = DocumentRow(
+                encounter_id=encounter.id, document_type=document_type, status="draft_ai"
+            )
+            session.add(document)
+            session.flush()
+        last = current_version(session, document)
+        info = providers.document_generation.info
+        version = DocumentVersion(
+            document_id=document.id,
+            version=(last.version + 1) if last else 1,
+            content=generated.content,
+            claims=[
+                {
+                    **asdict(claim),
+                    "fact_ids": list(claim.fact_ids),
+                    "warning_codes": list(claim.warning_codes),
+                }
+                for claim in generated.claims
+            ],
+            supported_fact_ids=generated.supported_fact_ids,
+            validation_issues=[asdict(issue) for issue in issues],
+            generated_from_object_version=obj.object_version,
+            generator=f"{info.name}:{info.version}",
+        )
+        session.add(version)
+        session.flush()
+        document.current_version_id = version.id
+        document.status = "needs_review" if issues else "draft_ai"
+        audit.record(
+            session,
+            None,
+            "document.generated",
+            "document",
+            document.id,
+            object_version=obj.object_version,
+            version=version.version,
+        )
+        produced.append(document)
+
+    # Un document dont l'objet ne justifie plus l'existence (plan vidé) est remplacé.
+    for existing_type, existing_document in existing.items():
+        if existing_type not in wanted and existing_document.status != "superseded":
+            existing_document.status = "superseded"
+    session.flush()
+    return produced
+
+
+def mark_outdated(session: Session, encounter_id: UUID) -> None:
+    for document in list_documents(session, encounter_id):
+        if document.status != "superseded":
+            document.status = "outdated"
+            audit.record(session, None, "document.outdated", "document", document.id)
+    session.flush()
+
+
+def validate(
+    session: Session,
+    actor: Actor,
+    document_id: UUID,
+    acknowledged_warning_codes: list[str],
+) -> DocumentRow:
+    """Validation explicite du praticien : jamais automatique (D009)."""
+    document = session.get(DocumentRow, document_id)
+    encounter = session.get(Encounter, document.encounter_id) if document else None
+    if document is None or encounter is None or encounter.organization_id != actor.organization_id:
+        raise NotFound("DOCUMENT_NOT_FOUND", str(document_id))
+    version = current_version(session, document)
+    if version is None:
+        raise Conflict("DOCUMENT_EMPTY", str(document_id))
+    if document.status == "validated":
+        raise Conflict("DOCUMENT_ALREADY_VALIDATED", str(document_id))
+    obj = load_current(session, encounter)
+    if (
+        document.status not in VALIDATABLE
+        or version.generated_from_object_version != obj.object_version
+    ):
+        raise Conflict("DOCUMENT_OUTDATED", str(document_id))
+    if any(issue["severity"] == "critical" for issue in version.validation_issues):
+        raise Conflict("DOCUMENT_HAS_CRITICAL_ISSUES", str(document_id))
+    critical = sorted({w.code for w in obj.warnings if w.severity == "critical"})
+    missing = [code for code in critical if code not in acknowledged_warning_codes]
+    if missing:
+        raise Conflict("WARNING_NOT_ACKNOWLEDGED", str(document_id), details=missing)
+
+    document.status = "validated"
+    version.validated_at = datetime.now(UTC)
+    version.validated_by = actor.user_id
+    version.acknowledged_warning_codes = critical
+    for code in critical:
+        learning.emit(
+            session,
+            actor,
+            encounter.id,
+            obj.object_version,
+            "warning_confirmed",
+            None,
+            {"warning_code": code, "document_type": document.document_type},
+        )
+    # M1 n'a pas d'édition de texte : toute validation est « sans modification » (§127).
+    learning.emit(
+        session,
+        actor,
+        encounter.id,
+        obj.object_version,
+        "document_validated_unchanged",
+        None,
+        {"document_type": document.document_type, "document_version": version.version},
+    )
+    audit.record(
+        session, actor, "document.validated", "document", document.id, version=version.version
+    )
+    session.flush()
+    return document

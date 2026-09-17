@@ -25,7 +25,8 @@ def alembic_config(test_database_url: str, db_engine: Engine) -> Iterator[Config
     config.attributes["configure_logger"] = False
     command.downgrade(config, "base")
     yield config
-    command.downgrade(config, "base")
+    # Les autres tests attendent une base à jour.
+    command.upgrade(config, "head")
 
 
 def test_upgrade_downgrade_upgrade(alembic_config: Config, db_engine: Engine) -> None:
