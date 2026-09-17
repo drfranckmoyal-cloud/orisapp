@@ -22,7 +22,24 @@ services/api/.venv/bin/python scripts/stt_benchmark.py run --providers deepgram,
 services/api/.venv/bin/python scripts/stt_benchmark.py run --providers deepgram,azure_speech --streaming
 ```
 
+## Extraction clinique (M5)
+
+Compare des modèles sur les **transcripts** du corpus (sans audio) contre les faits
+attendus : précision et rappel, négations, temporalité, prévu/réalisé, doublons, faits
+rédigeables par Oris, rejets par le résolveur, latence, jetons et coût réel.
+
+```bash
+services/api/.venv/bin/python scripts/stt_benchmark.py extraction --limit 20
+services/api/.venv/bin/python scripts/stt_benchmark.py extraction --models claude-sonnet-5,claude-haiku-4-5-20251001
+```
+
+`--limit` prend un échantillon réparti sur les six familles du corpus. Une sortie qui
+viole les règles cliniques donne droit à un seul nouvel essai, expliqué au modèle, puis
+elle est rejetée. Tarifs des modèles : `providers.json` (relevés sur la page officielle,
+avec la date).
+
 Clés dans `services/api/.env` (jamais dans le dépôt) : `ALLOW_EXTERNAL_STT=true`,
-`DEEPGRAM_API_KEY`, `AZURE_SPEECH_KEY`, `AZURE_SPEECH_ENDPOINT`.
+`DEEPGRAM_API_KEY`, `AZURE_SPEECH_KEY`, `AZURE_SPEECH_ENDPOINT` ; pour l'extraction
+`ALLOW_EXTERNAL_LLM=true` et `ANTHROPIC_API_KEY`.
 Tarifs et statut de conformité : `providers.json`.
 Rapports : `reports/` (JSON `EvaluationRun` + Markdown).
