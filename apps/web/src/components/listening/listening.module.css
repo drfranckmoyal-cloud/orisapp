@@ -1,0 +1,131 @@
+.card {
+  max-width: 760px;
+  margin: 0 auto;
+  background: var(--color-white);
+  border-radius: var(--radius-card);
+  padding: var(--space-32);
+  display: grid;
+  gap: var(--space-24);
+}
+
+.center {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-12);
+  text-align: center;
+}
+
+.indicator {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--color-cloud);
+  color: var(--color-deep-blue);
+}
+
+.indicator[data-state="recording"] {
+  background: var(--color-oris-blue);
+  color: var(--color-white);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.indicator[data-state="alert"] {
+  background: #fdecea;
+  color: var(--color-danger);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(59 130 246 / 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 18px rgb(59 130 246 / 0);
+  }
+}
+
+.stateLabel {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-deep-blue);
+  margin: 0;
+}
+
+.timer {
+  font-size: 48px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-deep-blue);
+  margin: 0;
+}
+
+.meter {
+  width: 240px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-cloud);
+  overflow: hidden;
+}
+
+.meterFill {
+  height: 100%;
+  background: var(--color-misty-teal);
+  transition: width 80ms linear;
+}
+
+.statusRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-12);
+}
+
+.status {
+  display: flex;
+  gap: var(--space-8);
+  align-items: center;
+  border-radius: 12px;
+  background: var(--color-cloud);
+  padding: var(--space-12) var(--space-16);
+  font-size: 15px;
+}
+
+.status[data-tone="warning"] {
+  background: #fdf3e1;
+  color: #6e470d;
+}
+
+.status[data-tone="critical"] {
+  background: #fdecea;
+  color: var(--color-danger);
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-16);
+  flex-wrap: wrap;
+}
+
+.actions .button {
+  min-width: 180px;
+}
+
+.choices {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.choice {
+  display: flex;
+  gap: var(--space-8);
+  align-items: flex-start;
+  font-size: 15px;
+}
+
+.choice input {
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+}

@@ -104,3 +104,6 @@ export async function apiRequest<T>(
   }
   return body as T;
 }
+
+export type ClientConfig = Schemas["ClientConfigOut"];
+export type AudioSessionView = Schemas["AudioSessionOut"];

@@ -291,3 +291,17 @@ nombre d'échantillons, donc détection exacte des trous. Coût : ~1,9 Mo/min.
 Sans STT (M4), une consultation au micro aboutit à `transcription_failed`
 (`NO_TRANSCRIPT`) : l'audio est reçu, contrôlé puis purgé. Les tests de fusion
 des trous dans l'objet clinique utilisent un STT de test.
+
+### Résultat M2 (2026-09-17)
+
+Vérifié dans le navigateur (son de test) : refus du micro expliqué sans démarrer la
+consultation, écoute avec envoi continu (PUT 201), pause, rechargement de page
+pendant la pause puis reprise au bon numéro de segment et au bon temps, fin
+d'écoute → « Transcription impossible » expliquée, 57 s reçues sans interruption,
+dossier audio vide sur le disque après purge.
+
+Contrôles : API 126 tests ; web 33 tests + lint + typecheck + build ; iOS 14 tests.
+
+Corrigé en cours de route : le choix de source (micro / test) était figé à la
+première tentative ; il est désormais lu à l'ouverture de la source.
+

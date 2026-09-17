@@ -1,5 +1,21 @@
 # Changelog
 
+## M2 — 2026-09-17 — Web audio capture
+- capture micro dans le navigateur (AudioWorklet), PCM 16 kHz mono en segments de 2 s
+  horodatés à l'échantillon ;
+- envoi ordonné et idempotent (numéro de séquence, SHA-256), nouvelles tentatives
+  illimitées pendant une coupure réseau, suppression locale après accusé de réception ;
+- pause / reprise (micro libéré pendant la pause), durée maximale 90 min avec alerte à 80 ;
+- micro perdu, page rechargée, segments non envoyés : trous déclarés → alerte critique
+  `AUDIO_GAP` ; fin d'écoute refusée tant que des segments manquent, sauf « Terminer
+  malgré tout » explicite ;
+- pré-écran : patient, autorisation micro, réseau, information patient paramétrable
+  (`PATIENT_INFORMATION_MODE`) ;
+- audio éphémère purgé après traitement, métadonnées de réception conservées ;
+- source de son de test sans micro (local uniquement) ;
+- migration 0003 : `audio_sessions`, `audio_chunks` ;
+- tests : API 126, web 33 (dont capture sans navigateur), iOS 14.
+
 ## M1 — 2026-09-17 — Synthetic vertical slice
 - parcours complet sur consultation fictive : patient → consultation → transcript →
   faits → objet clinique versionné → compte rendu + plan → validation explicite ;

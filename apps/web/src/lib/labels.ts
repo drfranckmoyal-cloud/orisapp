@@ -123,7 +123,31 @@ const ERRORS: Record<string, string> = {
   NO_CHANGE: "Aucune modification à enregistrer.",
   FACT_REFERENCED: "Ce fait appuie le plan de traitement : modifiez d’abord le plan.",
   INVALID_TRANSITION: "Cette action n’est pas possible dans l’état actuel de la consultation.",
+  PATIENT_INFORMATION_REQUIRED: "Confirmez d’abord que le patient a été informé de l’enregistrement.",
+  AUDIO_CHUNKS_MISSING: "Des segments audio ne sont pas arrivés au serveur.",
+  insecure_context: "Le micro n’est accessible que sur une connexion sécurisée (https).",
+  unsupported: "Ce navigateur ne permet pas la capture du micro.",
+  permission_denied:
+    "L’accès au micro a été refusé. Autorisez-le dans les réglages du navigateur (icône à gauche de l’adresse), puis réessayez.",
+  no_microphone: "Aucun micro détecté. Branchez un micro puis réessayez.",
+  microphone_busy: "Le micro est déjà utilisé par une autre application.",
+  capture_failed: "La capture audio n’a pas pu démarrer.",
+  microphone_lost: "Le micro a été coupé ou débranché. La partie non captée sera signalée.",
 };
+
+export const PROCESSING_RULE: Record<string, string> = {
+  NO_TRANSCRIPT:
+    "Aucune transcription : le moteur de transcription automatique n’est pas encore branché (étape M4). Aucun document ne peut être rédigé.",
+};
+
+export function formatDuration(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return hours > 0 ? `${hours}:${pad(minutes)}:${pad(seconds)}` : `${pad(minutes)}:${pad(seconds)}`;
+}
 
 export function errorMessage(code: string): string {
   return ERRORS[code] ?? `Action impossible (${code}).`;

@@ -11,6 +11,7 @@ import { type Selection, SourcePanel } from "@/components/review/SourcePanel";
 import {
   ApiError,
   apiRequest,
+  type AudioSessionView,
   type ClinicalObjectView,
   type DocumentView,
   type Encounter,
@@ -22,8 +23,10 @@ import {
   DOCUMENT_TYPE,
   ENCOUNTER_STATUS,
   LEARNING_EVENT,
+  PROCESSING_RULE,
   errorMessage,
   formatDateTime,
+  formatDuration,
 } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
@@ -38,22 +41,34 @@ const ISSUE_LABELS: Record<string, string> = {
 
 function statusChipClass(status: DocumentView["status"]): string {
   if (status === "validated") return "chip chip-success";
-  if (status === "outdated" || status === "needs_review") return "chip chip-review";
+  if (status === "outdated" || status === "needs_review")
+    return "chip chip-review";
   return "chip";
 }
 
 export default function ReviewPage() {
   const { id } = useParams<{ id: string }>();
   const [encounter, reloadEncounter] = useApi<Encounter>(`/encounters/${id}`);
-  const [documents, reloadDocuments] = useApi<DocumentView[]>(`/encounters/${id}/documents`);
-  const [clinical, reloadClinical] = useApi<ClinicalObjectView>(`/encounters/${id}/clinical-object`);
+  const [documents, reloadDocuments] = useApi<DocumentView[]>(
+    `/encounters/${id}/documents`,
+  );
+  const [clinical, reloadClinical] = useApi<ClinicalObjectView>(
+    `/encounters/${id}/clinical-object`,
+  );
   const [transcript] = useApi<TranscriptView>(`/encounters/${id}/transcript`);
-  const [learning, reloadLearning] = useApi<LearningEventView[]>(`/encounters/${id}/learning-events`);
+  const [learning, reloadLearning] = useApi<LearningEventView[]>(
+    `/encounters/${id}/learning-events`,
+  );
+  const [audio] = useApi<AudioSessionView>(`/encounters/${id}/audio`);
 
-  const [activeType, setActiveType] = useState<DocumentView["document_type"]>("consultation_note");
+  const [activeType, setActiveType] =
+    useState<DocumentView["document_type"]>("consultation_note");
   const [selection, setSelection] = useState<Selection>(null);
   const [acknowledged, setAcknowledged] = useState(false);
-  const [feedback, setFeedback] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
+  const [feedback, setFeedback] = useState<{
+    tone: "ok" | "error";
+    text: string;
+  } | null>(null);
 
   function reloadAll() {
     reloadEncounter();
@@ -83,10 +98,17 @@ export default function ReviewPage() {
   }
   const data = encounter.data;
   const docs = documents.state === "ready" ? documents.data : [];
-  const active = docs.find((doc) => doc.document_type === activeType) ?? docs[0];
-  const object = clinical.state === "ready" ? clinical.data.clinical_object : null;
-  const criticalWarnings = object?.warnings.filter((warning) => warning.severity === "critical") ?? [];
-  const allValidated = docs.length > 0 && docs.filter((d) => d.status !== "superseded").every((d) => d.status === "validated");
+  const active =
+    docs.find((doc) => doc.document_type === activeType) ?? docs[0];
+  const object =
+    clinical.state === "ready" ? clinical.data.clinical_object : null;
+  const criticalWarnings =
+    object?.warnings.filter((warning) => warning.severity === "critical") ?? [];
+  const allValidated =
+    docs.length > 0 &&
+    docs
+      .filter((d) => d.status !== "superseded")
+      .every((d) => d.status === "validated");
 
   return (
     <div className="page">
@@ -94,48 +116,105 @@ export default function ReviewPage() {
         <div>
           <p className="subtitle">
             Consultation du {formatDateTime(data.started_at ?? data.created_at)}
-            {data.synthetic_case_id && ` · cas fictif ${data.synthetic_case_id}`}
+            {data.synthetic_case_id &&
+              ` · cas fictif ${data.synthetic_case_id}`}
           </p>
           <h1>
             {data.patient.first_name} {data.patient.last_name}
           </h1>
         </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
           <span className="chip">{ENCOUNTER_STATUS[data.status]}</span>
-          <span className="chip">Dossier clinique v{data.object_version}</span>
+          {object && (
+            <span className="chip">
+              Dossier clinique v{object.object_version}
+            </span>
+          )}
           <button
             type="button"
             className="button button-primary"
             disabled={!allValidated || data.status !== "review"}
-            onClick={() => act(`/encounters/${id}/validate`, undefined, "Consultation validée.")}
+            onClick={() =>
+              act(
+                `/encounters/${id}/validate`,
+                undefined,
+                "Consultation validée.",
+              )
+            }
           >
             Valider la consultation
           </button>
         </div>
       </header>
 
-      {data.processing_errors.length > 0 && (
-        <div className="banner banner-critical" role="alert">
-          Oris a refusé le résultat de l’extraction plutôt que de le corriger en silence :
-          {" "}
-          {data.processing_errors.map((e) => `${e.rule} (${e.subject_id})`).join(", ")}.
+      {data.processing_errors.some((e) => PROCESSING_RULE[e.rule]) && (
+        <div className="banner banner-review" role="alert">
+          {data.processing_errors
+            .map((e) => PROCESSING_RULE[e.rule])
+            .filter(Boolean)
+            .join(" ")}
         </div>
+      )}
+      {data.processing_errors.some((e) => !PROCESSING_RULE[e.rule]) && (
+        <div className="banner banner-critical" role="alert">
+          Oris a refusé le résultat de l’extraction plutôt que de le corriger en
+          silence :{" "}
+          {data.processing_errors
+            .filter((e) => !PROCESSING_RULE[e.rule])
+            .map((e) => `${e.rule} (${e.subject_id})`)
+            .join(", ")}
+          .
+        </div>
+      )}
+      {audio.state === "ready" && audio.data.gaps.length > 0 && (
+        <div className="banner banner-critical" role="alert">
+          <strong>Audio incomplet</strong> — {audio.data.gaps.length}{" "}
+          interruption(s) de captation. Une partie de la consultation n’a pas
+          été enregistrée.
+        </div>
+      )}
+      {audio.state === "ready" && (
+        <section className="card" aria-labelledby="audio-heading">
+          <h2 id="audio-heading">Audio</h2>
+          <p style={{ margin: 0 }}>
+            {formatDuration(audio.data.received_duration_ms)} reçues en{" "}
+            {audio.data.received_count} segment(s)
+            {audio.data.gaps.length === 0 ? ", sans interruption." : "."}
+          </p>
+          <p className="muted">
+            {audio.data.purge_status === "purged"
+              ? `Son supprimé après traitement (${formatDateTime(audio.data.purged_at)}). Seules les informations techniques de réception sont conservées.`
+              : "Son conservé temporairement jusqu’à la fin du traitement."}
+          </p>
+        </section>
       )}
       {criticalWarnings.map((warning) => (
         <div key={warning.code} className="banner banner-critical" role="alert">
-          <strong>Alerte critique</strong> — {warning.message} Le compte rendu ne peut pas être
-          considéré comme exhaustif.
+          <strong>Alerte critique</strong> — {warning.message} Le compte rendu
+          ne peut pas être considéré comme exhaustif.
         </div>
       ))}
       {feedback && (
-        <div className={`banner ${feedback.tone === "ok" ? "banner-info" : "banner-critical"}`} role="status">
+        <div
+          className={`banner ${feedback.tone === "ok" ? "banner-info" : "banner-critical"}`}
+          role="status"
+        >
           {feedback.text}
         </div>
       )}
 
       <div className={styles.layout}>
         <section className="card" aria-label="Documents">
-          {docs.length === 0 && <p className="muted">Aucun document pour cette consultation.</p>}
+          {docs.length === 0 && (
+            <p className="muted">Aucun document pour cette consultation.</p>
+          )}
           {docs.length > 0 && active && (
             <>
               <div className={styles.tabs} role="tablist">
@@ -155,8 +234,17 @@ export default function ReviewPage() {
                   </button>
                 ))}
               </div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                <span className={statusChipClass(active.status)}>{DOCUMENT_STATUS[active.status]}</span>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                }}
+              >
+                <span className={statusChipClass(active.status)}>
+                  {DOCUMENT_STATUS[active.status]}
+                </span>
                 <span className="muted">
                   Version {active.version} · rédigé depuis le dossier clinique v
                   {active.generated_from_object_version}
@@ -165,13 +253,18 @@ export default function ReviewPage() {
 
               {!active.is_current && (
                 <div className="banner banner-review">
-                  Ce document a été rédigé avant la dernière correction du dossier clinique.
+                  Ce document a été rédigé avant la dernière correction du
+                  dossier clinique.
                   <div>
                     <button
                       type="button"
                       className="button button-secondary"
                       onClick={() =>
-                        act(`/encounters/${id}/documents/generate`, undefined, "Documents régénérés.")
+                        act(
+                          `/encounters/${id}/documents/generate`,
+                          undefined,
+                          "Documents régénérés.",
+                        )
                       }
                     >
                       Régénérer les documents
@@ -186,59 +279,83 @@ export default function ReviewPage() {
                 onSelect={(claim) => setSelection({ kind: "claim", claim })}
               />
 
-              {active.status !== "validated" && active.status !== "superseded" && (
-                <div style={{ display: "grid", gap: 12, borderTop: "1px solid var(--color-cloud)", paddingTop: 16 }}>
-                  {criticalWarnings.length > 0 && (
-                    <label style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-                      <input
-                        type="checkbox"
-                        checked={acknowledged}
-                        onChange={(event) => setAcknowledged(event.target.checked)}
-                        style={{ width: 20, height: 20 }}
-                      />
-                      J’ai pris connaissance de l’alerte critique : ce document n’est pas exhaustif.
-                    </label>
-                  )}
-                  <div>
-                    <button
-                      type="button"
-                      className="button button-primary"
-                      disabled={!active.is_current || (criticalWarnings.length > 0 && !acknowledged)}
-                      onClick={() =>
-                        act(
-                          `/documents/${active.id}/validate`,
-                          { acknowledged_warning_codes: acknowledged ? criticalWarnings.map((w) => w.code) : [] },
-                          `${DOCUMENT_TYPE[active.document_type]} validé.`,
-                        )
-                      }
-                    >
-                      Valider ce document
-                    </button>
+              {active.status !== "validated" &&
+                active.status !== "superseded" && (
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: 12,
+                      borderTop: "1px solid var(--color-cloud)",
+                      paddingTop: 16,
+                    }}
+                  >
+                    {criticalWarnings.length > 0 && (
+                      <label
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          alignItems: "flex-start",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={acknowledged}
+                          onChange={(event) =>
+                            setAcknowledged(event.target.checked)
+                          }
+                          style={{ width: 20, height: 20 }}
+                        />
+                        J’ai pris connaissance de l’alerte critique : ce
+                        document n’est pas exhaustif.
+                      </label>
+                    )}
+                    <div>
+                      <button
+                        type="button"
+                        className="button button-primary"
+                        disabled={
+                          !active.is_current ||
+                          (criticalWarnings.length > 0 && !acknowledged)
+                        }
+                        onClick={() =>
+                          act(
+                            `/documents/${active.id}/validate`,
+                            {
+                              acknowledged_warning_codes: acknowledged
+                                ? criticalWarnings.map((w) => w.code)
+                                : [],
+                            },
+                            `${DOCUMENT_TYPE[active.document_type]} validé.`,
+                          )
+                        }
+                      >
+                        Valider ce document
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </>
           )}
         </section>
 
         <aside className={styles.side}>
-          <section className="card" aria-labelledby="source-heading">
-            <h2 id="source-heading">Source</h2>
-            {object && transcript.state === "ready" ? (
+          {object && transcript.state === "ready" && (
+            <section className="card" aria-labelledby="source-heading">
+              <h2 id="source-heading">Source</h2>
               <SourcePanel
                 selection={selection}
                 clinicalObject={object}
                 transcript={transcript.data}
                 onClose={() => setSelection(null)}
               />
-            ) : (
-              <p className="muted">Chargement…</p>
-            )}
-          </section>
+            </section>
+          )}
 
           {active && active.validation_issues.length > 0 && (
             <section className="card" aria-labelledby="check-heading">
-              <h2 id="check-heading">À vérifier ({active.validation_issues.length})</h2>
+              <h2 id="check-heading">
+                À vérifier ({active.validation_issues.length})
+              </h2>
               <ul>
                 {active.validation_issues.map((issue, index) => (
                   <li key={index}>
@@ -252,7 +369,9 @@ export default function ReviewPage() {
 
           {object && (
             <section className="card" aria-labelledby="facts-heading">
-              <h2 id="facts-heading">Faits cliniques ({object.facts.length})</h2>
+              <h2 id="facts-heading">
+                Faits cliniques ({object.facts.length})
+              </h2>
               <ul className={styles.factList}>
                 {object.facts.map((fact) => (
                   <li key={fact.fact_id} style={{ display: "grid", gap: 4 }}>
@@ -260,10 +379,15 @@ export default function ReviewPage() {
                       type="button"
                       className="link-button"
                       style={{ textAlign: "left" }}
-                      onClick={() => setSelection({ kind: "fact", factId: fact.fact_id })}
+                      onClick={() =>
+                        setSelection({ kind: "fact", factId: fact.fact_id })
+                      }
                     >
                       {fact.concept}
-                      {typeof fact.value === "string" && fact.value !== fact.concept ? ` : ${fact.value}` : ""}
+                      {typeof fact.value === "string" &&
+                      fact.value !== fact.concept
+                        ? ` : ${fact.value}`
+                        : ""}
                     </button>
                     <FactChips fact={fact} />
                   </li>
@@ -276,36 +400,47 @@ export default function ReviewPage() {
             <section className="card" aria-labelledby="correct-heading">
               <h2 id="correct-heading">Corriger</h2>
               <p className="muted">
-                Une correction modifie d’abord le dossier clinique ; Oris réécrit ensuite les
-                documents.
+                Une correction modifie d’abord le dossier clinique ; Oris
+                réécrit ensuite les documents.
               </p>
-              <CorrectionPanel encounter={data} clinicalObject={object} onCorrected={reloadAll} />
+              <CorrectionPanel
+                encounter={data}
+                clinicalObject={object}
+                onCorrected={reloadAll}
+              />
             </section>
           )}
 
-          <section className="card" aria-labelledby="history-heading">
-            <h2 id="history-heading">Historique</h2>
-            {clinical.state === "ready" && (
-              <ul>
-                {clinical.data.versions.map((version) => (
-                  <li key={version.version}>
-                    v{version.version} — {version.change_kind === "extraction" ? "extraction" : "correction du praticien"} ·{" "}
-                    {formatDateTime(version.created_at)}
-                  </li>
-                ))}
-              </ul>
-            )}
-            {learning.state === "ready" && learning.data.length > 0 && (
-              <>
-                <p className="muted">Enregistré pour l’apprentissage :</p>
+          {object && (
+            <section className="card" aria-labelledby="history-heading">
+              <h2 id="history-heading">Historique</h2>
+              {clinical.state === "ready" && (
                 <ul>
-                  {learning.data.map((event) => (
-                    <li key={event.learning_event_id}>{LEARNING_EVENT[event.event_type] ?? event.event_type}</li>
+                  {clinical.data.versions.map((version) => (
+                    <li key={version.version}>
+                      v{version.version} —{" "}
+                      {version.change_kind === "extraction"
+                        ? "extraction"
+                        : "correction du praticien"}{" "}
+                      · {formatDateTime(version.created_at)}
+                    </li>
                   ))}
                 </ul>
-              </>
-            )}
-          </section>
+              )}
+              {learning.state === "ready" && learning.data.length > 0 && (
+                <>
+                  <p className="muted">Enregistré pour l’apprentissage :</p>
+                  <ul>
+                    {learning.data.map((event) => (
+                      <li key={event.learning_event_id}>
+                        {LEARNING_EVENT[event.event_type] ?? event.event_type}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </section>
+          )}
         </aside>
       </div>
     </div>

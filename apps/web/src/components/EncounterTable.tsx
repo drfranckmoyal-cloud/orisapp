@@ -21,7 +21,13 @@ export function EncounterTable({ encounters }: { encounters: Encounter[] }) {
         {encounters.map((encounter) => (
           <tr key={encounter.id}>
             <td>
-              <Link href={`/consultations/${encounter.id}`}>
+              <Link
+                href={
+                  ["draft", "recording", "paused"].includes(encounter.status)
+                    ? `/consultations/${encounter.id}/ecoute`
+                    : `/consultations/${encounter.id}`
+                }
+              >
                 {encounter.patient.first_name} {encounter.patient.last_name}
               </Link>
             </td>

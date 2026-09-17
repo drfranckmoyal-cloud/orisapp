@@ -26,7 +26,6 @@
   transcript reconnu à l'identique. Les tests A–I prouvent la conservation des axes
   jusqu'aux documents et le rejet des sorties fautives, pas la qualité d'extraction
   depuis la parole (M5).
-- Pas de micro : seule une consultation fictive a une « source audio » (M2/M3).
 - Rédaction par gabarits semi-télégraphiques : fidèle mais peu naturelle ;
   préférences de longueur et de style non appliquées (M9). Les objectifs (`goals`)
   du plan ne sont pas rédigés faute de faits d'appui dans le schéma.
@@ -42,4 +41,20 @@
 - Traitement synchrone dans la requête HTTP (pas de worker).
 - iPhone en lecture seule : ni correction ni validation depuis l'app.
 - Identité de démonstration unique, sans authentification : `local`/`test` seulement.
+
+## Après M2 (2026-09-17)
+
+- **Aucune transcription de l'audio réel** : une consultation au micro se termine en
+  « Transcription impossible » (M4). L'audio est reçu, contrôlé puis purgé.
+- Purge immédiate après traitement, même en cas d'échec de transcription : pas de
+  nouvelle tentative possible sur le même audio (politique à revoir avec le STT réel).
+- Segments conservés en mémoire du navigateur seulement : une fermeture d'onglet perd
+  ce qui n'était pas encore envoyé (signalé comme trou à la reprise).
+- Stockage serveur transitoire non chiffré (`~/Library/Caches/Oris/audio`) : dev
+  uniquement ; stockage HDS chiffré requis avant tout audio réel de patient.
+- Pas de WebSocket ni de transcription en direct.
+- Rééchantillonnage par moyenne, sans filtre anti-repliement soigné.
+- Capture micro réelle non vérifiée dans le navigateur intégré (micro bloqué) : testée
+  avec le son de test et par tests unitaires ; à essayer dans Chrome ou Safari.
+- Choix du périphérique d'entrée non proposé.
 
