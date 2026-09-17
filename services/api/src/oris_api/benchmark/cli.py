@@ -162,6 +162,42 @@ def providers(
     return chosen
 
 
+def run_extraction(args: argparse.Namespace) -> int:
+    from oris_api.benchmark.extraction import ModelReport, run_model, summarize, write_outputs
+    from oris_api.llm.anthropic_extraction import AnthropicExtractionProvider
+
+    settings = Settings(_env_file=REPO / "services" / "api" / ".env")
+    if not settings.allow_external_llm:
+        sys.exit(
+            "ALLOW_EXTERNAL_LLM=true requis dans services/api/.env "
+            "(envoi du transcript à un modèle extérieur)."
+        )
+    if settings.anthropic_api_key is None:
+        sys.exit("ANTHROPIC_API_KEY manquante dans services/api/.env")
+    config = json.loads(args.config.read_text()) if args.config.exists() else {}
+    cases = default_corpus().cases()
+    if args.limit and args.limit < len(cases):
+        # Échantillon réparti : esthétique, usures, composite, facettes, extraction, pièges.
+        step = len(cases) // args.limit
+        cases = cases[::step][: args.limit]
+    reports = []
+    for model in args.models.split(","):
+        provider = AnthropicExtractionProvider(settings.anthropic_api_key.get_secret_value(), model)
+        prices = config.get(model, {})
+        report = ModelReport(
+            key=model,
+            version=provider.info.version,
+            scores=asyncio.run(run_model(provider, cases)),
+            usd_per_million_input=prices.get("usd_per_million_input"),
+            usd_per_million_output=prices.get("usd_per_million_output"),
+        )
+        summarize(report)
+        reports.append(report)
+        print(f"{model} : {report.summary['fact_recall']} de rappel")
+    print(f"Rapport : {write_outputs(reports, len(cases), args.out)}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -171,6 +207,15 @@ def main(argv: list[str] | None = None) -> int:
     check = commands.add_parser("check", help="contrôle hors ligne avec la référence (aucun envoi)")
     check.add_argument("--dataset", type=Path, default=DEFAULT_DATASET / "manifest.json")
     check.add_argument("--out", type=Path, default=REPO / "benchmarks" / "reports")
+    extraction = commands.add_parser(
+        "extraction", help="banc d'essai de l'extraction clinique (transcripts, sans audio)"
+    )
+    extraction.add_argument("--models", default="claude-sonnet-5")
+    extraction.add_argument(
+        "--limit", type=int, help="échantillon réparti sur les six familles du corpus"
+    )
+    extraction.add_argument("--config", type=Path, default=REPO / "benchmarks" / "providers.json")
+    extraction.add_argument("--out", type=Path, default=REPO / "benchmarks" / "reports")
     run = commands.add_parser("run")
     run.add_argument("--dataset", type=Path, default=DEFAULT_DATASET / "manifest.json")
     run.add_argument("--providers", default="deepgram,azure_speech")
@@ -186,6 +231,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "generate":
         print(f"Jeu écrit : {generate(args.out, args.limit)}")
         return 0
+
+    if args.command == "extraction":
+        return run_extraction(args)
 
     dataset = Dataset.load(args.dataset)
     if args.command == "check":

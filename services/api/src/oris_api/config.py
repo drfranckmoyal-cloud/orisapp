@@ -17,6 +17,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 AppEnv = Literal["local", "test", "staging", "production"]
 ProviderName = Literal["mock"]
 SttProviderName = Literal["mock", "azure_speech", "deepgram"]
+ExtractionProviderName = Literal["mock", "anthropic"]
 
 
 class Settings(BaseSettings):
@@ -34,7 +35,11 @@ class Settings(BaseSettings):
     azure_speech_endpoint: str | None = None  # https://<ressource>.cognitiveservices.azure.com
     deepgram_api_key: SecretStr | None = None
     deepgram_base_url: str = "https://api.deepgram.com"
-    clinical_extraction_provider: ProviderName = "mock"
+    clinical_extraction_provider: ExtractionProviderName = "mock"
+    # Envoyer le transcript à un modèle extérieur exige un accord explicite (spec §66).
+    allow_external_llm: bool = False
+    anthropic_api_key: SecretStr | None = None
+    anthropic_model: str = "claude-sonnet-5"
     document_generation_provider: ProviderName = "mock"
     clinical_validation_provider: ProviderName = "mock"
 
@@ -58,7 +63,13 @@ class Settings(BaseSettings):
 
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
 
-    @field_validator("azure_speech_key", "azure_speech_endpoint", "deepgram_api_key", mode="before")
+    @field_validator(
+        "azure_speech_key",
+        "azure_speech_endpoint",
+        "deepgram_api_key",
+        "anthropic_api_key",
+        mode="before",
+    )
     @classmethod
     def empty_means_missing(cls, value: object) -> object:
         """Une clé laissée vide dans .env est une clé absente."""

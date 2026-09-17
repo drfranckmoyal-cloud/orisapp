@@ -51,6 +51,14 @@ class TranscriptionUnavailable(RuntimeError):
         super().__init__(code)
 
 
+class ExtractionUnavailable(RuntimeError):
+    """Extraction impossible : panne du fournisseur, ou sortie refusée après un essai."""
+
+    def __init__(self, code: str) -> None:
+        self.code = code
+        super().__init__(code)
+
+
 @dataclass(frozen=True)
 class StreamEvent:
     """Résultat temps réel. `audio_end_ms` : fin de la parole reconnue dans l'audio."""

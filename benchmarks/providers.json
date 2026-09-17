@@ -11,5 +11,27 @@
     "pricing_source": null,
     "pricing_verified_on": null,
     "compliance_gate": "not_reviewed"
+  },
+  "_note_llm": "Tarifs des modèles relevés sur platform.claude.com/docs/en/about-claude/pricing. Le coût par consultation est calculé à partir des jetons réellement consommés.",
+  "claude-sonnet-5": {
+    "usd_per_million_input": 2,
+    "usd_per_million_output": 10,
+    "pricing_source": "https://platform.claude.com/docs/en/about-claude/pricing",
+    "pricing_verified_on": "2026-09-18",
+    "compliance_gate": "not_reviewed"
+  },
+  "claude-haiku-4-5-20251001": {
+    "usd_per_million_input": 1,
+    "usd_per_million_output": 5,
+    "pricing_source": "https://platform.claude.com/docs/en/about-claude/pricing",
+    "pricing_verified_on": "2026-09-18",
+    "compliance_gate": "not_reviewed"
+  },
+  "claude-opus-5": {
+    "usd_per_million_input": 5,
+    "usd_per_million_output": 25,
+    "pricing_source": "https://platform.claude.com/docs/en/about-claude/pricing",
+    "pricing_verified_on": "2026-09-18",
+    "compliance_gate": "not_reviewed"
   }
 }

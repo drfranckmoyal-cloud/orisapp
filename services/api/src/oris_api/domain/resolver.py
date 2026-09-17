@@ -113,7 +113,11 @@ def check_plan(plan: TreatmentPlan | None, facts: list[ClinicalFact]) -> list[Vi
     return violations
 
 
-def check_procedures(procedures: list[Procedure], facts: list[ClinicalFact]) -> list[Violation]:
+def check_procedures(
+    procedures: list[Procedure],
+    facts: list[ClinicalFact],
+    segments: list[TranscriptSegment] | None = None,
+) -> list[Violation]:
     violations: list[Violation] = []
     by_id = {f.fact_id: f for f in facts}
     for procedure in procedures:
@@ -125,14 +129,16 @@ def check_procedures(procedures: list[Procedure], facts: list[ClinicalFact]) -> 
         required = PROCEDURE_STATUS_TO_FACT_STATUS.get(procedure.status)
         if required and required not in {f.clinical_status for f in evidence}:
             violations.append(Violation("PROCEDURE_STATUS_UNSUPPORTED", pid))
-        # Spec §20 / test « matériau habituel non prononcé » : toute valeur textuelle
-        # d'un emplacement opératoire doit avoir été dite, donc portée par un fait :
-        # soit la même valeur, soit un fait dont le concept nomme l'emplacement.
-        # (Correspondance emplacement -> concept explicite prévue avec les gabarits M7.)
+        # Spec §20 / test « matériau habituel non prononcé » : toute valeur textuelle d'un
+        # emplacement opératoire doit avoir été **prononcée** — dans la valeur d'un fait
+        # d'appui, dans le nom d'un concept d'appui, ou dans le texte des segments cités.
         spoken_values = {f.value for f in evidence if isinstance(f.value, str)}
+        cited = {s for f in evidence for s in f.evidence_segment_ids}
+        spoken_text = " ".join(s.text.lower() for s in (segments or []) if s.segment_id in cited)
         for slot, value in procedure.structured_data.items():
             named = any(slot in f.concept for f in evidence)
-            if isinstance(value, str) and value not in spoken_values and not named:
+            said = isinstance(value, str) and value.strip().lower() in spoken_text
+            if isinstance(value, str) and value not in spoken_values and not named and not said:
                 violations.append(Violation("PROCEDURE_DATA_UNSUPPORTED", pid))
                 break
     return violations
@@ -152,5 +158,5 @@ def resolve(
     return (
         check_facts(facts, segments, from_extraction)
         + check_plan(plan, facts)
-        + check_procedures(procedures, facts)
+        + check_procedures(procedures, facts, segments)
     )

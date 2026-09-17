@@ -1,0 +1,35 @@
+[
+  {
+    "evaluation_run_id": "e6b7cb7e-183a-4869-b02b-d5ae2a724819",
+    "component": "clinical_extraction:claude-sonnet-5",
+    "candidate_version": "claude-sonnet-5/extraction-fr-4",
+    "dataset_version": "oris-synthetic-corpus@1.0",
+    "metrics": {
+      "cases": 20.0,
+      "reliability": 0.85,
+      "fact_precision": 0.3953488372093023,
+      "fact_recall": 0.51,
+      "duplicate_fact_rate": 0.023255813953488372,
+      "negation_accuracy": 0.9803921568627451,
+      "temporality_accuracy": 0.9803921568627451,
+      "status_accuracy": 0.9215686274509803,
+      "plan_vs_performed_accuracy": 0.896551724137931,
+      "unknown_teeth": 0.0,
+      "renderable_fact_rate": 0.9689922480620154,
+      "resolver_rejection_rate": 0.0,
+      "schema_valid_first_try": 1.0,
+      "latency_p50_s": 14.842558667005505,
+      "latency_p95_s": 28.866923666966613,
+      "input_tokens_mean": 7326.294117647059,
+      "output_tokens_mean": 2295.6470588235293
+    },
+    "critical_regressions": [
+      "ORIS-SYN-046:rejected:EXTRACTION_INVALID_OUTPUT",
+      "ORIS-SYN-051:rejected:EXTRACTION_INVALID_OUTPUT",
+      "ORIS-SYN-056:rejected:EXTRACTION_INVALID_OUTPUT",
+      "ORIS-SYN-096:negation_lost"
+    ],
+    "created_at": "2026-09-17T23:14:00.236114+00:00",
+    "release_gate_passed": false
+  }
+]

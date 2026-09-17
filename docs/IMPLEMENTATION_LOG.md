@@ -445,3 +445,43 @@ Trouvé et corrigé grâce au contrôle hors ligne :
   `.env` privé du poste (désormais isolés, STT factice forcé).
 - `say` (macOS) se bloque parfois : délai maximal et nouvel essai par phrase.
 
+
+---
+
+## M5 — Clinical extraction (2026-09-18)
+
+Critères lus : ACCEPTANCE_CRITERIA (clinical extraction), spec §18–25, §27, §29–31,
+§101–102, TECHNICAL_BENCHMARK (extraction). Les garde-fous existants (résolveur,
+validateur factuel, rédaction par gabarits) ne changent pas : c'est l'extraction
+factice qui est remplacée par un vrai modèle.
+
+### Adaptateur (`oris_api/llm/anthropic_extraction.py`)
+
+- API Messages d'Anthropic (HTTP direct, comme les adaptateurs STT), sortie forcée
+  par un outil dont le schéma est **dérivé des JSON Schemas d'Oris** (un seul
+  schéma, références résolues) : pas de champ libre, pas de second vocabulaire.
+- Prompt système : §27 (n'inventer aucune donnée absente, préserver négation,
+  temporalité, incertitude, rôle du locuteur, et la distinction proposé / accepté /
+  refusé / prévu / réalisé ; dans le doute, marquer incertain ou omettre).
+- Le modèle ne décide pas de la provenance : `source_type=audio` et
+  `manually_validated=false` sont posés par l'adaptateur, jamais par le modèle.
+- Concepts : liste du vocabulaire connu (`ontology/labels.py`) fournie au modèle ;
+  un concept hors liste reste possible mais le document le signalera « à rédiger ».
+- Sortie invalide → **un seul nouvel essai** avec l'erreur en retour, puis rejet
+  (jamais de correction silencieuse). Panne réseau / quota → `EXTRACTION_UNAVAILABLE`,
+  consultation en `generation_failed`, relance possible.
+- Jetons consommés remontés pour mesurer le coût réel.
+
+### Configuration
+
+`CLINICAL_EXTRACTION_PROVIDER=mock|anthropic`, `ANTHROPIC_API_KEY`,
+`ANTHROPIC_MODEL` (défaut `claude-sonnet-5`), `ALLOW_EXTERNAL_LLM=true` requis :
+même garde-fou explicite que pour la transcription.
+
+### Banc d'essai extraction (`benchmark/extraction.py`)
+
+Sur les 100 consultations du corpus (transcripts, sans audio) contre les faits
+attendus : précision et rappel des faits, exactitude des négations, de la
+temporalité et du statut prévu/réalisé, taux d'énoncés non appuyés, validité du
+schéma au premier essai, taux de rejet par le résolveur, latence, coût réel.
+Comparaison entre modèles (Sonnet, Haiku, Opus) : aucun n'est choisi d'office.

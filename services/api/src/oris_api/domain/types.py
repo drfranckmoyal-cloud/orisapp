@@ -47,6 +47,9 @@ class ExtractionResult:
     facts: list[ClinicalFact]
     treatment_plan: TreatmentPlan | None = None
     procedures: list[Procedure] = field(default_factory=list)
+    # Jetons consommés et modèle : mesure du coût, jamais de contenu clinique.
+    usage: dict[str, int] | None = None
+    model: str | None = None
 
 
 @dataclass(frozen=True)
