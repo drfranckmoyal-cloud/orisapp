@@ -469,7 +469,7 @@ export interface components {
              * Reason
              * @enum {string}
              */
-            reason: "microphone_lost" | "page_reloaded" | "capture_error";
+            reason: "microphone_lost" | "page_reloaded" | "capture_error" | "audio_interruption" | "route_change" | "app_terminated";
             /** Duration Ms */
             duration_ms?: number | null;
         };

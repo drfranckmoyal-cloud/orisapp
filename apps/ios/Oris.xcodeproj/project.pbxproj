@@ -246,7 +246,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/Oris-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Oris;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Oris écoute la consultation pour préparer le compte rendu. L’écoute est toujours visible à l’écran et s’arrête quand vous le décidez.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -268,7 +270,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/Oris-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Oris;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Oris écoute la consultation pour préparer le compte rendu. L’écoute est toujours visible à l’écran et s’arrête quand vous le décidez.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;

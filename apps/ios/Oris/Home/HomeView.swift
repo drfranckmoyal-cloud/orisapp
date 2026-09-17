@@ -3,6 +3,8 @@ import SwiftUI
 /// S01 — Accueil iPhone : action principale en un geste, état du service visible.
 struct HomeView: View {
     @State var model: HomeViewModel
+    let client: APIClient
+    @State private var showNewConsultation = false
 
     var body: some View {
         NavigationStack {
@@ -18,7 +20,9 @@ struct HomeView: View {
                     }
 
                     VStack(alignment: .leading, spacing: OrisSpacing.s8) {
-                        Button {} label: {
+                        Button {
+                            showNewConsultation = true
+                        } label: {
                             Text("Nouvelle consultation")
                                 .font(.title3.bold())
                                 .frame(maxWidth: .infinity, minHeight: 56)
@@ -26,9 +30,8 @@ struct HomeView: View {
                         .buttonStyle(.borderedProminent)
                         .tint(OrisColor.orisBlue)
                         .clipShape(RoundedRectangle(cornerRadius: OrisRadius.button))
-                        .disabled(true)
 
-                        Text("La consultation arrive à l’étape suivante du développement.")
+                        Text("La transcription automatique arrive à l’étape M4 : l’audio est capté et contrôlé, sans compte rendu pour l’instant.")
                             .font(.footnote)
                             .foregroundStyle(OrisColor.graphite)
                     }
@@ -40,6 +43,9 @@ struct HomeView: View {
             .background(OrisColor.cloud)
             .refreshable { await model.refresh() }
             .task { await model.refresh() }
+            .fullScreenCover(isPresented: $showNewConsultation) {
+                NewConsultationView(client: client) { showNewConsultation = false }
+            }
         }
     }
 }

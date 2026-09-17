@@ -23,7 +23,14 @@ from oris_api.services.identity import Actor
 AUDIO_FORMAT = "audio/pcm;rate=16000;channels=1;encoding=s16le"
 BYTES_PER_MS = 32  # 16 000 échantillons/s × 2 octets / 1 000
 CAPTURING = frozenset({"recording", "paused"})
-GapReason = Literal["microphone_lost", "page_reloaded", "capture_error"]
+GapReason = Literal[
+    "microphone_lost",
+    "page_reloaded",
+    "capture_error",
+    "audio_interruption",
+    "route_change",
+    "app_terminated",
+]
 
 
 @dataclass(frozen=True)

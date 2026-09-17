@@ -120,3 +120,73 @@ struct ClinicalObjectResponse: Codable, Equatable, Sendable {
 struct TranscriptResponse: Codable, Equatable, Sendable {
     let segments: [TranscriptSegment]
 }
+
+struct AudioSessionState: Codable, Equatable, Sendable {
+    let status: String
+    let receivedCount: Int
+    let lastSequence: Int?
+    let nextSequence: Int
+    let nextTimestampMs: Int
+    let missingSequences: [Int]
+    let receivedDurationMs: Int
+    let gaps: [Gap]
+    let purgeStatus: String
+    let lastReceivedAt: String?
+
+    struct Gap: Codable, Equatable, Sendable {
+        let durationMs: Int?
+
+        enum CodingKeys: String, CodingKey {
+            case durationMs = "duration_ms"
+        }
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case status, gaps
+        case receivedCount = "received_count"
+        case lastSequence = "last_sequence"
+        case nextSequence = "next_sequence"
+        case nextTimestampMs = "next_timestamp_ms"
+        case missingSequences = "missing_sequences"
+        case receivedDurationMs = "received_duration_ms"
+        case purgeStatus = "purge_status"
+        case lastReceivedAt = "last_received_at"
+    }
+}
+
+struct ClientConfig: Codable, Equatable, Sendable {
+    let environment: String
+    let maxSessionMinutes: Int
+    let warnSessionMinutes: Int
+    let patientInformationMode: String
+    let testAudioSourceEnabled: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case environment
+        case maxSessionMinutes = "max_session_minutes"
+        case warnSessionMinutes = "warn_session_minutes"
+        case patientInformationMode = "patient_information_mode"
+        case testAudioSourceEnabled = "test_audio_source_enabled"
+    }
+}
+
+/// Démarrage et fin d'écoute via l'API (implémentation réelle de `CaptureAPI`).
+struct APICaptureBridge: CaptureAPI {
+    let client: APIClient
+    let encounterId: String
+
+    func start(patientInformed: Bool) async throws {
+        _ = try await client.startEncounter(id: encounterId, patientInformed: patientInformed)
+    }
+
+    func finish(finalSequence: Int, recordedMs: Int, acceptGaps: Bool) async throws -> FinishOutcome {
+        do {
+            _ = try await client.finishEncounter(
+                id: encounterId, finalSequence: finalSequence, recordedMs: recordedMs, acceptGaps: acceptGaps
+            )
+            return .finished
+        } catch APIError.server(_, "AUDIO_CHUNKS_MISSING", let details) {
+            return .chunksMissing(details)
+        }
+    }
+}

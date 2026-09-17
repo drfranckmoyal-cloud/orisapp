@@ -305,3 +305,72 @@ Contrôles : API 126 tests ; web 33 tests + lint + typecheck + build ; iOS 14 te
 Corrigé en cours de route : le choix de source (micro / test) était figé à la
 première tentative ; il est désormais lu à l'ouverture de la source.
 
+
+---
+
+## M3 — iOS audio capture (2026-09-17)
+
+Critères lus : ACCEPTANCE_CRITERIA (active consultation), spec §5.1, §13.2, §65,
+§69–71, UI_SCREEN_SPEC S01, S03, S04, BACKLOG E06. Même contrat audio qu'en M2
+(PCM 16 kHz mono, segments de 2 s, même API) : aucun changement de règle clinique.
+
+### Architecture iOS (`apps/ios/Oris/Audio`)
+
+- `PCM.swift`, `Chunker.swift` : mêmes calculs que le web (rééchantillonnage par
+  moyenne, horodatage à l'échantillon).
+- `ChunkStore.swift` : tampon local **chiffré** (AES-GCM, CryptoKit) des segments non
+  confirmés, un fichier par segment, protection de données iOS en plus. Clé dans le
+  trousseau (`AfterFirstUnlockThisDeviceOnly`, pour écrire écran verrouillé) : les
+  segments survivent à une fermeture de l'app et sont renvoyés à la réouverture.
+  Suppression dès l'accusé de réception du serveur.
+- `Uploader.swift` (actor) : file ordonnée segments + événements (pause, reprise,
+  trou), un envoi à la fois, nouvelles tentatives croissantes, réveil immédiat au
+  retour du réseau (`NWPathMonitor`).
+- `AudioTransport.swift` : même traduction des réponses que le web.
+- `AudioInput.swift` : `AVAudioSession` (`.record`, mode `.spokenAudio`,
+  AirPods/Bluetooth autorisés) + `AVAudioEngine` ; interruptions (appel, Siri),
+  changement de route (AirPods retirés), réinitialisation des services média.
+  `TestToneInput` pour le simulateur sans micro (DEBUG, local).
+- `CaptureController.swift` (@MainActor @Observable) : états prêt, écoute, pause,
+  interrompu (appel), micro perdu, envoi final, terminé, erreur.
+
+### Règles propres à l'iPhone
+
+- Appel / Siri : écoute suspendue, **pas de reprise automatique** ; le praticien
+  reprend explicitement ; la durée d'interruption devient un trou signalé
+  (`audio_interruption`) → alerte critique.
+- AirPods retirés / nouvelle entrée : redémarrage de la capture sur la nouvelle
+  entrée ; si plus d'1 s sans son, trou signalé (`route_change`).
+- Écran verrouillé / arrière-plan : la capture continue (mode audio en arrière-plan)
+  et l'état reste affiché (indicateur micro iOS).
+- App tuée pendant l'écoute : à la réouverture, segments chiffrés renvoyés, trou
+  `app_terminated` signalé, reprise ou fin proposées.
+- Micro refusé : explication et bouton vers Réglages.
+
+### Serveur
+
+Motifs de trou ajoutés : `audio_interruption`, `route_change`, `app_terminated`
+(un trou reste un trou : même alerte critique).
+
+### Écrans
+
+Accueil : « Nouvelle consultation » actif → choix du patient (ou création) →
+pré-écran (S03) → écoute plein écran (S04) → consultation. Liste des consultations :
+une écoute en cours ouvre l'écran d'écoute.
+
+### Résultat M3 (2026-09-17)
+
+Contrôles : iOS 39 tests (Swift 6, avertissements = erreurs), dont appel sans reprise
+automatique, changement d'écouteurs court et long, micro perdu, coupure réseau,
+« Terminer malgré tout », durée maximale, reprise après fermeture ; tampon chiffré
+(aller-retour, jamais en clair, autre clé refusée) ; API 129 tests ; web 33 tests.
+
+Choix en cours de route :
+- Le bloc de capture audio est créé hors de tout acteur et passe les échantillons par
+  un `AsyncStream` : appelé sur le fil temps réel, il ne doit pas hériter de
+  l'isolation du fil principal (plantage d'isolation Swift 6).
+- `UIBackgroundModes` dans `Config/Oris-Info.plist`, fusionné avec l'Info.plist généré.
+- Tests temporels : attente d'état plutôt que délai fixe (52 s d'audio = 26 segments
+  chiffrés à écrire).
+- Écoute non vérifiée à l'écran : accès au simulateur toujours non accordé.
+

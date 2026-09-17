@@ -1399,7 +1399,10 @@
             "enum": [
               "microphone_lost",
               "page_reloaded",
-              "capture_error"
+              "capture_error",
+              "audio_interruption",
+              "route_change",
+              "app_terminated"
             ],
             "title": "Reason"
           },

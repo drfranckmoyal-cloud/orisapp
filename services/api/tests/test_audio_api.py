@@ -241,3 +241,14 @@ def test_audio_upload_logs_no_audio_or_checksum(api: Any) -> None:
     output = stream.getvalue()
     assert "/encounters/{encounter_id}/audio/chunks/{sequence}" in output
     assert checksum not in output
+
+
+@pytest.mark.parametrize("reason", ["audio_interruption", "route_change", "app_terminated"])
+def test_ios_interruption_reasons_are_accepted(api: Any, reason: str) -> None:
+    eid = new_encounter(api)
+    response = api.post(
+        f"/encounters/{eid}/audio/gaps", json={"reason": reason, "duration_ms": 4000}
+    )
+    assert response.status_code == 200
+    assert response.json()["reported_gap_reasons"] == [reason]
+    assert len(response.json()["gaps"]) == 1

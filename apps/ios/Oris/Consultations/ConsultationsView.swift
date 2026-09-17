@@ -32,7 +32,13 @@ struct ConsultationsView: View {
             }
             .navigationTitle("Consultations")
             .navigationDestination(for: String.self) { id in
-                ConsultationDetailView(model: ConsultationDetailViewModel(encounterId: id, client: client))
+                if case .loaded(let encounters) = model.state,
+                   let encounter = encounters.first(where: { $0.id == id }),
+                   [.draft, .recording, .paused].contains(encounter.status) {
+                    ListeningView(client: client, encounter: encounter) {}
+                } else {
+                    ConsultationDetailView(model: ConsultationDetailViewModel(encounterId: id, client: client))
+                }
             }
             .refreshable { await model.refresh() }
             .task { await model.refresh() }

@@ -1,5 +1,22 @@
 # Changelog
 
+## M3 — 2026-09-17 — iOS audio capture
+- écoute iPhone : AVAudioSession (parole, micro AirPods) + AVAudioEngine, même
+  contrat audio que le web (PCM 16 kHz mono, segments de 2 s, SHA-256) ;
+- tampon local chiffré AES-GCM (clé dans le trousseau de l'appareil, fichiers
+  protégés, hors sauvegardes), segments effacés dès l'accusé de réception ;
+- appel / Siri : écoute suspendue sans reprise automatique, durée signalée comme trou ;
+- AirPods retirés ou nouvelle entrée : capture relancée, trou signalé au-delà d'1 s ;
+- écran verrouillé : écoute poursuivie (mode audio en arrière-plan) ;
+- coupure réseau : capture continue, renvoi dans l'ordre, relance immédiate au retour
+  du réseau ; « Terminer malgré tout » ;
+- app fermée : segments chiffrés renvoyés à la réouverture, trou `app_terminated`,
+  reprise ou fin proposées ;
+- micro refusé : explication et accès aux Réglages ;
+- écrans : nouvelle consultation (patient), pré-écran, écoute plein écran ;
+- serveur : motifs de trou `audio_interruption`, `route_change`, `app_terminated` ;
+- tests : API 129, web 33, iOS 39.
+
 ## M2 — 2026-09-17 — Web audio capture
 - capture micro dans le navigateur (AudioWorklet), PCM 16 kHz mono en segments de 2 s
   horodatés à l'échantillon ;

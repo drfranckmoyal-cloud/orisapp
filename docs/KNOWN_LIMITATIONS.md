@@ -58,3 +58,17 @@
   avec le son de test et par tests unitaires ; à essayer dans Chrome ou Safari.
 - Choix du périphérique d'entrée non proposé.
 
+## Après M3 (2026-09-17)
+
+- Écoute iPhone vérifiée par tests (entrée audio simulée) et compilation, **pas à
+  l'écran ni sur un vrai iPhone** : accès au simulateur non accordé ; appels, AirPods
+  et verrouillage réels restent à éprouver sur appareil (§70).
+- Sur un vrai iPhone, `localhost` ne désigne pas le Mac : fixer `ORIS_API_URL`
+  (adresse du Mac sur le réseau local) ; l'envoi en HTTP clair exigera une exception
+  ATS en développement, et HTTPS en production.
+- Le tampon chiffré survit à la fermeture de l'app, mais une désinstallation efface la
+  clé : les segments non envoyés sont alors perdus (signalés comme manquants).
+- Pas de choix manuel de l'entrée audio ; pas de transcription en direct.
+- La durée d'une interruption après fermeture de l'app est estimée depuis la dernière
+  réception serveur (horloges différentes, ordre de grandeur seulement).
+

@@ -16,6 +16,7 @@ from oris_api.contracts.generated import (
     LearningEventEventType,
 )
 from oris_api.domain.corrections import CorrectionOperation
+from oris_api.services.audio import GapReason
 
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
 
@@ -185,7 +186,7 @@ class ChunkReceiptOut(BaseModel):
 
 class AudioGapReport(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    reason: Literal["microphone_lost", "page_reloaded", "capture_error"]
+    reason: GapReason
     duration_ms: Annotated[int, Field(ge=0)] | None = None
 
 
