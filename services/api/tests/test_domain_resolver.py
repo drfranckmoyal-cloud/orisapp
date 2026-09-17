@@ -41,6 +41,13 @@ def test_all_corpus_cases_are_accepted() -> None:
         assert rules(list(source.facts), source.treatment_plan, source) == set(), source.case_id
 
 
+def test_extraction_cannot_claim_practitioner_validation() -> None:
+    source = case("ORIS-SYN-091")
+    assert all(f.manually_validated for f in source.facts)  # vérité terrain du corpus
+    violations = resolve(list(source.facts), source.treatment_plan, [], list(source.segments), True)
+    assert {v.rule for v in violations} == {"EXTRACTION_SELF_VALIDATED"}
+
+
 def test_g_future_act_marked_performed_is_rejected() -> None:
     source = case("ORIS-SYN-095")  # « la prochaine fois on fera les composites »
     facts = with_fact(source, 1, clinical_status="performed")

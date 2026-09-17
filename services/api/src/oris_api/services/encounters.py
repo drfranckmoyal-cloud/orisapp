@@ -155,7 +155,11 @@ def process(
         lambda: providers.clinical_extraction.extract(transcription.segments, [])
     )
     violations = resolve(
-        extraction.facts, extraction.treatment_plan, extraction.procedures, transcription.segments
+        extraction.facts,
+        extraction.treatment_plan,
+        extraction.procedures,
+        transcription.segments,
+        from_extraction=True,
     )
     if violations:
         # Sortie rejetée entière, jamais corrigée en silence.

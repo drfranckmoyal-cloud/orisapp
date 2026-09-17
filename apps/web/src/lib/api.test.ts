@@ -42,3 +42,30 @@ describe("fetchHealth", () => {
     });
   });
 });
+
+describe("apiRequest", () => {
+  it("returns the parsed body", async () => {
+    const { apiRequest } = await import("./api");
+    expect(await apiRequest<{ ok: boolean }>("/x", {}, respond({ ok: true }), "http://api.test")).toEqual({
+      ok: true,
+    });
+  });
+
+  it("turns an API error into a coded ApiError", async () => {
+    const { ApiError, apiRequest } = await import("./api");
+    const failing = respond({ code: "WARNING_NOT_ACKNOWLEDGED", details: ["AUDIO_GAP"] }, 409);
+    await expect(apiRequest("/x", { method: "POST", body: {} }, failing, "http://api.test")).rejects.toEqual(
+      new ApiError(409, "WARNING_NOT_ACKNOWLEDGED", ["AUDIO_GAP"]),
+    );
+  });
+
+  it("reports network failures", async () => {
+    const { apiRequest } = await import("./api");
+    const down: typeof fetch = async () => {
+      throw new TypeError("down");
+    };
+    await expect(apiRequest("/x", {}, down, "http://api.test")).rejects.toMatchObject({
+      code: "NETWORK_UNREACHABLE",
+    });
+  });
+});

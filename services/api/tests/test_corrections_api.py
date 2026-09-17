@@ -146,6 +146,7 @@ def test_explicit_validation_then_correction_reopens_review(api: Any) -> None:
     kinds = [e["event_type"] for e in api.get(f"/encounters/{eid}/learning-events").json()]
     assert kinds.count("document_validated_unchanged") == 2
 
+    # Le patient a finalement accepté : décision explicite du praticien (spec §34).
     reopened = api.patch(
         f"/encounters/{eid}/clinical-object",
         json={
@@ -155,15 +156,10 @@ def test_explicit_validation_then_correction_reopens_review(api: Any) -> None:
             ],
         },
     )
-    # Accepter sans fait « accepté » viole la règle E : refus, rien ne bouge.
-    assert reopened.status_code == 422
-    refused = api.patch(
-        f"/encounters/{eid}/clinical-object",
-        json={
-            "expected_object_version": 1,
-            "operations": [{"operation": "replace_tooth", "from_tooth": "27", "to_tooth": "26"}],
-        },
-    )
-    assert refused.status_code == 200
-    assert refused.json()["status"] == "review"
-    assert {d["status"] for d in documents_by_type(api, eid).values()} == {"draft_ai"}
+    assert reopened.status_code == 200, reopened.text
+    assert reopened.json()["status"] == "review"
+    docs = documents_by_type(api, eid)
+    assert {d["status"] for d in docs.values()} == {"draft_ai"}
+    note = docs["consultation_note"]["content"]
+    assert "Accepté : dépose de la restauration et réévaluation (27)." in note
+    assert "statut : accepté" in docs["treatment_plan_text"]["content"]

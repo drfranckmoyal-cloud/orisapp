@@ -1,0 +1,3009 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Oris API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Ready",
+        "operationId": "ready_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patients": {
+      "get": {
+        "tags": [
+          "patients"
+        ],
+        "summary": "List Patients",
+        "operationId": "list_patients_patients_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PatientOut"
+                  },
+                  "title": "Response List Patients Patients Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "patients"
+        ],
+        "summary": "Create Patient",
+        "operationId": "create_patient_patients_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatientCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patients/{patient_id}": {
+      "get": {
+        "tags": [
+          "patients"
+        ],
+        "summary": "Get Patient",
+        "operationId": "get_patient_patients__patient_id__get",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "patients"
+        ],
+        "summary": "Update Patient",
+        "operationId": "update_patient_patients__patient_id__patch",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatientUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters": {
+      "get": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "List Encounters",
+        "operationId": "list_encounters_encounters_get",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "draft",
+                    "recording",
+                    "paused",
+                    "finalizing",
+                    "processing",
+                    "review",
+                    "validated",
+                    "exported",
+                    "archived",
+                    "audio_error",
+                    "upload_interrupted",
+                    "transcription_failed",
+                    "generation_failed"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "patient_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EncounterOut"
+                  },
+                  "title": "Response List Encounters Encounters Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Create Encounter",
+        "operationId": "create_encounter_encounters_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EncounterCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EncounterOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}": {
+      "get": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Get Encounter",
+        "operationId": "get_encounter_encounters__encounter_id__get",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EncounterOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/start": {
+      "post": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Start",
+        "operationId": "start_encounters__encounter_id__start_post",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EncounterOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/pause": {
+      "post": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Pause",
+        "operationId": "pause_encounters__encounter_id__pause_post",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EncounterOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/resume": {
+      "post": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Resume",
+        "operationId": "resume_encounters__encounter_id__resume_post",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EncounterOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/finish": {
+      "post": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Finish",
+        "operationId": "finish_encounters__encounter_id__finish_post",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EncounterOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/process": {
+      "post": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Process",
+        "description": "Relance du traitement après une erreur ; sans effet si déjà traité.",
+        "operationId": "process_encounters__encounter_id__process_post",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EncounterOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/validate": {
+      "post": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Validate Encounter",
+        "operationId": "validate_encounter_encounters__encounter_id__validate_post",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EncounterOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/transcript": {
+      "get": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Transcript",
+        "operationId": "transcript_encounters__encounter_id__transcript_get",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/clinical-object": {
+      "get": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Clinical Object",
+        "operationId": "clinical_object_encounters__encounter_id__clinical_object_get",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalObjectOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Correct Clinical Object",
+        "operationId": "correct_clinical_object_encounters__encounter_id__clinical_object_patch",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorrectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EncounterOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/documents": {
+      "get": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "List Documents",
+        "operationId": "list_documents_encounters__encounter_id__documents_get",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentOut"
+                  },
+                  "title": "Response List Documents Encounters  Encounter Id  Documents Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/documents/generate": {
+      "post": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Generate Documents",
+        "operationId": "generate_documents_encounters__encounter_id__documents_generate_post",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentOut"
+                  },
+                  "title": "Response Generate Documents Encounters  Encounter Id  Documents Generate Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/{document_id}/validate": {
+      "post": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Validate Document",
+        "operationId": "validate_document_documents__document_id__validate_post",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentValidate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/{document_id}": {
+      "get": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Get Document",
+        "operationId": "get_document_documents__document_id__get",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/learning-events": {
+      "get": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Learning Events",
+        "operationId": "learning_events_encounters__encounter_id__learning_events_get",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LearningEventOut"
+                  },
+                  "title": "Response Learning Events Encounters  Encounter Id  Learning Events Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/synthetic-cases": {
+      "get": {
+        "tags": [
+          "synthetic"
+        ],
+        "summary": "List Cases",
+        "operationId": "list_cases_synthetic_cases_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SyntheticCaseOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Cases Synthetic Cases Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/synthetic-cases/{case_id}/encounters": {
+      "post": {
+        "tags": [
+          "synthetic"
+        ],
+        "summary": "Run Case",
+        "description": "Consultation complète en un appel : patient fictif, démarrage, fin, traitement.",
+        "operationId": "run_case_synthetic_cases__case_id__encounters_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EncounterOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddFact": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "const": "add_fact",
+            "title": "Operation"
+          },
+          "fact": {
+            "$ref": "#/components/schemas/NewFact"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "operation",
+          "fact"
+        ],
+        "title": "AddFact"
+      },
+      "ClaimOut": {
+        "properties": {
+          "section": {
+            "type": "string",
+            "title": "Section"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "fact_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fact Ids"
+          },
+          "warning_codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warning Codes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "section",
+          "text",
+          "fact_ids",
+          "warning_codes"
+        ],
+        "title": "ClaimOut"
+      },
+      "ClinicalEncounter": {
+        "properties": {
+          "encounter_id": {
+            "type": "string",
+            "title": "Encounter Id"
+          },
+          "patient_id": {
+            "type": "string",
+            "title": "Patient Id"
+          },
+          "practitioner_id": {
+            "type": "string",
+            "title": "Practitioner Id"
+          },
+          "started_at": {
+            "type": "string",
+            "title": "Started At"
+          },
+          "ended_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "recording",
+              "paused",
+              "finalizing",
+              "processing",
+              "review",
+              "validated",
+              "exported",
+              "archived",
+              "audio_error",
+              "upload_interrupted",
+              "transcription_failed",
+              "generation_failed"
+            ],
+            "title": "Status"
+          },
+          "object_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Object Version"
+          },
+          "facts": {
+            "items": {
+              "$ref": "#/components/schemas/ClinicalFact"
+            },
+            "type": "array",
+            "title": "Facts"
+          },
+          "treatment_plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TreatmentPlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "procedures": {
+            "items": {
+              "$ref": "#/components/schemas/Procedure"
+            },
+            "type": "array",
+            "title": "Procedures"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/EncounterWarning"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "encounter_id",
+          "patient_id",
+          "practitioner_id",
+          "started_at",
+          "ended_at",
+          "status",
+          "object_version",
+          "facts",
+          "treatment_plan",
+          "procedures",
+          "warnings"
+        ],
+        "title": "ClinicalEncounter"
+      },
+      "ClinicalFact": {
+        "properties": {
+          "fact_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Fact Id"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "chief_complaint",
+              "history",
+              "symptom",
+              "clinical_finding",
+              "radiographic_finding",
+              "assessment",
+              "diagnosis",
+              "treatment_option",
+              "treatment_decision",
+              "procedure",
+              "material",
+              "medication",
+              "patient_information",
+              "follow_up",
+              "other"
+            ],
+            "title": "Category"
+          },
+          "concept": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Concept"
+          },
+          "value": {
+            "title": "Value"
+          },
+          "teeth": {
+            "items": {
+              "type": "string",
+              "pattern": "^(?:1[1-8]|2[1-8]|3[1-8]|4[1-8]|5[1-5]|6[1-5]|7[1-5]|8[1-5])$"
+            },
+            "type": "array",
+            "title": "Teeth"
+          },
+          "surfaces": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "M",
+                "D",
+                "O",
+                "V",
+                "B",
+                "L",
+                "P",
+                "I",
+                "C"
+              ]
+            },
+            "type": "array",
+            "title": "Surfaces"
+          },
+          "assertion": {
+            "type": "string",
+            "enum": [
+              "present",
+              "absent",
+              "uncertain"
+            ],
+            "title": "Assertion"
+          },
+          "temporality": {
+            "type": "string",
+            "enum": [
+              "past",
+              "current",
+              "future"
+            ],
+            "title": "Temporality"
+          },
+          "clinical_status": {
+            "type": "string",
+            "enum": [
+              "patient_reported",
+              "observed",
+              "clinician_assessment",
+              "differential",
+              "discussed",
+              "proposed",
+              "accepted",
+              "refused",
+              "deferred",
+              "planned",
+              "performed"
+            ],
+            "title": "Clinical Status"
+          },
+          "speaker_role": {
+            "type": "string",
+            "enum": [
+              "practitioner",
+              "patient",
+              "assistant",
+              "companion",
+              "unknown",
+              "manual"
+            ],
+            "title": "Speaker Role"
+          },
+          "certainty": {
+            "type": "string",
+            "enum": [
+              "certain",
+              "probable",
+              "possible",
+              "unknown"
+            ],
+            "title": "Certainty"
+          },
+          "source_type": {
+            "type": "string",
+            "enum": [
+              "audio",
+              "manual",
+              "prior_record",
+              "system_test"
+            ],
+            "title": "Source Type"
+          },
+          "evidence_segment_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Segment Ids"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "manually_validated": {
+            "type": "boolean",
+            "title": "Manually Validated"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "fact_id",
+          "category",
+          "concept",
+          "value",
+          "teeth",
+          "surfaces",
+          "assertion",
+          "temporality",
+          "clinical_status",
+          "speaker_role",
+          "certainty",
+          "source_type",
+          "evidence_segment_ids",
+          "confidence",
+          "manually_validated"
+        ],
+        "title": "ClinicalFact"
+      },
+      "ClinicalObjectOut": {
+        "properties": {
+          "clinical_object": {
+            "$ref": "#/components/schemas/ClinicalEncounter"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/ObjectVersionOut"
+            },
+            "type": "array",
+            "title": "Versions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "clinical_object",
+          "versions"
+        ],
+        "title": "ClinicalObjectOut"
+      },
+      "CorrectionRequest": {
+        "properties": {
+          "expected_object_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Object Version"
+          },
+          "operations": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ReplaceTooth"
+                },
+                {
+                  "$ref": "#/components/schemas/UpdateFact"
+                },
+                {
+                  "$ref": "#/components/schemas/SetPlanItemStatus"
+                },
+                {
+                  "$ref": "#/components/schemas/AddFact"
+                },
+                {
+                  "$ref": "#/components/schemas/RemoveFact"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "operation",
+                "mapping": {
+                  "add_fact": "#/components/schemas/AddFact",
+                  "remove_fact": "#/components/schemas/RemoveFact",
+                  "replace_tooth": "#/components/schemas/ReplaceTooth",
+                  "set_plan_item_status": "#/components/schemas/SetPlanItemStatus",
+                  "update_fact": "#/components/schemas/UpdateFact"
+                }
+              }
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Operations"
+          },
+          "regenerate": {
+            "type": "boolean",
+            "title": "Regenerate",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_object_version",
+          "operations"
+        ],
+        "title": "CorrectionRequest"
+      },
+      "DocumentOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "encounter_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Encounter Id"
+          },
+          "document_type": {
+            "type": "string",
+            "enum": [
+              "consultation_note",
+              "treatment_plan_text",
+              "operative_note",
+              "patient_summary",
+              "referral_letter"
+            ],
+            "title": "Document Type"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft_ai",
+              "needs_review",
+              "validated",
+              "exported",
+              "superseded",
+              "outdated"
+            ],
+            "title": "Status"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "generated_from_object_version": {
+            "type": "integer",
+            "title": "Generated From Object Version"
+          },
+          "is_current": {
+            "type": "boolean",
+            "title": "Is Current"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "claims": {
+            "items": {
+              "$ref": "#/components/schemas/ClaimOut"
+            },
+            "type": "array",
+            "title": "Claims"
+          },
+          "supported_fact_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Supported Fact Ids"
+          },
+          "validation_issues": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationIssueOut"
+            },
+            "type": "array",
+            "title": "Validation Issues"
+          },
+          "generator": {
+            "type": "string",
+            "title": "Generator"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "validated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Validated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "encounter_id",
+          "document_type",
+          "status",
+          "version",
+          "generated_from_object_version",
+          "is_current",
+          "content",
+          "claims",
+          "supported_fact_ids",
+          "validation_issues",
+          "generator",
+          "created_at",
+          "validated_at"
+        ],
+        "title": "DocumentOut"
+      },
+      "DocumentSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "document_type": {
+            "type": "string",
+            "enum": [
+              "consultation_note",
+              "treatment_plan_text",
+              "operative_note",
+              "patient_summary",
+              "referral_letter"
+            ],
+            "title": "Document Type"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft_ai",
+              "needs_review",
+              "validated",
+              "exported",
+              "superseded",
+              "outdated"
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "document_type",
+          "status"
+        ],
+        "title": "DocumentSummary"
+      },
+      "DocumentValidate": {
+        "properties": {
+          "acknowledged_warning_codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Acknowledged Warning Codes",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DocumentValidate"
+      },
+      "EncounterCreate": {
+        "properties": {
+          "patient_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Patient Id"
+          },
+          "synthetic_case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Synthetic Case Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "patient_id"
+        ],
+        "title": "EncounterCreate"
+      },
+      "EncounterOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "patient": {
+            "$ref": "#/components/schemas/PatientOut"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "recording",
+              "paused",
+              "finalizing",
+              "processing",
+              "review",
+              "validated",
+              "exported",
+              "archived",
+              "audio_error",
+              "upload_interrupted",
+              "transcription_failed",
+              "generation_failed"
+            ],
+            "title": "Status"
+          },
+          "object_version": {
+            "type": "integer",
+            "title": "Object Version"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "ended_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "synthetic_case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Synthetic Case Id"
+          },
+          "processing_errors": {
+            "items": {
+              "$ref": "#/components/schemas/ProcessingError"
+            },
+            "type": "array",
+            "title": "Processing Errors"
+          },
+          "critical_warning_count": {
+            "type": "integer",
+            "title": "Critical Warning Count"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentSummary"
+            },
+            "type": "array",
+            "title": "Documents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "patient",
+          "status",
+          "object_version",
+          "started_at",
+          "ended_at",
+          "created_at",
+          "synthetic_case_id",
+          "processing_errors",
+          "critical_warning_count",
+          "documents"
+        ],
+        "title": "EncounterOut"
+      },
+      "EncounterWarning": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "review",
+              "critical"
+            ],
+            "title": "Severity"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "severity",
+          "message"
+        ],
+        "title": "EncounterWarning"
+      },
+      "FactChanges": {
+        "properties": {
+          "assertion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "present",
+                  "absent",
+                  "uncertain"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assertion"
+          },
+          "temporality": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "past",
+                  "current",
+                  "future"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temporality"
+          },
+          "clinical_status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "patient_reported",
+                  "observed",
+                  "clinician_assessment",
+                  "differential",
+                  "discussed",
+                  "proposed",
+                  "accepted",
+                  "refused",
+                  "deferred",
+                  "planned",
+                  "performed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clinical Status"
+          },
+          "certainty": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "certain",
+                  "probable",
+                  "possible",
+                  "unknown"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Certainty"
+          },
+          "teeth": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "pattern": "^(?:1[1-8]|2[1-8]|3[1-8]|4[1-8]|5[1-5]|6[1-5]|7[1-5]|8[1-5])$"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Teeth"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "FactChanges"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          },
+          "service": {
+            "type": "string",
+            "const": "oris-api",
+            "title": "Service"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "local",
+              "test",
+              "staging",
+              "production"
+            ],
+            "title": "Environment"
+          },
+          "providers": {
+            "$ref": "#/components/schemas/ProviderStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "service",
+          "version",
+          "environment",
+          "providers"
+        ],
+        "title": "HealthResponse"
+      },
+      "LearningEventOut": {
+        "properties": {
+          "learning_event_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Learning Event Id"
+          },
+          "event_type": {
+            "type": "string",
+            "enum": [
+              "transcript_word_correction",
+              "tooth_number_correction",
+              "speaker_role_correction",
+              "clinical_fact_added",
+              "clinical_fact_removed",
+              "clinical_fact_corrected",
+              "negation_correction",
+              "temporality_correction",
+              "certainty_correction",
+              "treatment_status_correction",
+              "treatment_sequence_correction",
+              "procedure_type_correction",
+              "material_name_correction",
+              "document_text_edit",
+              "document_section_deleted",
+              "document_section_added",
+              "warning_confirmed",
+              "warning_dismissed",
+              "glossary_term_added",
+              "style_preference_detected",
+              "document_validated_unchanged",
+              "document_validated_after_minor_edit",
+              "document_validated_after_major_edit",
+              "generation_rejected"
+            ],
+            "title": "Event Type"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope"
+          },
+          "source_version": {
+            "type": "string",
+            "title": "Source Version"
+          },
+          "before": {
+            "title": "Before"
+          },
+          "after": {
+            "title": "After"
+          },
+          "confidence_before": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence Before"
+          },
+          "validated_by_practitioner": {
+            "type": "boolean",
+            "title": "Validated By Practitioner"
+          },
+          "eligible_for_global_learning": {
+            "type": "boolean",
+            "title": "Eligible For Global Learning"
+          },
+          "learning_status": {
+            "type": "string",
+            "title": "Learning Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "learning_event_id",
+          "event_type",
+          "scope",
+          "source_version",
+          "before",
+          "after",
+          "confidence_before",
+          "validated_by_practitioner",
+          "eligible_for_global_learning",
+          "learning_status",
+          "created_at"
+        ],
+        "title": "LearningEventOut"
+      },
+      "NewFact": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "chief_complaint",
+              "history",
+              "symptom",
+              "clinical_finding",
+              "radiographic_finding",
+              "assessment",
+              "diagnosis",
+              "treatment_option",
+              "treatment_decision",
+              "procedure",
+              "material",
+              "medication",
+              "patient_information",
+              "follow_up",
+              "other"
+            ],
+            "title": "Category"
+          },
+          "concept": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Concept"
+          },
+          "value": {
+            "title": "Value"
+          },
+          "teeth": {
+            "items": {
+              "type": "string",
+              "pattern": "^(?:1[1-8]|2[1-8]|3[1-8]|4[1-8]|5[1-5]|6[1-5]|7[1-5]|8[1-5])$"
+            },
+            "type": "array",
+            "title": "Teeth",
+            "default": []
+          },
+          "surfaces": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "M",
+                "D",
+                "O",
+                "V",
+                "B",
+                "L",
+                "P",
+                "I",
+                "C"
+              ]
+            },
+            "type": "array",
+            "title": "Surfaces",
+            "default": []
+          },
+          "assertion": {
+            "type": "string",
+            "enum": [
+              "present",
+              "absent",
+              "uncertain"
+            ],
+            "title": "Assertion"
+          },
+          "temporality": {
+            "type": "string",
+            "enum": [
+              "past",
+              "current",
+              "future"
+            ],
+            "title": "Temporality"
+          },
+          "clinical_status": {
+            "type": "string",
+            "enum": [
+              "patient_reported",
+              "observed",
+              "clinician_assessment",
+              "differential",
+              "discussed",
+              "proposed",
+              "accepted",
+              "refused",
+              "deferred",
+              "planned",
+              "performed"
+            ],
+            "title": "Clinical Status"
+          },
+          "certainty": {
+            "type": "string",
+            "enum": [
+              "certain",
+              "probable",
+              "possible",
+              "unknown"
+            ],
+            "title": "Certainty"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "category",
+          "concept",
+          "value",
+          "assertion",
+          "temporality",
+          "clinical_status",
+          "certainty"
+        ],
+        "title": "NewFact"
+      },
+      "ObjectVersionOut": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "change_kind": {
+            "type": "string",
+            "title": "Change Kind"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "change_kind",
+          "created_at",
+          "created_by"
+        ],
+        "title": "ObjectVersionOut"
+      },
+      "PatientCreate": {
+        "properties": {
+          "first_name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "First Name"
+          },
+          "last_name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Last Name"
+          },
+          "birth_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Date"
+          },
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "first_name",
+          "last_name"
+        ],
+        "title": "PatientCreate"
+      },
+      "PatientOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "first_name": {
+            "type": "string",
+            "title": "First Name"
+          },
+          "last_name": {
+            "type": "string",
+            "title": "Last Name"
+          },
+          "birth_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Date"
+          },
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "first_name",
+          "last_name",
+          "birth_date",
+          "external_id",
+          "created_at"
+        ],
+        "title": "PatientOut"
+      },
+      "PatientUpdate": {
+        "properties": {
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "birth_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Date"
+          },
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PatientUpdate"
+      },
+      "Procedure": {
+        "properties": {
+          "procedure_id": {
+            "type": "string",
+            "title": "Procedure Id"
+          },
+          "procedure_type": {
+            "type": "string",
+            "enum": [
+              "composite",
+              "direct_aesthetic",
+              "veneer_preparation",
+              "veneer_bonding",
+              "wear_additive",
+              "extraction",
+              "minor_surgery_generic"
+            ],
+            "title": "Procedure Type"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "performed",
+              "cancelled"
+            ],
+            "title": "Status"
+          },
+          "teeth": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Teeth"
+          },
+          "structured_data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Structured Data"
+          },
+          "evidence_fact_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Fact Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "procedure_id",
+          "procedure_type",
+          "status",
+          "teeth",
+          "structured_data",
+          "evidence_fact_ids"
+        ],
+        "title": "Procedure"
+      },
+      "ProcessingError": {
+        "properties": {
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "subject_id": {
+            "type": "string",
+            "title": "Subject Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule",
+          "subject_id"
+        ],
+        "title": "ProcessingError"
+      },
+      "ProviderStatus": {
+        "properties": {
+          "speech_to_text": {
+            "type": "string",
+            "title": "Speech To Text"
+          },
+          "clinical_extraction": {
+            "type": "string",
+            "title": "Clinical Extraction"
+          },
+          "document_generation": {
+            "type": "string",
+            "title": "Document Generation"
+          },
+          "clinical_validation": {
+            "type": "string",
+            "title": "Clinical Validation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "speech_to_text",
+          "clinical_extraction",
+          "document_generation",
+          "clinical_validation"
+        ],
+        "title": "ProviderStatus"
+      },
+      "ReadinessResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "unavailable"
+            ],
+            "title": "Status"
+          },
+          "database": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "unreachable"
+            ],
+            "title": "Database"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "database"
+        ],
+        "title": "ReadinessResponse"
+      },
+      "RemoveFact": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "const": "remove_fact",
+            "title": "Operation"
+          },
+          "fact_id": {
+            "type": "string",
+            "title": "Fact Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "operation",
+          "fact_id"
+        ],
+        "title": "RemoveFact"
+      },
+      "ReplaceTooth": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "const": "replace_tooth",
+            "title": "Operation"
+          },
+          "from_tooth": {
+            "type": "string",
+            "pattern": "^(?:1[1-8]|2[1-8]|3[1-8]|4[1-8]|5[1-5]|6[1-5]|7[1-5]|8[1-5])$",
+            "title": "From Tooth"
+          },
+          "to_tooth": {
+            "type": "string",
+            "pattern": "^(?:1[1-8]|2[1-8]|3[1-8]|4[1-8]|5[1-5]|6[1-5]|7[1-5]|8[1-5])$",
+            "title": "To Tooth"
+          },
+          "fact_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fact Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "operation",
+          "from_tooth",
+          "to_tooth"
+        ],
+        "title": "ReplaceTooth",
+        "description": "« Remplace 26 par 27 » : faits ciblés (tous si omis), plan et actes liés."
+      },
+      "SetPlanItemStatus": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "const": "set_plan_item_status",
+            "title": "Operation"
+          },
+          "item_id": {
+            "type": "string",
+            "title": "Item Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "discussed",
+              "proposed",
+              "accepted",
+              "refused",
+              "deferred",
+              "planned",
+              "completed"
+            ],
+            "title": "Status"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "operation",
+          "item_id",
+          "status"
+        ],
+        "title": "SetPlanItemStatus"
+      },
+      "SyntheticCaseOut": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "domain": {
+            "type": "string",
+            "title": "Domain"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "patient_first_name": {
+            "type": "string",
+            "title": "Patient First Name"
+          },
+          "patient_last_name": {
+            "type": "string",
+            "title": "Patient Last Name"
+          },
+          "segment_count": {
+            "type": "integer",
+            "title": "Segment Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "case_id",
+          "domain",
+          "tags",
+          "patient_first_name",
+          "patient_last_name",
+          "segment_count"
+        ],
+        "title": "SyntheticCaseOut"
+      },
+      "TranscriptOut": {
+        "properties": {
+          "encounter_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Encounter Id"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/TranscriptSegment"
+            },
+            "type": "array",
+            "title": "Segments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "encounter_id",
+          "segments"
+        ],
+        "title": "TranscriptOut"
+      },
+      "TranscriptSegment": {
+        "properties": {
+          "segment_id": {
+            "type": "string",
+            "title": "Segment Id"
+          },
+          "start_ms": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Start Ms"
+          },
+          "end_ms": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "End Ms"
+          },
+          "speaker_role": {
+            "type": "string",
+            "enum": [
+              "practitioner",
+              "patient",
+              "assistant",
+              "companion",
+              "unknown"
+            ],
+            "title": "Speaker Role"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "is_final": {
+            "type": "boolean",
+            "title": "Is Final"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "segment_id",
+          "start_ms",
+          "end_ms",
+          "speaker_role",
+          "text",
+          "confidence",
+          "is_final"
+        ],
+        "title": "TranscriptSegment"
+      },
+      "TreatmentPlan": {
+        "properties": {
+          "plan_id": {
+            "type": "string",
+            "title": "Plan Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "review",
+              "validated",
+              "superseded"
+            ],
+            "title": "Status"
+          },
+          "goals": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Goals"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TreatmentPlanItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "plan_id",
+          "status",
+          "goals",
+          "notes",
+          "items"
+        ],
+        "title": "TreatmentPlan"
+      },
+      "TreatmentPlanItem": {
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "title": "Item Id"
+          },
+          "teeth": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Teeth"
+          },
+          "problem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Problem"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "discussed",
+              "proposed",
+              "accepted",
+              "refused",
+              "deferred",
+              "planned",
+              "completed"
+            ],
+            "title": "Status"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "urgent",
+              "high",
+              "routine",
+              "low",
+              "unspecified"
+            ],
+            "title": "Priority"
+          },
+          "sequence": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sequence"
+          },
+          "alternatives": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Alternatives"
+          },
+          "prerequisites": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Prerequisites"
+          },
+          "uncertainties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Uncertainties"
+          },
+          "evidence_fact_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Fact Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "item_id",
+          "teeth",
+          "problem",
+          "action",
+          "status",
+          "priority",
+          "sequence",
+          "alternatives",
+          "prerequisites",
+          "uncertainties",
+          "evidence_fact_ids"
+        ],
+        "title": "TreatmentPlanItem"
+      },
+      "UpdateFact": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "const": "update_fact",
+            "title": "Operation"
+          },
+          "fact_id": {
+            "type": "string",
+            "title": "Fact Id"
+          },
+          "changes": {
+            "$ref": "#/components/schemas/FactChanges"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "operation",
+          "fact_id",
+          "changes"
+        ],
+        "title": "UpdateFact"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ValidationIssueOut": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity"
+          },
+          "fact_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fact Id"
+          },
+          "claim_index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claim Index"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "severity",
+          "fact_id",
+          "claim_index"
+        ],
+        "title": "ValidationIssueOut"
+      }
+    }
+  }
+}

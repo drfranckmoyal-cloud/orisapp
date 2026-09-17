@@ -73,7 +73,11 @@ class MockClinicalExtractionProvider:
         if case is None:
             return ExtractionResult(facts=[])
         return ExtractionResult(
-            facts=[f.model_copy(deep=True) for f in case.facts],
+            # Le corpus décrit des faits attendus, vérifiés par un humain ; une sortie
+            # d'extraction ne l'est jamais.
+            facts=[
+                f.model_copy(update={"manually_validated": False}, deep=True) for f in case.facts
+            ],
             treatment_plan=case.treatment_plan.model_copy(deep=True)
             if case.treatment_plan
             else None,

@@ -1,51 +1,40 @@
+"use client";
+
+import Link from "next/link";
+
 import { ApiStatus } from "@/components/ApiStatus";
-
-import styles from "./page.module.css";
-
-const NAVIGATION = ["Accueil", "Patients", "Consultations", "Modèles", "Paramètres"] as const;
+import { EncounterTable } from "@/components/EncounterTable";
+import type { Encounter } from "@/lib/api";
+import { errorMessage } from "@/lib/labels";
+import { useApi } from "@/lib/useApi";
 
 export default function HomePage() {
+  const [toReview] = useApi<Encounter[]>("/encounters?status=review");
+
   return (
-    <div className={styles.shell}>
-      <nav className={styles.sidebar} aria-label="Navigation principale">
-        <p className={styles.wordmark}>Oris</p>
-        <ul className={styles.nav}>
-          {NAVIGATION.map((label) => (
-            <li key={label}>
-              {label === "Accueil" ? (
-                <span className={styles.navItem} aria-current="page">
-                  {label}
-                </span>
-              ) : (
-                <span className={styles.navItem} aria-disabled="true">
-                  {label}
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
-      </nav>
+    <div className="page">
+      <header>
+        <p className="subtitle">Écouter. Comprendre. Documenter.</p>
+        <h1>Bonjour</h1>
+      </header>
 
-      <main className={styles.main}>
-        <header>
-          <p className={styles.tagline}>Écouter. Comprendre. Documenter.</p>
-          <h1 className={styles.title}>Bonjour</h1>
-        </header>
+      <div>
+        <Link href="/consultations/nouvelle" className="button button-large">
+          Nouvelle consultation
+        </Link>
+      </div>
 
-        <section className={styles.actions}>
-          <button type="button" className={styles.primary} disabled>
-            Nouvelle consultation
-          </button>
-          <p className={styles.hint}>La consultation arrive à l’étape suivante du développement.</p>
-        </section>
+      <section className="card" aria-labelledby="review-heading">
+        <h2 id="review-heading">À valider</h2>
+        {toReview.state === "loading" && <p className="muted">Chargement…</p>}
+        {toReview.state === "error" && <p className="muted">{errorMessage(toReview.code)}</p>}
+        {toReview.state === "ready" && <EncounterTable encounters={toReview.data} />}
+      </section>
 
-        <section className={styles.card} aria-labelledby="server-heading">
-          <h2 id="server-heading" className={styles.cardTitle}>
-            État du service
-          </h2>
-          <ApiStatus />
-        </section>
-      </main>
+      <section className="card" aria-labelledby="server-heading">
+        <h2 id="server-heading">État du service</h2>
+        <ApiStatus />
+      </section>
     </div>
   );
 }

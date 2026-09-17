@@ -1,0 +1,58 @@
+.shell {
+  display: grid;
+  grid-template-columns: 232px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: var(--color-deep-blue);
+  color: var(--color-white);
+  padding: var(--space-32) var(--space-16);
+  display: flex;
+  flex-direction: column;
+}
+
+.wordmark {
+  margin: 0 0 var(--space-32) var(--space-12);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+}
+
+.navItem {
+  display: block;
+  padding: var(--space-12);
+  border-radius: 10px;
+  font-size: 15px;
+  color: var(--color-white);
+  text-decoration: none;
+}
+
+.navItem[aria-current="page"] {
+  background: rgb(255 255 255 / 0.14);
+  font-weight: 600;
+}
+
+.navItem[aria-disabled="true"] {
+  opacity: 0.55;
+}
+
+.demo {
+  margin: auto 0 0 var(--space-12);
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.main {
+  max-width: 1440px;
+  width: 100%;
+  padding: var(--space-48);
+}

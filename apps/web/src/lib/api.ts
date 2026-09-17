@@ -1,3 +1,5 @@
+import type { components } from "@/contracts/api";
+
 /**
  * Client de l'API Oris. Les objets cliniques utilisent les types générés
  * (`@/contracts/generated`) ; les réponses techniques sont typées ici.
@@ -46,4 +48,59 @@ export async function fetchHealth(
   } catch {
     return { state: "unreachable" };
   }
+}
+
+// --- Routes métier : types générés depuis packages/openapi/openapi.json -----------
+
+
+type Schemas = components["schemas"];
+export type Patient = Schemas["PatientOut"];
+export type Encounter = Schemas["EncounterOut"];
+export type DocumentView = Schemas["DocumentOut"];
+export type Claim = Schemas["ClaimOut"];
+export type ClinicalObjectView = Schemas["ClinicalObjectOut"];
+export type ClinicalObject = Schemas["ClinicalEncounter"];
+export type ClinicalFactView = ClinicalObject["facts"][number];
+export type TranscriptView = Schemas["TranscriptOut"];
+export type LearningEventView = Schemas["LearningEventOut"];
+export type SyntheticCase = Schemas["SyntheticCaseOut"];
+export type CorrectionRequest = Schemas["CorrectionRequest"];
+
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    readonly code: string,
+    readonly details: string[] = [],
+  ) {
+    super(code);
+  }
+}
+
+export async function apiRequest<T>(
+  path: string,
+  init: { method?: "GET" | "POST" | "PATCH"; body?: unknown } = {},
+  fetcher: typeof fetch = fetch,
+  baseUrl: string = API_BASE_URL,
+): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetcher(`${baseUrl}${path}`, {
+      method: init.method ?? "GET",
+      cache: "no-store",
+      headers: init.body === undefined ? {} : { "Content-Type": "application/json" },
+      ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
+    });
+  } catch {
+    throw new ApiError(0, "NETWORK_UNREACHABLE");
+  }
+  const body: unknown = await response.json().catch(() => null);
+  if (!response.ok) {
+    const error = (body ?? {}) as { code?: unknown; details?: unknown };
+    throw new ApiError(
+      response.status,
+      typeof error.code === "string" ? error.code : `HTTP_${response.status}`,
+      Array.isArray(error.details) ? error.details.filter((d): d is string => typeof d === "string") : [],
+    );
+  }
+  return body as T;
 }

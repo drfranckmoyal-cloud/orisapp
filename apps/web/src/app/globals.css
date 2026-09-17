@@ -26,3 +26,203 @@ body {
     transition: none !important;
   }
 }
+
+/* --- Composants communs ------------------------------------------------------- */
+
+a {
+  color: inherit;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--color-deep-blue);
+  margin: 0;
+}
+
+.page {
+  display: grid;
+  gap: var(--space-24);
+  align-content: start;
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-16);
+}
+
+.subtitle {
+  margin: var(--space-4) 0 0;
+  font-size: 14px;
+}
+
+.card {
+  background: var(--color-white);
+  border-radius: var(--radius-card);
+  padding: var(--space-24);
+  display: grid;
+  gap: var(--space-12);
+  align-content: start;
+}
+
+.card h2 {
+  font-size: 17px;
+}
+
+.muted {
+  color: var(--color-graphite);
+  opacity: 0.75;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Boutons : texte blanc sur Oris Blue seulement en grand et gras (contraste). */
+.button {
+  border: 1px solid transparent;
+  border-radius: var(--radius-button);
+  font: inherit;
+  font-weight: 600;
+  padding: 10px var(--space-16);
+  min-height: 44px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.button-primary {
+  background: var(--color-deep-blue);
+  color: var(--color-white);
+}
+
+.button-large {
+  background: var(--color-oris-blue);
+  color: var(--color-white);
+  font-size: 19px;
+  font-weight: 700;
+  padding: var(--space-16) var(--space-32);
+  min-height: 56px;
+}
+
+.button-secondary {
+  background: var(--color-white);
+  border-color: var(--color-deep-blue);
+  color: var(--color-deep-blue);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--color-cloud);
+  color: var(--color-deep-blue);
+  white-space: nowrap;
+}
+
+.chip-critical {
+  background: #fdecea;
+  color: var(--color-danger);
+}
+
+.chip-review {
+  background: #fdf3e1;
+  color: #8a5a12;
+}
+
+.chip-success {
+  background: #e3f4ea;
+  color: var(--color-success);
+}
+
+.banner {
+  border-radius: 12px;
+  padding: var(--space-12) var(--space-16);
+  font-size: 15px;
+  display: grid;
+  gap: var(--space-8);
+}
+
+.banner-critical {
+  background: #fdecea;
+  color: var(--color-danger);
+  border-left: 4px solid var(--color-danger);
+}
+
+.banner-review {
+  background: #fdf3e1;
+  color: #6e470d;
+  border-left: 4px solid var(--color-warning);
+}
+
+.banner-info {
+  background: var(--color-cloud);
+  color: var(--color-deep-blue);
+  border-left: 4px solid var(--color-oris-blue);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.table th {
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-deep-blue);
+  padding: var(--space-8);
+  border-bottom: 1px solid var(--color-cloud);
+}
+
+.table td {
+  padding: var(--space-12) var(--space-8);
+  border-bottom: 1px solid var(--color-cloud);
+  vertical-align: top;
+}
+
+.field {
+  display: grid;
+  gap: var(--space-4);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.input {
+  font: inherit;
+  border: 1px solid #c9d6e2;
+  border-radius: 10px;
+  padding: 8px 12px;
+  min-height: 40px;
+  background: var(--color-white);
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  align-items: flex-end;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--color-deep-blue);
+  text-decoration: underline;
+  cursor: pointer;
+}

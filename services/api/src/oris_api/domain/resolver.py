@@ -45,7 +45,9 @@ def is_gap_marker(segment: TranscriptSegment) -> bool:
     return bool(GAP_MARKER.match(segment.text))
 
 
-def check_facts(facts: list[ClinicalFact], segments: list[TranscriptSegment]) -> list[Violation]:
+def check_facts(
+    facts: list[ClinicalFact], segments: list[TranscriptSegment], from_extraction: bool = False
+) -> list[Violation]:
     violations: list[Violation] = []
     segment_ids = {s.segment_id for s in segments}
     gap_ids = {s.segment_id for s in segments if is_gap_marker(s)}
@@ -56,6 +58,10 @@ def check_facts(facts: list[ClinicalFact], segments: list[TranscriptSegment]) ->
         if fid in seen:
             violations.append(Violation("DUPLICATE_FACT_ID", fid))
         seen.add(fid)
+
+        # Invariant 9 : seul le praticien valide ; un fournisseur ne peut pas le prétendre.
+        if from_extraction and fact.manually_validated:
+            violations.append(Violation("EXTRACTION_SELF_VALIDATED", fid))
 
         evidence = set(fact.evidence_segment_ids)
         if fact.source_type in EVIDENCE_REQUIRED_SOURCES:
@@ -137,8 +143,14 @@ def resolve(
     plan: TreatmentPlan | None,
     procedures: list[Procedure],
     segments: list[TranscriptSegment],
+    from_extraction: bool = False,
 ) -> list[Violation]:
-    """Toutes les violations ; liste vide = sortie acceptable."""
+    """Toutes les violations ; liste vide = sortie acceptable.
+
+    `from_extraction` : sortie d'un fournisseur (et non correction du praticien).
+    """
     return (
-        check_facts(facts, segments) + check_plan(plan, facts) + check_procedures(procedures, facts)
+        check_facts(facts, segments, from_extraction)
+        + check_plan(plan, facts)
+        + check_procedures(procedures, facts)
     )

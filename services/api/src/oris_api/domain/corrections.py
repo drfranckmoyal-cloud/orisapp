@@ -30,6 +30,15 @@ FdiTooth = Annotated[
     str, Field(pattern=r"^(?:1[1-8]|2[1-8]|3[1-8]|4[1-8]|5[1-5]|6[1-5]|7[1-5]|8[1-5])$")
 ]
 TREATMENT_CATEGORIES = frozenset({"treatment_option", "treatment_decision", "procedure"})
+PLAN_TO_FACT_STATUS = {
+    "discussed": "discussed",
+    "proposed": "proposed",
+    "accepted": "accepted",
+    "refused": "refused",
+    "deferred": "deferred",
+    "planned": "planned",
+    "completed": "performed",
+}
 
 
 class ReplaceTooth(BaseModel):
@@ -224,6 +233,17 @@ def apply_operations(
                         )
                     )
                     item.status = status
+                    # La décision du praticien est le fait qui justifie le nouveau statut :
+                    # les faits de traitement qui appuient l'élément suivent (spec §34).
+                    fact_status = PLAN_TO_FACT_STATUS[status]
+                    for fact in facts:
+                        if (
+                            fact.fact_id in item.evidence_fact_ids
+                            and fact.category in TREATMENT_CATEGORIES
+                            and fact.clinical_status != fact_status
+                        ):
+                            fact.clinical_status = fact_status  # type: ignore[assignment]
+                            fact.manually_validated = True
 
             case AddFact(fact=new_fact):
                 fact = ClinicalFact(

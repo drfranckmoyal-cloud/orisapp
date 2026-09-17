@@ -80,6 +80,11 @@ def test_plan_status_change_updates_clinical_object() -> None:
     assert result.encounter.treatment_plan is not None
     assert result.encounter.treatment_plan.items[0].status == "refused"
     assert result.learning_events[0].event_type == "treatment_status_correction"
+    # Le fait qui appuie l'élément porte la décision du praticien.
+    supporting = next(f for f in result.encounter.facts if f.fact_id == "f2")
+    assert (supporting.clinical_status, supporting.manually_validated) == ("refused", True)
+    untouched = next(f for f in result.encounter.facts if f.fact_id == "f1")
+    assert untouched.clinical_status == "observed"
 
 
 def test_added_fact_is_manual_with_no_invented_evidence() -> None:

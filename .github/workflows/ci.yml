@@ -54,6 +54,8 @@ jobs:
       - run: ruff format --check .
       - run: mypy
       - run: pytest
+      - name: Contrat OpenAPI à jour
+        run: python ../../scripts/export_openapi.py --check
 
   web:
     name: Web (lint, typecheck, tests, build)
@@ -69,6 +71,7 @@ jobs:
           cache: npm
           cache-dependency-path: apps/web/package-lock.json
       - run: npm ci
+      - run: npm run check:api
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test

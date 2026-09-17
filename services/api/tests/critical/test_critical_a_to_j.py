@@ -154,7 +154,8 @@ def test_speaker_conflict_keeps_both_statements(api: Any) -> None:
 
 def test_no_document_is_validated_without_practitioner_action(api: Any) -> None:
     for case_id in ("ORIS-SYN-091", "ORIS-SYN-051", "ORIS-SYN-099"):
-        encounter, _, docs = run(api, case_id)
+        encounter, obj, docs = run(api, case_id)
+        assert not any(fact["manually_validated"] for fact in obj["facts"])
         assert encounter["status"] == "review"
         assert all(
             doc["status"] != "validated" and doc["validated_at"] is None for doc in docs.values()
