@@ -1,0 +1,65 @@
+[
+  {
+    "claims": [
+      {
+        "fact_ids": [
+          "f1"
+        ],
+        "section": "Analyse / diagnostic / hypothèses",
+        "text": "Suspicion de fissure (16), non confirmée.",
+        "warning_codes": []
+      },
+      {
+        "fact_ids": [
+          "f2"
+        ],
+        "section": "Décision / plan retenu",
+        "text": "Prévu : examen complémentaire (16).",
+        "warning_codes": []
+      }
+    ],
+    "content": "Analyse / diagnostic / hypothèses\nSuspicion de fissure (16), non confirmée.\n\nDécision / plan retenu\nPrévu : examen complémentaire (16).",
+    "created_at": "2026-09-17T09:00:00+00:00",
+    "document_type": "consultation_note",
+    "encounter_id": "00000000-0000-4000-8000-000000000001",
+    "generated_from_object_version": 1,
+    "generator": "mock:mock-0.2",
+    "id": "00000000-0000-4000-8000-000000000002",
+    "is_current": true,
+    "status": "draft_ai",
+    "supported_fact_ids": [
+      "f1",
+      "f2"
+    ],
+    "validated_at": null,
+    "validation_issues": [],
+    "version": 1
+  },
+  {
+    "claims": [
+      {
+        "fact_ids": [
+          "f2"
+        ],
+        "section": "Plan de traitement",
+        "text": "1. 16 — compléter l’examen — statut : prévu ; motif : suspicion de fissure.",
+        "warning_codes": []
+      }
+    ],
+    "content": "Plan de traitement\n1. 16 — compléter l’examen — statut : prévu ; motif : suspicion de fissure.",
+    "created_at": "2026-09-17T09:00:00+00:00",
+    "document_type": "treatment_plan_text",
+    "encounter_id": "00000000-0000-4000-8000-000000000001",
+    "generated_from_object_version": 1,
+    "generator": "mock:mock-0.2",
+    "id": "00000000-0000-4000-8000-000000000003",
+    "is_current": true,
+    "status": "draft_ai",
+    "supported_fact_ids": [
+      "f2"
+    ],
+    "validated_at": null,
+    "validation_issues": [],
+    "version": 1
+  }
+]

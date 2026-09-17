@@ -195,3 +195,34 @@ Avec un extracteur mock, A–I vérifient que la chaîne **conserve** dent, nég
 incertitude, temporalité et statut de l'extraction jusqu'aux documents, et que
 le résolveur **rejette** les sorties qui les violent (cas mutés). Ils ne prouvent
 pas qu'un modèle extrait correctement depuis la parole : c'est l'objet de M5.
+
+### Résultat M1 (2026-09-17)
+
+Gate atteint : tests critiques A–J verts (`services/api/tests/critical`), plus le
+cas « conflit d'interlocuteurs ». Les 100 cas du corpus passent le pipeline via
+l'API, avec objets conformes au schéma, alertes attendues, et documents sans
+problème de validation. Correction 26 → 27 vérifiée de bout en bout (objet v2,
+documents périmés puis régénérés, historique, LearningEvents). Parcours vérifié
+dans le navigateur : coupure audio (validation bloquée puis acceptée après
+reconnaissance), source d'une phrase, correction de dent, refus d'une correction
+incohérente puis acceptation d'un changement de statut du plan.
+
+Contrôles : API ruff + mypy strict + 104 tests ; web eslint + tsc + 13 tests +
+build ; iOS 14 tests ; générateurs, OpenAPI et fixtures `--check`.
+
+Choix et corrections faits en cours de route :
+- Un fournisseur ne peut pas marquer un fait `manually_validated` (règle
+  `EXTRACTION_SELF_VALIDATED`) : le mock recopiait ce drapeau du corpus, ce qui
+  affichait « vérifié par le praticien » à tort.
+- La règle « plan appuyé par un fait de même statut » s'applique à l'extraction ;
+  un changement de statut par le praticien est la décision explicite et met à jour
+  les faits de traitement qui appuient l'élément (spec §34).
+- `document_version_facts` supprimée (migration 0002) : une version de document cite
+  les faits d'une version d'objet, conservée intégralement dans
+  `encounter_object_versions`.
+- Statut document : `draft_ai` sans problème détecté, `needs_review` sinon ; les deux
+  exigent une validation explicite.
+- Contrat API ↔ iOS : `tests/test_client_fixtures.py` fige de vraies réponses
+  normalisées dans `apps/ios/OrisTests/Fixtures`, décodées par `APIContractTests`.
+- iPhone vérifié par tests uniquement : l'accès au simulateur n'a pas été accordé.
+

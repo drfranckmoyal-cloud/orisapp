@@ -60,8 +60,29 @@ struct APIClient: Sendable {
         try await get("health")
     }
 
-    private func get<Response: Decodable>(_ path: String) async throws -> Response {
-        var request = URLRequest(url: baseURL.appending(path: path))
+    func encounters(status: ClinicalEncounterStatus? = nil) async throws -> [EncounterSummary] {
+        try await get("encounters", query: status.map { [URLQueryItem(name: "status", value: $0.rawValue)] } ?? [])
+    }
+
+    func encounter(id: String) async throws -> EncounterSummary {
+        try await get("encounters/\(id)")
+    }
+
+    func documents(encounterId: String) async throws -> [DocumentDetail] {
+        try await get("encounters/\(encounterId)/documents")
+    }
+
+    func clinicalObject(encounterId: String) async throws -> ClinicalEncounter {
+        let response: ClinicalObjectResponse = try await get("encounters/\(encounterId)/clinical-object")
+        return response.clinicalObject
+    }
+
+    private func get<Response: Decodable>(_ path: String, query: [URLQueryItem] = []) async throws -> Response {
+        var url = baseURL.appending(path: path)
+        if !query.isEmpty {
+            url.append(queryItems: query)
+        }
+        var request = URLRequest(url: url)
         request.cachePolicy = .reloadIgnoringLocalCacheData
         request.timeoutInterval = 10
         let (data, response) = try await transport.send(request)

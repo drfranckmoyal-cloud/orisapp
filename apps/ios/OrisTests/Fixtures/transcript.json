@@ -1,0 +1,32 @@
+{
+  "encounter_id": "00000000-0000-4000-8000-000000000001",
+  "segments": [
+    {
+      "confidence": 0.96,
+      "end_ms": 1600,
+      "is_final": true,
+      "segment_id": "s1",
+      "speaker_role": "practitioner",
+      "start_ms": 0,
+      "text": "On commence la consultation."
+    },
+    {
+      "confidence": 0.95,
+      "end_ms": 3400,
+      "is_final": true,
+      "segment_id": "s2",
+      "speaker_role": "unknown",
+      "start_ms": 1800,
+      "text": "[coupure audio de deux minutes]"
+    },
+    {
+      "confidence": 0.95,
+      "end_ms": 5200,
+      "is_final": true,
+      "segment_id": "s3",
+      "speaker_role": "practitioner",
+      "start_ms": 3600,
+      "text": "Très bien, on termine ici."
+    }
+  ]
+}

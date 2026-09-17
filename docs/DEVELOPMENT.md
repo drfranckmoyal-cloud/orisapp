@@ -39,6 +39,18 @@ open apps/ios/Oris.xcodeproj                                     # schéma Oris,
 | Web | `npm run lint && npm run typecheck && npm test && npm run build` (dans `apps/web`) |
 | iOS | `xcodebuild test -project Oris.xcodeproj -scheme Oris -destination 'platform=iOS Simulator,name=iPhone 17'` (dans `apps/ios`) |
 
+## Consultation fictive
+
+Site web → « Nouvelle consultation » → choisir un cas du corpus → écran de révision.
+Par l'API : `POST /synthetic-cases/ORIS-SYN-091/encounters`.
+
+## Modifier l'API
+
+1. `services/api/.venv/bin/python scripts/export_openapi.py` (contrat OpenAPI).
+2. `cd apps/web && npm run generate:api` (types web).
+3. `cd services/api && ORIS_UPDATE_FIXTURES=1 .venv/bin/pytest tests/test_client_fixtures.py`
+   (réponses figées pour iOS), puis les tests iOS.
+
 ## Modifier un contrat
 
 1. Modifier `schemas/*.schema.json` (décision consignée dans `docs/DECISIONS.md` si besoin).

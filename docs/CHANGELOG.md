@@ -1,5 +1,30 @@
 # Changelog
 
+## M1 — 2026-09-17 — Synthetic vertical slice
+- parcours complet sur consultation fictive : patient → consultation → transcript →
+  faits → objet clinique versionné → compte rendu + plan → validation explicite ;
+- résolveur déterministe : sortie d'extraction rejetée (jamais corrigée) si preuve
+  inventée, acte futur « réalisé », impression du patient promue en constat ou
+  diagnostic, incertitude perdue, option acceptée sans décision, matériau non
+  prononcé, ou fait prétendument validé par le praticien ;
+- rédaction française par gabarits depuis l'objet seul ; chaque phrase cite ses faits ;
+- validateur factuel (phrase sans appui, dent non portée, « Réalisé » sans acte réalisé,
+  fait non restitué, concept inconnu) ;
+- coupure audio : alerte critique, document déclaré non exhaustif, validation
+  conditionnée à une reconnaissance explicite ;
+- corrections structurées (dent, fait, statut du plan, ajout, retrait) : nouvelle
+  version de l'objet → documents périmés → régénération ; historique append-only ;
+- LearningEvents dans le schéma `learning` (corrections, alerte reconnue, validation
+  sans modification) ;
+- web : écrans patients, consultations, nouvelle consultation fictive, révision
+  (source de chaque phrase, faits, corrections, historique, validation) ;
+- iPhone : liste des consultations et consultation en lecture (Compte rendu | Plan |
+  À vérifier) ;
+- contrats : OpenAPI exporté, types web générés, réponses réelles figées pour les
+  tests iOS ;
+- migration 0002 : `encounter_object_versions`, phrases et problèmes des documents ;
+- tests : API 104, web 13, iOS 14.
+
 ## M0 — 2026-09-17 — Repository & contracts
 - monorepo : `services/api` (FastAPI), `apps/web` (Next.js), `apps/ios` (SwiftUI) ;
 - types Python/TypeScript/Swift générés depuis `schemas/` (`scripts/generate_contracts.py`, vérifié en CI) ;

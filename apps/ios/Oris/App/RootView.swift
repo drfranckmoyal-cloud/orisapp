@@ -13,7 +13,7 @@ struct RootView: View {
                 PlaceholderView(title: "Patients")
             }
             Tab("Consultations", systemImage: "waveform") {
-                PlaceholderView(title: "Consultations")
+                ConsultationsView(model: ConsultationsViewModel(client: client), client: client)
             }
             Tab("Paramètres", systemImage: "gearshape") {
                 PlaceholderView(title: "Paramètres")

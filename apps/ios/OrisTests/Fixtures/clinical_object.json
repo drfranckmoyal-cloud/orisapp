@@ -1,0 +1,29 @@
+{
+  "clinical_object": {
+    "encounter_id": "00000000-0000-4000-8000-000000000001",
+    "ended_at": "2026-09-17T09:00:00+00:00",
+    "facts": [],
+    "object_version": 1,
+    "patient_id": "00000000-0000-4000-8000-000000000002",
+    "practitioner_id": "00000000-0000-4000-8000-000000000003",
+    "procedures": [],
+    "started_at": "2026-09-17T09:00:00+00:00",
+    "status": "review",
+    "treatment_plan": null,
+    "warnings": [
+      {
+        "code": "AUDIO_GAP",
+        "message": "Une portion significative de la consultation n’a pas été captée.",
+        "severity": "critical"
+      }
+    ]
+  },
+  "versions": [
+    {
+      "change_kind": "extraction",
+      "created_at": "2026-09-17T09:00:00+00:00",
+      "created_by": null,
+      "version": 1
+    }
+  ]
+}
