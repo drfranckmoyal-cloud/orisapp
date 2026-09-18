@@ -4,7 +4,7 @@
 fonctionne, ce qui bloque et ce qui est attendu de vous. Mis à jour à la fin de
 chaque jalon.
 
-Dernière mise à jour : 18 septembre 2026 (premier banc d'essai réel exécuté).
+Dernière mise à jour : 18 septembre 2026 (M5 : Claude lit vraiment les consultations).
 Dépôt : `drfranckmoyal-cloud/orisapp` (privé) · Dossier : `~/Desktop/Claude-Projects/ORIS`
 
 ---
@@ -31,7 +31,7 @@ traitement et les comptes rendus opératoires. Trois principes tiennent tout :
 | M2 | Écoute au micro sur le site | **Terminé** |
 | M3 | Écoute sur iPhone (appels, écouteurs, écran verrouillé) | **Terminé, non vu à l'écran** |
 | M4 | Banc d'essai des services de transcription (Azure, Deepgram) | **Terminé** — Deepgram mesuré le 18 sept. sur 100 consultations |
-| M5 | Extraction clinique par une vraie IA | À faire — prochain |
+| M5 | Extraction clinique par une vraie IA (Claude) | **Terminé** — mesuré sur le corpus |
 | M6 à M11 | Interface clinique, opératoire, correction vocale, apprentissage, sécurisation, validation clinique | À faire |
 
 Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENTATION_LOG.md`.
@@ -55,10 +55,19 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 - Écoute d'une consultation : appel entrant, AirPods retirés, écran verrouillé,
   réseau coupé, app fermée — chaque cas est géré et signalé.
 
+**Avec les vrais moteurs (depuis le 18 septembre)**
+- Deepgram transcrit : sur 100 consultations lues par des voix de synthèse, 100 % des
+  numéros de dent et des négations sont justes, 8,2 % d'erreur de mots.
+- Claude lit le transcript et en tire les faits : dent concernée, négation, incertitude,
+  prévu ou réalisé. Le résolveur refuse ce qui ne tient pas, et Claude a droit à un seul
+  nouvel essai, expliqué. Environ 3,6 centimes par consultation.
+- Ces deux moteurs restent **désactivés par défaut** : il faut une clé et un accord
+  explicite dans le fichier de réglages privé.
+
 **Ce qui n'existe pas encore**
-- **Aucune transcription réelle.** Une consultation au micro se termine par
-  « Transcription impossible ». Le texte des consultations fictives est rejoué depuis
-  le corpus, pas compris par une IA.
+- **La chaîne complète micro → compte rendu n'est pas encore branchée bout à bout** :
+  la transcription réelle et l'extraction réelle fonctionnent, mais une consultation
+  enregistrée au micro n'est pas encore traitée automatiquement par Deepgram.
 - Pas d'export PDF, pas de correction vocale, pas de comptes rendus opératoires.
 - Pas de compte utilisateur ni de mot de passe : usage local uniquement.
 
@@ -68,7 +77,6 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 
 | Quoi | Pourquoi | Quand |
 |---|---|---|
-| **Clé Anthropic** (console.anthropic.com) dans `services/api/.env` | Nécessaire pour M5 : transformer la parole en faits cliniques | Maintenant, c'est le seul vrai blocage |
 | Clé Azure Speech (optionnel) | Comparer Deepgram à un fournisseur certifié HDS | Avant de choisir |
 | Autoriser le **simulateur iPhone** (« Let Claude use it ») | Pour que je vérifie l'app à l'écran, pas seulement par les tests | Quand vous voulez |
 | **Enregistrements de consultations jouées** par des praticiens | Les voix de synthèse ne suffisent pas pour choisir un fournisseur | Avant de choisir |
@@ -96,8 +104,8 @@ l'extraction, quel hébergeur agréé, tarif de l'abonnement, identifiant de l'a
 
 Liste complète : `docs/KNOWN_LIMITATIONS.md`. Les quatre plus importantes :
 
-1. **Aucune IA réelle n'a encore lu une consultation.** Tout ce qui est « juste »
-   aujourd'hui vient du corpus, pas d'une compréhension.
+1. **Les scores viennent de consultations inventées**, lues par des voix de synthèse et
+   écrites pour ce projet : ils ne disent rien du bruit d'un vrai cabinet.
 2. **Rien n'est prêt pour un vrai patient** : ni hébergement agréé, ni authentification,
    ni chiffrement du son côté serveur.
 3. **Les scores sont flatteurs** : ils sont mesurés sur des consultations inventées,
@@ -151,6 +159,7 @@ Détails, tests et banc d'essai : `docs/DEVELOPMENT.md` et `benchmarks/README.md
 | 17 sept. 2026 | M3 — écoute sur iPhone | 129 · 33 · 39 |
 | 17 sept. 2026 | M4 — banc d'essai transcription (code) | 174 · 33 · 39 |
 | 18 sept. 2026 | M4 — premier banc réel : Deepgram Nova-3, 100 consultations lues | dents 100 %, négations 100 %, WER 8,2 %, voix 86,9 % |
+| 18 sept. 2026 | M5 — extraction clinique par Claude, mesurée | 0 % de rejet, négations 98 %, 3,6 c/consultation ; 186 tests serveur |
 
 **Défauts trouvés et corrigés en cours de route** (le détail est dans le journal) :
 faits affichés « vérifiés par le praticien » sans l'être ; refus d'une décision
