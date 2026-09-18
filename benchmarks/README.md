@@ -34,8 +34,9 @@ services/api/.venv/bin/python scripts/stt_benchmark.py extraction --models claud
 ```
 
 `--limit` prend un échantillon réparti sur les six familles du corpus. Une sortie qui
-viole les règles cliniques donne droit à un seul nouvel essai, expliqué au modèle, puis
-elle est rejetée. Tarifs des modèles : `providers.json` (relevés sur la page officielle,
+viole les règles cliniques donne droit à trois essais expliqués au modèle, puis elle est
+rejetée — le rapport nomme alors les règles refusées. Une coupure réseau ou un quota est
+repassé deux fois : ce n'est pas un défaut de la sortie. Tarifs des modèles : `providers.json` (relevés sur la page officielle,
 avec la date).
 
 Clés dans `services/api/.env` (jamais dans le dépôt) : `ALLOW_EXTERNAL_STT=true`,

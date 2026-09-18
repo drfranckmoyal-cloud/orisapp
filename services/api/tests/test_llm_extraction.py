@@ -74,7 +74,9 @@ def provider_with(responses: list[httpx.Response], seen: list[httpx.Request] | N
         return queue.pop(0)
 
     client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
-    return AnthropicExtractionProvider("sk-ant-test", "claude-sonnet-5", client=client)
+    return AnthropicExtractionProvider(
+        "sk-ant-test", "claude-sonnet-5", client=client, retry_backoff_s=(0.0, 0.0)
+    )
 
 
 def test_request_forces_the_oris_schema_and_prompt() -> None:
@@ -117,7 +119,7 @@ def test_provenance_is_set_by_oris_not_by_the_model() -> None:
     assert result.model == "claude-sonnet-5"
 
 
-def test_invented_evidence_is_refused_then_retried_once() -> None:
+def test_invented_evidence_is_refused_then_retried() -> None:
     seen: list[httpx.Request] = []
     provider = provider_with(
         [
@@ -141,7 +143,7 @@ def test_invented_evidence_is_refused_then_retried_once() -> None:
         seen,
     )
     result = asyncio.run(provider.extract(SEGMENTS, []))
-    assert len(seen) == 2, "un seul nouvel essai"
+    assert len(seen) == 2, "accepté dès le deuxième essai : on n'en demande pas un de plus"
     retry = json.loads(seen[1].content)["messages"][-1]["content"]
     assert "preuve inconnue" in retry
     assert "sans rien inventer" in retry or "inventer" in retry
@@ -171,14 +173,29 @@ def test_clinical_rule_violation_is_explained_then_retried() -> None:
     assert result.facts[0].speaker_role == "practitioner"
 
 
-def test_two_invalid_answers_are_rejected_never_coerced() -> None:
+def test_invalid_answers_are_rejected_never_coerced_and_say_why() -> None:
     bad = httpx.Response(
         200, json=answer({"facts": [fact(teeth=["19"])], "treatment_plan": None, "procedures": []})
     )
-    provider = provider_with([bad, bad])
+    seen: list[httpx.Request] = []
+    provider = provider_with([bad, bad, bad], seen)
     with pytest.raises(ExtractionUnavailable) as caught:
         asyncio.run(provider.extract(SEGMENTS, []))
+    assert len(seen) == 3, "trois essais expliqués, pas un de plus"
     assert caught.value.code == "EXTRACTION_INVALID_OUTPUT"
+    # L'échec dit ce qui a été refusé, sans citer de contenu clinique.
+    assert "19" in (caught.value.details or "") or "ClinicalFact" in (caught.value.details or "")
+
+
+def test_transient_failure_is_retried_then_succeeds() -> None:
+    seen: list[httpx.Request] = []
+    ok = httpx.Response(
+        200, json=answer({"facts": [fact()], "treatment_plan": None, "procedures": []})
+    )
+    provider = provider_with([httpx.Response(429, json={}), httpx.Response(503, json={}), ok], seen)
+    result = asyncio.run(provider.extract(SEGMENTS, []))
+    assert len(seen) == 3, "une coupure réseau ou un quota ne perd pas la consultation"
+    assert result.facts[0].teeth == ["27"]
 
 
 @pytest.mark.parametrize(
@@ -186,7 +203,8 @@ def test_two_invalid_answers_are_rejected_never_coerced() -> None:
     [(401, "ANTHROPIC_AUTH"), (429, "ANTHROPIC_HTTP_429"), (529, "ANTHROPIC_HTTP_529")],
 )
 def test_provider_failures_are_explicit(status: int, code: str) -> None:
-    provider = provider_with([httpx.Response(status, json={})])
+    fail = httpx.Response(status, json={})
+    provider = provider_with([fail] * 3)
     with pytest.raises(ExtractionUnavailable) as caught:
         asyncio.run(provider.extract(SEGMENTS, []))
     assert caught.value.code == code

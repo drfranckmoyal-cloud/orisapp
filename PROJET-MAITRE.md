@@ -4,7 +4,7 @@
 fonctionne, ce qui bloque et ce qui est attendu de vous. Mis à jour à la fin de
 chaque jalon.
 
-Dernière mise à jour : 18 septembre 2026 (M5 : Claude lit vraiment les consultations).
+Dernière mise à jour : 18 septembre 2026 (M5bis : les six consultations en échec comprises).
 Dépôt : `drfranckmoyal-cloud/orisapp` (privé) · Dossier : `~/Desktop/Claude-Projects/ORIS`
 
 ---
@@ -59,8 +59,10 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 - Deepgram transcrit : sur 100 consultations lues par des voix de synthèse, 100 % des
   numéros de dent et des négations sont justes, 8,2 % d'erreur de mots.
 - Claude lit le transcript et en tire les faits : dent concernée, négation, incertitude,
-  prévu ou réalisé. Le résolveur refuse ce qui ne tient pas, et Claude a droit à un seul
-  nouvel essai, expliqué. Environ 3,6 centimes par consultation.
+  prévu ou réalisé. Le résolveur refuse ce qui ne tient pas, et Claude a droit à trois
+  essais, chacun accompagné de la raison du refus. Environ 3,6 centimes par consultation.
+- Quand une consultation échoue malgré tout, elle est marquée en échec **avec la raison**,
+  et aucun document n'est écrit : jamais de compte rendu approximatif.
 - Ces deux moteurs restent **désactivés par défaut** : il faut une clé et un accord
   explicite dans le fichier de réglages privé.
 
@@ -160,8 +162,10 @@ Détails, tests et banc d'essai : `docs/DEVELOPMENT.md` et `benchmarks/README.md
 | 17 sept. 2026 | M4 — banc d'essai transcription (code) | 174 · 33 · 39 |
 | 18 sept. 2026 | M4 — premier banc réel : Deepgram Nova-3, 100 consultations lues | dents 100 %, négations 100 %, WER 8,2 %, voix 86,9 % |
 | 18 sept. 2026 | M5 — extraction clinique par Claude, 100 consultations, 2 modèles | Sonnet : 94 % abouties, 0 % de rejet, négations 98,6 %, 3,2 c/consultation ; 186 tests serveur |
+| 18 sept. 2026 | M5bis — les six consultations en échec comprises : variation du modèle, pas défaut de fond | les 6 aboutissent avec trois essais ; 188 tests serveur |
 
 **Défauts trouvés et corrigés en cours de route** (le détail est dans le journal) :
 faits affichés « vérifiés par le praticien » sans l'être ; refus d'une décision
 légitime du praticien ; règle d'attribution des rôles qui prenait le patient pour le
-praticien dans 10 consultations sur 100.
+praticien dans 10 consultations sur 100 ; panne du moteur d'extraction qui faisait
+tomber la consultation en erreur technique au lieu d'un échec propre et expliqué.

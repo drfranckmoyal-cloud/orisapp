@@ -1,11 +1,27 @@
 # Changelog
 
+## M5bis — 2026-09-18 — les six échecs compris et corrigés
+- diagnostic : les six consultations refusées par Sonnet ne l'étaient pas de façon
+  systématique — rejouées, elles aboutissent. Le modèle varie d'un appel à l'autre, et
+  deux d'entre elles n'aboutissent qu'au **troisième** essai ;
+- nombre d'essais expliqués porté de deux à trois ; une coupure réseau, un quota (429)
+  ou une erreur serveur repasse le même appel deux fois (1 s puis 4 s) au lieu de perdre
+  la consultation ;
+- un échec dit désormais **ce qui** a été refusé : `ExtractionUnavailable` porte des
+  `details`, dont `rule_codes()` n'extrait que les noms de règles (aucun contenu clinique) ;
+- défaut corrigé : une panne du fournisseur d'extraction remontait en erreur 500 au lieu
+  de classer la consultation en `generation_failed` ; le pipeline l'attrape et affiche
+  les règles refusées ;
+- vérifié : les six consultations aboutissent (2 au 1er essai, 2 au 2e, 2 au 3e) ;
+  tests API 188.
+
 ## M5 — 2026-09-18 — Clinical extraction
 - extraction clinique réelle par Claude derrière `ClinicalExtractionProvider` : sortie
   imposée par un outil dont le schéma vient des contrats d'Oris, provenance posée par
   Oris, consignes versionnées (`extraction-fr-4`) ;
-- une sortie invalide ou contraire aux règles cliniques donne droit à **un seul** nouvel
-  essai, avec l'explication du résolveur, puis elle est rejetée — jamais corrigée ;
+- une sortie invalide ou contraire aux règles cliniques donne droit à des essais
+  expliqués par le résolveur (deux à l'origine, trois depuis M5bis), puis elle est
+  rejetée — jamais corrigée ;
 - garde-fou `ALLOW_EXTERNAL_LLM` + clé locale ; tests forcés en mode factice ;
 - banc d'essai extraction (100 consultations du corpus, 2 modèles comparés) :
   Sonnet 5 → 94 % d'extractions abouties, 0 % de rejet par le résolveur, négations

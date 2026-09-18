@@ -20,7 +20,7 @@ from oris_api.contracts import ClinicalFact, TranscriptSegment, validate_contrac
 from oris_api.domain.resolver import resolve
 from oris_api.domain.types import ExtractionResult, GlossaryHint
 from oris_api.ontology.labels import label_for
-from oris_api.providers.base import ExtractionUnavailable
+from oris_api.providers.base import ExtractionUnavailable, rule_codes
 from oris_api.synthetic.corpus import SyntheticCase
 
 
@@ -40,6 +40,7 @@ class CaseScore:
     case_id: str
     ok: bool
     error_code: str | None = None
+    error_rules: tuple[str, ...] = ()
     expected: int = 0
     produced: int = 0
     matched: int = 0
@@ -166,7 +167,12 @@ def summarize(report: ModelReport) -> None:
         summary["cost_usd_per_consultation"] = cost / len(ok)
     report.summary = summary
     report.critical_regressions = sorted(
-        {f"{s.case_id}:rejected:{s.error_code}" for s in scores if not s.ok}
+        {
+            f"{s.case_id}:rejected:{s.error_code}"
+            + (f":{'+'.join(s.error_rules)}" if s.error_rules else "")
+            for s in scores
+            if not s.ok
+        }
         | {f"{s.case_id}:resolver:{rule}" for s in ok for rule in s.resolver_rules}
         | {f"{s.case_id}:unknown_teeth" for s in ok if s.unknown_teeth}
         | {
@@ -201,7 +207,12 @@ async def run_model(
             try:
                 result = await provider.extract(list(case.segments), [])
             except ExtractionUnavailable as error:
-                return CaseScore(case_id=case.case_id, ok=False, error_code=error.code)
+                return CaseScore(
+                    case_id=case.case_id,
+                    ok=False,
+                    error_code=error.code,
+                    error_rules=rule_codes(error.details),
+                )
             return score_case(case, result, time.perf_counter() - started)
 
     return list(await asyncio.gather(*(one(case) for case in cases)))

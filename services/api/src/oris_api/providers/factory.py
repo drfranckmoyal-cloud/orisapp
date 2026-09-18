@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from oris_api.config import Settings
-from oris_api.llm.anthropic_extraction import AnthropicExtractionProvider
 from oris_api.providers.base import (
     ClinicalExtractionProvider,
     ClinicalValidationProvider,
@@ -82,6 +81,9 @@ def build_clinical_extraction(
     settings: Settings, corpus: SyntheticCorpus
 ) -> ClinicalExtractionProvider:
     """Extraction clinique : mock par défaut ; un modèle externe exige un accord explicite."""
+    # Import différé : l'adaptateur dépend lui-même des interfaces de ce paquet.
+    from oris_api.llm.anthropic_extraction import AnthropicExtractionProvider
+
     if settings.clinical_extraction_provider == "mock":
         return MockClinicalExtractionProvider(corpus)
     if not settings.allow_external_llm:

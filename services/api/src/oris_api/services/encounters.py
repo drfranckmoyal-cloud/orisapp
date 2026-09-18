@@ -21,7 +21,11 @@ from oris_api.domain.speaker_roles import apply_roles
 from oris_api.domain.types import AudioChunk, AudioGap
 from oris_api.domain.warnings import compute_warnings
 from oris_api.providers import ProviderSet
-from oris_api.providers.base import TranscriptionUnavailable
+from oris_api.providers.base import (
+    ExtractionUnavailable,
+    TranscriptionUnavailable,
+    rule_codes,
+)
 from oris_api.services import async_bridge, audio, audit, documents
 from oris_api.services.audio_sink import AudioSink
 from oris_api.services.clinical_store import replace_segments, save_version
@@ -184,9 +188,23 @@ def process(
         return encounter
     replace_segments(session, encounter.id, transcription.segments)
 
-    extraction = async_bridge.run(
-        lambda: providers.clinical_extraction.extract(transcription.segments, [])
-    )
+    try:
+        extraction = async_bridge.run(
+            lambda: providers.clinical_extraction.extract(transcription.segments, [])
+        )
+    except ExtractionUnavailable as error:
+        # Panne du fournisseur ou sortie refusée après ses essais : la consultation
+        # reste en échec explicite, avec ce qui a été refusé. Jamais de texte inventé.
+        reasons = rule_codes(error.details) or (error.code,)
+        set_processing_errors(
+            encounter, [{"rule": rule, "subject_id": str(encounter.id)} for rule in reasons]
+        )
+        transition(session, actor, encounter, "generation_failed")
+        logger.warning(
+            "pipeline.extraction_unavailable",
+            extra={"encounter_id": str(encounter.id), "error_code": error.code},
+        )
+        return encounter
     violations = resolve(
         extraction.facts,
         extraction.treatment_plan,

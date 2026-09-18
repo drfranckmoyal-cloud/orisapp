@@ -467,9 +467,17 @@ factice qui est remplacée par un vrai modèle.
   `manually_validated=false` sont posés par l'adaptateur, jamais par le modèle.
 - Concepts : liste du vocabulaire connu (`ontology/labels.py`) fournie au modèle ;
   un concept hors liste reste possible mais le document le signalera « à rédiger ».
-- Sortie invalide → **un seul nouvel essai** avec l'erreur en retour, puis rejet
-  (jamais de correction silencieuse). Panne réseau / quota → `EXTRACTION_UNAVAILABLE`,
-  consultation en `generation_failed`, relance possible.
+- Sortie invalide → **jusqu'à trois essais expliqués** (l'erreur exacte est renvoyée au
+  modèle), puis rejet (jamais de correction silencieuse). Mesuré le 18/09 : sur les six
+  consultations en échec du premier banc, deux n'aboutissaient qu'au troisième essai —
+  la limite à deux essais rejetait une sortie que le modèle savait corriger.
+- Panne réseau, quota (429) ou erreur serveur (5xx) → **le même appel est repassé** deux
+  fois (attente 1 s puis 4 s) avant d'abandonner : une coupure n'est pas un défaut de la
+  sortie et ne doit pas coûter la consultation.
+- L'échec porte sa raison : `ExtractionUnavailable(code, details)`, et
+  `rule_codes()` n'en extrait que les noms de règles (aucun contenu clinique). Le
+  pipeline attrape désormais cette erreur — auparavant elle remontait en 500 — et
+  classe la consultation en `generation_failed` avec ces règles en `processing_errors`.
 - Jetons consommés remontés pour mesurer le coût réel.
 
 ### Configuration

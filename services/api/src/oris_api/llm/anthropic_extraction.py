@@ -7,6 +7,7 @@ rejetée : jamais corrigée en silence (ACCEPTANCE_CRITERIA, extraction).
 
 from __future__ import annotations
 
+import asyncio
 import json
 from typing import Any
 
@@ -36,6 +37,12 @@ API_URL = "https://api.anthropic.com/v1/messages"
 API_VERSION = "2023-06-01"
 DEFAULT_MODEL = "claude-sonnet-5"
 MAX_TOKENS = 8_000
+# Le modèle ne rend pas deux fois exactement la même sortie : plusieurs essais expliqués
+# valent mieux qu'une consultation sans compte rendu. Le contenu n'est jamais corrigé
+# par Oris ; c'est le modèle qui reprend sa copie, ou la sortie est rejetée.
+MAX_ATTEMPTS = 3
+# Coupure réseau ou quota : ce n'est pas la faute de la sortie, on repasse le même appel.
+TRANSIENT_BACKOFF_S = (1.0, 4.0)
 
 
 class AnthropicExtractionProvider:
@@ -47,7 +54,11 @@ class AnthropicExtractionProvider:
         model: str = DEFAULT_MODEL,
         client: httpx.AsyncClient | None = None,
         timeout_s: float = 120,
+        max_attempts: int = MAX_ATTEMPTS,
+        retry_backoff_s: tuple[float, ...] = TRANSIENT_BACKOFF_S,
     ) -> None:
+        self._max_attempts = max_attempts
+        self._backoff = retry_backoff_s
         self._api_key = api_key
         self._model = model
         self._client = client
@@ -69,8 +80,8 @@ class AnthropicExtractionProvider:
         usage_total = {"input_tokens": 0, "output_tokens": 0}
         last_error: ContractViolation | ValueError | None = None
 
-        # Un seul nouvel essai : le modèle reçoit l'emplacement exact de l'erreur.
-        for attempt in range(2):
+        # Chaque nouvel essai reçoit l'emplacement exact de l'erreur.
+        for attempt in range(self._max_attempts):
             raw, usage = await self._call(messages)
             usage_total = {k: usage_total[k] + usage.get(k, 0) for k in usage_total}
             try:
@@ -92,7 +103,7 @@ class AnthropicExtractionProvider:
                 return result
             except (ContractViolation, ValueError) as error:
                 last_error = error
-                if attempt == 1:
+                if attempt == self._max_attempts - 1:
                     break
                 messages += [
                     {
@@ -109,9 +120,28 @@ class AnthropicExtractionProvider:
                         ),
                     },
                 ]
-        raise ExtractionUnavailable("EXTRACTION_INVALID_OUTPUT") from last_error
+        # L'échec dit ce qui a été refusé : le praticien et le banc d'essai savent quoi regarder.
+        raise ExtractionUnavailable(
+            "EXTRACTION_INVALID_OUTPUT", details=str(last_error)[:300]
+        ) from last_error
 
     async def _call(self, messages: list[dict[str, Any]]) -> tuple[dict[str, Any], dict[str, int]]:
+        """Appel du modèle, avec reprise des pannes passagères (réseau, quota)."""
+        for attempt in range(len(self._backoff) + 1):
+            try:
+                return await self._call_once(messages)
+            except ExtractionUnavailable as error:
+                transient = error.code == "ANTHROPIC_NETWORK" or error.code.startswith(
+                    ("ANTHROPIC_HTTP_429", "ANTHROPIC_HTTP_5")
+                )
+                if not transient or attempt == len(self._backoff):
+                    raise
+                await asyncio.sleep(self._backoff[attempt])
+        raise ExtractionUnavailable("ANTHROPIC_NETWORK")
+
+    async def _call_once(
+        self, messages: list[dict[str, Any]]
+    ) -> tuple[dict[str, Any], dict[str, int]]:
         body = {
             "model": self._model,
             "max_tokens": MAX_TOKENS,

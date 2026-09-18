@@ -99,3 +99,37 @@ def test_projection_tables_match_current_object(api: Any, migrated_engine: Any) 
     obj = clinical_object(api, eid)
     assert facts == len(obj["facts"])
     assert links == len(obj["procedures"][0]["evidence_fact_ids"])
+
+
+def test_extraction_failure_is_an_explicit_failed_consultation_not_a_crash(api: Any) -> None:
+    """Un fournisseur qui refuse sa propre sortie ne fait pas tomber la consultation."""
+    import dataclasses
+
+    from oris_api.main import app
+    from oris_api.providers.base import ExtractionUnavailable
+
+    class Refusing:
+        info = None
+
+        async def extract(self, segments: Any, glossary: Any) -> Any:
+            raise ExtractionUnavailable(
+                "EXTRACTION_INVALID_OUTPUT",
+                details="règles cliniques non respectées : PROCEDURE_STATUS_UNSUPPORTED (pr1)",
+            )
+
+    original = app.state.providers
+    app.state.providers = dataclasses.replace(original, clinical_extraction=Refusing())
+    try:
+        patient = api.post("/patients", json={"first_name": "Test", "last_name": "Refus"}).json()
+        eid = api.post(
+            "/encounters", json={"patient_id": patient["id"], "synthetic_case_id": "ORIS-SYN-092"}
+        ).json()["id"]
+        api.post(f"/encounters/{eid}/start", json={"patient_informed": True})
+        failed = api.post(f"/encounters/{eid}/finish").json()
+    finally:
+        app.state.providers = original
+
+    assert failed["status"] == "generation_failed"
+    # La raison du refus est visible, sous forme de règle, sans contenu clinique.
+    assert [e["rule"] for e in failed["processing_errors"]] == ["PROCEDURE_STATUS_UNSUPPORTED"]
+    assert api.get(f"/encounters/{eid}/documents").json() == []

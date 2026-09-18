@@ -107,8 +107,13 @@
   inventée), mais la mesure est sévère ; à revoir avec une correspondance sémantique.
 - Les consignes données au modèle ont été mises au point en lisant ce corpus : leur
   efficacité sur de vraies consultations reste à démontrer.
-- Un modèle qui viole les règles a droit à un seul nouvel essai ; le second échec rejette
-  la consultation en `generation_failed`, sans document. Aucune reprise automatique.
+- Un modèle qui viole les règles a droit à trois essais expliqués ; le dernier échec
+  rejette la consultation en `generation_failed`, sans document, avec les règles refusées.
+  Aucune reprise automatique ensuite.
+- Le modèle ne rend pas deux fois la même sortie : un même transcript peut aboutir du
+  premier coup ou au troisième essai. Le taux d'échec d'un banc porte donc une part de
+  hasard, et les essais supplémentaires coûtent des jetons (les six consultations
+  rattrapées le 18/09 ont coûté 6,6 c pièce au lieu de 3,2 c).
 - Le transcript complet est envoyé au modèle : pour de vrais patients, cela suppose le
   même cadre contractuel (HDS, DPA) que pour la transcription.
 - Coût mesuré : environ 3,6 centimes par consultation (Sonnet 5, tarifs du 18/09/2026),
