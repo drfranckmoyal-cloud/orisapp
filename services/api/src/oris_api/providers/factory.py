@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from oris_api.config import Settings
+from oris_api.llm.anthropic_extraction import AnthropicExtractionProvider
 from oris_api.providers.base import (
     ClinicalExtractionProvider,
     ClinicalValidationProvider,
@@ -36,7 +37,6 @@ class ProviderSet:
 
 def build_providers(settings: Settings, corpus: SyntheticCorpus | None = None) -> ProviderSet:
     configured = {
-        "CLINICAL_EXTRACTION_PROVIDER": settings.clinical_extraction_provider,
         "DOCUMENT_GENERATION_PROVIDER": settings.document_generation_provider,
         "CLINICAL_VALIDATION_PROVIDER": settings.clinical_validation_provider,
     }
@@ -48,7 +48,7 @@ def build_providers(settings: Settings, corpus: SyntheticCorpus | None = None) -
         corpus = SyntheticCorpus([])
     return ProviderSet(
         speech_to_text=build_speech_to_text(settings, corpus),
-        clinical_extraction=MockClinicalExtractionProvider(corpus),
+        clinical_extraction=build_clinical_extraction(settings, corpus),
         document_generation=MockDocumentGenerationProvider(),
         clinical_validation=MockClinicalValidationProvider(),
     )
@@ -75,4 +75,22 @@ def build_speech_to_text(settings: Settings, corpus: SyntheticCorpus) -> SpeechT
         settings.azure_speech_key.get_secret_value(),
         settings.azure_speech_endpoint,
         use_glossary=settings.stt_use_glossary,
+    )
+
+
+def build_clinical_extraction(
+    settings: Settings, corpus: SyntheticCorpus
+) -> ClinicalExtractionProvider:
+    """Extraction clinique : mock par défaut ; un modèle externe exige un accord explicite."""
+    if settings.clinical_extraction_provider == "mock":
+        return MockClinicalExtractionProvider(corpus)
+    if not settings.allow_external_llm:
+        raise ProviderConfigurationError(
+            "CLINICAL_EXTRACTION_PROVIDER externe refusé : ALLOW_EXTERNAL_LLM=true requis "
+            "(envoi du transcript hors Oris)"
+        )
+    if settings.anthropic_api_key is None:
+        raise ProviderConfigurationError("ANTHROPIC_API_KEY manquante")
+    return AnthropicExtractionProvider(
+        settings.anthropic_api_key.get_secret_value(), settings.anthropic_model
     )

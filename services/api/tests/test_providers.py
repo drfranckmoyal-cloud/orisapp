@@ -150,3 +150,26 @@ def test_external_stt_requires_explicit_permission_and_keys() -> None:
     assert isinstance(providers.speech_to_text, DeepgramPrerecordedProvider)
     blank = Settings(_env_file=None, deepgram_api_key="  ")
     assert blank.deepgram_api_key is None
+
+
+def test_external_extraction_requires_permission_and_key() -> None:
+    from oris_api.llm.anthropic_extraction import AnthropicExtractionProvider
+    from oris_api.providers import ProviderConfigurationError
+
+    with pytest.raises(ProviderConfigurationError, match="ALLOW_EXTERNAL_LLM"):
+        build_providers(Settings(_env_file=None, clinical_extraction_provider="anthropic"))
+    with pytest.raises(ProviderConfigurationError, match="ANTHROPIC_API_KEY"):
+        build_providers(
+            Settings(
+                _env_file=None, clinical_extraction_provider="anthropic", allow_external_llm=True
+            )
+        )
+    providers = build_providers(
+        Settings(
+            _env_file=None,
+            clinical_extraction_provider="anthropic",
+            allow_external_llm=True,
+            anthropic_api_key=SecretStr("k"),
+        )
+    )
+    assert isinstance(providers.clinical_extraction, AnthropicExtractionProvider)
