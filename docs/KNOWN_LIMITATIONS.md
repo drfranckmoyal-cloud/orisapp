@@ -97,3 +97,22 @@
 - Audio conservé après une panne du fournisseur : pas encore de purge automatique à
   échéance si le traitement n'est jamais relancé.
 
+## Après M5 (2026-09-18)
+
+- **Extraction réelle branchée** (Claude Sonnet 5) mais **aucun modèle retenu** : la
+  conformité n'est pas évaluée et la comparaison porte sur des consultations inventées.
+- Précision et rappel des faits (~44 % / ~53 % sur 20 cas) sont mesurés par une
+  correspondance stricte concept + dents : le modèle découpe l'information plus finement
+  que le corpus et nomme parfois autrement. Ce n'est pas de l'invention (aucune dent
+  inventée), mais la mesure est sévère ; à revoir avec une correspondance sémantique.
+- Les consignes données au modèle ont été mises au point en lisant ce corpus : leur
+  efficacité sur de vraies consultations reste à démontrer.
+- Un modèle qui viole les règles a droit à un seul nouvel essai ; le second échec rejette
+  la consultation en `generation_failed`, sans document. Aucune reprise automatique.
+- Le transcript complet est envoyé au modèle : pour de vrais patients, cela suppose le
+  même cadre contractuel (HDS, DPA) que pour la transcription.
+- Coût mesuré : environ 3,6 centimes par consultation (Sonnet 5, tarifs du 18/09/2026),
+  sans mise en cache du prompt — le cache diviserait l'entrée par dix.
+- Activer l'extraction réelle dans `services/api/.env` rend payante chaque consultation
+  lancée depuis le site ; les tests, eux, sont forcés en mode factice.
+
