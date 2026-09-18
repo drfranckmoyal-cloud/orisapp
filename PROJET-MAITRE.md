@@ -159,7 +159,7 @@ Détails, tests et banc d'essai : `docs/DEVELOPMENT.md` et `benchmarks/README.md
 | 17 sept. 2026 | M3 — écoute sur iPhone | 129 · 33 · 39 |
 | 17 sept. 2026 | M4 — banc d'essai transcription (code) | 174 · 33 · 39 |
 | 18 sept. 2026 | M4 — premier banc réel : Deepgram Nova-3, 100 consultations lues | dents 100 %, négations 100 %, WER 8,2 %, voix 86,9 % |
-| 18 sept. 2026 | M5 — extraction clinique par Claude, mesurée | 0 % de rejet, négations 98 %, 3,6 c/consultation ; 186 tests serveur |
+| 18 sept. 2026 | M5 — extraction clinique par Claude, 100 consultations, 2 modèles | Sonnet : 94 % abouties, 0 % de rejet, négations 98,6 %, 3,2 c/consultation ; 186 tests serveur |
 
 **Défauts trouvés et corrigés en cours de route** (le détail est dans le journal) :
 faits affichés « vérifiés par le praticien » sans l'être ; refus d'une décision

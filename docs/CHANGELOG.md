@@ -1,5 +1,22 @@
 # Changelog
 
+## M5 — 2026-09-18 — Clinical extraction
+- extraction clinique réelle par Claude derrière `ClinicalExtractionProvider` : sortie
+  imposée par un outil dont le schéma vient des contrats d'Oris, provenance posée par
+  Oris, consignes versionnées (`extraction-fr-4`) ;
+- une sortie invalide ou contraire aux règles cliniques donne droit à **un seul** nouvel
+  essai, avec l'explication du résolveur, puis elle est rejetée — jamais corrigée ;
+- garde-fou `ALLOW_EXTERNAL_LLM` + clé locale ; tests forcés en mode factice ;
+- banc d'essai extraction (100 consultations du corpus, 2 modèles comparés) :
+  Sonnet 5 → 94 % d'extractions abouties, 0 % de rejet par le résolveur, négations
+  98,6 %, temporalité 98,3 %, prévu/réalisé 94,2 %, 3,2 centimes par consultation ;
+  Haiku 4.5 → 69 % d'extractions abouties, 1,5 centime ;
+- règle corrigée : un emplacement d'acte est valide s'il a été **prononcé** dans les
+  segments cités ;
+- démonstration dans l'application : consultation fictive traitée par le vrai modèle,
+  compte rendu « Suspicion de fissure (16), non confirmée », zéro problème de validation ;
+- tests : API 186, web 33, iOS 39.
+
 ## M4bis — 2026-09-18 — premier banc d'essai réel
 - Deepgram Nova-3 mesuré sur les 100 consultations synthétiques (35 min d'audio) :
   numéros de dent 100 % (243 mentions, 0 inventé), négations 100 %, WER 8,2 %,
