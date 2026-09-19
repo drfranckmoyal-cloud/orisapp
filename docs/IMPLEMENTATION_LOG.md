@@ -494,6 +494,27 @@ temporalité et du statut prévu/réalisé, taux d'énoncés non appuyés, valid
 schéma au premier essai, taux de rejet par le résolveur, latence, coût réel.
 Comparaison entre modèles (Sonnet, Haiku, Opus) : aucun n'est choisi d'office.
 
+## Vocabulaire clinique (2026-09-19)
+
+50 concepts couvraient le corpus synthétique et rien d'autre : sur une vraie
+consultation, « couronnes » sortait en « à rédiger : élément non reconnu ». L'ontologie
+passe à 227 termes, rangés par thème (`THEMES` dans `ontology/labels.py`, `CONCEPTS`
+restant la vue à plat lue par le rédacteur et par l'invite du modèle).
+
+Le classement n'est pas cosmétique : c'est la seule façon pour le praticien de relire et
+de compléter la liste. `scripts/vocabulaire.py` produit `docs/VOCABULAIRE.md` depuis le
+code, avec un tableau « à ajouter » par thème ; un test compare les deux et échoue si la
+liste dérive. Les ajouts manuscrits du praticien y sont ignorés (ils vivent dans les
+tableaux « à ajouter »).
+
+Effet sur la consultation de démonstration : plus aucun « à rédiger », deux documents à
+zéro problème de validation, et les options s'écrivent en français (« Option écartée :
+couronnes », « surveillance sans traitement » au lieu du code brut).
+
+Limite assumée : un libellé n'est pas un savoir clinique. Élargir le vocabulaire élargit
+ce qu'Oris sait **rédiger**, jamais ce qu'il sait **déduire** ; un terme absent reste
+signalé plutôt que deviné.
+
 ## M5ter — la chaîne complète branchée (2026-09-19)
 
 Jusqu'ici les deux moteurs réels fonctionnaient chacun de leur côté (bancs d'essai) ;

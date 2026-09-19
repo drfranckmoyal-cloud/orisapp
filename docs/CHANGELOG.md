@@ -1,5 +1,18 @@
 # Changelog
 
+## Vocabulaire — 2026-09-19
+- vocabulaire clinique porté de 50 à **227 termes**, classés en 15 thèmes (motif,
+  symptômes, examen dentaire, usures et esthétique, parodonte et occlusion, examens
+  complémentaires, diagnostics, options, projet esthétique, actes directs, prothèse,
+  chirurgie, informations au patient, antécédents, suivi) ;
+- `docs/VOCABULAIRE.md` : la liste lisible par le praticien, produite depuis le code par
+  `scripts/vocabulaire.py`, avec un tableau « à ajouter » par thème ; un test échoue si
+  la liste dérive du code ;
+- effet mesuré sur la consultation de démonstration : « À rédiger : élément « crowns »
+  non reconnu » devient « Option écartée : couronnes », et les deux documents passent de
+  1 à 0 problème de validation ;
+- tests : API 196.
+
 ## M5ter — 2026-09-19 — la chaîne complète micro → compte rendu
 - une consultation enregistrée part désormais chez Deepgram puis chez Claude :
   vérifié de bout en bout sur un vrai fichier audio poussé comme le fait le micro du

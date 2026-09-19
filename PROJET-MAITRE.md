@@ -86,6 +86,7 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 
 | Quoi | Pourquoi | Quand |
 |---|---|---|
+| **Compléter `docs/VOCABULAIRE.md`** | Oris n'écrit que ce qu'il sait nommer ; ce qu'il ignore est signalé « à rédiger » | Quand vous voulez, thème par thème |
 | Clé Azure Speech (optionnel) | Comparer Deepgram à un fournisseur certifié HDS | Avant de choisir |
 | Autoriser le **simulateur iPhone** (« Let Claude use it ») | Pour que je vérifie l'app à l'écran, pas seulement par les tests | Quand vous voulez |
 | **Enregistrements de consultations jouées** par des praticiens | Les voix de synthèse ne suffisent pas pour choisir un fournisseur | Avant de choisir |
@@ -150,6 +151,7 @@ Détails, tests et banc d'essai : `docs/DEVELOPMENT.md` et `benchmarks/README.md
 | `docs/IMPLEMENTATION_PLAN.md` | Les jalons M0 à M11 |
 | `docs/IMPLEMENTATION_LOG.md` | Mon journal : ce que j'ai construit et pourquoi, jalon par jalon |
 | `docs/CHANGELOG.md` | Ce qui a été livré à chaque jalon |
+| `docs/VOCABULAIRE.md` | **Les 227 termes qu'Oris sait écrire, par thème — à compléter par vous** |
 | `docs/KNOWN_LIMITATIONS.md` | Ce qui ne marche pas encore, et les pièges |
 | `docs/DEVELOPMENT.md` | Comment lancer et vérifier le projet |
 | `benchmarks/README.md` | Banc d'essai des services de transcription |
