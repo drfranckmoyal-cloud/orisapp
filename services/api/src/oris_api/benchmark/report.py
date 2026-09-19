@@ -11,6 +11,7 @@ LABELS = {
     "critical_term_recall": "Termes dentaires / marques retrouvés",
     "negation_preservation": "Négations conservées",
     "speaker_accuracy": "Locuteurs bien séparés",
+    "single_voice_rate": "Enregistrements rendus d'une seule voix (aucune séparation)",
     "role_accuracy": "Rôles praticien / patient bien attribués",
     "wer": "Taux d'erreur de mots (WER)",
     "reliability": "Requêtes réussies",
@@ -32,7 +33,8 @@ LABELS = {
 }
 PERCENT = {
     "tooth_number_accuracy", "critical_term_recall", "negation_preservation", "speaker_accuracy",
-    "role_accuracy", "wer", "reliability", "glossary_gain_term_recall", "glossary_gain_tooth_accuracy",
+    "role_accuracy", "wer", "reliability", "single_voice_rate", "glossary_gain_term_recall",
+    "glossary_gain_tooth_accuracy",
     "glossary_gain_wer", "weighted_score", "weighted_score_coverage",
 }  # fmt: skip
 GATES = {"passed": "validée", "failed": "refusée", "not_reviewed": "non évaluée"}

@@ -106,9 +106,29 @@ def assign_roles(
     return RoleAssignment(roles, confident=True)
 
 
+def role_from_own_words(text: str) -> str:
+    """Rôle déduit d'un seul passage. `unknown` dès que ce n'est pas net."""
+    cues = count_cues([text])
+    if looks_like_practitioner(cues):
+        return "practitioner"
+    if cues.patient >= 1 and cues.patient > cues.practitioner:
+        return "patient"
+    return "unknown"
+
+
 def apply_roles(
     segments: list[TranscriptSegment], speaker_labels: dict[str, str]
 ) -> list[TranscriptSegment]:
+    # Une seule voix pour toute la consultation, ce n'est pas « une seule personne » :
+    # c'est l'absence de séparation (observé sur Deepgram). Donner le même rôle à tout
+    # le monde ferait passer une parole du patient pour un constat du praticien
+    # (invariant 5) ; chaque passage est alors jugé sur ses propres mots, et reste
+    # `unknown` s'il n'a rien de décisif — la consultation porte alors une alerte.
+    if len({speaker_labels.get(s.segment_id) for s in segments} - {None}) <= 1:
+        return [
+            segment.model_copy(update={"speaker_role": role_from_own_words(segment.text)})
+            for segment in segments
+        ]
     assignment = assign_roles(segments, speaker_labels)
     return [
         segment.model_copy(

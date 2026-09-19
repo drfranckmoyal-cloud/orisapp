@@ -113,6 +113,10 @@ def transition(
     session.flush()
 
 
+def is_synthetic(encounter: Encounter) -> bool:
+    return isinstance(encounter.metadata_json.get("synthetic_case_id"), str)
+
+
 def audio_input(
     session: Session, sink: AudioSink, encounter: Encounter
 ) -> tuple[list[AudioChunk], list[AudioGap]]:
@@ -155,10 +159,12 @@ def process(
     started = datetime.now(UTC)
 
     chunks, capture_gaps = audio_input(session, sink, encounter)
+    # Vrai micro → fournisseur configuré ; consultation fictive → fournisseur factice.
+    stt = (
+        providers.synthetic_speech_to_text if is_synthetic(encounter) else providers.speech_to_text
+    )
     try:
-        transcription = async_bridge.run(
-            lambda: providers.speech_to_text.transcribe(chunks, LOCALE, [])
-        )
+        transcription = async_bridge.run(lambda: stt.transcribe(chunks, LOCALE, []))
     except TranscriptionUnavailable as error:
         # Panne du fournisseur : l'audio est conservé pour relancer le traitement.
         set_processing_errors(encounter, [{"rule": "STT_UNAVAILABLE", "subject_id": error.code}])
@@ -167,7 +173,7 @@ def process(
             "pipeline.stt_unavailable",
             extra={
                 "encounter_id": str(encounter.id),
-                "provider": providers.speech_to_text.info.name,
+                "provider": stt.info.name,
                 "error_code": error.code,
             },
         )
@@ -236,7 +242,7 @@ def process(
         facts=extraction.facts,
         treatment_plan=extraction.treatment_plan,
         procedures=extraction.procedures,
-        warnings=compute_warnings([*capture_gaps, *transcription.gaps]),
+        warnings=compute_warnings([*capture_gaps, *transcription.gaps], transcription.segments),
     )
     save_version(session, encounter, clinical_object, "extraction", created_by=None)
     documents.generate(session, encounter, clinical_object, providers)

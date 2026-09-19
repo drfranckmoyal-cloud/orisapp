@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+from dataclasses import replace
 from typing import Any
 
 import pytest
@@ -171,11 +172,8 @@ class EchoSpeechToText:
 @pytest.fixture
 def echo_stt(api: Any) -> Any:
     original: ProviderSet = app.state.providers
-    app.state.providers = ProviderSet(
-        speech_to_text=EchoSpeechToText(original.speech_to_text),
-        clinical_extraction=original.clinical_extraction,
-        document_generation=original.document_generation,
-        clinical_validation=original.clinical_validation,
+    app.state.providers = replace(
+        original, speech_to_text=EchoSpeechToText(original.speech_to_text)
     )
     yield api
     app.state.providers = original
@@ -266,11 +264,8 @@ class DownSpeechToText:
 
 def test_provider_outage_keeps_audio_for_retry(api: Any) -> None:
     original: ProviderSet = app.state.providers
-    app.state.providers = ProviderSet(
-        speech_to_text=DownSpeechToText(original.speech_to_text),
-        clinical_extraction=original.clinical_extraction,
-        document_generation=original.document_generation,
-        clinical_validation=original.clinical_validation,
+    app.state.providers = replace(
+        original, speech_to_text=DownSpeechToText(original.speech_to_text)
     )
     try:
         eid = new_encounter(api)
@@ -283,11 +278,8 @@ def test_provider_outage_keeps_audio_for_retry(api: Any) -> None:
         assert api.get(f"/encounters/{eid}/audio").json()["purge_status"] == "retained"
 
         # Le fournisseur revient : relance sans perte, puis purge.
-        app.state.providers = ProviderSet(
-            speech_to_text=EchoSpeechToText(original.speech_to_text),
-            clinical_extraction=original.clinical_extraction,
-            document_generation=original.document_generation,
-            clinical_validation=original.clinical_validation,
+        app.state.providers = replace(
+            original, speech_to_text=EchoSpeechToText(original.speech_to_text)
         )
         retried = api.post(f"/encounters/{eid}/process").json()
         assert retried["status"] == "review"
@@ -323,11 +315,8 @@ def test_speaker_labels_become_roles_in_pipeline(api: Any) -> None:
             return TranscriptionResult(segments, speaker_labels={"t0": "1", "t1": "0"})
 
     original: ProviderSet = app.state.providers
-    app.state.providers = ProviderSet(
-        speech_to_text=LabelledSpeechToText(original.speech_to_text),
-        clinical_extraction=original.clinical_extraction,
-        document_generation=original.document_generation,
-        clinical_validation=original.clinical_validation,
+    app.state.providers = replace(
+        original, speech_to_text=LabelledSpeechToText(original.speech_to_text)
     )
     try:
         eid = new_encounter(api)
@@ -339,3 +328,36 @@ def test_speaker_labels_become_roles_in_pipeline(api: Any) -> None:
         assert roles == ["patient", "practitioner"]
     finally:
         app.state.providers = original
+
+
+class OneVoiceSpeechToText:
+    """STT de test : tout le monde dans la même voix (cas réel observé sur Deepgram)."""
+
+    def __init__(self, inner: Any) -> None:
+        self.info = inner.info
+
+    async def transcribe(self, chunks: Any, locale: str, glossary: Any) -> TranscriptionResult:
+        case = default_corpus().get("ORIS-SYN-092")
+        assert case is not None
+        return TranscriptionResult(
+            [s.model_copy(update={"speaker_role": "unknown"}) for s in case.segments]
+            if chunks
+            else []
+        )
+
+
+def test_voices_not_separated_are_flagged_for_review(api: Any) -> None:
+    """Sans rôle sûr, le praticien doit vérifier qui a dit quoi (invariant 5)."""
+    original: ProviderSet = app.state.providers
+    app.state.providers = replace(
+        original, speech_to_text=OneVoiceSpeechToText(original.speech_to_text)
+    )
+    try:
+        eid = new_encounter(api)
+        put_chunk(api, eid, 0, pcm())
+        finished = api.post(f"/encounters/{eid}/finish", json={"final_sequence": 0}).json()
+    finally:
+        app.state.providers = original
+    assert finished["status"] == "review"
+    warnings = clinical_object(api, eid)["warnings"]
+    assert [(w["code"], w["severity"]) for w in warnings] == [("SPEAKER_ROLES_UNKNOWN", "review")]

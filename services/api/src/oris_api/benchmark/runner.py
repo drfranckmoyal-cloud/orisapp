@@ -62,6 +62,11 @@ class ItemScore:
     negations: metrics.Ratio = field(default_factory=lambda: metrics.Ratio(0, 0))
     terms: metrics.Ratio = field(default_factory=lambda: metrics.Ratio(0, 0))
     speaker_accuracy: float | None = None
+    # Nombre de voix distinctes rendues par le fournisseur : un fournisseur qui met tout
+    # le monde dans la même voix obtient malgré tout un bon « speaker_accuracy » (il suffit
+    # que le praticien parle le plus). Ce compte évite de lire ce score de travers.
+    speakers_detected: int = 0
+    speakers_expected: int = 0
     role_accuracy: float | None = None
     latency_s: float | None = None
     real_time_factor: float | None = None
@@ -120,6 +125,8 @@ def score_item(item: DatasetItem, result: Any, latency_s: float) -> ItemScore:
         negations=metrics.negation_preservation(reference, alignment),
         terms=metrics.term_recall(reference, hypothesis, DENTAL_GLOSSARY_FR),
         speaker_accuracy=metrics.speaker_accuracy(ref_spans, labelled),
+        speakers_detected=len({span.label for span in labelled}),
+        speakers_expected=len({span.label for span in ref_spans}),
         role_accuracy=metrics.role_accuracy(ref_spans, role_spans) if role_spans else None,
         latency_s=latency_s,
         real_time_factor=latency_s / (item.duration_ms / 1000) if item.duration_ms else None,
@@ -207,6 +214,11 @@ def summarize(report: ProviderReport) -> None:
         "critical_term_recall": ratio_total(scores, "terms"),
         "negation_preservation": ratio_total(scores, "negations"),
         "speaker_accuracy": mean([s.speaker_accuracy for s in ok]),
+        "single_voice_rate": (
+            sum(1 for s in ok if s.speakers_detected <= 1 < s.speakers_expected) / len(ok)
+            if ok
+            else None
+        ),
         "role_accuracy": mean([s.role_accuracy for s in ok]),
         "finalization_latency_p50_s": metrics.percentile(
             [s.latency_s for s in ok if s.latency_s is not None], 50

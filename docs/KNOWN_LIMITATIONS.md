@@ -105,6 +105,12 @@
   correspondance stricte concept + dents : le modèle découpe l'information plus finement
   que le corpus et nomme parfois autrement. Ce n'est pas de l'invention (aucune dent
   inventée), mais la mesure est sévère ; à revoir avec une correspondance sémantique.
+- **La séparation des voix ne fonctionne pas sur les enregistrements de synthèse** :
+  mesuré le 19/09 sur 30 enregistrements, **72 % reviennent d'une seule voix**. Le score « locuteurs bien séparés » de 86,9 % mesurait
+  en réalité la part de parole du praticien, pas une séparation ; le rapport indique
+  désormais aussi la part d'enregistrements rendus d'une seule voix. Sans rôle sûr, Oris
+  pose l'alerte `SPEAKER_ROLES_UNKNOWN` et c'est le modèle qui devine le rôle à partir de
+  la tournure des phrases.
 - Les consignes données au modèle ont été mises au point en lisant ce corpus : leur
   efficacité sur de vraies consultations reste à démontrer.
 - Un modèle qui viole les règles a droit à trois essais expliqués ; le dernier échec

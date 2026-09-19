@@ -493,3 +493,52 @@ attendus : précision et rappel des faits, exactitude des négations, de la
 temporalité et du statut prévu/réalisé, taux d'énoncés non appuyés, validité du
 schéma au premier essai, taux de rejet par le résolveur, latence, coût réel.
 Comparaison entre modèles (Sonnet, Haiku, Opus) : aucun n'est choisi d'office.
+
+## M5ter — la chaîne complète branchée (2026-09-19)
+
+Jusqu'ici les deux moteurs réels fonctionnaient chacun de leur côté (bancs d'essai) ;
+une consultation enregistrée au micro n'allait chez aucun des deux. Le pipeline est
+resté inchangé : ce sont les fournisseurs qui changent (`STT_PROVIDER=deepgram`,
+`CLINICAL_EXTRACTION_PROVIDER=anthropic`).
+
+### Consultation fictive et vraie consultation ne suivent plus le même fournisseur
+
+`ProviderSet` porte désormais un `synthetic_speech_to_text` (toujours factice). Une
+consultation fictive n'a pas de son : son « enregistrement » est l'étiquette
+`oris-synthetic:<case_id>`, que seul le fournisseur factice sait lire. L'envoyer à
+Deepgram produisait une transcription vide et un échec incompréhensible.
+
+### Alerte quand les voix ne sont pas séparées
+
+Mesuré sur l'audio de synthèse (30 enregistrements, 19/09) : **72 % reviennent d'une
+seule voix**. L'ancienne règle donnait alors le même rôle à toute la consultation — la
+phrase du patient devenait une parole du praticien, avec assurance. Désormais, une voix
+unique n'est plus traitée comme « une seule personne » : chaque passage est jugé sur ses
+propres mots et reste `unknown` s'il n'a rien de décisif. Ce n'est pas une garantie : nouvelle
+alerte `SPEAKER_ROLES_UNKNOWN` (severité `review`, non bloquante) dès qu'un segment
+parlé reste sans rôle — invariant 5.
+
+Conséquence sur le banc d'essai : `speaker_accuracy` récompensait un fournisseur qui met
+tout le monde dans la même voix (il suffit que le praticien parle le plus). Le rapport
+publie maintenant aussi `single_voice_rate`, la part d'enregistrements rendus d'une seule
+voix alors que la référence en compte plusieurs.
+
+### Vérification de bout en bout
+
+Un vrai fichier audio découpé en segments PCM de 2 s et poussé par l'API exactement
+comme le fait le micro du site : Deepgram transcrit, l'audio est purgé, Claude extrait,
+le compte rendu est rendu — 5 s au total, zéro problème de validation, négation
+conservée (« absence de douleur nocturne »).
+
+### Reprise des pannes passagères côté transcription
+
+Le banc du 19/09 a perdu 5 requêtes sur 30 (4 coupures réseau, un 408) : l'audio était
+bon, seule la requête avait échoué, et la consultation entière était perdue. Deepgram
+reprend maintenant deux fois (1 s puis 4 s) sur `NETWORK`, 429, 5xx et 408, comme
+l'adaptateur Claude.
+
+### Imports différés dans la fabrique de fournisseurs
+
+`providers.factory` importait les adaptateurs STT au chargement du module, qui
+importaient en retour `providers.base` : importer `oris_api.stt.deepgram` en premier
+cassait. Même correction que pour l'adaptateur Claude : import dans la fonction.

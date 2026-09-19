@@ -17,8 +17,6 @@ from oris_api.providers.mock import (
     MockDocumentGenerationProvider,
     MockSpeechToTextProvider,
 )
-from oris_api.stt.azure_speech import AzureFastTranscriptionProvider
-from oris_api.stt.deepgram import DeepgramPrerecordedProvider
 from oris_api.synthetic.corpus import SyntheticCorpus, default_corpus
 
 
@@ -29,6 +27,9 @@ class ProviderConfigurationError(RuntimeError):
 @dataclass(frozen=True)
 class ProviderSet:
     speech_to_text: SpeechToTextProvider
+    # Une consultation fictive n'a pas d'audio : son « enregistrement » est une étiquette
+    # que seul le fournisseur factice sait lire. L'envoyer à Deepgram n'aurait aucun sens.
+    synthetic_speech_to_text: SpeechToTextProvider
     clinical_extraction: ClinicalExtractionProvider
     document_generation: DocumentGenerationProvider
     clinical_validation: ClinicalValidationProvider
@@ -47,6 +48,7 @@ def build_providers(settings: Settings, corpus: SyntheticCorpus | None = None) -
         corpus = SyntheticCorpus([])
     return ProviderSet(
         speech_to_text=build_speech_to_text(settings, corpus),
+        synthetic_speech_to_text=MockSpeechToTextProvider(corpus),
         clinical_extraction=build_clinical_extraction(settings, corpus),
         document_generation=MockDocumentGenerationProvider(),
         clinical_validation=MockClinicalValidationProvider(),
@@ -54,6 +56,10 @@ def build_providers(settings: Settings, corpus: SyntheticCorpus | None = None) -
 
 
 def build_speech_to_text(settings: Settings, corpus: SyntheticCorpus) -> SpeechToTextProvider:
+    # Imports différés : les adaptateurs dépendent eux-mêmes des interfaces de ce paquet.
+    from oris_api.stt.azure_speech import AzureFastTranscriptionProvider
+    from oris_api.stt.deepgram import DeepgramPrerecordedProvider
+
     if settings.stt_provider == "mock":
         return MockSpeechToTextProvider(corpus)
     if not settings.allow_external_stt:

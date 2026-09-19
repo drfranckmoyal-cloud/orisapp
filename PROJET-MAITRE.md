@@ -4,7 +4,7 @@
 fonctionne, ce qui bloque et ce qui est attendu de vous. Mis à jour à la fin de
 chaque jalon.
 
-Dernière mise à jour : 18 septembre 2026 (M5bis : les six consultations en échec comprises).
+Dernière mise à jour : 19 septembre 2026 (la chaîne complète micro → compte rendu est branchée).
 Dépôt : `drfranckmoyal-cloud/orisapp` (privé) · Dossier : `~/Desktop/Claude-Projects/ORIS`
 
 ---
@@ -66,10 +66,17 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 - Ces deux moteurs restent **désactivés par défaut** : il faut une clé et un accord
   explicite dans le fichier de réglages privé.
 
+**La chaîne complète (depuis le 19 septembre)**
+- Une consultation enregistrée part chez Deepgram, puis le transcript chez Claude, puis
+  le compte rendu est écrit : vérifié de bout en bout sur un vrai fichier audio, en 5
+  secondes, sans aucun problème de validation.
+- Une consultation fictive, elle, n'est jamais envoyée dehors.
+- **Nouveau point de vigilance** : sur nos enregistrements, Deepgram ne sépare pas les
+  voix (72 % reviennent d'une seule voix). Quand Oris ne sait pas qui parle, il le dit
+  — alerte « vérifiez qui a dit quoi » — au lieu de faire semblant. Une phrase du
+  patient ne peut plus devenir un constat du praticien par défaut.
+
 **Ce qui n'existe pas encore**
-- **La chaîne complète micro → compte rendu n'est pas encore branchée bout à bout** :
-  la transcription réelle et l'extraction réelle fonctionnent, mais une consultation
-  enregistrée au micro n'est pas encore traitée automatiquement par Deepgram.
 - Pas d'export PDF, pas de correction vocale, pas de comptes rendus opératoires.
 - Pas de compte utilisateur ni de mot de passe : usage local uniquement.
 
@@ -162,6 +169,7 @@ Détails, tests et banc d'essai : `docs/DEVELOPMENT.md` et `benchmarks/README.md
 | 17 sept. 2026 | M4 — banc d'essai transcription (code) | 174 · 33 · 39 |
 | 18 sept. 2026 | M4 — premier banc réel : Deepgram Nova-3, 100 consultations lues | dents 100 %, négations 100 %, WER 8,2 %, voix 86,9 % |
 | 18 sept. 2026 | M5 — extraction clinique par Claude, 100 consultations, 2 modèles | Sonnet : 94 % abouties, 0 % de rejet, négations 98,6 %, 3,2 c/consultation ; 186 tests serveur |
+| 19 sept. 2026 | Chaîne complète micro → Deepgram → Claude → compte rendu, vérifiée sur un vrai fichier audio | 190 tests serveur |
 | 18 sept. 2026 | M5bis — les six consultations en échec comprises : variation du modèle, pas défaut de fond | les 6 aboutissent avec trois essais ; 188 tests serveur |
 
 **Défauts trouvés et corrigés en cours de route** (le détail est dans le journal) :

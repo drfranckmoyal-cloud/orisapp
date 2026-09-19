@@ -21,6 +21,16 @@ from oris_api.stt.audio import SAMPLE_RATE, concatenate, pcm_to_wav
 from oris_api.stt.common import glossary_terms, segment
 
 MODEL = "nova-3"
+# Coupure réseau, quota ou serveur occupé : l'audio est bon, seule la requête a échoué.
+# Sans reprise, une consultation entière est perdue pour un incident de quelques secondes
+# (mesuré : 5 requêtes sur 30 perdues ainsi le 19/09).
+TRANSIENT_BACKOFF_S = (1.0, 4.0)
+TRANSIENT_CODES = (
+    "DEEPGRAM_NETWORK",
+    "DEEPGRAM_HTTP_429",
+    "DEEPGRAM_HTTP_5",
+    "DEEPGRAM_REJECTED_408",
+)
 
 
 def language_code(locale: str) -> str:
@@ -39,12 +49,14 @@ class DeepgramPrerecordedProvider:
         use_glossary: bool = True,
         client: httpx.AsyncClient | None = None,
         timeout_s: float = 120,
+        retry_backoff_s: tuple[float, ...] = TRANSIENT_BACKOFF_S,
     ) -> None:
         self._api_key = api_key
         self._base_url = base_url.rstrip("/")
         self._use_glossary = use_glossary
         self._client = client
         self._timeout = timeout_s
+        self._backoff = retry_backoff_s
 
     def params(
         self, locale: str, glossary: list[GlossaryHint]
@@ -64,8 +76,22 @@ class DeepgramPrerecordedProvider:
     async def transcribe(
         self, chunks: list[AudioChunk], locale: str, glossary: list[GlossaryHint]
     ) -> TranscriptionResult:
+        """Transcription du fichier, avec reprise des pannes passagères."""
         if not chunks:
             return TranscriptionResult([])
+        for attempt in range(len(self._backoff) + 1):
+            try:
+                return await self._transcribe_once(chunks, locale, glossary)
+            except TranscriptionUnavailable as error:
+                transient = error.code.startswith(TRANSIENT_CODES)
+                if not transient or attempt == len(self._backoff):
+                    raise
+                await asyncio.sleep(self._backoff[attempt])
+        raise TranscriptionUnavailable("DEEPGRAM_NETWORK")
+
+    async def _transcribe_once(
+        self, chunks: list[AudioChunk], locale: str, glossary: list[GlossaryHint]
+    ) -> TranscriptionResult:
         body = pcm_to_wav(concatenate(chunks))
         client = self._client or httpx.AsyncClient(timeout=self._timeout)
         try:

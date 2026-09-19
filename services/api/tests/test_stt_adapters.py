@@ -112,7 +112,9 @@ def test_deepgram_errors_are_explicit(status: int, code: str) -> None:
     )
     with pytest.raises(TranscriptionUnavailable) as caught:
         asyncio.run(
-            DeepgramPrerecordedProvider("k", client=client).transcribe(chunks(), "fr-FR", [])
+            DeepgramPrerecordedProvider("k", client=client, retry_backoff_s=(0.0, 0.0)).transcribe(
+                chunks(), "fr-FR", []
+            )
         )
     assert caught.value.code == code
 
@@ -124,7 +126,9 @@ def test_network_failure_is_transient() -> None:
     client = httpx.AsyncClient(transport=httpx.MockTransport(fail))
     with pytest.raises(TranscriptionUnavailable) as caught:
         asyncio.run(
-            DeepgramPrerecordedProvider("k", client=client).transcribe(chunks(), "fr-FR", [])
+            DeepgramPrerecordedProvider("k", client=client, retry_backoff_s=(0.0, 0.0)).transcribe(
+                chunks(), "fr-FR", []
+            )
         )
     assert caught.value.code == "DEEPGRAM_NETWORK"
 
@@ -316,3 +320,22 @@ def test_deepgram_stream_gives_up_explicitly() -> None:
 
     with pytest.raises(TranscriptionUnavailable):
         asyncio.run(scenario())
+
+
+def test_transient_deepgram_failure_is_retried_then_succeeds() -> None:
+    """Une coupure de quelques secondes ne doit pas coûter la consultation."""
+    calls = {"n": 0}
+
+    def flaky(_request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise httpx.ConnectError("down")
+        if calls["n"] == 2:
+            return httpx.Response(429, json={})
+        return httpx.Response(200, json=DEEPGRAM_RESPONSE)
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(flaky))
+    provider = DeepgramPrerecordedProvider("k", client=client, retry_backoff_s=(0.0, 0.0))
+    result = asyncio.run(provider.transcribe(chunks(), "fr-FR", []))
+    assert calls["n"] == 3
+    assert result.segments

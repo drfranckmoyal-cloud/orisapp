@@ -133,3 +133,25 @@ def test_extraction_failure_is_an_explicit_failed_consultation_not_a_crash(api: 
     # La raison du refus est visible, sous forme de règle, sans contenu clinique.
     assert [e["rule"] for e in failed["processing_errors"]] == ["PROCEDURE_STATUS_UNSUPPORTED"]
     assert api.get(f"/encounters/{eid}/documents").json() == []
+
+
+def test_fixture_consultation_never_reaches_the_configured_stt_provider(api: Any) -> None:
+    """L'« enregistrement » d'une consultation fictive est une étiquette, pas du son."""
+    from dataclasses import replace
+
+    from oris_api.main import app
+    from oris_api.providers.base import ProviderInfo
+
+    class NeverCalled:
+        info = ProviderInfo(name="interdit", version="0", capabilities=[])
+
+        async def transcribe(self, chunks: Any, locale: str, glossary: Any) -> Any:
+            raise AssertionError("une consultation fictive ne part pas chez un fournisseur")
+
+    original = app.state.providers
+    app.state.providers = replace(original, speech_to_text=NeverCalled())
+    try:
+        encounter = run_synthetic(api, "ORIS-SYN-092")
+    finally:
+        app.state.providers = original
+    assert encounter["status"] == "review"

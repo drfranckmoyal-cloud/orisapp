@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any
 
 import pytest
@@ -31,11 +32,8 @@ class MisheardToothExtraction:
 @pytest.fixture
 def misheard(api: Any) -> Any:
     original: ProviderSet = app.state.providers
-    app.state.providers = ProviderSet(
-        speech_to_text=original.speech_to_text,
-        clinical_extraction=MisheardToothExtraction(original.clinical_extraction),
-        document_generation=original.document_generation,
-        clinical_validation=original.clinical_validation,
+    app.state.providers = replace(
+        original, clinical_extraction=MisheardToothExtraction(original.clinical_extraction)
     )
     yield api
     app.state.providers = original

@@ -1,5 +1,25 @@
 # Changelog
 
+## M5ter — 2026-09-19 — la chaîne complète micro → compte rendu
+- une consultation enregistrée part désormais chez Deepgram puis chez Claude :
+  vérifié de bout en bout sur un vrai fichier audio poussé comme le fait le micro du
+  site (4 segments de 2 s) → transcription, audio purgé, faits extraits, compte rendu
+  rendu en 5 s, zéro problème de validation, négation conservée ;
+- une consultation fictive ne part plus chez un fournisseur réel : son « enregistrement »
+  est une étiquette que seul le fournisseur factice sait lire (`synthetic_speech_to_text`) ;
+- nouvelle alerte `SPEAKER_ROLES_UNKNOWN` (à vérifier, non bloquante) quand un segment
+  reste sans rôle : sans voix séparées, rien ne garantit qu'une parole du patient n'a pas
+  été écrite comme un constat du praticien (invariant 5) ;
+- banc d'essai STT : nouvelle mesure `single_voice_rate`. Le score « locuteurs bien
+  séparés » récompensait un fournisseur qui met tout le monde dans la même voix —
+  mesuré : **72 % des enregistrements reviennent d'une seule voix** ;
+- une voix unique n'est plus traitée comme « une seule personne » : chaque passage est
+  jugé sur ses propres mots, et reste sans rôle s'il n'a rien de décisif ;
+- Deepgram reprend deux fois une panne passagère (réseau, 429, 5xx, 408) : le banc du
+  19/09 perdait 5 consultations sur 30 pour des incidents de quelques secondes ;
+- imports différés des adaptateurs STT dans la fabrique (dépendance circulaire) ;
+- tests : API 190.
+
 ## M5bis — 2026-09-18 — les six échecs compris et corrigés
 - diagnostic : les six consultations refusées par Sonnet ne l'étaient pas de façon
   systématique — rejouées, elles aboutissent. Le modèle varie d'un appel à l'autre, et
