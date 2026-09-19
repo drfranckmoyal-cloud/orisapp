@@ -1,5 +1,18 @@
 # Changelog
 
+## M6 (1/2) — 2026-09-19 — sortie des documents
+- `GET /documents/{id}/export?format=pdf|text|structured` : PDF A4 (identité du cabinet
+  et du praticien, patient, date, type, mention de validation, pagination), texte brut,
+  texte structuré ;
+- sur le site : **Copier pour le dossier** et **Exporter en PDF**, avec repli sur une
+  zone de texte sélectionnable si le navigateur refuse le presse-papiers ;
+- un brouillon peut sortir mais porte la mention « non validé », et son statut ne change
+  pas ; seul un document validé passe à `exported`, et la consultation passe à
+  `exported` quand tous ses documents en sont sortis ;
+- le nom du fichier ne porte pas le nom du patient ;
+- dépendance `reportlab` ;
+- tests : API 202, web 35.
+
 ## Vocabulaire (2) — 2026-09-19 — termes dictés par le praticien
 - 42 termes intégrés depuis la dictée du 19/09 : **269 termes**, 16 thèmes (nouveau
   thème « Matériaux, produits et instruments ») ;

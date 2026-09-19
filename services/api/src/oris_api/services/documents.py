@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from functools import partial
+from typing import Literal
 from uuid import UUID
 
 from sqlalchemy import select
@@ -12,7 +13,15 @@ from sqlalchemy.orm import Session
 
 from oris_api.contracts import ClinicalEncounter
 from oris_api.contracts.generated import DocumentDocumentType
-from oris_api.db.models import DocumentRow, DocumentVersion, Encounter
+from oris_api.db.models import (
+    DocumentRow,
+    DocumentVersion,
+    Encounter,
+    Organization,
+    Patient,
+    User,
+)
+from oris_api.documents.export import ExportContext, render_pdf, render_text
 from oris_api.domain.types import GeneratedDocument, ValidationIssue
 from oris_api.providers import ProviderSet
 from oris_api.services import async_bridge, audit, learning
@@ -180,3 +189,91 @@ def validate(
     )
     session.flush()
     return document
+
+
+ExportFormat = Literal["pdf", "text", "structured"]
+EXPORT_MEDIA = {
+    "pdf": "application/pdf",
+    "text": "text/plain; charset=utf-8",
+    "structured": "text/plain; charset=utf-8",
+}
+EXPORT_FILENAMES = {
+    "consultation_note": "compte-rendu",
+    "treatment_plan_text": "plan-de-traitement",
+    "operative_note": "compte-rendu-operatoire",
+    "patient_summary": "resume-patient",
+    "referral_letter": "courrier-adressage",
+}
+
+
+@dataclass(frozen=True)
+class ExportedDocument:
+    payload: bytes
+    media_type: str
+    filename: str
+
+
+def export_document(
+    session: Session, actor: Actor, document_id: UUID, fmt: ExportFormat
+) -> ExportedDocument:
+    """Sortie d'un document pour le dossier patient.
+
+    Un brouillon peut sortir, mais il part en portant sa mention « non validé » et son
+    statut ne bouge pas : seule la sortie d'un document validé le passe à `exported`
+    (spec §50 : la validation reste une action explicite du praticien).
+    """
+    document = session.get(DocumentRow, document_id)
+    encounter = session.get(Encounter, document.encounter_id) if document else None
+    if document is None or encounter is None or encounter.organization_id != actor.organization_id:
+        raise NotFound("DOCUMENT_NOT_FOUND", str(document_id))
+    version = current_version(session, document)
+    if version is None:
+        raise Conflict("DOCUMENT_EMPTY", str(document_id))
+
+    patient = session.get(Patient, encounter.patient_id)
+    practitioner = session.get(User, encounter.practitioner_id)
+    organization = session.get(Organization, encounter.organization_id)
+    context = ExportContext(
+        document_type=document.document_type,
+        content=version.content,
+        practitioner=practitioner.name if practitioner else "Praticien",
+        organization=organization.name if organization else "Cabinet",
+        patient=f"{patient.first_name} {patient.last_name}" if patient else "Patient",
+        encounter_date=encounter.started_at or encounter.created_at,
+        validated_at=version.validated_at,
+        version=version.version,
+    )
+    if fmt == "pdf":
+        payload = render_pdf(context)
+    else:
+        payload = render_text(context, structured=fmt == "structured").encode("utf-8")
+
+    # Le nom du fichier ne porte pas le patient : il vivrait dans un dossier de
+    # téléchargements, hors du dossier clinique. L'identité est dans le document.
+    suffix = "pdf" if fmt == "pdf" else "txt"
+    stamp = context.encounter_date.strftime("%Y-%m-%d")
+    filename = f"oris-{EXPORT_FILENAMES.get(document.document_type, 'document')}-{stamp}.{suffix}"
+
+    audit.record(
+        session,
+        actor,
+        "document.exported",
+        "document",
+        document.id,
+        format=fmt,
+        document_status=document.status,
+    )
+    if document.status == "validated":
+        document.status = "exported"
+        mark_encounter_exported(session, actor, encounter)
+    session.flush()
+    return ExportedDocument(payload=payload, media_type=EXPORT_MEDIA[fmt], filename=filename)
+
+
+def mark_encounter_exported(session: Session, actor: Actor, encounter: Encounter) -> None:
+    """La consultation passe à `exported` quand tous ses documents en sont sortis."""
+    from oris_api.services.encounters import transition
+
+    active = [d for d in list_documents(session, encounter.id) if d.status != "superseded"]
+    if encounter.status == "validated" and active and all(d.status == "exported" for d in active):
+        transition(session, actor, encounter, "exported")

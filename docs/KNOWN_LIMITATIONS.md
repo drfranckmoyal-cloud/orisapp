@@ -105,6 +105,10 @@
   correspondance stricte concept + dents : le modèle découpe l'information plus finement
   que le corpus et nomme parfois autrement. Ce n'est pas de l'invention (aucune dent
   inventée), mais la mesure est sévère ; à revoir avec une correspondance sémantique.
+- Le PDF ne porte pas encore de logo de cabinet (prévu configurable, spec §78) et
+  aucune signature numérique (hors V1).
+- La copie vers le presse-papiers dépend du navigateur : si elle est refusée, le texte
+  s'affiche pour une copie manuelle.
 - **La séparation des voix ne fonctionne pas sur les enregistrements de synthèse** :
   mesuré le 19/09 sur 30 enregistrements, **72 % reviennent d'une seule voix**. Le score « locuteurs bien séparés » de 86,9 % mesurait
   en réalité la part de parole du praticien, pas une séparation ; le rapport indique

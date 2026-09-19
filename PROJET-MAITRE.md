@@ -32,7 +32,8 @@ traitement et les comptes rendus opératoires. Trois principes tiennent tout :
 | M3 | Écoute sur iPhone (appels, écouteurs, écran verrouillé) | **Terminé, non vu à l'écran** |
 | M4 | Banc d'essai des services de transcription (Azure, Deepgram) | **Terminé** — Deepgram mesuré le 18 sept. sur 100 consultations |
 | M5 | Extraction clinique par une vraie IA (Claude) | **Terminé** — mesuré sur le corpus |
-| M6 à M11 | Interface clinique, opératoire, correction vocale, apprentissage, sécurisation, validation clinique | À faire |
+| M6 | Écran de consultation : sortie des documents (PDF, copie pour le dossier) | **En cours** — export terminé |
+| M7 à M11 | Comptes rendus opératoires, correction vocale, apprentissage, sécurisation, validation clinique | À faire |
 
 Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENTATION_LOG.md`.
 
@@ -47,6 +48,9 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 - Corriger une dent ou le statut d'un traitement : le dossier passe en version
   suivante, les documents sont réécrits, la correction est retenue pour l'apprentissage.
 - Valider document par document, puis la consultation.
+- **Exporter en PDF** (A4, avec cabinet, praticien, patient, date et mention de
+  validation) et **copier pour le dossier** pour coller dans votre logiciel métier. Un
+  document non validé part avec la mention « brouillon » écrite dessus.
 - Enregistrer au micro : pause, reprise, coupure réseau, page rechargée. Toute
   interruption devient une alerte rouge ; le son est supprimé après traitement.
 
@@ -77,7 +81,8 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
   patient ne peut plus devenir un constat du praticien par défaut.
 
 **Ce qui n'existe pas encore**
-- Pas d'export PDF, pas de correction vocale, pas de comptes rendus opératoires.
+- Pas de correction vocale, pas de comptes rendus opératoires.
+- Le PDF n'a pas encore votre logo de cabinet.
 - Pas de compte utilisateur ni de mot de passe : usage local uniquement.
 
 ---
@@ -171,6 +176,8 @@ Détails, tests et banc d'essai : `docs/DEVELOPMENT.md` et `benchmarks/README.md
 | 17 sept. 2026 | M4 — banc d'essai transcription (code) | 174 · 33 · 39 |
 | 18 sept. 2026 | M4 — premier banc réel : Deepgram Nova-3, 100 consultations lues | dents 100 %, négations 100 %, WER 8,2 %, voix 86,9 % |
 | 18 sept. 2026 | M5 — extraction clinique par Claude, 100 consultations, 2 modèles | Sonnet : 94 % abouties, 0 % de rejet, négations 98,6 %, 3,2 c/consultation ; 186 tests serveur |
+| 19 sept. 2026 | Vocabulaire : 269 termes classés par thème, dont vos 51 termes dictés | 196 tests serveur |
+| 19 sept. 2026 | M6 — sortie des documents : PDF A4, copie pour le dossier, statut « exporté » | 202 serveur · 35 web |
 | 19 sept. 2026 | Chaîne complète micro → Deepgram → Claude → compte rendu, vérifiée sur un vrai fichier audio | 190 tests serveur |
 | 18 sept. 2026 | M5bis — les six consultations en échec comprises : variation du modèle, pas défaut de fond | les 6 aboutissent avec trois essais ; 188 tests serveur |
 

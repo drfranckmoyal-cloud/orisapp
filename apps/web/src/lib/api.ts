@@ -105,5 +105,40 @@ export async function apiRequest<T>(
   return body as T;
 }
 
+export type ExportFormat = "pdf" | "text" | "structured";
+
+export type DocumentExport = { blob: Blob; filename: string };
+
+/** Sortie d'un document : le serveur renvoie un fichier, pas du JSON. */
+export async function fetchDocumentExport(
+  documentId: string,
+  format: ExportFormat,
+  fetcher: typeof fetch = fetch,
+  baseUrl: string = API_BASE_URL,
+): Promise<DocumentExport> {
+  let response: Response;
+  try {
+    response = await fetcher(`${baseUrl}/documents/${documentId}/export?format=${format}`, {
+      cache: "no-store",
+    });
+  } catch {
+    throw new ApiError(0, "NETWORK_UNREACHABLE");
+  }
+  if (!response.ok) {
+    const body: unknown = await response.json().catch(() => null);
+    const error = (body ?? {}) as { code?: unknown };
+    throw new ApiError(
+      response.status,
+      typeof error.code === "string" ? error.code : `HTTP_${response.status}`,
+    );
+  }
+  return { blob: await response.blob(), filename: filenameFrom(response) };
+}
+
+function filenameFrom(response: Response): string {
+  const disposition = response.headers.get("content-disposition") ?? "";
+  return /filename="([^"]+)"/.exec(disposition)?.[1] ?? "document";
+}
+
 export type ClientConfig = Schemas["ClientConfigOut"];
 export type AudioSessionView = Schemas["AudioSessionOut"];

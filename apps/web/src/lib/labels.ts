@@ -111,6 +111,9 @@ export const LEARNING_EVENT: Record<string, string> = {
 
 const ERRORS: Record<string, string> = {
   NETWORK_UNREACHABLE: "Serveur Oris injoignable.",
+  DOCUMENT_EMPTY: "Ce document n’a pas encore de contenu.",
+  DOCUMENT_NOT_FOUND: "Ce document est introuvable.",
+  COPY_FAILED: "La copie a échoué : votre navigateur l’a refusée.",
   DOCUMENT_OUTDATED: "Ce document est périmé : régénérez-le avant de le valider.",
   DOCUMENT_HAS_CRITICAL_ISSUES: "Le document contient une phrase non justifiée : validation impossible.",
   WARNING_NOT_ACKNOWLEDGED: "Confirmez d’abord avoir pris connaissance de l’alerte critique.",

@@ -494,6 +494,37 @@ temporalité et du statut prévu/réalisé, taux d'énoncés non appuyés, valid
 schéma au premier essai, taux de rejet par le résolveur, latence, coût réel.
 Comparaison entre modèles (Sonnet, Haiku, Opus) : aucun n'est choisi d'office.
 
+## M6 — sortie des documents : PDF, texte, copie pour le dossier (2026-09-19)
+
+Critères visés (`ACCEPTANCE_CRITERIA`, spec §78–79, §50) : export PDF et texte,
+« Copier pour le dossier », statut `exported`, aucune validation implicite.
+
+Modules touchés :
+- `documents/export.py` (nouveau) : mise en page PDF A4 (reportlab) et rendu texte,
+  simple ou structuré ;
+- `services/documents.py` : `export_document` — audit, passage du document à
+  `exported`, consultation à `exported` quand tous ses documents le sont ;
+- `api/encounters.py` : `GET /documents/{id}/export?format=pdf|text|structured` ;
+- `apps/web` : boutons « Exporter en PDF » et « Copier pour le dossier ».
+
+Décisions :
+- un brouillon **peut** être exporté, mais le PDF le dit en toutes lettres
+  (« brouillon, non validé ») et son statut ne change pas : seul un document validé
+  devient `exported` ;
+- le nom du fichier ne porte pas le nom du patient (il apparaît dans le document,
+  pas dans un nom de fichier qui traîne dans un dossier de téléchargements) ;
+- reportlab : dépendance ajoutée plutôt qu'un générateur PDF maison — un PDF mal
+  formé qu'un lecteur refuse n'est pas acceptable pour un document médical.
+
+Résultat : PDF A4 vérifié à l'écran (en-tête d'identification, sections en gras,
+pagination, mention de validation), texte structuré collable dans le logiciel métier.
+Le presse-papiers du navigateur peut refuser la copie (permission, navigateur) : dans ce
+cas le texte s'affiche dans une zone sélectionnable plutôt que de disparaître — observé
+en vrai dans le navigateur intégré, pas seulement supposé.
+
+Les intitulés de section ne sont pas devinés à la mise en page : la liste vient du
+rédacteur (`SECTION_ORDER`), sinon une phrase en majuscules deviendrait un titre.
+
 ## Vocabulaire clinique (2026-09-19)
 
 **Deuxième passe, dictée du praticien** : 42 termes de plus (269 au total, 16 thèmes).

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Response, status
 
 from oris_api.api.dependencies import ActorDep, ProvidersDep, SessionDep, SettingsDep, SinkDep
 from oris_api.api.presenters import document_out, encounter_out
@@ -24,6 +24,7 @@ from oris_api.api.schemas import (
 from oris_api.contracts.generated import ClinicalEncounterStatus
 from oris_api.db.models import DocumentRow
 from oris_api.services import clinical_store, corrections, documents, encounters, learning
+from oris_api.services.documents import ExportFormat
 from oris_api.services.errors import Conflict, NotFound
 
 router = APIRouter(tags=["encounters"])
@@ -209,6 +210,26 @@ def validate_document(
     encounter = encounters.get_encounter(session, actor, document.encounter_id)
     assert version is not None  # noqa: S101 - vérifié par la validation
     return document_out(document, version, encounter.object_version)
+
+
+@router.get(
+    "/documents/{document_id}/export",
+    response_class=Response,
+    responses={200: {"content": {"application/pdf": {}, "text/plain": {}}}},
+)
+def export_document(
+    document_id: UUID,
+    session: SessionDep,
+    actor: ActorDep,
+    format: ExportFormat = "pdf",
+) -> Response:
+    """Sortie d'un document : PDF à imprimer, ou texte à coller dans le logiciel métier."""
+    exported = documents.export_document(session, actor, document_id, format)
+    return Response(
+        content=exported.payload,
+        media_type=exported.media_type,
+        headers={"content-disposition": f'attachment; filename="{exported.filename}"'},
+    )
 
 
 @router.get("/documents/{document_id}", response_model=DocumentOut)

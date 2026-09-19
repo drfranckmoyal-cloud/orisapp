@@ -15,6 +15,7 @@ import {
   type ClinicalObjectView,
   type DocumentView,
   type Encounter,
+  fetchDocumentExport,
   type LearningEventView,
   type TranscriptView,
 } from "@/lib/api";
@@ -69,6 +70,8 @@ export default function ReviewPage() {
     tone: "ok" | "error";
     text: string;
   } | null>(null);
+  // Si le navigateur refuse le presse-papiers, le texte doit rester récupérable.
+  const [copyFallback, setCopyFallback] = useState<string | null>(null);
 
   function reloadAll() {
     reloadEncounter();
@@ -76,6 +79,50 @@ export default function ReviewPage() {
     reloadClinical();
     reloadLearning();
     setSelection(null);
+  }
+
+  async function exportDocument(document: DocumentView) {
+    setFeedback(null);
+    try {
+      const { blob, filename } = await fetchDocumentExport(document.id, "pdf");
+      const url = URL.createObjectURL(blob);
+      const link = window.document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+      setFeedback({ tone: "ok", text: `PDF téléchargé (${filename}).` });
+      reloadAll();
+    } catch (error) {
+      const code = error instanceof ApiError ? error.code : "UNKNOWN";
+      setFeedback({ tone: "error", text: errorMessage(code) });
+    }
+  }
+
+  async function copyForRecord(document: DocumentView) {
+    setFeedback(null);
+    setCopyFallback(null);
+    let text: string;
+    try {
+      const { blob } = await fetchDocumentExport(document.id, "structured");
+      text = await blob.text();
+    } catch (error) {
+      const code = error instanceof ApiError ? error.code : "UNKNOWN";
+      setFeedback({ tone: "error", text: errorMessage(code) });
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setFeedback({
+        tone: "ok",
+        text: "Copié : collez-le dans le dossier du patient.",
+      });
+    } catch {
+      // Presse-papiers refusé (navigateur, permission) : on montre le texte.
+      setCopyFallback(text);
+      setFeedback({ tone: "error", text: errorMessage("COPY_FAILED") });
+    }
+    reloadAll();
   }
 
   async function act(path: string, body: unknown, success: string) {
@@ -300,7 +347,54 @@ export default function ReviewPage() {
                 onSelect={(claim) => setSelection({ kind: "claim", claim })}
               />
 
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  flexWrap: "wrap",
+                  borderTop: "1px solid var(--color-cloud)",
+                  paddingTop: 16,
+                }}
+              >
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => copyForRecord(active)}
+                >
+                  Copier pour le dossier
+                </button>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => exportDocument(active)}
+                >
+                  Exporter en PDF
+                </button>
+                {active.status !== "validated" &&
+                  active.status !== "exported" && (
+                    <span className="muted">
+                      Ce document n’est pas validé : il partira avec la mention
+                      « brouillon ».
+                    </span>
+                  )}
+              </div>
+
+              {copyFallback !== null && (
+                <label style={{ display: "grid", gap: 8 }}>
+                  Sélectionnez ce texte et copiez-le (Cmd+C) :
+                  <textarea
+                    readOnly
+                    rows={8}
+                    value={copyFallback}
+                    onFocus={(event) => event.currentTarget.select()}
+                    autoFocus
+                    style={{ width: "100%", fontFamily: "inherit", padding: 8 }}
+                  />
+                </label>
+              )}
+
               {active.status !== "validated" &&
+                active.status !== "exported" &&
                 active.status !== "superseded" && (
                   <div
                     style={{
