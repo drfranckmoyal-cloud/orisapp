@@ -1,5 +1,20 @@
 # Changelog
 
+## M7 — 2026-09-19 — comptes rendus opératoires
+- les sept modèles de la spécification (composite, esthétique direct, facettes
+  préparation, facettes collage, usures additives, avulsion, chirurgie mineure) : des
+  **emplacements de preuve ordonnés**, jamais des paragraphes préremplis ;
+- un emplacement se renseigne s'il a été dicté dans l'acte, ou par un fait dit pendant
+  l'intervention (la phrase cite alors ce fait) ; rien d'autre ne le remplit ;
+- un emplacement important resté vide **alerte** (« champ important non dicté ») et n'est
+  jamais complété ; un acte seulement prévu n'est pas interrogé sur ses matériaux ;
+- le compte rendu de soins n'est jamais produit d'office : le site propose « un acte a
+  été détecté », le praticien décide (§81) ; une fois demandé, il suit les corrections ;
+- invite d'extraction `extraction-fr-5` : le modèle connaît les emplacements de chaque
+  type d'acte et vise les bonnes clés ;
+- vérifié de bout en bout sur quatre types d'acte, transcription et extraction réelles ;
+- tests : API 222.
+
 ## Habillage des documents — 2026-09-19
 - un modèle d'impression par type : compte rendu de consultation, plan de traitement,
   **compte rendu de soins**, **courrier d'adressage** (formule d'appel, politesse,

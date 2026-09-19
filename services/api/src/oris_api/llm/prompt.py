@@ -9,10 +9,11 @@ from __future__ import annotations
 import json
 
 from oris_api.contracts import TranscriptSegment
+from oris_api.documents.operative_templates import TEMPLATES
 from oris_api.domain.types import GlossaryHint
 from oris_api.ontology.labels import CONCEPTS
 
-PROMPT_VERSION = "extraction-fr-4"
+PROMPT_VERSION = "extraction-fr-5"
 
 SYSTEM_PROMPT = """Tu es un moteur d'extraction clinique dentaire. Tu ne rédiges pas de \
 compte rendu. Tu convertis uniquement les informations explicitement présentes dans les \
@@ -47,8 +48,15 @@ proposée ou reportée n'est jamais un acte ;
 préparation et collage de facettes, restauration additive d'usure, extraction, chirurgie \
 mineure). Un examen (photos, scan, empreinte, bilan), un blanchiment ou un contrôle **ne sont \
 pas des actes** : ils restent des faits. Si rien ne correspond exactement, ne crée pas d'acte ;
-- `structured_data` ne contient que des emplacements réellement prononcés (matériau, surface, \
-isolation…) ; jamais de champ libre ni de commentaire ajouté. Vide si rien n'a été dit ;
+- `structured_data` n'utilise que les **clés listées dans `champs_par_acte`** pour le \
+`procedure_type` choisi, et seulement celles réellement prononcées : jamais de clé inventée, \
+jamais de champ libre, jamais de commentaire ajouté. Une clé absente vaut « non dit » : \
+n'invente pas une valeur pour la remplir, et n'invente pas non plus un fait pour la justifier. \
+Un emplacement booléen (isolation, polissage…) vaut `true` s'il a été dit fait, `false` s'il a \
+été dit non fait. Renseigne **tous** les emplacements du modèle qui ont été prononcés : \
+une étape dite pendant l'intervention appartient à l'acte, pas seulement aux faits. \
+Une même information ne remplit qu'**un seul** emplacement, le plus précis (un nom de \
+produit va dans le matériau, pas aussi dans le protocole). Vide si rien n'a été dit ;
 - les dents d'un élément de plan doivent être portées par les faits que tu cites : si la dent \
 a été dite, cite aussi le fait qui la porte ;
 - quand le praticien reformule ce que le patient vient de dire sans y ajouter de constat \
@@ -77,9 +85,19 @@ def known_concepts() -> dict[str, str]:
     return {concept: label.label for concept, label in sorted(CONCEPTS.items())}
 
 
+def procedure_slots() -> dict[str, dict[str, str]]:
+    """Emplacements attendus par type d'acte : le modèle vise les bonnes clés (§77).
+
+    Ce sont des emplacements de preuve, pas des valeurs par défaut : le modèle ne doit
+    les renseigner que s'ils ont été prononcés.
+    """
+    return {kind: {slot.key: slot.label for slot in slots} for kind, slots in TEMPLATES.items()}
+
+
 def user_message(segments: list[TranscriptSegment], glossary: list[GlossaryHint]) -> str:
     payload = {
         "concepts_connus": known_concepts(),
+        "champs_par_acte": procedure_slots(),
         "glossaire_praticien": [{"entendu": h.heard, "canonique": h.canonical} for h in glossary],
         "segments": [
             {

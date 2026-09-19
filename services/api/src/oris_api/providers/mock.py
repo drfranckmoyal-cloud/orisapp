@@ -8,7 +8,11 @@ from __future__ import annotations
 
 from oris_api.contracts import ClinicalEncounter, TranscriptSegment, validate_contract
 from oris_api.contracts.generated import DocumentDocumentType
-from oris_api.documents.renderer import render_consultation_note, render_treatment_plan
+from oris_api.documents.renderer import (
+    render_consultation_note,
+    render_operative_note,
+    render_treatment_plan,
+)
 from oris_api.domain.factual_validator import validate_document
 from oris_api.domain.resolver import is_gap_marker
 from oris_api.domain.types import (
@@ -98,6 +102,8 @@ class MockDocumentGenerationProvider:
                 return render_consultation_note(encounter)
             case "treatment_plan_text":
                 return render_treatment_plan(encounter)
+            case "operative_note":
+                return render_operative_note(encounter)
         raise NotImplementedError(document_type)
 
 

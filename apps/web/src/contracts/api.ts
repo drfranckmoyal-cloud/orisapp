@@ -286,6 +286,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/encounters/{encounter_id}/documents/operative-note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate Operative Note
+         * @description Compte rendu de soins, à la demande du praticien (§81) : jamais d'office.
+         */
+        post: operations["generate_operative_note_encounters__encounter_id__documents_operative_note_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/documents/{document_id}/validate": {
         parameters: {
             query?: never;
@@ -297,6 +317,26 @@ export interface paths {
         put?: never;
         /** Validate Document */
         post: operations["validate_document_documents__document_id__validate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/documents/{document_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Document
+         * @description Sortie d'un document : PDF à imprimer, ou texte à coller dans le logiciel métier.
+         */
+        get: operations["export_document_documents__document_id__export_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1820,6 +1860,37 @@ export interface operations {
             };
         };
     };
+    generate_operative_note_encounters__encounter_id__documents_operative_note_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     validate_document_documents__document_id__validate_post: {
         parameters: {
             query?: never;
@@ -1842,6 +1913,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DocumentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_document_documents__document_id__export_get: {
+        parameters: {
+            query?: {
+                format?: "pdf" | "text" | "structured";
+            };
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                    "text/plain": unknown;
                 };
             };
             /** @description Validation Error */

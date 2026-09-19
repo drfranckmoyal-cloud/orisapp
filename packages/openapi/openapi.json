@@ -925,6 +925,54 @@
         }
       }
     },
+    "/encounters/{encounter_id}/documents/operative-note": {
+      "post": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Generate Operative Note",
+        "description": "Compte rendu de soins, à la demande du praticien (§81) : jamais d'office.",
+        "operationId": "generate_operative_note_encounters__encounter_id__documents_operative_note_post",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentOut"
+                  },
+                  "title": "Response Generate Operative Note Encounters  Encounter Id  Documents Operative Note Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/documents/{document_id}/validate": {
       "post": {
         "tags": [
@@ -963,6 +1011,62 @@
                   "$ref": "#/components/schemas/DocumentOut"
                 }
               }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/{document_id}/export": {
+      "get": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Export Document",
+        "description": "Sortie d'un document : PDF à imprimer, ou texte à coller dans le logiciel métier.",
+        "operationId": "export_document_documents__document_id__export_get",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "pdf",
+                "text",
+                "structured"
+              ],
+              "type": "string",
+              "default": "pdf",
+              "title": "Format"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/pdf": {},
+              "text/plain": {}
             }
           },
           "422": {

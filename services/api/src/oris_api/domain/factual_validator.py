@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 
 from oris_api.contracts import ClinicalEncounter
-from oris_api.documents.renderer import UNRENDERED_PREFIX
+from oris_api.documents.renderer import UNRENDERED_PREFIX, missing_important_slots
 from oris_api.domain.types import GeneratedDocument, ValidationIssue
 
 # Numéros FDI permanents et temporaires isolés dans le texte.
@@ -50,6 +50,18 @@ def validate_document(
 
         if claim.text.startswith(UNRENDERED_PREFIX):
             issues.append(ValidationIssue("unrendered_concept", "review", claim_index=index))
+
+    if document.document_type == "operative_note":
+        # §45 : un champ important resté vide se signale, il ne se remplit jamais.
+        for procedure in encounter.procedures:
+            for slot in missing_important_slots(procedure, list(encounter.facts)):
+                issues.append(
+                    ValidationIssue(
+                        "operative_field_missing",
+                        "review",
+                        fact_id=f"{procedure.procedure_id}:{slot.key}",
+                    )
+                )
 
     if document.document_type == "consultation_note":
         rendered = set(document.supported_fact_ids)

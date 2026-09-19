@@ -525,6 +525,46 @@ en vrai dans le navigateur intégré, pas seulement supposé.
 Les intitulés de section ne sont pas devinés à la mise en page : la liste vient du
 rédacteur (`SECTION_ORDER`), sinon une phrase en majuscules deviendrait un titre.
 
+## M7 — comptes rendus opératoires (2026-09-19)
+
+Critères visés (`ACCEPTANCE_CRITERIA`, spec §37–45, §77, §81) : les champs d'un modèle
+sont des **emplacements de preuve facultatifs**, jamais des valeurs par défaut ; le
+matériau habituel du praticien n'est jamais inscrit comme réalisé ; un champ important
+manquant peut alerter mais jamais être rempli ; le compte rendu opératoire n'est produit
+que si le praticien le demande (§81).
+
+Modules :
+- `documents/operative_templates.py` (nouveau) : les sept modèles de la spec (composite,
+  esthétique direct, facettes préparation, facettes collage, usures additives, avulsion,
+  chirurgie mineure générique), chacun une suite d'emplacements ordonnés (clé, libellé,
+  section, champ important ou non) ;
+- `documents/renderer.py` : `render_operative_note` — une phrase par emplacement
+  **renseigné**, appuyée sur les faits de l'acte ;
+- `domain/factual_validator.py` : `operative_field_missing` (à vérifier, jamais rempli) ;
+- `services/documents.py` + `api/encounters.py` : génération à la demande ;
+- `apps/web` : proposition « un acte a été détecté » et onglet du compte rendu de soins.
+
+### Résultat M7
+
+Un emplacement se renseigne de deux façons, et jamais d'une troisième :
+1. l'acte l'a dicté (`structured_data`) ;
+2. une **information dite pendant l'intervention et déjà retenue comme fait** le
+   renseigne (table `FACT_SOURCES`, un fait par emplacement, mêmes dents, même statut) —
+   la phrase cite alors ce fait, pas l'acte en bloc.
+Rien d'autre. Le matériau habituel du praticien reste absent tant qu'il n'a pas été dit.
+
+Un emplacement prévu « oui/non » qui arrive précisé (« provisoires posés le jour même »)
+garde la précision : elle a été dite, on ne la jette pas.
+
+L'invite d'extraction connaît maintenant les emplacements de chaque modèle
+(`champs_par_acte`, version `extraction-fr-5`). Avant, le modèle rangeait l'adhésif dans
+un fait et laissait l'emplacement vide : le compte rendu alertait « champ important non
+dicté » alors que l'information avait bien été prononcée.
+
+Vérifié de bout en bout sur quatre types d'acte du corpus (composite, préparation de
+facettes, collage, avulsion), transcription et extraction réelles : notes complètes,
+aucune alerte injustifiée, PDF « compte rendu de soins » relu à l'écran.
+
 ## Habillage des documents : un modèle par type (2026-09-19)
 
 Spec §78 (logo, identité, pagination) et demande du praticien : un courrier à un confrère

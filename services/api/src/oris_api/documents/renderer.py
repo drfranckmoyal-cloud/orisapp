@@ -15,7 +15,13 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from oris_api.contracts import ClinicalEncounter, ClinicalFact, TreatmentPlanItem
+from oris_api.contracts import ClinicalEncounter, ClinicalFact, Procedure, TreatmentPlanItem
+from oris_api.documents.operative_templates import (
+    SECTIONS,
+    Slot,
+    procedure_label,
+    template_for,
+)
 from oris_api.domain.types import Claim, GeneratedDocument
 from oris_api.ontology.labels import label_for, translate_value
 
@@ -217,3 +223,108 @@ def render_treatment_plan(encounter: ClinicalEncounter) -> GeneratedDocument:
         # Les objectifs (`goals`) ne portent pas de faits d'appui dans le schéma :
         # ils ne sont pas rédigés tant qu'ils ne peuvent pas être justifiés.
     return GeneratedDocument("treatment_plan_text", render_content(claims), tuple(claims))
+
+
+def slot_sentence(slot: Slot, value: object) -> str | None:
+    """Une phrase pour un emplacement **renseigné**. Rien d'autre n'est écrit.
+
+    Un emplacement absent renvoie `None` : il n'existe pas dans le document (§37).
+    Un emplacement explicitement nié (« pas de sutures ») s'écrit tel quel : c'est une
+    information, pas un vide.
+    """
+    if value is None or value == "" or value == []:
+        return None
+    if slot.kind == "flag":
+        if value is True:
+            return f"Réalisé : {slot.label}."
+        if value is False:
+            return f"{capitalize(slot.label)} : non."
+        # Un emplacement attendu « oui/non » peut arriver précisé (« provisoires
+        # réalisés le jour même ») : la précision a été dite, elle n'est pas jetée.
+        written = translate_value(value)
+        return f"{capitalize(slot.label)} : {written}." if written else None
+    written = translate_value(value)
+    if written is None:
+        return None
+    return f"{capitalize(slot.label)} : {written}."
+
+
+def missing_important_slots(
+    procedure: Procedure, facts: list[ClinicalFact] | None = None
+) -> list[Slot]:
+    """Emplacements importants restés vides : ils alertent, ils ne se remplissent pas (§45).
+
+    Seul un acte réalisé est concerné : un acte seulement prévu n'a ni matériau ni
+    hémostase à documenter.
+    """
+    if procedure.status != "performed":
+        return []
+    return [
+        slot
+        for slot in template_for(procedure.procedure_type)
+        if slot.important and slot_value(slot, procedure, facts or []) is None
+    ]
+
+
+def fact_fills(slot: Slot, procedure: Procedure, facts: list[ClinicalFact]) -> ClinicalFact | None:
+    """Fait qui renseigne cet emplacement : dit pendant l'acte, sur les mêmes dents.
+
+    Rien n'est deviné : le fait existe déjà, avec sa preuve. Le document ne fait que le
+    placer dans l'emplacement du modèle, et cite ce fait.
+    """
+    for fact in facts:
+        if fact.concept not in slot.concepts or fact.clinical_status != procedure.status:
+            continue
+        if fact.teeth and procedure.teeth and not set(fact.teeth) & set(procedure.teeth):
+            continue
+        return fact
+    return None
+
+
+def slot_value(
+    slot: Slot, procedure: Procedure, facts: list[ClinicalFact]
+) -> tuple[object, tuple[str, ...]] | None:
+    """Valeur d'un emplacement et preuves qui l'appuient, ou rien s'il n'a pas été dit."""
+    spoken = procedure.structured_data.get(slot.key)
+    if spoken not in (None, "", []):
+        return spoken, tuple(procedure.evidence_fact_ids)
+    fact = fact_fills(slot, procedure, facts)
+    if fact is None:
+        return None
+    if slot.kind == "flag":
+        return fact.assertion == "present", (fact.fact_id,)
+    value = fact.value if isinstance(fact.value, str) and fact.value.strip() else None
+    return (value, (fact.fact_id,)) if value else None
+
+
+def procedure_claims(procedure: Procedure, facts: list[ClinicalFact] | None = None) -> list[Claim]:
+    """Les phrases d'un acte, dans l'ordre des sections du modèle."""
+    facts = facts or []
+    evidence = tuple(procedure.evidence_fact_ids)
+    label = procedure_label(procedure.procedure_type)
+    teeth = teeth_suffix(procedure.teeth)
+    claims = [
+        Claim("Acte réalisé", f"{capitalize(label)}{teeth}.", fact_ids=evidence)
+        if procedure.status == "performed"
+        else Claim("Acte prévu", f"{capitalize(label)}{teeth} — prévu.", fact_ids=evidence)
+    ]
+    slots = template_for(procedure.procedure_type)
+    for section in SECTIONS:
+        for slot in (s for s in slots if s.section == section):
+            found = slot_value(slot, procedure, facts)
+            if found is None:
+                continue
+            sentence = slot_sentence(slot, found[0])
+            if sentence is not None:
+                claims.append(Claim(section, sentence, fact_ids=found[1]))
+    return claims
+
+
+def render_operative_note(encounter: ClinicalEncounter) -> GeneratedDocument:
+    """Compte rendu de soins : un bloc par acte, rien que ce qui a été dit (§37–45)."""
+    claims = limits_claims(encounter)
+    for procedure in encounter.procedures:
+        if procedure.status == "cancelled":
+            continue
+        claims += procedure_claims(procedure, list(encounter.facts))
+    return GeneratedDocument("operative_note", render_content(claims), tuple(claims))

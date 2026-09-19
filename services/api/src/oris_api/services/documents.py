@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Collection, Sequence
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from functools import partial
@@ -32,10 +33,24 @@ from oris_api.services.identity import Actor
 VALIDATABLE = frozenset({"draft_ai", "needs_review"})
 
 
-def document_types_for(obj: ClinicalEncounter) -> list[DocumentDocumentType]:
+def operative_note_available(obj: ClinicalEncounter) -> bool:
+    """Un acte non annulé a été dit : un compte rendu de soins est possible (§81)."""
+    return any(procedure.status != "cancelled" for procedure in obj.procedures)
+
+
+def document_types_for(
+    obj: ClinicalEncounter, existing: Collection[str] = ()
+) -> list[DocumentDocumentType]:
+    """Documents que l'objet justifie.
+
+    Le compte rendu de soins n'est jamais produit d'office (§81 : le praticien le
+    demande) — mais une fois demandé, il se régénère comme les autres.
+    """
     types: list[DocumentDocumentType] = ["consultation_note"]
     if obj.treatment_plan is not None and obj.treatment_plan.items:
         types.append("treatment_plan_text")
+    if "operative_note" in existing and operative_note_available(obj):
+        types.append("operative_note")
     return types
 
 
@@ -63,11 +78,19 @@ def current_version(session: Session, document: DocumentRow) -> DocumentVersion 
 
 
 def generate(
-    session: Session, encounter: Encounter, obj: ClinicalEncounter, providers: ProviderSet
+    session: Session,
+    encounter: Encounter,
+    obj: ClinicalEncounter,
+    providers: ProviderSet,
+    include: Sequence[DocumentDocumentType] = (),
 ) -> list[DocumentRow]:
-    """Produit une nouvelle version de chaque document pour la version d'objet donnée."""
+    """Produit une nouvelle version de chaque document pour la version d'objet donnée.
+
+    `include` : documents demandés explicitement par le praticien, en plus de ceux que
+    l'objet justifie de lui-même.
+    """
     existing = {doc.document_type: doc for doc in list_documents(session, encounter.id)}
-    wanted = document_types_for(obj)
+    wanted = document_types_for(obj, {*existing, *include})
     produced: list[DocumentRow] = []
 
     for document_type in wanted:

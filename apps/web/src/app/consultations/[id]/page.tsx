@@ -40,6 +40,7 @@ const ISSUE_LABELS: Record<string, string> = {
   performed_not_supported: "« Réalisé » sans acte réalisé",
   fact_not_rendered: "Fait non repris dans le document",
   unrendered_concept: "Élément non reconnu à rédiger",
+  operative_field_missing: "Champ important non dicté — à compléter, jamais rempli",
 };
 
 function statusChipClass(status: DocumentView["status"]): string {
@@ -156,6 +157,10 @@ export default function ReviewPage() {
   // Alertes non bloquantes : à voir avant de signer, sans interdire la validation.
   const reviewWarnings =
     object?.warnings.filter((warning) => warning.severity === "review") ?? [];
+  // §81 : un acte a été dit, mais le compte rendu de soins ne se crée jamais tout seul.
+  const operativeProposed =
+    (object?.procedures ?? []).some((procedure) => procedure.status !== "cancelled") &&
+    !docs.some((doc) => doc.document_type === "operative_note" && doc.status !== "superseded");
   const allValidated =
     docs.length > 0 &&
     docs
@@ -266,6 +271,29 @@ export default function ReviewPage() {
           ne peut pas être considéré comme exhaustif.
         </div>
       ))}
+      {operativeProposed && (
+        <div className="banner banner-info" role="status">
+          <strong>Un acte a été détecté</strong> — voulez-vous le compte rendu de
+          soins ? Il ne sera rédigé qu’à partir de ce qui a été dit pendant
+          l’intervention.
+          <div>
+            <button
+              type="button"
+              className="button button-primary"
+              onClick={() =>
+                act(
+                  `/encounters/${id}/documents/operative-note`,
+                  undefined,
+                  "Compte rendu de soins rédigé.",
+                )
+              }
+            >
+              Générer le compte rendu de soins
+            </button>
+          </div>
+        </div>
+      )}
+
       {reviewWarnings.map((warning) => (
         <div key={warning.code} className="banner banner-review" role="status">
           <strong>À vérifier</strong> — {warning.message}

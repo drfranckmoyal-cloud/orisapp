@@ -19,11 +19,16 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen.canvas import Canvas
 
+from oris_api.documents.operative_templates import SECTIONS as OPERATIVE_SECTIONS
 from oris_api.documents.renderer import LIMITS_SECTION, SECTION_ORDER
 from oris_api.documents.theme import Cabinet, color
 
+# Les intitulés de section ne sont pas devinés à la mise en page : ils viennent des
+# rédacteurs (compte rendu de consultation, plan, modèles opératoires).
 SECTION_TITLES = frozenset(
-    {section for section, _ in SECTION_ORDER} | {LIMITS_SECTION, "Plan de traitement"}
+    {section for section, _ in SECTION_ORDER}
+    | set(OPERATIVE_SECTIONS)
+    | {LIMITS_SECTION, "Plan de traitement", "Acte réalisé", "Acte prévu"}
 )
 
 DRAFT_NOTICE = "Brouillon — non validé par le praticien."

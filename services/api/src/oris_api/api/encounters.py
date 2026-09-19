@@ -201,6 +201,25 @@ def generate_documents(
     return list_documents(encounter_id, session, actor)
 
 
+@router.post(
+    "/encounters/{encounter_id}/documents/operative-note", response_model=list[DocumentOut]
+)
+def generate_operative_note(
+    encounter_id: UUID, session: SessionDep, actor: ActorDep, providers: ProvidersDep
+) -> list[DocumentOut]:
+    """Compte rendu de soins, à la demande du praticien (§81) : jamais d'office."""
+    encounter = encounters.get_encounter(session, actor, encounter_id)
+    if encounter.status not in {"review", "validated", "exported"}:
+        raise Conflict("ENCOUNTER_NOT_PROCESSED", str(encounter.id))
+    obj = clinical_store.load_current(session, encounter)
+    if not documents.operative_note_available(obj):
+        raise Conflict("NO_PROCEDURE_TO_DOCUMENT", str(encounter.id))
+    documents.generate(session, encounter, obj, providers, include=["operative_note"])
+    if encounter.status != "review":
+        encounters.transition(session, actor, encounter, "review")
+    return list_documents(encounter_id, session, actor)
+
+
 @router.post("/documents/{document_id}/validate", response_model=DocumentOut)
 def validate_document(
     document_id: UUID, body: DocumentValidate, session: SessionDep, actor: ActorDep

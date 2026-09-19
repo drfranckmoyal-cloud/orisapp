@@ -84,6 +84,7 @@ IssueCode = Literal[
     "performed_not_supported",
     "fact_not_rendered",
     "unrendered_concept",
+    "operative_field_missing",
 ]
 
 
