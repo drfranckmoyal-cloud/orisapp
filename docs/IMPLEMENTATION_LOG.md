@@ -525,6 +525,30 @@ en vrai dans le navigateur intégré, pas seulement supposé.
 Les intitulés de section ne sont pas devinés à la mise en page : la liste vient du
 rédacteur (`SECTION_ORDER`), sinon une phrase en majuscules deviendrait un titre.
 
+## Habillage des documents : un modèle par type (2026-09-19)
+
+Spec §78 (logo, identité, pagination) et demande du praticien : un courrier à un confrère
+ne se présente pas comme un résumé remis au patient.
+
+- `documents/theme.py` : identité du cabinet lue dans `services/api/config/cabinet.json`
+  (nom, adresse, téléphone, courriel, mention légale, logo). Tout est facultatif ; un
+  champ vide ne laisse pas de ligne vide, il disparaît. Sans fichier, l'en-tête reste
+  sobre et le document sort quand même — c'est testé.
+- Couleurs prises dans `docs/DESIGN_SYSTEM.md` (bleu profond pour les titres, gris pour
+  les mentions), pas inventées à la volée.
+- `LAYOUTS` dans `documents/export.py` : un modèle par type de document.
+  - compte rendu de consultation et plan de traitement : document clinique sobre ;
+  - **compte rendu de soins** : même ossature, titre distinct ;
+  - **courrier d'adressage** : formule d'appel (« Chère Consœur, Cher Confrère, »),
+    formule de politesse et signature du praticien ;
+  - **résumé patient** : corps plus grand (12 pt), interligne aéré, phrase d'introduction
+    et mention de remise en pied de page.
+- Logo : `assets/oris-logo.png`, recadré sur l'encre depuis le logo de marque. Le logo du
+  cabinet de Franck le remplacera par simple changement de chemin.
+- Pages suivantes : rappel discret « type — patient » en haut, pagination en bas.
+
+Les quatre modèles ont été rendus en image et regardés, pas seulement testés.
+
 ## M6 (2/2) — cartes de plan et corrections lisibles (2026-09-19)
 
 Le plan de traitement n'existait que comme paragraphe, et le statut se changeait dans un

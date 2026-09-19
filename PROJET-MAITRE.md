@@ -54,6 +54,9 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 - **Exporter en PDF** (A4, avec cabinet, praticien, patient, date et mention de
   validation) et **copier pour le dossier** pour coller dans votre logiciel métier. Un
   document non validé part avec la mention « brouillon » écrite dessus.
+- Chaque type de document a sa **mise en page** : compte rendu de consultation, plan de
+  traitement, compte rendu de soins, courrier à un confrère (avec formule d'appel et
+  signature), résumé patient (texte plus grand, mention de remise).
 - Enregistrer au micro : pause, reprise, coupure réseau, page rechargée. Toute
   interruption devient une alerte rouge ; le son est supprimé après traitement.
 
@@ -85,7 +88,9 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 
 **Ce qui n'existe pas encore**
 - Pas de correction vocale, pas de comptes rendus opératoires.
-- Le PDF n'a pas encore votre logo de cabinet.
+- Le PDF porte le logo Oris tant que vous ne m'avez pas donné celui du cabinet.
+- Les comptes rendus de soins, courriers et résumés patient **ont leur mise en page**,
+  mais leur contenu sera écrit au jalon M7.
 - Pas de compte utilisateur ni de mot de passe : usage local uniquement.
 
 ---
@@ -94,6 +99,7 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 
 | Quoi | Pourquoi | Quand |
 |---|---|---|
+| **Logo et coordonnées du cabinet** (fichier image + adresse, téléphone, mention légale) | Ils s'impriment en tête de chaque document ; pour l'instant c'est le logo Oris | Quand vous voulez |
 | **Compléter `docs/VOCABULAIRE.md`** | Oris n'écrit que ce qu'il sait nommer ; ce qu'il ignore est signalé « à rédiger » | Quand vous voulez, thème par thème |
 | Clé Azure Speech (optionnel) | Comparer Deepgram à un fournisseur certifié HDS | Avant de choisir |
 | Autoriser le **simulateur iPhone** (« Let Claude use it ») | Pour que je vérifie l'app à l'écran, pas seulement par les tests | Quand vous voulez |

@@ -1,5 +1,16 @@
 # Changelog
 
+## Habillage des documents — 2026-09-19
+- un modèle d'impression par type : compte rendu de consultation, plan de traitement,
+  **compte rendu de soins**, **courrier d'adressage** (formule d'appel, politesse,
+  signature), **résumé patient** (texte plus grand, mention de remise) ;
+- en-tête habillé : logo, nom et coordonnées du cabinet, praticien, patient, date, rappel
+  de validation ; couleurs du système de design ;
+- identité du cabinet configurable dans `services/api/config/cabinet.json` ; sans ce
+  fichier, l'en-tête reste sobre et le document sort quand même ;
+- dépendance `pillow` (logo) ;
+- tests : API 208.
+
 ## M6 (2/2) — 2026-09-19 — plan de traitement en cartes
 - chaque élément du plan devient une carte : dents, intitulé, statut, motif, faits
   d'appui cliquables, alternatives, préalables, incertitudes ; le statut se change sur

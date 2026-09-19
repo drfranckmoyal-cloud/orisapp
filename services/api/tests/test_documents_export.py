@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any
 
-from oris_api.documents.export import ExportContext, render_pdf, render_text
+from oris_api.documents.export import LAYOUTS, ExportContext, render_pdf, render_text
 from tests.conftest import documents_by_type, run_synthetic
 
 
@@ -92,3 +92,92 @@ def test_unknown_document_cannot_be_exported(api: Any) -> None:
     )
     assert response.status_code == 404
     assert response.json()["code"] == "DOCUMENT_NOT_FOUND"
+
+
+def test_each_document_type_has_its_own_layout() -> None:
+    from oris_api.documents.export import layout_for
+
+    titles = {
+        kind: layout_for(kind).title
+        for kind in (
+            "consultation_note",
+            "treatment_plan_text",
+            "operative_note",
+            "referral_letter",
+            "patient_summary",
+        )
+    }
+    assert titles["consultation_note"] == "Compte rendu de consultation"
+    assert titles["operative_note"] == "Compte rendu de soins"
+    assert titles["referral_letter"] == "Courrier d'adressage"
+    assert len(set(titles.values())) == len(titles)
+    assert layout_for("inconnu").title == "Document"
+
+
+def test_a_letter_to_a_colleague_opens_and_closes_like_a_letter() -> None:
+    from oris_api.documents.export import body_blocks, layout_for
+
+    layout = layout_for("referral_letter")
+    lines = [line for _, line in body_blocks(context(document_type="referral_letter"), layout, 400)]
+    assert lines[0] == "Chère Consœur, Cher Confrère,"
+    assert "Confraternellement," in lines
+    assert lines[-1] == "Dr Praticien Démo"  # la signature est le praticien
+
+
+def test_the_patient_summary_is_bigger_and_says_what_it_is() -> None:
+    from oris_api.documents.export import body_blocks, layout_for
+
+    patient = layout_for("patient_summary")
+    clinical = layout_for("consultation_note")
+    assert patient.body_size > clinical.body_size
+    assert patient.leading > clinical.leading
+    lines = [
+        line for _, line in body_blocks(context(document_type="patient_summary"), patient, 400)
+    ]
+    assert any("résume" in line for line in lines)
+    assert "information" in patient.footer_note
+
+
+def test_every_layout_produces_a_pdf() -> None:
+    for kind in LAYOUTS:
+        pdf = render_pdf(context(document_type=kind))
+        assert pdf.startswith(b"%PDF"), kind
+
+
+def test_a_cabinet_without_configuration_still_prints(tmp_path: Any) -> None:
+    from oris_api.documents.theme import Cabinet
+
+    missing = Cabinet.load(tmp_path / "absent.json")
+    assert missing.name == "Cabinet" and missing.logo is None
+    assert missing.contact_lines() == []
+    # Un document sort quand même, sans logo ni coordonnées.
+    assert render_pdf(context(), cabinet=missing).startswith(b"%PDF")
+
+
+def test_configured_cabinet_details_are_printed(tmp_path: Any) -> None:
+    import json
+
+    from oris_api.documents.theme import Cabinet
+
+    path = tmp_path / "cabinet.json"
+    path.write_text(
+        json.dumps(
+            {
+                "name": "Cabinet des Lilas",
+                "address": "12 rue des Lilas, 75000 Paris",
+                "phone": "01 23 45 67 89",
+                "email": "",
+                "legal": "RPPS 10101010101",
+                "logo_path": "",
+            }
+        ),
+        encoding="utf-8",
+    )
+    cabinet = Cabinet.load(path)
+    assert cabinet.name == "Cabinet des Lilas"
+    # Les champs vides ne laissent pas de ligne vide sur la page.
+    assert cabinet.contact_lines() == [
+        "12 rue des Lilas, 75000 Paris",
+        "01 23 45 67 89",
+        "RPPS 10101010101",
+    ]
