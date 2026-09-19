@@ -17,8 +17,10 @@
   jugé sur ses propres mots, et reste sans rôle s'il n'a rien de décisif ;
 - Deepgram reprend deux fois une panne passagère (réseau, 429, 5xx, 408) : le banc du
   19/09 perdait 5 consultations sur 30 pour des incidents de quelques secondes ;
+- le site affiche les alertes « à vérifier » (jusqu'ici seules les alertes critiques
+  étaient visibles : la nouvelle alertes sur les voix serait passée inaperçue) ;
 - imports différés des adaptateurs STT dans la fabrique (dépendance circulaire) ;
-- tests : API 190.
+- tests : API 191, web 33.
 
 ## M5bis — 2026-09-18 — les six échecs compris et corrigés
 - diagnostic : les six consultations refusées par Sonnet ne l'étaient pas de façon

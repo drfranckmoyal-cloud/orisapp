@@ -104,6 +104,9 @@ export default function ReviewPage() {
     clinical.state === "ready" ? clinical.data.clinical_object : null;
   const criticalWarnings =
     object?.warnings.filter((warning) => warning.severity === "critical") ?? [];
+  // Alertes non bloquantes : à voir avant de signer, sans interdire la validation.
+  const reviewWarnings =
+    object?.warnings.filter((warning) => warning.severity === "review") ?? [];
   const allValidated =
     docs.length > 0 &&
     docs
@@ -212,6 +215,11 @@ export default function ReviewPage() {
         <div key={warning.code} className="banner banner-critical" role="alert">
           <strong>Alerte critique</strong> — {warning.message} Le compte rendu
           ne peut pas être considéré comme exhaustif.
+        </div>
+      ))}
+      {reviewWarnings.map((warning) => (
+        <div key={warning.code} className="banner banner-review" role="status">
+          <strong>À vérifier</strong> — {warning.message}
         </div>
       ))}
       {feedback && (
