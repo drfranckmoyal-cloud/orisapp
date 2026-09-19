@@ -1,12 +1,9 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import type { FormEvent } from "react";
 
-import { ApiError, apiRequest, type ClinicalObject, type CorrectionRequest, type Encounter } from "@/lib/api";
-import { PLAN_STATUS, errorMessage } from "@/lib/labels";
-
-type Operation = CorrectionRequest["operations"][number];
-type PlanStatus = keyof typeof PLAN_STATUS;
+import type { ClinicalObject, Encounter } from "@/lib/api";
+import { useCorrection } from "@/lib/useCorrection";
 
 /** Corrections cliniques : modifient l'objet, puis Oris régénère les documents (D016). */
 export function CorrectionPanel({
@@ -18,35 +15,12 @@ export function CorrectionPanel({
   clinicalObject: ClinicalObject;
   onCorrected: () => void;
 }) {
-  const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
-  const [busy, setBusy] = useState(false);
+  const { submit, busy, message, correctable } = useCorrection(
+    encounter,
+    clinicalObject,
+    onCorrected,
+  );
   const teeth = [...new Set(clinicalObject.facts.flatMap((fact) => fact.teeth))].sort();
-
-  async function submit(operation: Operation) {
-    setBusy(true);
-    setMessage(null);
-    try {
-      const updated = await apiRequest<Encounter>(`/encounters/${encounter.id}/clinical-object`, {
-        method: "PATCH",
-        body: {
-          expected_object_version: clinicalObject.object_version,
-          operations: [operation],
-          regenerate: true,
-        } satisfies CorrectionRequest,
-      });
-      setMessage({
-        tone: "ok",
-        text: `Dossier clinique mis à jour (version ${updated.object_version}), documents régénérés. Correction enregistrée.`,
-      });
-      onCorrected();
-    } catch (error) {
-      const code = error instanceof ApiError ? error.code : "UNKNOWN";
-      const details = error instanceof ApiError && error.details.length ? ` (${error.details.join(", ")})` : "";
-      setMessage({ tone: "error", text: errorMessage(code) + details });
-    } finally {
-      setBusy(false);
-    }
-  }
 
   function replaceTooth(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -57,8 +31,6 @@ export function CorrectionPanel({
       to_tooth: String(data.get("to_tooth")),
     });
   }
-
-  const correctable = ["review", "validated", "exported"].includes(encounter.status);
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
@@ -90,30 +62,10 @@ export function CorrectionPanel({
         </form>
       )}
 
-      {clinicalObject.treatment_plan?.items.map((item) => (
-        <label key={item.item_id} className="field">
-          {item.teeth.length > 0 ? `${item.teeth.join(", ")} — ` : ""}
-          {item.action}
-          <select
-            className="input"
-            value={item.status}
-            disabled={busy || !correctable}
-            onChange={(event) =>
-              void submit({
-                operation: "set_plan_item_status",
-                item_id: item.item_id,
-                status: event.target.value as PlanStatus,
-              })
-            }
-          >
-            {(Object.keys(PLAN_STATUS) as PlanStatus[]).map((status) => (
-              <option key={status} value={status}>
-                Statut : {PLAN_STATUS[status]}
-              </option>
-            ))}
-          </select>
-        </label>
-      ))}
+      <p className="muted">
+        Le statut d’un traitement se change sur sa carte, dans l’onglet « Plan de
+        traitement ».
+      </p>
 
       {message && (
         <div className={`banner ${message.tone === "ok" ? "banner-info" : "banner-critical"}`} role="status">

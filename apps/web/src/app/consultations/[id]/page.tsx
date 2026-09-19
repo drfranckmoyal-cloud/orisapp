@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 
 import { CorrectionPanel } from "@/components/review/CorrectionPanel";
+import { TreatmentPlanCards } from "@/components/review/TreatmentPlanCards";
 import { DocumentBody } from "@/components/review/DocumentView";
 import { FactChips } from "@/components/review/FactChips";
 import styles from "@/components/review/review.module.css";
@@ -24,6 +25,7 @@ import {
   DOCUMENT_TYPE,
   ENCOUNTER_STATUS,
   LEARNING_EVENT,
+  correctionDetail,
   PROCESSING_RULE,
   errorMessage,
   formatDateTime,
@@ -341,6 +343,15 @@ export default function ReviewPage() {
                 </div>
               )}
 
+              {active.document_type === "treatment_plan_text" && object && (
+                <TreatmentPlanCards
+                  encounter={data}
+                  clinicalObject={object}
+                  onSelectFact={(factId) => setSelection({ kind: "fact", factId })}
+                  onCorrected={reloadAll}
+                />
+              )}
+
               <DocumentBody
                 document={active}
                 selected={selection?.kind === "claim" ? selection.claim : null}
@@ -549,6 +560,9 @@ export default function ReviewPage() {
                     {learning.data.map((event) => (
                       <li key={event.learning_event_id}>
                         {LEARNING_EVENT[event.event_type] ?? event.event_type}
+                        {correctionDetail(event) && (
+                          <> — {correctionDetail(event)}</>
+                        )}
                       </li>
                     ))}
                   </ul>

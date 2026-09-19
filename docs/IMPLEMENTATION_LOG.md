@@ -525,6 +525,25 @@ en vrai dans le navigateur intégré, pas seulement supposé.
 Les intitulés de section ne sont pas devinés à la mise en page : la liste vient du
 rédacteur (`SECTION_ORDER`), sinon une phrase en majuscules deviendrait un titre.
 
+## M6 (2/2) — cartes de plan et corrections lisibles (2026-09-19)
+
+Le plan de traitement n'existait que comme paragraphe, et le statut se changeait dans un
+panneau séparé, loin de ce qu'on lit. Chaque élément du plan est désormais une carte :
+dents, intitulé, statut, motif, faits d'appui cliquables (provenance), alternatives,
+préalables, incertitudes — et le statut se change **sur la carte**. La numérotation
+n'apparaît que si la séquence a été énoncée (§33.3).
+
+`lib/useCorrection.ts` : la logique de correction (version attendue, régénération,
+message) était dupliquée dès qu'un deuxième écran corrigeait. Un seul endroit
+maintenant ; `CorrectionPanel` garde la correction de dent et renvoie vers la carte.
+
+Historique : un événement d'apprentissage affichait son intitulé seul (« Statut de
+traitement corrigé »). Il affiche ce qui a changé (« proposé → accepté ») en lisant
+`before`/`after`, sans nouveau champ côté serveur.
+
+Vérifié dans le navigateur : changement de statut depuis la carte → dossier clinique v2,
+documents régénérés, texte du plan à jour, historique « proposé → accepté ».
+
 ## Vocabulaire clinique (2026-09-19)
 
 **Deuxième passe, dictée du praticien** : 42 termes de plus (269 au total, 16 thèmes).

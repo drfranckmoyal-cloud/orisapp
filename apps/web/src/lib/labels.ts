@@ -169,3 +169,35 @@ export function formatClock(ms: number): string {
   const seconds = Math.floor(ms / 1000);
   return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 }
+
+const AXIS_LABELS: Record<string, Record<string, string>> = {
+  teeth: {},
+  status: PLAN_STATUS,
+  assertion: ASSERTION,
+  temporality: TEMPORALITY,
+  certainty: CERTAINTY,
+  clinical_status: CLINICAL_STATUS,
+};
+
+function side(payload: unknown, field: string): string | null {
+  if (payload === null || typeof payload !== "object") return null;
+  const value = (payload as Record<string, unknown>)[field];
+  if (Array.isArray(value)) return value.length > 0 ? value.join(", ") : "aucune";
+  if (typeof value !== "string") return null;
+  return AXIS_LABELS[field]?.[value] ?? value;
+}
+
+/** Ce qu'une correction a changé, en toutes lettres : « 26 → 27 ». */
+export function correctionDetail(event: {
+  before: unknown;
+  after: unknown;
+}): string | null {
+  for (const field of ["teeth", "status", "assertion", "temporality", "certainty", "clinical_status"]) {
+    const before = side(event.before, field);
+    const after = side(event.after, field);
+    if (before !== null && after !== null && before !== after) {
+      return `${before} → ${after}`;
+    }
+  }
+  return null;
+}

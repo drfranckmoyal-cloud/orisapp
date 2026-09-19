@@ -1,5 +1,13 @@
 # Changelog
 
+## M6 (2/2) — 2026-09-19 — plan de traitement en cartes
+- chaque élément du plan devient une carte : dents, intitulé, statut, motif, faits
+  d'appui cliquables, alternatives, préalables, incertitudes ; le statut se change sur
+  la carte, et c'est toujours le dossier clinique qui est modifié ;
+- l'historique dit ce qu'une correction a changé (« proposé → accepté ») ;
+- logique de correction mutualisée (`useCorrection`) entre les écrans qui corrigent ;
+- tests : web 43.
+
 ## M6 (1/2) — 2026-09-19 — sortie des documents
 - `GET /documents/{id}/export?format=pdf|text|structured` : PDF A4 (identité du cabinet
   et du praticien, patient, date, type, mention de validation, pagination), texte brut,
