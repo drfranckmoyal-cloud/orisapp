@@ -496,6 +496,21 @@ Comparaison entre modèles (Sonnet, Haiku, Opus) : aucun n'est choisi d'office.
 
 ## Vocabulaire clinique (2026-09-19)
 
+**Deuxième passe, dictée du praticien** : 42 termes de plus (269 au total, 16 thèmes).
+Deux listes distinctes, souvent confondues :
+
+- le **vocabulaire de rédaction** (`ontology/labels.py`) : ce qu'Oris sait écrire.
+  Aucune limite de taille ; son coût est quelques centaines de jetons dans l'invite.
+- le **glossaire de transcription** (`ontology/stt_glossary.py`) : ce qu'on pousse au
+  fournisseur STT pour qu'il *entende* juste. Plafonné à 50 termes (au-delà, Deepgram
+  dégrade). Les noms propres y passent en priorité — ce sont eux que la machine rate.
+
+Choix faits sur des termes ambigus, à confirmer par le praticien : « gouttière » a été
+rattachée à l'éclaircissement (la gouttière occlusale existait déjà), « contrôle » à la
+séance de contrôle après traitement (le contrôle périodique existait), « système » au
+système de collage, « classe 2 / 3 » à la classe d'Angle (la classe squelettique est un
+terme séparé), « reprise » à la reprise d'un travail existant.
+
 50 concepts couvraient le corpus synthétique et rien d'autre : sur une vraie
 consultation, « couronnes » sortait en « à rédiger : élément non reconnu ». L'ontologie
 passe à 227 termes, rangés par thème (`THEMES` dans `ontology/labels.py`, `CONCEPTS`

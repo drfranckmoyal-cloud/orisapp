@@ -19,6 +19,12 @@ DENTAL_GLOSSARY_FR: tuple[str, ...] = (
     "RelyX Veneer",
     "G-CEM Veneer",
     "Eliquis",
+    # Dictés par le praticien le 19/09 : marques et sigles que la transcription rate
+    "Astéria",
+    "SmileCloud",
+    "peroxyde de carbamide",
+    "zircone",
+    "DVO",
     # Actes et examens
     "composite",
     "composites additifs",

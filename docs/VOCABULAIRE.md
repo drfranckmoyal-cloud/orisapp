@@ -23,25 +23,26 @@ reporte ensuite dans le code, et cette liste est régénérée.*
 traitées par Oris. Les quelques termes présents servent à *reconnaître* le mot quand il
 est prononcé, pas à rédiger l'acte.
 
-**227 termes** connus aujourd'hui, en 15 thèmes.
+**269 termes** connus aujourd'hui, en 16 thèmes.
 
 ## Sommaire
 
 - [Motif et demande du patient](#motif-et-demande-du-patient) — 12 termes
 - [Symptômes rapportés](#symptômes-rapportés) — 24 termes
 - [Examen clinique — dents et restaurations](#examen-clinique-dents-et-restaurations) — 27 termes
-- [Examen clinique — usures et esthétique](#examen-clinique-usures-et-esthétique) — 14 termes
-- [Examen clinique — parodonte, muqueuses, occlusion](#examen-clinique-parodonte-muqueuses-occlusion) — 18 termes
-- [Examens complémentaires](#examens-complémentaires) — 15 termes
+- [Examen clinique — usures et esthétique](#examen-clinique-usures-et-esthétique) — 21 termes
+- [Examen clinique — parodonte, muqueuses, occlusion](#examen-clinique-parodonte-muqueuses-occlusion) — 20 termes
+- [Examens complémentaires](#examens-complémentaires) — 16 termes
 - [Analyse, diagnostic et hypothèses](#analyse-diagnostic-et-hypothèses) — 15 termes
-- [Options thérapeutiques et décisions](#options-thérapeutiques-et-décisions) — 29 termes
-- [Projet esthétique](#projet-esthétique) — 6 termes
-- [Actes — restaurations directes](#actes-restaurations-directes) — 17 termes
-- [Actes — prothèse et collage](#actes-prothèse-et-collage) — 11 termes
+- [Options thérapeutiques et décisions](#options-thérapeutiques-et-décisions) — 36 termes
+- [Projet esthétique](#projet-esthétique) — 9 termes
+- [Actes — restaurations directes](#actes-restaurations-directes) — 22 termes
+- [Actes — prothèse et collage](#actes-prothèse-et-collage) — 12 termes
 - [Actes — chirurgie et anesthésie](#actes-chirurgie-et-anesthésie) — 9 termes
 - [Informations données au patient](#informations-données-au-patient) — 13 termes
 - [Antécédents, traitements et terrain](#antécédents-traitements-et-terrain) — 11 termes
-- [Suite et contrôle](#suite-et-contrôle) — 6 termes
+- [Suite et contrôle](#suite-et-contrôle) — 8 termes
+- [Matériaux, produits et instruments](#matériaux-produits-et-instruments) — 14 termes
 
 ---
 
@@ -149,15 +150,22 @@ est prononcé, pas à rédiger l'acte.
 | abrasion | le libellé suffit |
 | asymétrie de forme | le libellé suffit |
 | attrition | le libellé suffit |
+| couleur | « libellé : valeur » (hémostase : obtenue) |
+| dentine | « libellé : valeur » (hémostase : obtenue) |
 | diastème | le libellé suffit |
+| dimension verticale d’occlusion (DVO) | « libellé : valeur » (hémostase : obtenue) |
+| disharmonie dento-dentaire (DDD) | le libellé suffit |
 | déviation des milieux | le libellé suffit |
 | ligne du sourire | « libellé : valeur » (hémostase : obtenue) |
+| microdontie | le libellé suffit |
 | position des bords libres | « libellé : valeur » (hémostase : obtenue) |
 | proportions dentaires | « libellé : valeur » (hémostase : obtenue) |
+| score BEWE (usure érosive) | « libellé : valeur » (hémostase : obtenue) |
 | sourire gingival | le libellé suffit |
 | teinte | « libellé : valeur » (hémostase : obtenue) |
 | usure des dents antérieures | ce qui a été dit est repris (nom de produit, mots du patient) |
 | usure généralisée | ce qui a été dit est repris (nom de produit, mots du patient) |
+| émail | « libellé : valeur » (hémostase : obtenue) |
 | érosion | le libellé suffit |
 
 **À ajouter dans ce thème**
@@ -172,6 +180,8 @@ est prononcé, pas à rédiger l'acte.
 |---|---|
 | atteinte de furcation | « libellé : valeur » (hémostase : obtenue) |
 | béance | le libellé suffit |
+| classe d’Angle | « libellé : valeur » (hémostase : obtenue) |
+| classe squelettique | « libellé : valeur » (hémostase : obtenue) |
 | contact prématuré | le libellé suffit |
 | encombrement | le libellé suffit |
 | gingivite | le libellé suffit |
@@ -208,6 +218,7 @@ est prononcé, pas à rédiger l'acte.
 | image radioclaire périapicale | le libellé suffit |
 | perte osseuse radiographique | « libellé : valeur » (hémostase : obtenue) |
 | photographies cliniques | le libellé suffit |
+| radiographie | le libellé suffit |
 | radiographie bitewing | le libellé suffit |
 | radiographie panoramique | le libellé suffit |
 | radiographie rétro-alvéolaire | le libellé suffit |
@@ -251,11 +262,13 @@ est prononcé, pas à rédiger l'acte.
 
 | Terme écrit dans le compte rendu | Précision conservée |
 |---|---|
-| adressage à un confrère | ce qui a été dit est repris (nom de produit, mots du patient) |
+| adressage à un confrère ou une consœur | ce qui a été dit est repris (nom de produit, mots du patient) |
 | avulsion | le libellé suffit |
 | bridge | le libellé suffit |
 | composite | ce qui a été dit est repris (nom de produit, mots du patient) |
+| composite bonding | le libellé suffit |
 | composites additifs | le libellé suffit |
+| confrère ou consœur | ce qui a été dit est repris (nom de produit, mots du patient) |
 | consentement éclairé | « libellé : valeur » (hémostase : obtenue) |
 | couronnes | le libellé suffit |
 | devis | « libellé : valeur » (hémostase : obtenue) |
@@ -263,6 +276,7 @@ est prononcé, pas à rédiger l'acte.
 | dépose de la restauration et réévaluation | le libellé suffit |
 | détartrage | le libellé suffit |
 | facettes | le libellé suffit |
+| gouttière d’éclaircissement | le libellé suffit |
 | gouttière occlusale | le libellé suffit |
 | implant | le libellé suffit |
 | inlay | le libellé suffit |
@@ -270,16 +284,20 @@ est prononcé, pas à rédiger l'acte.
 | option | c'est la valeur dite qui est écrite |
 | option thérapeutique | c'est la valeur dite qui est écrite |
 | prise en charge préventive | le libellé suffit |
+| proposition de traitement | c'est la valeur dite qui est écrite |
 | prothèse amovible | le libellé suffit |
 | surfaçage radiculaire | le libellé suffit |
 | surveillance | le libellé suffit |
 | surveillance sans traitement | le libellé suffit |
+| séance unique | le libellé suffit |
 | séquence de traitement | c'est la valeur dite qui est écrite |
 | traitement endodontique | le libellé suffit |
 | traitement orthodontique | le libellé suffit |
 | traitement parodontal | le libellé suffit |
 | validation esthétique | « libellé : valeur » (hémostase : obtenue) |
+| échec du traitement | ce qui a été dit est repris (nom de produit, mots du patient) |
 | éclaircissement | le libellé suffit |
+| éclaircissement ambulatoire | le libellé suffit |
 
 **À ajouter dans ce thème**
 
@@ -291,11 +309,14 @@ est prononcé, pas à rédiger l'acte.
 
 | Terme écrit dans le compte rendu | Précision conservée |
 |---|---|
+| augmentation de la dimension verticale | « libellé : valeur » (hémostase : obtenue) |
 | choix de la teinte | ce qui a été dit est repris (nom de produit, mots du patient) |
 | communication de la teinte | le libellé suffit |
+| logiciel de projet esthétique | ce qui a été dit est repris (nom de produit, mots du patient) |
 | mock-up | le libellé suffit |
 | projet esthétique numérique | le libellé suffit |
 | réduction guidée par mock-up | le libellé suffit |
+| simulation esthétique | le libellé suffit |
 | wax-up | le libellé suffit |
 
 **À ajouter dans ce thème**
@@ -310,6 +331,8 @@ est prononcé, pas à rédiger l'acte.
 |---|---|
 | adhésif | ce qui a été dit est repris (nom de produit, mots du patient) |
 | coiffage pulpaire | ce qui a été dit est repris (nom de produit, mots du patient) |
+| composite injecté | le libellé suffit |
+| composite stratifié | le libellé suffit |
 | curetage de la carie | le libellé suffit |
 | face | « libellé : valeur » (hémostase : obtenue) |
 | finition et polissage | le libellé suffit |
@@ -319,7 +342,10 @@ est prononcé, pas à rédiger l'acte.
 | isolation du champ opératoire | le libellé suffit |
 | matrice | ce qui a été dit est repris (nom de produit, mots du patient) |
 | mordançage | le libellé suffit |
+| polissage | le libellé suffit |
+| polymérisation | le libellé suffit |
 | préparation de la cavité | le libellé suffit |
+| reprise d’un travail existant | ce qui a été dit est repris (nom de produit, mots du patient) |
 | restauration additive en composite | ce qui a été dit est repris (nom de produit, mots du patient) |
 | restauration composite | le libellé suffit |
 | restauration provisoire | ce qui a été dit est repris (nom de produit, mots du patient) |
@@ -336,6 +362,7 @@ est prononcé, pas à rédiger l'acte.
 
 | Terme écrit dans le compte rendu | Précision conservée |
 |---|---|
+| collage | le libellé suffit |
 | collage des facettes | le libellé suffit |
 | contrôle de l’occlusion | le libellé suffit |
 | dépose des provisoires | le libellé suffit |
@@ -425,11 +452,38 @@ est prononcé, pas à rédiger l'acte.
 | Terme écrit dans le compte rendu | Précision conservée |
 |---|---|
 | consignes en cas d’urgence | le libellé suffit |
+| contrôle après traitement | le libellé suffit |
 | contrôle de cicatrisation | le libellé suffit |
 | contrôle périodique | « libellé : valeur » (hémostase : obtenue) |
 | maintenance parodontale | le libellé suffit |
 | prochaine séance | « libellé : valeur » (hémostase : obtenue) |
 | réévaluation | « libellé : valeur » (hémostase : obtenue) |
+| séance | « libellé : valeur » (hémostase : obtenue) |
+
+**À ajouter dans ce thème**
+
+| Terme (comme vous le dites) | Remarque |
+|---|---|
+|  |  |
+
+## Matériaux, produits et instruments
+
+| Terme écrit dans le compte rendu | Précision conservée |
+|---|---|
+| barrette en PMMA | le libellé suffit |
+| colorant | ce qui a été dit est repris (nom de produit, mots du patient) |
+| céramique | ce qui a été dit est repris (nom de produit, mots du patient) |
+| disque de polissage | le libellé suffit |
+| gel de glycérine | le libellé suffit |
+| peroxyde de carbamide | ce qui a été dit est repris (nom de produit, mots du patient) |
+| produit d’éclaircissement | ce qui a été dit est repris (nom de produit, mots du patient) |
+| produit utilisé | ce qui a été dit est repris (nom de produit, mots du patient) |
+| résine | ce qui a été dit est repris (nom de produit, mots du patient) |
+| spatule | le libellé suffit |
+| système de collage | ce qui a été dit est repris (nom de produit, mots du patient) |
+| teinte du composite | ce qui a été dit est repris (nom de produit, mots du patient) |
+| zircone | ce qui a été dit est repris (nom de produit, mots du patient) |
+| zircone stratifiée | le libellé suffit |
 
 **À ajouter dans ce thème**
 

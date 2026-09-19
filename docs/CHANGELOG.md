@@ -1,5 +1,13 @@
 # Changelog
 
+## Vocabulaire (2) — 2026-09-19 — termes dictés par le praticien
+- 42 termes intégrés depuis la dictée du 19/09 : **269 termes**, 16 thèmes (nouveau
+  thème « Matériaux, produits et instruments ») ;
+- cinq noms propres et sigles ajoutés au glossaire envoyé à la transcription (Astéria,
+  SmileCloud, peroxyde de carbamide, zircone, DVO) : ce glossaire est plafonné à 50
+  termes, contrairement au vocabulaire de rédaction qui n'a pas de limite ;
+- « adressage à un confrère » devient « adressage à un confrère ou une consœur ».
+
 ## Vocabulaire — 2026-09-19
 - vocabulaire clinique porté de 50 à **227 termes**, classés en 15 thèmes (motif,
   symptômes, examen dentaire, usures et esthétique, parodonte et occlusion, examens
