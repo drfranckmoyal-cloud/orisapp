@@ -54,7 +54,10 @@ export default function JourneePage() {
           </li>
           <li>
             <strong>Les doublons.</strong> Un patient déjà connu d’Oris ne doit pas être
-            créé une seconde fois parce que l’agenda l’orthographie autrement.
+            créé une seconde fois parce que l’agenda l’orthographie autrement. C’est à
+            cela que sert l’<strong>identifiant externe</strong> de la fiche patient :
+            aujourd’hui il ne sert à rien, il deviendra le lien avec l’agenda. Il se
+            saisit à la création et n’encombre pas la fiche.
           </li>
         </ul>
         <p className="muted" style={{ margin: 0 }}>

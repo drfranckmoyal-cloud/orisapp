@@ -11,8 +11,8 @@
   min-width: 0;
   font: inherit;
   font-size: var(--texte-md);
-  padding: 9px 12px;
-  min-height: 62px;
+  padding: 8px 11px;
+  min-height: 54px;
   border: 1px solid transparent;
   border-radius: 9px;
   border-color: var(--trait);
@@ -37,9 +37,9 @@
   flex: none;
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
   cursor: pointer;
   color: var(--encre-douce);
   background: var(--surface);

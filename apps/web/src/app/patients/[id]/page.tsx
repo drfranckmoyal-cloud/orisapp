@@ -46,17 +46,21 @@ function age(naissance: string): string {
 function Info({
   cle,
   large = false,
+  reste = false,
   children,
 }: {
   cle: string;
-  /** La case occupe le reste de la rangée : pour ce qui a besoin de largeur. */
+  /** La case prend toute la rangée : pour ce qui a besoin de largeur. */
   large?: boolean;
+  /** La case va jusqu'au bord : elle comble la fin d'une rangée incomplète. */
+  reste?: boolean;
   children: React.ReactNode;
 }) {
+  const classes = [styles.valeur, large ? styles.valeurLarge : "", reste ? styles.valeurReste : ""];
   return (
     <div className={styles.ligne}>
       <span className={styles.cle}>{cle}</span>
-      <span className={`${styles.valeur} ${large ? styles.valeurLarge : ""}`}>{children}</span>
+      <span className={classes.filter(Boolean).join(" ")}>{children}</span>
     </div>
   );
 }
@@ -150,12 +154,9 @@ export default function PatientPage() {
                 <Absent quoi="jamais vue" />
               )}
             </Info>
-            <Info cle="Correspondants">
+            <Info cle="Correspondants" reste>
               {/* Le rattachement viendra avec l'écran dédié. */}
               <Absent quoi="aucun — à venir" />
-            </Info>
-            <Info cle="Dossier">
-              {fiche.external_id || <Absent quoi="aucun" />}
             </Info>
 
             {/* Rangée 3 — la note, sur toute la largeur */}

@@ -31,8 +31,8 @@
 .valeur {
   display: flex;
   align-items: center;
-  min-height: 52px;
-  padding: 11px 0;
+  min-height: 42px;
+  padding: 7px 0;
   border-top: 1px solid var(--trait-fort);
 }
 
@@ -59,12 +59,17 @@
   background: var(--surface);
 }
 
+/* Une rangée incomplète ne laisse pas de trou : la dernière case va au bord. */
+.valeurReste {
+  grid-column-end: -1;
+}
+
 /* La note occupe le reste de la rangée : c'est la seule qui en a besoin. */
 .valeurLarge {
   grid-column: 2 / -1;
   align-items: stretch;
-  padding-top: var(--espace-3);
-  padding-bottom: var(--espace-3);
+  padding-top: var(--espace-2);
+  padding-bottom: var(--espace-2);
 }
 
 /* Première rangée : rien au-dessus. */
