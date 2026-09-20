@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 120" role="img" aria-label="Oris">
+  <title>Oris — symbole, variante ligne</title>
+  <!-- Le silence de part et d'autre est plus long que le relief : sans lui, le tracé
+       se lit comme une lettre. C'est la ligne qui doit se lire d'abord, la dent
+       ensuite. -->
+  <path d="M6 78 L46 78 C54 78 54 44 65 44 C73 44 73 60 82 60 C91 60 91 44 99 44 C110 44 110 78 118 78 L164 78"
+        fill="none" stroke="#14533B" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

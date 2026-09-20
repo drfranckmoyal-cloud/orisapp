@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oris — planche de marque</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--fond:#f6f3ee;--surface:#fff;--encre:#1c1a17;--encre-2:#585149;--encre-3:#8b8276;
+  --trait:#e0d9cd;--vert:#14533b;--creme:#f6f3ee;--sombre:#0e2a1f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fond);color:var(--encre);
+  font:400 16px/1.6 "Instrument Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+  padding:52px 32px 90px}
+main{max-width:980px;margin:0 auto}
+h1{font-size:32px;margin:0 0 10px;letter-spacing:-.02em}
+.chapo{color:var(--encre-2);max-width:620px;margin:0 0 44px}
+h2{font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:var(--encre-3);
+  margin:44px 0 16px;font-weight:600}
+.bloc{background:var(--surface);border:1px solid var(--trait);border-radius:20px;padding:30px;
+  box-shadow:0 1px 1px rgba(28,26,23,.04),0 10px 26px -16px rgba(28,26,23,.26)}
+.rangee{display:flex;align-items:flex-end;gap:52px;flex-wrap:wrap}
+.item{text-align:center}
+.item p{margin:12px 0 0;font-size:13px;color:var(--encre-3);max-width:190px}
+.grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:18px}
+.tuile{background:var(--surface);border:1px solid var(--trait);border-radius:18px;padding:26px 22px;text-align:center;
+  box-shadow:0 1px 1px rgba(28,26,23,.04),0 10px 26px -16px rgba(28,26,23,.26);
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:18px;min-height:172px}
+.tuile p{margin:0;font-size:13px;color:var(--encre-3)}
+.tuile b{display:block;font-size:14px;color:var(--encre);font-weight:600;margin-bottom:2px}
+.tuile.sombre{background:var(--sombre);border-color:var(--sombre)}
+.tuile.sombre p{color:#93a99e}.tuile.sombre b{color:var(--creme)}
+.echelle{display:flex;align-items:flex-end;gap:32px;flex-wrap:wrap}
+.echelle figure{margin:0;text-align:center}
+.echelle figcaption{font-size:12px;color:var(--encre-3);margin-top:10px}
+.note{color:var(--encre-2);font-size:15px;max-width:660px;margin-top:18px}
+.note code{background:#ece7de;padding:1px 6px;border-radius:5px;font-size:13.5px}
+.onglet{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--trait);
+  border-radius:9px 9px 0 0;padding:7px 14px 7px 10px;font-size:13px;color:var(--encre-2)}
+.mot{font-weight:600;letter-spacing:-.03em}
+.lock{display:flex;align-items:center;gap:12px}
+.lock .mot{font-size:34px;color:var(--vert)}
+.lock-v{display:grid;justify-items:center;gap:8px}
+.lock-v .mot{font-size:28px;color:var(--vert)}
+svg{display:block}
+</style>
+</head>
+<body>
+<!-- Le geste, défini une fois. Tout le reste n'est que taille et couleur. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="barres">
+      <rect x="13" y="38" width="10" height="34" rx="5"/>
+      <rect x="31" y="20" width="10" height="76" rx="5"/>
+      <rect x="49" y="30" width="10" height="48" rx="5"/>
+      <rect x="67" y="20" width="10" height="76" rx="5"/>
+      <rect x="85" y="38" width="10" height="34" rx="5"/>
+    </g>
+    <g id="trois">
+      <rect x="18" y="26" width="16" height="56" rx="8"/>
+      <rect x="44" y="40" width="16" height="28" rx="8"/>
+      <rect x="70" y="26" width="16" height="56" rx="8"/>
+    </g>
+    <linearGradient id="degrade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1D7052"/><stop offset="1" stop-color="#0E3D2A"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<main>
+  <h1>Une ligne de son qui dessine une dent</h1>
+  <p class="chapo">
+    Un seul geste : une onde sonore dont les montées et les descentes composent le
+    profil d'une molaire. Le haut donne deux cuspides séparées d'un sillon, le bas
+    deux racines. De loin, un niveau sonore ; de près, une dent. Jamais de dent
+    dessinée littéralement.
+  </p>
+
+  <h2>Les deux écritures du même geste</h2>
+  <div class="bloc">
+    <div class="rangee">
+      <div class="item">
+        <svg viewBox="0 0 120 120" width="130" height="130" fill="#14533B"><use href="#barres"/></svg>
+        <p>Barres — la dent entière, couronne <i>et</i> racines</p>
+      </div>
+      <div class="item">
+        <svg viewBox="0 0 170 120" width="184" height="130">
+          <path d="M6 78 L46 78 C54 78 54 44 65 44 C73 44 73 60 82 60 C91 60 91 44 99 44 C110 44 110 78 118 78 L164 78"
+            fill="none" stroke="#14533B" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <p>Ligne — la dent reste implicite, seul le souffle la révèle</p>
+      </div>
+    </div>
+    <p class="note">
+      Les <b>barres</b> tiennent en petit et disent la dent entière : c'est la version
+      principale. La <b>ligne</b> est plus fine, plus « souffle » — à réserver aux
+      grands formats : page de garde, couverture, mur du cabinet.
+    </p>
+  </div>
+
+  <h2>À l'épreuve de la taille</h2>
+  <div class="bloc">
+    <div class="echelle">
+      <figure><svg viewBox="0 0 120 120" width="96" height="96" fill="#14533B"><use href="#barres"/></svg><figcaption>96 px</figcaption></figure>
+      <figure><svg viewBox="0 0 120 120" width="48" height="48" fill="#14533B"><use href="#barres"/></svg><figcaption>48 px</figcaption></figure>
+      <figure><svg viewBox="0 0 120 120" width="32" height="32" fill="#14533B"><use href="#barres"/></svg><figcaption>32 px</figcaption></figure>
+      <figure><svg viewBox="0 0 120 120" width="24" height="24" fill="#14533B"><use href="#barres"/></svg><figcaption>24 px</figcaption></figure>
+      <figure><svg viewBox="0 0 120 120" width="16" height="16" fill="#14533B"><use href="#barres"/></svg><figcaption>16 px — se referme</figcaption></figure>
+      <figure><svg viewBox="0 0 104 104" width="16" height="16" fill="#14533B"><use href="#trois"/></svg><figcaption>16 px — réduite</figcaption></figure>
+    </div>
+    <p class="note">
+      À 16 px, cinq barres se referment. La version d'onglet n'en garde que trois :
+      les deux cuspides et le sillon. Même geste, réduit à ce qui reste lisible.
+    </p>
+    <p style="margin-top:20px">
+      <span class="onglet">
+        <svg viewBox="0 0 104 104" width="16" height="16" fill="#14533B"><use href="#trois"/></svg>
+        Oris — Marie Dupont
+      </span>
+    </p>
+  </div>
+
+  <h2>Verrouillages</h2>
+  <div class="grille">
+    <div class="tuile">
+      <div class="lock">
+        <svg viewBox="0 0 120 120" width="42" height="42" fill="#14533B"><use href="#barres"/></svg>
+        <span class="mot">Oris</span>
+      </div>
+      <p><b>Horizontal</b>En-tête de site, papier à en-tête</p>
+    </div>
+    <div class="tuile">
+      <div class="lock-v">
+        <svg viewBox="0 0 120 120" width="48" height="48" fill="#14533B"><use href="#barres"/></svg>
+        <span class="mot">Oris</span>
+      </div>
+      <p><b>Vertical</b>Écran d'accueil, page de garde</p>
+    </div>
+    <div class="tuile sombre">
+      <div class="lock">
+        <svg viewBox="0 0 120 120" width="42" height="42" fill="#F6F3EE"><use href="#barres"/></svg>
+        <span class="mot" style="color:#F6F3EE">Oris</span>
+      </div>
+      <p><b>Crème</b>Fonds verts, barre de menu</p>
+    </div>
+    <div class="tuile">
+      <div class="lock">
+        <svg viewBox="0 0 120 120" width="42" height="42" fill="#1C1A17"><use href="#barres"/></svg>
+        <span class="mot" style="color:#1C1A17">Oris</span>
+      </div>
+      <p><b>Monochrome</b>Tampon, fax, une seule encre</p>
+    </div>
+  </div>
+
+  <h2>Icône d'application</h2>
+  <div class="bloc">
+    <div class="echelle">
+      <figure>
+        <svg viewBox="0 0 512 512" width="120" height="120">
+          <rect width="512" height="512" rx="114" fill="url(#degrade)"/>
+          <g fill="#F6F3EE" transform="translate(76 76) scale(2.8)"><use href="#barres"/></g>
+        </svg><figcaption>120 px</figcaption></figure>
+      <figure>
+        <svg viewBox="0 0 512 512" width="76" height="76">
+          <rect width="512" height="512" rx="114" fill="url(#degrade)"/>
+          <g fill="#F6F3EE" transform="translate(76 76) scale(2.8)"><use href="#barres"/></g>
+        </svg><figcaption>76 px</figcaption></figure>
+      <figure>
+        <svg viewBox="0 0 512 512" width="52" height="52">
+          <rect width="512" height="512" rx="114" fill="url(#degrade)"/>
+          <g fill="#F6F3EE" transform="translate(76 76) scale(2.8)"><use href="#barres"/></g>
+        </svg><figcaption>52 px</figcaption></figure>
+      <figure>
+        <svg viewBox="0 0 512 512" width="36" height="36">
+          <rect width="512" height="512" rx="114" fill="url(#degrade)"/>
+          <g fill="#F6F3EE" transform="translate(76 76) scale(2.8)"><use href="#barres"/></g>
+        </svg><figcaption>36 px</figcaption></figure>
+    </div>
+    <p class="note">Crème sur vert, dégradé très retenu : assez pour donner du corps
+      dans une grille d'icônes, pas assez pour faire bibelot.</p>
+  </div>
+
+  <h2>Ce qui reste à faire</h2>
+  <div class="bloc">
+    <p class="note" style="margin-top:0">
+      Le mot « Oris » des verrouillages s'affiche avec une police chargée par le
+      navigateur (<code>Instrument Sans</code>). Pour l'impression et pour figer la
+      marque, il faudra <b>vectoriser ce texte</b> — une minute de travail, à faire une
+      fois la police définitive arrêtée. En attendant, ces fichiers sont des maquettes,
+      pas des originaux de marque.
+    </p>
+  </div>
+</main>
+</body>
+</html>

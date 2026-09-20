@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 96" role="img" aria-label="Oris">
+  <title>Oris — logo blanc, pour fonds sombres</title>
+  <g fill="#FFFFFF">
+    <rect x="4" y="33" width="8" height="30" rx="4"/>
+    <rect x="18" y="19" width="8" height="58" rx="4"/>
+    <rect x="32" y="27" width="8" height="42" rx="4"/>
+    <rect x="46" y="19" width="8" height="58" rx="4"/>
+    <rect x="60" y="33" width="8" height="30" rx="4"/>
+  </g>
+  <text x="86" y="63" fill="#FFFFFF"
+        font-family="Instrument Sans, Inter, -apple-system, system-ui, sans-serif"
+        font-size="50" font-weight="600" letter-spacing="-1.4">Oris</text>
+</svg>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Oris">
+  <title>Oris — symbole, variante barres</title>
+  <!-- Une ligne de son vue en barres. Le profil du haut dessine la couronne d'une
+       molaire (deux cuspides, sillon central plus bas) ; celui du bas, deux racines.
+       Lue de loin, c'est un niveau sonore ; lue de près, une dent. -->
+  <g fill="#14533B">
+    <rect x="13" y="38" width="10" height="34" rx="5"/>
+    <rect x="31" y="20" width="10" height="76" rx="5"/>
+    <rect x="49" y="30" width="10" height="48" rx="5"/>
+    <rect x="67" y="20" width="10" height="76" rx="5"/>
+    <rect x="85" y="38" width="10" height="34" rx="5"/>
+  </g>
+</svg>
