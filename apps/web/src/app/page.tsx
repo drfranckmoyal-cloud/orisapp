@@ -159,7 +159,8 @@ export default function HomePage() {
           <span>
             <span className={styles.titreDemarrer}>Commencer une consultation</span>
             <span className={styles.sousDemarrer}>
-              Oris écoute, vous soignez. Le compte rendu vous attendra.
+              Vous soignez, Oris documente. Le dossier sera prêt avant la fin du
+              rendez-vous.
             </span>
           </span>
         </Link>

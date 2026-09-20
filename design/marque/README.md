@@ -17,6 +17,8 @@ littéralement.
 | `oris-icone-app.svg` | Icône d'application (512 px, coins arrondis). |
 | `oris-favicon.svg` | Onglet : trois barres, les deux cuspides et le sillon. |
 | `planche.html` | La planche à ouvrir pour juger l'ensemble. |
+| `slogans.html` | Les deux slogans finalistes, en situation. |
+| `polices/Fraunces.ttf` | La police du nom, sous licence SIL OFL (`OFL.txt`). Elle ne sert qu'à **produire** les fichiers : les SVG et les PNG n'en dépendent plus. |
 | `png/` | **Tous les formats en PNG** — symbole (vert, crème, encre), icône d'application, favicon, de 16 à 1024 px. Régénérés par `python3 scripts/export_marque.py`. |
 
 ## Règles
@@ -35,9 +37,19 @@ littéralement.
 - **Manrope** pour l'interface.
 - **Fraunces** (600) pour le nom « Oris ».
 
-## Ce qui reste à faire
+## Le nom est vectorisé
 
-Le mot « Oris » des verrouillages s'affiche avec `Instrument Sans` chargée par le
-navigateur. Pour l'impression et pour figer la marque, il faut **vectoriser ce
-texte** — une minute, une fois la police définitive arrêtée. En attendant, ces
-fichiers sont des maquettes, pas des originaux de marque.
+Le mot « Oris » n'est plus du texte : c'est un tracé, composé en **Fraunces 600,
+taille optique 48, axe WONK désactivé**, avec le crénage de la police. Les
+verrouillages SVG et PNG ne dépendent donc d'aucune police installée — ils
+s'impriment.
+
+Pour recomposer le nom (changement de police ou de graisse) :
+
+```
+pip install fonttools
+python3 scripts/vectoriser_nom.py   # réécrit les SVG
+python3 scripts/export_marque.py    # réécrit les PNG
+```
+
+`oris-mot.txt` contient le tracé seul, pour le réemployer ailleurs.

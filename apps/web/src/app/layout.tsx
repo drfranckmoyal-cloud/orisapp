@@ -23,7 +23,7 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   title: "Oris",
-  description: "Rien que ce qui a été dit.",
+  description: "Vous soignez. Oris documente.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

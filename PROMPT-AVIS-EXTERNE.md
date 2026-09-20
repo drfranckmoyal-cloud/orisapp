@@ -65,6 +65,30 @@ C'est le cœur du sujet, et c'est ce qui a été construit en premier.
   demande vérification, rouge brique pour les alertes.
 - **Registre visé** : cabinet médical établi, calme, premium, lisible debout à un
   mètre. Surtout pas « chatbot » ni « start-up tech ».
+- **Typographie** : Manrope pour l'interface, Fraunces (à empattements) pour le nom.
+
+## Le texte de présentation retenu
+
+**Oris est l'assistant de documentation clinique conçu pour les chirurgiens-dentistes.**
+Il écoute la consultation et prépare automatiquement vos comptes rendus, plans de
+traitement et courriers, pendant que vous restez concentré sur votre patient.
+
+Oris s'appuie sur des modèles d'intelligence artificielle adaptatifs de dernière
+génération pour apprendre progressivement votre façon de travailler, votre vocabulaire
+et vos habitudes de rédaction. L'objectif : une expérience réellement personnalisée,
+des documents toujours plus proches de votre pratique et des corrections réduites au
+minimum.
+
+Utilisé à l'échelle de votre structure, Oris permet à toute l'équipe de gagner du
+temps, d'harmoniser la documentation clinique et de réduire la charge administrative
+au quotidien.
+
+À la fin de la consultation, votre documentation est déjà prête, structurée et adaptée
+à votre pratique.
+
+*(Précision technique, pour que personne ne sur-promette : « adaptatif » veut dire que
+le dictionnaire, les mots préférés et le style du praticien sont transmis à chaque
+traitement. **Aucun modèle n'est réentraîné sur les consultations.**)*
 
 ---
 
@@ -74,8 +98,15 @@ C'est le cœur du sujet, et c'est ce qui a été construit en premier.
 
 ### A. Le slogan
 
-Voici les pistes. Dites-moi laquelle porte le mieux le produit, et proposez les
-vôtres.
+Deux finalistes, et j'hésite :
+
+- **« Vous soignez. Oris documente. »** — dit la répartition des rôles, se répète
+  après une seule écoute.
+- **« Votre temps reste au soin. »** — dit le bénéfice ; « reste » suppose que ce
+  temps était en train d'être pris.
+
+Lequel tient en couverture de plaquette **et** dans l'application ? Y a-t-il une
+troisième voie ? Les autres pistes envisagées, pour information :
 
 **Sur la non-invention** — l'invariant technique transformé en promesse :
 « Rien que ce qui a été dit. » · « Ce qui est écrit a été dit. » · « Aucune phrase sans
@@ -92,9 +123,7 @@ yeux sur le patient. »
 **Sur le mécanisme** :
 « La parole devient dossier. » · « Écouter. Comprendre. Documenter. »
 
-Questions : lequel tient en couverture de plaquette *et* sous le logo dans
-l'application ? Lequel un confrère répéterait-il à un autre confrère ? Y a-t-il une
-promesse qu'on ne devrait pas faire ?
+Y a-t-il une promesse qu'on ne devrait pas faire ?
 
 ### B. Le nom et la marque
 

@@ -5,7 +5,10 @@ Référence vivante : `design/maquettes/4b-praticien-affine.html`.
 
 ## Idée de marque
 
-**Rien que ce qui a été dit.**
+**Vous soignez. Oris documente.**
+
+Le texte de référence et le second slogan en balance sont dans
+`docs/POSITIONNEMENT.md`.
 
 Oris doit se tenir comme un cabinet établi : calme, précis, lisible debout à un
 mètre, et lisible aussi par le patient assis en face. Surtout pas « chatbot », pas

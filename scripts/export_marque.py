@@ -5,8 +5,9 @@ Le symbole n'est fait que de rectangles arrondis : on le dessine directement, à
 quatre fois la taille voulue, puis on réduit. Le rendu est net à 16 px sans
 dépendre d'un moteur SVG installé sur la machine.
 
-Le mot « Oris » n'est pas exporté : il demande la police définitive vectorisée.
-Les verrouillages restent en SVG jusque-là.
+Le mot « Oris » est composé en Fraunces 600, taille optique 48, WONK désactivé —
+les mêmes réglages que la version vectorisée des SVG (`scripts/vectoriser_nom.py`).
+La police est dans le dépôt, sous licence SIL OFL.
 
 Usage :
   python3 scripts/export_marque.py
@@ -16,10 +17,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
 SORTIE = ROOT / "design" / "marque" / "png"
+POLICE = ROOT / "design" / "marque" / "polices" / "Fraunces.ttf"
+# Ordre des axes de Fraunces, tel que la police les déclare.
+AXES = [48, 600, 0, 0]  # opsz, wght, SOFT, WONK
 
 VERT = (20, 83, 59, 255)
 VERT_FONCE = (14, 58, 41, 255)
@@ -75,6 +79,72 @@ def dessiner(
     return image.resize((taille, taille), Image.LANCZOS)
 
 
+def police(hauteur_capitale: float) -> ImageFont.FreeTypeFont:
+    """Fraunces réglée pour que la hauteur de capitale tombe juste.
+
+    On cherche le corps par dichotomie plutôt que de deviner : la hauteur de
+    capitale d'une police variable ne se déduit pas du corps.
+    """
+    bas, haut = 4, 4000
+    while bas < haut:
+        milieu = (bas + haut + 1) // 2
+        essai = ImageFont.truetype(POLICE, milieu)
+        essai.set_variation_by_axes(AXES)
+        _, y0, _, y1 = essai.getbbox("O")
+        if (y1 - y0) <= hauteur_capitale:
+            bas = milieu
+        else:
+            haut = milieu - 1
+    choisie = ImageFont.truetype(POLICE, bas)
+    choisie.set_variation_by_axes(AXES)
+    return choisie
+
+
+def verrouillage(hauteur: int, encre, vertical: bool = False) -> Image.Image:
+    """Symbole + nom, aux proportions des SVG : le mot fait 80 % des barres."""
+    grand = hauteur * SUPER
+    echelle = grand / 120
+    fonte = police(76 * 0.80 * echelle)
+    x0, y0, x1, y1 = fonte.getbbox("Oris")
+    largeur_mot, capitale = x1 - x0, 76 * 0.80 * echelle
+
+    if vertical:
+        ecart = 20 * echelle
+        largeur = max(grand, largeur_mot)
+        total_h = grand + ecart + (y1 - y0)
+        image = Image.new("RGBA", (round(largeur), round(total_h)), TRANSPARENT)
+        symbole = dessiner(hauteur, BARRES, encre)
+        image.alpha_composite(
+            symbole.resize((grand, grand), Image.LANCZOS),
+            (round((largeur - grand) / 2), 0),
+        )
+        ImageDraw.Draw(image).text(
+            (round((largeur - largeur_mot) / 2 - x0), round(grand + ecart)),
+            "Oris",
+            font=fonte,
+            fill=encre,
+            anchor="la",
+        )
+        cible = (round(largeur / SUPER), round(total_h / SUPER))
+    else:
+        ecart = 26 * echelle
+        largeur = grand + ecart + largeur_mot
+        image = Image.new("RGBA", (round(largeur), grand), TRANSPARENT)
+        image.alpha_composite(
+            dessiner(hauteur, BARRES, encre).resize((grand, grand), Image.LANCZOS),
+            (0, 0),
+        )
+        ImageDraw.Draw(image).text(
+            (round(grand + ecart - x0), round(grand / 2 + capitale / 2)),
+            "Oris",
+            font=fonte,
+            fill=encre,
+            anchor="ls",
+        )
+        cible = (round(largeur / SUPER), hauteur)
+    return image.resize(cible, Image.LANCZOS)
+
+
 def ecrire(image: Image.Image, nom: str) -> None:
     chemin = SORTIE / nom
     image.save(chemin)
@@ -99,6 +169,16 @@ def main() -> int:
                 taille, BARRES, CREME, fond=VERT_FONCE, rayon_fond=0.222, marge=0.16
             ),
             f"icone-app-{taille}.png",
+        )
+
+    # Verrouillages : le nom est composé, plus jamais tapé à la volée.
+    for hauteur in (48, 96, 192, 384):
+        ecrire(verrouillage(hauteur, VERT), f"logo-horizontal-{hauteur}.png")
+        ecrire(verrouillage(hauteur, CREME), f"logo-creme-{hauteur}.png")
+        ecrire(verrouillage(hauteur, ENCRE), f"logo-monochrome-{hauteur}.png")
+    for hauteur in (96, 192, 384):
+        ecrire(
+            verrouillage(hauteur, VERT, vertical=True), f"logo-vertical-{hauteur}.png"
         )
 
     # Favicon : trois barres, lisibles là où cinq se referment.
