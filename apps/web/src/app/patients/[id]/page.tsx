@@ -43,11 +43,20 @@ function age(naissance: string): string {
   return `${ans} ans`;
 }
 
-function Info({ cle, children }: { cle: string; children: React.ReactNode }) {
+function Info({
+  cle,
+  large = false,
+  children,
+}: {
+  cle: string;
+  /** La case occupe le reste de la rangée : pour ce qui a besoin de largeur. */
+  large?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div className={styles.ligne}>
       <span className={styles.cle}>{cle}</span>
-      <span className={styles.valeur}>{children}</span>
+      <span className={`${styles.valeur} ${large ? styles.valeurLarge : ""}`}>{children}</span>
     </div>
   );
 }
@@ -110,7 +119,7 @@ export default function PatientPage() {
         )}
         {fiche && (
           <div className={styles.cadre}>
-            {/* Rangée 1 */}
+            {/* Rangée 1 — l'identité */}
             <Info cle="Nom">{nomPatient(fiche)}</Info>
             <Info cle="Courriel">
               {fiche.email ? (
@@ -121,6 +130,17 @@ export default function PatientPage() {
                 <Absent quoi="non renseigné" />
               )}
             </Info>
+            <Info cle="Date de naissance">
+              {fiche.birth_date ? (
+                <>
+                  {formatDate(fiche.birth_date)} ({age(fiche.birth_date)})
+                </>
+              ) : (
+                <Absent quoi="non renseignée" />
+              )}
+            </Info>
+
+            {/* Rangée 2 — le suivi */}
             <Info cle="Dernière">
               {derniere ? (
                 <Link href={`/consultations/${derniere.id}`} className="link-button">
@@ -130,22 +150,16 @@ export default function PatientPage() {
                 <Absent quoi="jamais vue" />
               )}
             </Info>
-
-            {/* Rangée 2 */}
-            <Info cle="Naissance">
-              {fiche.birth_date ? (
-                <>
-                  {formatDate(fiche.birth_date)} · {age(fiche.birth_date)}
-                </>
-              ) : (
-                <Absent quoi="non renseignée" />
-              )}
-            </Info>
             <Info cle="Correspondants">
               {/* Le rattachement viendra avec l'écran dédié. */}
               <Absent quoi="aucun — à venir" />
             </Info>
-            <Info cle="Note">
+            <Info cle="Dossier">
+              {fiche.external_id || <Absent quoi="aucun" />}
+            </Info>
+
+            {/* Rangée 3 — la note, sur toute la largeur */}
+            <Info cle="Note" large>
               <NoteDictee
                 patientId={id}
                 valeur={valeurNote}

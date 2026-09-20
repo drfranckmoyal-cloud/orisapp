@@ -7,7 +7,7 @@
 .carteInfos {
   border-width: 2px;
   border-color: var(--trait-fort);
-  background: linear-gradient(180deg, var(--surface), var(--fond));
+  background: linear-gradient(180deg, #faf7f1, #ece6da);
   box-shadow: var(--lumiere), var(--relief-haut);
 }
 
@@ -31,9 +31,9 @@
 .valeur {
   display: flex;
   align-items: center;
-  min-height: 46px;
-  padding: 9px 0;
-  border-top: 1px solid var(--trait);
+  min-height: 52px;
+  padding: 11px 0;
+  border-top: 1px solid var(--trait-fort);
 }
 
 /* La colonne des intitulés est teintée : le cadre se lit comme un tableau. */
@@ -46,20 +46,37 @@
   letter-spacing: 0.02em;
   text-transform: uppercase;
   white-space: nowrap;
-  background: rgb(26 24 21 / 0.028);
+  background: rgb(26 24 21 / 0.05);
 }
 
+/* Les valeurs sur fond clair : le cadre se lit comme un tableau. */
 .valeur {
-  padding-right: var(--espace-6);
+  padding-right: var(--espace-4);
+  padding-left: var(--espace-3);
   font-size: var(--texte-md);
   font-weight: var(--graisse-moyenne);
   overflow-wrap: anywhere;
+  background: var(--surface);
+}
+
+/* La note occupe le reste de la rangée : c'est la seule qui en a besoin. */
+.valeurLarge {
+  grid-column: 2 / -1;
+  align-items: stretch;
+  padding-top: var(--espace-3);
+  padding-bottom: var(--espace-3);
 }
 
 /* Première rangée : rien au-dessus. */
 .cadre > .ligne:nth-child(-n + 3) .cle,
 .cadre > .ligne:nth-child(-n + 3) .valeur {
   border-top: 0;
+}
+
+/* La rangée de la note est plus marquée : c'est un autre registre. */
+.cadre > .ligne:last-child .cle,
+.cadre > .ligne:last-child .valeur {
+  border-top: 2px solid var(--trait-fort);
 }
 
 /* Filet vertical avant les deuxième et troisième colonnes. */
@@ -151,6 +168,9 @@
   }
   .cadre > .ligne .cle {
     border-left: 0;
+  }
+  .valeurLarge {
+    grid-column: 2 / -1;
   }
 }
 

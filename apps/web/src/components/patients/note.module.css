@@ -1,7 +1,7 @@
 .bloc {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: flex-start;
+  gap: var(--espace-2);
   width: 100%;
   min-width: 0;
 }
@@ -10,14 +10,15 @@
   flex: 1;
   min-width: 0;
   font: inherit;
-  font-size: var(--texte-sm);
-  padding: 4px 8px;
+  font-size: var(--texte-md);
+  padding: 9px 12px;
+  min-height: 62px;
   border: 1px solid transparent;
-  border-radius: 7px;
-  background: var(--surface-douce);
+  border-radius: 9px;
+  border-color: var(--trait);
+  background: var(--surface);
   color: var(--encre);
   resize: vertical;
-  min-height: 0;
   line-height: 1.4;
 }
 
@@ -36,9 +37,9 @@
   flex: none;
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   cursor: pointer;
   color: var(--encre-douce);
   background: var(--surface);
@@ -73,7 +74,8 @@
 
 .etat {
   flex: none;
-  font-size: 11px;
+  align-self: center;
+  font-size: var(--texte-xs);
   color: var(--encre-tres-douce);
   white-space: nowrap;
 }
