@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oris — quelle police pour la barre de gauche</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Sora:wght@400;500;600&family=Outfit:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Figtree:wght@400;500;600;700&family=Schibsted+Grotesk:wght@400;500;600;700&family=Public+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Instrument+Serif:ital@0;1&family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&display=swap" rel="stylesheet">
+<style>
+:root{--fond:#f5f2ec;--surface:#fff;--encre:#1a1815;--encre-2:#544d44;--encre-3:#8a8073;
+  --trait:#e3dccf;--vert:#14533b;--vert-fonce:#0e3a29;--vert-menu-haut:#164a35;--argile:#a8540a;--creme:#f6f3ee}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fond);color:var(--encre);
+  font:400 16px/1.6 "Plus Jakarta Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+  padding:48px 30px 90px}
+main{max-width:1240px;margin:0 auto}
+h1{font-size:31px;margin:0 0 10px;letter-spacing:-.025em;font-weight:700}
+.chapo{color:var(--encre-2);max-width:640px;margin:0 0 12px}
+.aide{color:var(--encre-3);font-size:14px;max-width:640px;margin:0 0 40px}
+h2{font-size:12.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--encre-3);
+  margin:46px 0 18px;font-weight:700}
+.grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:22px}
+
+/* Une barre de gauche, à l'identique, seule la police change. */
+.essai{display:flex;flex-direction:column;gap:10px}
+.barre{height:472px;border-radius:18px;overflow:hidden;display:flex;flex-direction:column;
+  padding:22px 0 18px;color:#eef4f0;
+  background:linear-gradient(180deg,var(--vert-menu-haut),var(--vert-fonce));
+  box-shadow:0 2px 4px rgba(26,24,21,.08),0 18px 36px -22px rgba(14,58,41,.8)}
+.marque{display:flex;align-items:center;gap:11px;padding:0 20px 26px}
+.marque .mot{font-size:22px;font-weight:600;letter-spacing:-.03em;color:var(--creme)}
+.barre nav{display:grid;gap:3px;padding:0 11px}
+.barre a{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:11px;
+  color:#cfe0d7;font-size:16px;font-weight:500;letter-spacing:-.008em;text-decoration:none}
+.barre a.on{background:var(--creme);color:var(--vert-fonce);font-weight:600;
+  box-shadow:0 2px 6px -1px rgba(0,0,0,.28)}
+.barre a i{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.42;display:block}
+.barre a.on i{opacity:1;background:var(--argile)}
+.bas{margin-top:auto;padding:18px 20px 0;display:flex;align-items:center;gap:11px;
+  border-top:1px solid rgba(255,255,255,.12)}
+.jeton{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.14);
+  display:grid;place-items:center;font-size:13px;font-weight:600;color:var(--creme)}
+.bas b{display:block;font-size:14.5px;font-weight:600;color:var(--creme);letter-spacing:-.01em}
+.bas small{font-size:12.5px;color:#a8c0b4}
+.nom{font-size:14px;font-weight:600}
+.nom span{font-weight:400;color:var(--encre-3);font-size:13px;display:block;margin-top:1px}
+
+/* Chaque essai impose sa police à tout le bloc. */
+.f-instrument{font-family:"Instrument Sans",sans-serif}
+.f-jakarta{font-family:"Plus Jakarta Sans",sans-serif}
+.f-manrope{font-family:Manrope,sans-serif}
+.f-sora{font-family:Sora,sans-serif}
+.f-outfit{font-family:Outfit,sans-serif}
+.f-dm{font-family:"DM Sans",sans-serif}
+.f-figtree{font-family:Figtree,sans-serif}
+.f-schibsted{font-family:"Schibsted Grotesk",sans-serif}
+.f-public{font-family:"Public Sans",sans-serif}
+.f-bricolage{font-family:"Bricolage Grotesque",sans-serif}
+
+/* Le nom seul, en grand : c'est lui qui porte la marque. */
+.mots{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:18px}
+.mot-essai{background:var(--surface);border:1px solid var(--trait);border-radius:18px;padding:26px 22px;
+  text-align:center;box-shadow:inset 0 1px 0 #fff,0 1px 1px rgba(26,24,21,.05),0 12px 26px -18px rgba(26,24,21,.3)}
+.mot-essai .grand{font-size:46px;color:var(--vert);line-height:1.1;letter-spacing:-.03em}
+.mot-essai p{margin:14px 0 0;font-size:13px;color:var(--encre-3)}
+.mot-essai b{display:block;font-size:13.5px;color:var(--encre);font-weight:600;
+  font-family:"Plus Jakarta Sans",sans-serif;margin-bottom:2px}
+.s-fraunces{font-family:Fraunces,serif;font-weight:600}
+.s-instrument{font-family:"Instrument Serif",serif}
+.s-newsreader{font-family:Newsreader,serif;font-weight:600}
+.s-bricolage{font-family:"Bricolage Grotesque",sans-serif;font-weight:700}
+.s-sora{font-family:Sora,sans-serif;font-weight:600}
+.s-jakarta{font-family:"Plus Jakarta Sans",sans-serif;font-weight:700}
+.s-manrope{font-family:Manrope,sans-serif;font-weight:700}
+.s-dm{font-family:"DM Sans",sans-serif;font-weight:700}
+svg{display:block}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <g id="barres">
+    <rect x="13" y="38" width="10" height="34" rx="5"/><rect x="31" y="20" width="10" height="76" rx="5"/>
+    <rect x="49" y="30" width="10" height="48" rx="5"/><rect x="67" y="20" width="10" height="76" rx="5"/>
+    <rect x="85" y="38" width="10" height="34" rx="5"/>
+  </g>
+</defs></svg>
+
+<main>
+  <h1>Quelle police pour la barre de gauche</h1>
+  <p class="chapo">
+    Dix fois la même barre, au même corps, au même gras. Seul le caractère change.
+    Regardez les entrées du menu, pas le vert : c'est le dessin des lettres qu'on juge.
+  </p>
+  <p class="aide">
+    Ce qui se joue : l'ouverture des lettres (lisibilité à un mètre), la largeur
+    (est-ce que « Consultations » tient), et le registre — médical établi, instrument
+    de précision, ou logiciel contemporain.
+  </p>
+
+  <h2>Les dix</h2>
+  <div class="grille" id="grille"></div>
+
+  <h2>Le nom seul, en grand</h2>
+  <p class="aide" style="margin:-8px 0 18px">
+    C'est lui qui porte la marque. On peut très bien prendre une police pour le nom et
+    une autre pour le menu — c'est même ce que font la plupart des maisons.
+  </p>
+  <div class="mots" id="mots"></div>
+</main>
+
+<script>
+const POLICES = [
+  ["f-instrument","Instrument Sans","celle d'aujourd'hui — pour comparaison"],
+  ["f-jakarta","Plus Jakarta Sans","humaniste, lettres ouvertes, chaleureuse"],
+  ["f-manrope","Manrope","semi-géométrique, nette, un peu technique"],
+  ["f-sora","Sora","géométrique affirmée, se remarque"],
+  ["f-outfit","Outfit","géométrique douce, très ronde"],
+  ["f-dm","DM Sans","neutre suisse, sobre, passe partout"],
+  ["f-figtree","Figtree","amicale, terminaisons souples"],
+  ["f-schibsted","Schibsted Grotesk","grotesque nordique, dense et franche"],
+  ["f-public","Public Sans","administrative américaine, très lisible"],
+  ["f-bricolage","Bricolage Grotesque","contrastée, caractère marqué"]
+];
+const ENTREES = ["Accueil","Patients","Consultations","Documents","Oris apprend","Paramètres"];
+
+document.getElementById('grille').innerHTML = POLICES.map(([cl,nom,desc]) => `
+  <div class="essai">
+    <div class="barre ${cl}">
+      <div class="marque">
+        <svg viewBox="0 0 120 120" width="28" height="28" fill="#f6f3ee"><use href="#barres"/></svg>
+        <span class="mot">Oris</span>
+      </div>
+      <nav>${ENTREES.map((e,i)=>`<a class="${i===2?'on':''}" href="#"><i></i>${e}</a>`).join('')}</nav>
+      <div class="bas">
+        <span class="jeton">FM</span>
+        <span><b>Dr Franck Moyal</b><small>Cabinet des Lilas</small></span>
+      </div>
+    </div>
+    <p class="nom">${nom}<span>${desc}</span></p>
+  </div>`).join('');
+
+const NOMS = [
+  ["s-fraunces","Fraunces","empattements modernes, chaleur et autorité"],
+  ["s-instrument","Instrument Serif","empattements fins, élégance de revue"],
+  ["s-newsreader","Newsreader","empattements de presse, sérieux calme"],
+  ["s-bricolage","Bricolage Grotesque","sans-serif contrastée, très personnelle"],
+  ["s-sora","Sora","géométrique, technologique"],
+  ["s-jakarta","Plus Jakarta Sans","humaniste, franche"],
+  ["s-manrope","Manrope","nette, contemporaine"],
+  ["s-dm","DM Sans","neutre, discrète"]
+];
+document.getElementById('mots').innerHTML = NOMS.map(([cl,nom,desc]) => `
+  <div class="mot-essai">
+    <div class="grand ${cl}">Oris</div>
+    <p><b>${nom}</b>${desc}</p>
+  </div>`).join('');
+</script>
+</body>
+</html>
