@@ -143,6 +143,7 @@ def generate(
             "document.generated",
             "document",
             document.id,
+            organization_id=encounter.organization_id,
             object_version=obj.object_version,
             version=version.version,
         )
@@ -157,10 +158,19 @@ def generate(
 
 
 def mark_outdated(session: Session, encounter_id: UUID) -> None:
+    encounter = session.get(Encounter, encounter_id)
+    organization_id = encounter.organization_id if encounter else None
     for document in list_documents(session, encounter_id):
         if document.status != "superseded":
             document.status = "outdated"
-            audit.record(session, None, "document.outdated", "document", document.id)
+            audit.record(
+                session,
+                None,
+                "document.outdated",
+                "document",
+                document.id,
+                organization_id=organization_id,
+            )
     session.flush()
 
 

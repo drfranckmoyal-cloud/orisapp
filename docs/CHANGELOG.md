@@ -1,5 +1,19 @@
 # Changelog
 
+## M10 — 2026-09-20 — sécurisation
+- **jetons d'accès** par praticien (`Authorization: Bearer`), empreinte scrypt salée,
+  révocation immédiate ; `scripts/issue_token.py` pour créer, lister, révoquer ;
+- **aucune route métier sans jeton** hors développement : il n'existe pas de mode ouvert ;
+- **journal d'audit lisible** (`GET /audit`) : identifiants, actions, statuts et versions,
+  jamais une phrase clinique — un test échoue si un mot clinique y entre ;
+- défaut corrigé : les actions du système (génération, purge) étaient enregistrées sans
+  organisation et n'apparaissaient donc pas dans le journal ;
+- **purge du son rejouable et observable** (`POST /maintenance/audio-purge`) : une panne
+  de stockage n'interrompt pas la passe et ressort dans le rapport ;
+- `docs/SECURITY.md` distingue désormais ce qui est fait de ce qui relève de
+  l'hébergement (MFA, chiffrement au repos, sauvegardes, HDS, tests de charge) ;
+- migration 0005 ; tests : API 255.
+
 ## M9 — 2026-09-20 — personnalisation
 - **dictionnaire du praticien** (`learning.glossary_terms`, migration 0004) : marques,
   produits et termes propres au cabinet, soufflés à la transcription **et** à

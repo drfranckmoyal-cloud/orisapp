@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import hashlib
+import logging
+from collections.abc import Collection
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Literal
+from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -20,9 +23,13 @@ from oris_api.services.audio_sink import AudioSink
 from oris_api.services.errors import Conflict, NotFound, Unprocessable
 from oris_api.services.identity import Actor
 
+logger = logging.getLogger("oris.audio")
+
 AUDIO_FORMAT = "audio/pcm;rate=16000;channels=1;encoding=s16le"
 BYTES_PER_MS = 32  # 16 000 échantillons/s × 2 octets / 1 000
 CAPTURING = frozenset({"recording", "paused"})
+# Consultations dont le son n'a plus lieu d'être : le traitement est passé (D010).
+PROCESSED_STATUSES = frozenset({"review", "validated", "exported", "archived", "generation_failed"})
 GapReason = Literal[
     "microphone_lost",
     "page_reloaded",
@@ -222,5 +229,69 @@ def purge(session: Session, sink: AudioSink, encounter: Encounter) -> None:
     sink.purge(audio_session.id)
     audio_session.purge_status = "purged"
     audio_session.purged_at = datetime.now(UTC)
-    audit.record(session, None, "audio.purged", "encounter", encounter.id)
+    audit.record(
+        session,
+        None,
+        "audio.purged",
+        "encounter",
+        encounter.id,
+        organization_id=encounter.organization_id,
+    )
     session.flush()
+
+
+@dataclass(frozen=True)
+class PurgeReport:
+    """Ce qu'une passe de purge a fait, et ce qu'elle n'a pas pu faire."""
+
+    purged: list[UUID]
+    failed: list[UUID]
+    remaining: int
+
+
+def purge_pending(
+    session: Session, sink: AudioSink, statuses: Collection[str] = PROCESSED_STATUSES
+) -> PurgeReport:
+    """Purge le son des consultations déjà traitées (D010).
+
+    Rejouable : une session déjà purgée est ignorée, un échec n'interrompt pas la passe
+    et ressort dans le rapport. Observable : chaque purge laisse une trace d'audit.
+    """
+    rows = session.scalars(
+        select(AudioSession)
+        .join(Encounter, Encounter.id == AudioSession.encounter_id)
+        .where(AudioSession.purge_status != "purged", Encounter.status.in_(statuses))
+    )
+    purged: list[UUID] = []
+    failed: list[UUID] = []
+    for row in rows:
+        try:
+            sink.purge(row.id)
+        except Exception:
+            failed.append(row.encounter_id)
+            logger.warning("audio.purge_failed", extra={"encounter_id": str(row.encounter_id)})
+            continue
+        row.purge_status = "purged"
+        row.purged_at = datetime.now(UTC)
+        encounter = session.get(Encounter, row.encounter_id)
+        audit.record(
+            session,
+            None,
+            "audio.purged",
+            "encounter",
+            row.encounter_id,
+            organization_id=encounter.organization_id if encounter else None,
+            job="purge",
+        )
+        purged.append(row.encounter_id)
+    session.flush()
+    remaining = (
+        session.scalar(
+            select(func.count())
+            .select_from(AudioSession)
+            .join(Encounter, Encounter.id == AudioSession.encounter_id)
+            .where(AudioSession.purge_status != "purged", Encounter.status.in_(statuses))
+        )
+        or 0
+    )
+    return PurgeReport(purged=purged, failed=failed, remaining=remaining)

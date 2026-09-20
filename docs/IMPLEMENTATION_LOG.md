@@ -525,6 +525,45 @@ en vrai dans le navigateur intégré, pas seulement supposé.
 Les intitulés de section ne sont pas devinés à la mise en page : la liste vient du
 rédacteur (`SECTION_ORDER`), sinon une phrase en majuscules deviendrait un titre.
 
+## M10 — sécurisation (2026-09-20)
+
+Critères visés (`IMPLEMENTATION_PLAN` M10, `docs/SECURITY.md`) : journal d'audit,
+observabilité sans PHI, authentification, purge de l'audio observable et rejouable,
+récupération après panne. Ce qui relève de l'hébergement (HDS, sauvegardes chiffrées,
+MFA d'un fournisseur d'identité) n'est pas du code et reste hors de ce jalon : il est
+listé comme tel, pas coché en douce.
+
+Modules :
+- `db/models.py` + migration `0005` : `api_tokens` (jeton d'accès par praticien,
+  empreinte seule, jamais le secret) ;
+- `services/authentication.py` (nouveau) : émission, vérification, révocation ;
+- `api/dependencies.py` : hors `local`/`test`, aucune route métier sans jeton valide ;
+- `scripts/issue_token.py` : créer un jeton, affiché une seule fois ;
+- `services/audio.py` : purge rejouable des sessions restées avec du son ;
+- `api/audit.py` : lecture du journal (identifiants et actions, jamais de contenu).
+
+### Résultat M10
+
+**Authentification.** `Authorization: Bearer oris_…`. La base ne contient qu'une
+empreinte scrypt salée : un vol de base ne rend aucun jeton utilisable. La comparaison
+est en temps constant, et un jeton sans le préfixe est refusé avant toute lecture de
+base. `scripts/issue_token.py` crée, liste et révoque ; le secret n'est affiché qu'une
+fois. En `local`/`test`, l'identité de démonstration reste acceptée **tant qu'aucun
+jeton n'est présenté** — ailleurs, il n'existe aucun mode ouvert, c'est testé.
+
+Ce n'est pas du MFA : le second facteur viendra d'un fournisseur d'identité au moment de
+l'hébergement agréé. Écrit tel quel dans `docs/SECURITY.md` et dans les limites connues.
+
+**Journal d'audit.** Défaut trouvé au passage : les actions du système (génération d'un
+document, purge du son) étaient enregistrées sans organisation, donc **invisibles** dans
+le journal du praticien. Corrigé : `audit.record` accepte l'organisation pour les actions
+sans acteur. Le test vérifie que le journal contient bien ces actions, et qu'aucun mot
+clinique n'apparaît dans les détails.
+
+**Purge du son.** `purge_pending` repasse sur les consultations déjà traitées : une
+session déjà purgée est ignorée, une panne de stockage n'interrompt pas la passe et
+ressort dans le rapport (`purged`, `failed`, `remaining`). Rejouable sans risque.
+
 ## M9 — personnalisation (2026-09-20)
 
 Critères visés (`IMPLEMENTATION_PLAN` M9, spec §53–54, §120, §123, §124, §176–178) :

@@ -505,3 +505,23 @@ class GlossaryTermRow(Base):
     scope: Mapped[str] = mapped_column(String(20), default="user")
     created_at: Mapped[datetime] = created_at()
     updated_at: Mapped[datetime] = updated_at()
+
+
+class ApiToken(Base):
+    """Jeton d'accès d'un praticien (docs/SECURITY.md).
+
+    Seule l'empreinte est stockée : un vol de base ne rend aucun jeton utilisable.
+    Un jeton se révoque ; il ne se modifie pas.
+    """
+
+    __tablename__ = "api_tokens"
+
+    id: Mapped[UUID] = uuid_pk()
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    label: Mapped[str] = mapped_column(String(100))
+    # scrypt(secret, sel) — ni le secret ni un condensé réversible.
+    token_hash: Mapped[str] = mapped_column(String(255), unique=True)
+    salt: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = created_at()
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

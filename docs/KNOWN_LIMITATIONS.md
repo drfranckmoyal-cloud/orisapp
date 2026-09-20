@@ -105,6 +105,11 @@
   correspondance stricte concept + dents : le modèle découpe l'information plus finement
   que le corpus et nomme parfois autrement. Ce n'est pas de l'invention (aucune dent
   inventée), mais la mesure est sévère ; à revoir avec une correspondance sémantique.
+- **Pas de deuxième facteur d'authentification** : un jeton suffit à ouvrir l'API. Le MFA
+  viendra du fournisseur d'identité, à l'hébergement.
+- Pas de chiffrement au repos, pas de sauvegardes chiffrées ni d'exercice de restauration,
+  pas de séparation dev/staging/production : rien de tout cela n'est du code, et rien
+  n'est prêt pour un patient réel.
 - Les préférences de rédaction ne portent que sur le compte rendu de consultation : le
   plan et le compte rendu de soins gardent la formulation d'Oris.
 - Le style télégraphique prévu par la spécification (§53) n'est pas encore rendu : seules

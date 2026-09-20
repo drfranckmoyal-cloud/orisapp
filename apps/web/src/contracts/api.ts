@@ -609,6 +609,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Audit
+         * @description Qui a fait quoi, quand. Réservé aux consultations de l'organisation du praticien.
+         */
+        get: operations["read_audit_audit_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/maintenance/audio-purge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Run Audio Purge
+         * @description Repasse la purge du son sur les consultations déjà traitées. Rejouable sans risque.
+         */
+        post: operations["run_audio_purge_maintenance_audio_purge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -667,6 +707,34 @@ export interface components {
             purged_at: string | null;
             /** Last Received At */
             last_received_at: string | null;
+        };
+        /** AuditEventOut */
+        AuditEventOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Action */
+            action: string;
+            /** Entity Type */
+            entity_type: string;
+            /**
+             * Entity Id
+             * Format: uuid
+             */
+            entity_id: string;
+            /** Actor User Id */
+            actor_user_id: string | null;
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
         };
         /** ChunkReceiptOut */
         ChunkReceiptOut: {
@@ -1245,6 +1313,15 @@ export interface components {
             document_generation: string;
             /** Clinical Validation */
             clinical_validation: string;
+        };
+        /** PurgeReportOut */
+        PurgeReportOut: {
+            /** Purged */
+            purged: string[];
+            /** Failed */
+            failed: string[];
+            /** Remaining */
+            remaining: number;
         };
         /** ReadinessResponse */
         ReadinessResponse: {
@@ -2694,6 +2771,58 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SuggestionOut"][];
+                };
+            };
+        };
+    };
+    read_audit_audit_get: {
+        parameters: {
+            query?: {
+                encounter_id?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditEventOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_audio_purge_maintenance_audio_purge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurgeReportOut"];
                 };
             };
         };

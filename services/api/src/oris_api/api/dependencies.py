@@ -11,7 +11,9 @@ from sqlalchemy.orm import Session
 from oris_api.config import Settings, get_settings
 from oris_api.db.session import get_session
 from oris_api.providers import ProviderSet
+from oris_api.services import authentication
 from oris_api.services.audio_sink import AudioSink
+from oris_api.services.errors import Forbidden
 from oris_api.services.identity import Actor, demo_actor
 
 
@@ -29,9 +31,23 @@ SessionDep = Annotated[Session, Depends(transactional_session)]
 
 
 def current_actor(
-    session: SessionDep, settings: Annotated[Settings, Depends(get_settings)]
+    request: Request,
+    session: SessionDep,
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> Actor:
-    return demo_actor(session, settings)
+    """Praticien de la requête.
+
+    En développement (`local`, `test`), l'identité de démonstration suffit tant qu'aucun
+    jeton n'est présenté. Partout ailleurs, un jeton valide est exigé : il n'y a pas de
+    mode « ouvert » en production (docs/SECURITY.md).
+    """
+    header = request.headers.get("authorization", "")
+    presented = header[7:].strip() if header.lower().startswith("bearer ") else ""
+    if presented:
+        return authentication.actor_for(session, presented)
+    if settings.app_env in {"local", "test"}:
+        return demo_actor(session, settings)
+    raise Forbidden("AUTHENTICATION_REQUIRED")
 
 
 def providers(request: Request) -> ProviderSet:

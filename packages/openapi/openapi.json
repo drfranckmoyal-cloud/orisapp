@@ -1803,6 +1803,95 @@
           }
         }
       }
+    },
+    "/audit": {
+      "get": {
+        "tags": [
+          "entretien"
+        ],
+        "summary": "Read Audit",
+        "description": "Qui a fait quoi, quand. Réservé aux consultations de l'organisation du praticien.",
+        "operationId": "read_audit_audit_get",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Encounter Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditEventOut"
+                  },
+                  "title": "Response Read Audit Audit Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maintenance/audio-purge": {
+      "post": {
+        "tags": [
+          "entretien"
+        ],
+        "summary": "Run Audio Purge",
+        "description": "Repasse la purge du son sur les consultations déjà traitées. Rejouable sans risque.",
+        "operationId": "run_audio_purge_maintenance_audio_purge_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurgeReportOut"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1997,6 +2086,61 @@
           "last_received_at"
         ],
         "title": "AudioSessionOut"
+      },
+      "AuditEventOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "entity_type": {
+            "type": "string",
+            "title": "Entity Type"
+          },
+          "entity_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Entity Id"
+          },
+          "actor_user_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor User Id"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "action",
+          "entity_type",
+          "entity_id",
+          "actor_user_id",
+          "details",
+          "occurred_at"
+        ],
+        "title": "AuditEventOut"
       },
       "ChunkReceiptOut": {
         "properties": {
@@ -3690,6 +3834,37 @@
           "clinical_validation"
         ],
         "title": "ProviderStatus"
+      },
+      "PurgeReportOut": {
+        "properties": {
+          "purged": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Purged"
+          },
+          "failed": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Failed"
+          },
+          "remaining": {
+            "type": "integer",
+            "title": "Remaining"
+          }
+        },
+        "type": "object",
+        "required": [
+          "purged",
+          "failed",
+          "remaining"
+        ],
+        "title": "PurgeReportOut"
       },
       "ReadinessResponse": {
         "properties": {
