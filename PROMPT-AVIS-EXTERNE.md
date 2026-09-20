@@ -88,7 +88,7 @@ au quotidien.
 
 *(Précision technique, pour que personne ne sur-promette : « adaptatif » veut dire que
 le dictionnaire, les mots préférés et le style du praticien sont transmis à chaque
-traitement. **Aucun modèle n'est réentraîné sur les consultations.**)*
+traitement, et que ce qu'il corrige reste dans son propre profil.)*
 
 ---
 

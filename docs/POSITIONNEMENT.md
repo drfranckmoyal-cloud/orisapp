@@ -72,10 +72,9 @@ pas :
   façon dont c'est rédigé.
 - Oris **propose** une règle après plusieurs corrections allant dans le même sens.
   Il ne l'installe jamais de lui-même : le praticien l'adopte, et peut la défaire.
-- **Aucun modèle n'est réentraîné sur vos consultations.** Ce que vous corrigez
-  n'alimente aucun apprentissage hors de votre propre profil. C'est un point que le
-  cadrage interdit explicitement de franchir, et un point qu'un praticien prudent
-  demandera : mieux vaut pouvoir y répondre franchement.
+- Ce que le praticien corrige reste **dans son propre profil** : une préférence ou un
+  terme appris ne devient jamais une règle pour quelqu'un d'autre sans décision
+  explicite.
 
 Formulation sûre en clientèle : « Oris apprend **de vous, pour vous** — votre
-vocabulaire et votre style. Vos consultations n'entraînent aucun modèle. »
+vocabulaire et votre style. »
