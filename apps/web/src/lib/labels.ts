@@ -146,7 +146,9 @@ export const PROCESSING_RULE: Record<string, string> = {
   STT_UNAVAILABLE:
     "Le service de transcription n’a pas répondu. L’audio est conservé : relancez le traitement plus tard.",
   NO_TRANSCRIPT:
-    "Aucune transcription : le moteur de transcription automatique n’est pas encore branché (étape M4). Aucun document ne peut être rédigé.",
+    "Aucune parole n’a été reconnue dans l’enregistrement : rien n’a pu être rédigé. Vérifiez que le micro capte bien les deux voix, puis refaites un essai.",
+  SPEAKER_ROLES_UNKNOWN:
+    "Les voix n’ont pas pu être attribuées avec certitude : vérifiez qui a dit quoi.",
 };
 
 export function formatDuration(ms: number): string {

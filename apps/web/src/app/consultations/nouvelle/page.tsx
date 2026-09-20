@@ -1,36 +1,49 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { ApiError, apiRequest, type Encounter, type Patient, type SyntheticCase } from "@/lib/api";
+import {
+  ApiError,
+  apiRequest,
+  type Encounter,
+  type Patient,
+  type SyntheticCase,
+} from "@/lib/api";
 import { DOMAIN, errorMessage } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
+/** Démarrer une consultation : un nom, un bouton, l'écoute. Rien d'autre à décider. */
 export default function NewConsultationPage() {
   const router = useRouter();
   const [cases] = useApi<SyntheticCase[]>("/synthetic-cases");
-  const [patients] = useApi<Patient[]>("/patients");
-  const [patientId, setPatientId] = useState("");
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function prepareListening() {
+  async function startListening() {
+    setBusy(true);
     setError(null);
+    const written = name.trim() || "Patient d’essai";
+    const [first, ...rest] = written.split(/\s+/);
     try {
+      const patient = await apiRequest<Patient>("/patients", {
+        method: "POST",
+        body: { first_name: first, last_name: rest.join(" ") || "—" },
+      });
       const encounter = await apiRequest<Encounter>("/encounters", {
         method: "POST",
-        body: { patient_id: patientId },
+        body: { patient_id: patient.id },
       });
       router.push(`/consultations/${encounter.id}/ecoute`);
     } catch (caught) {
       setError(errorMessage(caught instanceof ApiError ? caught.code : "UNKNOWN"));
+      setBusy(false);
     }
   }
-  const [running, setRunning] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
-  async function run(caseId: string) {
-    setRunning(caseId);
+  async function runSynthetic(caseId: string) {
+    setBusy(true);
     setError(null);
     try {
       const encounter = await apiRequest<Encounter>(`/synthetic-cases/${caseId}/encounters`, {
@@ -39,7 +52,7 @@ export default function NewConsultationPage() {
       router.push(`/consultations/${encounter.id}`);
     } catch (caught) {
       setError(errorMessage(caught instanceof ApiError ? caught.code : "UNKNOWN"));
-      setRunning(null);
+      setBusy(false);
     }
   }
 
@@ -52,89 +65,75 @@ export default function NewConsultationPage() {
 
   return (
     <div className="page">
-      <header>
-        <h1>Nouvelle consultation</h1>
-        <p className="subtitle">Mode démonstration</p>
+      <header className="page-header">
+        <div>
+          <p className="subtitle">Données fictives uniquement</p>
+          <h1>Démarrer une consultation</h1>
+        </div>
       </header>
 
       <section className="card" aria-labelledby="micro-heading">
-        <h2 id="micro-heading">Consultation au micro</h2>
+        <h2 id="micro-heading">Au micro</h2>
         <p className="muted">
-          L’audio est capté, envoyé et contrôlé. La transcription automatique n’est pas encore
-          branchée (étape M4) : aucun document ne sera rédigé à partir du micro pour l’instant.
+          Oris écoute, transcrit, puis rédige le compte rendu. Le son est supprimé dès que
+          la transcription a abouti.
         </p>
-        {patients.state === "ready" && patients.data.length === 0 ? (
-          <p className="muted">
-            Aucun patient : <Link href="/patients">créez d’abord un patient fictif</Link>.
-          </p>
-        ) : (
-          <div className="form-row">
-            <label className="field">
-              Patient
-              <select className="input" value={patientId} onChange={(event) => setPatientId(event.target.value)}>
-                <option value="">Choisir…</option>
-                {patients.state === "ready" &&
-                  patients.data.map((patient) => (
-                    <option key={patient.id} value={patient.id}>
-                      {patient.last_name} {patient.first_name}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <button type="button" className="button button-primary" disabled={!patientId} onClick={prepareListening}>
-              Préparer l’écoute
-            </button>
+        <form
+          className="form-row"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void startListening();
+          }}
+        >
+          <label className="field" style={{ minWidth: 260 }}>
+            Nom du patient (inventé)
+            <input
+              className="input"
+              value={name}
+              placeholder="Patient d’essai"
+              autoFocus
+              onChange={(event) => setName(event.target.value)}
+            />
+          </label>
+          <button type="submit" className="button button-large" disabled={busy}>
+            {busy ? "Préparation…" : "Démarrer l’écoute"}
+          </button>
+        </form>
+        {error && (
+          <div className="banner banner-critical" role="alert">
+            {error}
           </div>
         )}
       </section>
 
-      <div className="banner banner-info">
-        Démonstration : choisissez une consultation fictive du corpus. Oris la traite comme une
-        vraie (transcription, faits, documents).
-      </div>
-
-      {error && (
-        <div className="banner banner-critical" role="alert">
-          {error}
-        </div>
-      )}
-      {cases.state === "loading" && <p className="muted">Chargement…</p>}
-      {cases.state === "error" && <p className="muted">{errorMessage(cases.code)}</p>}
-
-      {[...grouped.entries()].map(([domain, items]) => (
-        <section key={domain} className="card" aria-labelledby={`domain-${domain}`}>
-          <h2 id={`domain-${domain}`}>{DOMAIN[domain] ?? domain}</h2>
-          <table className="table">
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.case_id}>
-                  <td>{item.case_id}</td>
-                  <td>
-                    {item.patient_first_name} {item.patient_last_name}
-                  </td>
-                  <td>
-                    {item.tags.map((tag) => (
-                      <span key={tag} className="chip" style={{ marginRight: 4 }}>
-                        {tag}
-                      </span>
-                    ))}
-                  </td>
-                  <td style={{ textAlign: "right" }}>
-                    <button
-                      type="button"
-                      className="button button-secondary"
-                      disabled={running !== null}
-                      onClick={() => run(item.case_id)}
-                    >
-                      {running === item.case_id ? "Traitement…" : "Lancer"}
-                    </button>
-                  </td>
-                </tr>
+      <details className="card">
+        <summary>
+          <strong>Essayer sans parler</strong> — rejouer une consultation fictive écrite
+          pour les tests
+        </summary>
+        <p className="muted" style={{ marginTop: 12 }}>
+          Oris la traite comme une vraie : transcription, faits, documents. Utile pour voir
+          le résultat sans micro.
+        </p>
+        {[...grouped.entries()].map(([domain, items]) => (
+          <div key={domain} style={{ marginTop: 16 }}>
+            <h3>{DOMAIN[domain] ?? domain}</h3>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {items.slice(0, 6).map((item) => (
+                <button
+                  key={item.case_id}
+                  type="button"
+                  className="button button-secondary"
+                  disabled={busy}
+                  onClick={() => void runSynthetic(item.case_id)}
+                >
+                  {item.patient_first_name} {item.patient_last_name}
+                </button>
               ))}
-            </tbody>
-          </table>
-        </section>
-      ))}
+            </div>
+          </div>
+        ))}
+      </details>
     </div>
   );
 }

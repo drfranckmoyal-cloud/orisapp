@@ -181,7 +181,11 @@ Liste complète : `docs/KNOWN_LIMITATIONS.md`. Les quatre plus importantes :
 
 ## 7. Lancer Oris sur le Mac
 
-Je lance ces commandes moi-même quand vous me le demandez. Pour mémoire :
+**Double-cliquez `lancer-oris.command`** : base de données, serveur, site, navigateur.
+Pour arrêter : `arreter-oris.command`. Le mode d'emploi de l'essai est dans
+`docs/UTILISER_ORIS.md`.
+
+Les commandes, pour mémoire :
 
 ```bash
 services/api/.venv/bin/python scripts/dev_postgres.py start   # base de données

@@ -44,3 +44,4 @@ xcuserdata/
 
 # Banc d essai : rapports de contrôle locaux
 benchmarks/reports/checks/
+logs/
