@@ -1,8 +1,9 @@
 "use client";
 
+import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
 
+import { Bouton, Carte, Champ, EnTetePage, Squelette } from "@/components/ui";
 import {
   ApiError,
   apiRequest,
@@ -13,19 +14,44 @@ import {
 import { DOMAIN, errorMessage } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
-/** Démarrer une consultation : un nom, un bouton, l'écoute. Rien d'autre à décider. */
-export default function NewConsultationPage() {
+function sansAccents(texte: string): string {
+  return texte
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+}
+
+/** Démarrer une consultation : choisir le patient, appuyer sur Commencer (S04). */
+function Formulaire() {
   const router = useRouter();
+  const parametres = useSearchParams();
   const [cases] = useApi<SyntheticCase[]>("/synthetic-cases");
   const [patients] = useApi<Patient[]>("/patients");
+  const [patientChoisi, setPatientChoisi] = useState(parametres.get("patient") ?? "");
+  const [recherche, setRecherche] = useState("");
   const [prenom, setPrenom] = useState("");
   const [nom, setNom] = useState("");
-  const parametres = useSearchParams();
-  const [patientChoisi, setPatientChoisi] = useState(parametres.get("patient") ?? "");
+  const [nouveau, setNouveau] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function startListening() {
+  const liste = useMemo(
+    () => (patients.state === "ready" ? patients.data : []),
+    [patients],
+  );
+  const trouves = useMemo(() => {
+    const cherche = sansAccents(recherche.trim());
+    if (!cherche) return liste.slice(0, 8);
+    return liste
+      .filter((patient) =>
+        sansAccents(`${patient.first_name} ${patient.last_name}`).includes(cherche),
+      )
+      .slice(0, 8);
+  }, [liste, recherche]);
+  const selectionne = liste.find((patient) => patient.id === patientChoisi);
+  const pret = Boolean(patientChoisi) || (nouveau && prenom.trim() !== "" && nom.trim() !== "");
+
+  async function commencer() {
     setBusy(true);
     setError(null);
     try {
@@ -34,10 +60,7 @@ export default function NewConsultationPage() {
         (
           await apiRequest<Patient>("/patients", {
             method: "POST",
-            body: {
-              first_name: prenom.trim() || "Patient",
-              last_name: nom.trim() || "Test",
-            },
+            body: { first_name: prenom.trim(), last_name: nom.trim() },
           })
         ).id;
       const encounter = await apiRequest<Encounter>("/encounters", {
@@ -51,7 +74,7 @@ export default function NewConsultationPage() {
     }
   }
 
-  async function runSynthetic(caseId: string) {
+  async function rejouer(caseId: string) {
     setBusy(true);
     setError(null);
     try {
@@ -65,114 +88,138 @@ export default function NewConsultationPage() {
     }
   }
 
-  const grouped = new Map<string, SyntheticCase[]>();
+  const parDomaine = new Map<string, SyntheticCase[]>();
   if (cases.state === "ready") {
     for (const item of cases.data) {
-      grouped.set(item.domain, [...(grouped.get(item.domain) ?? []), item]);
+      parDomaine.set(item.domain, [...(parDomaine.get(item.domain) ?? []), item]);
     }
   }
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <div>
-          <p className="subtitle">Données fictives uniquement</p>
-          <h1>Démarrer une consultation</h1>
-        </div>
-      </header>
+    <>
+      <EnTetePage surTitre="Données fictives uniquement" titre="Nouvelle consultation" />
 
-      <section className="card" aria-labelledby="micro-heading">
-        <h2 id="micro-heading">Au micro</h2>
-        <p className="muted">
-          Oris écoute, transcrit, puis rédige le compte rendu. Le son est supprimé dès que
-          la transcription a abouti.
-        </p>
-        <form
-          className="form-row"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void startListening();
-          }}
-        >
-          {patients.state === "ready" && patients.data.length > 0 && (
-            <label className="field" style={{ minWidth: 240 }}>
-              Patient suivi
-              <select
-                className="input"
-                value={patientChoisi}
-                onChange={(event) => setPatientChoisi(event.target.value)}
-              >
-                <option value="">Nouveau patient…</option>
-                {patients.data.map((patient) => (
-                  <option key={patient.id} value={patient.id}>
-                    {patient.first_name} {patient.last_name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          {!patientChoisi && (
-            <>
-              <label className="field">
-                Prénom
-                <input
-                  className="input"
-                  value={prenom}
-                  placeholder="Patient"
-                  autoFocus
-                  onChange={(event) => setPrenom(event.target.value)}
-                />
-              </label>
-              <label className="field">
-                Nom
-                <input
-                  className="input"
-                  value={nom}
-                  placeholder="Test"
-                  onChange={(event) => setNom(event.target.value)}
-                />
-              </label>
-            </>
-          )}
-          <button type="submit" className="button button-large" disabled={busy}>
-            {busy ? "Préparation…" : "Démarrer l’écoute"}
-          </button>
-        </form>
-        {error && (
-          <div className="banner banner-critical" role="alert">
-            {error}
+      <Carte titre="Qui allez-vous recevoir ?">
+        {patients.state === "loading" && <Squelette lignes={3} />}
+        {patients.state === "ready" && !nouveau && (
+          <div style={{ display: "grid", gap: "var(--espace-3)" }}>
+            <Champ
+              type="search"
+              placeholder="Chercher un patient"
+              value={recherche}
+              autoFocus
+              onChange={(event) => setRecherche(event.target.value)}
+            />
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {trouves.map((patient) => (
+                <Bouton
+                  key={patient.id}
+                  type="button"
+                  variante={patient.id === patientChoisi ? "principal" : "secondaire"}
+                  onClick={() => setPatientChoisi(patient.id)}
+                >
+                  {patient.first_name} {patient.last_name}
+                </Bouton>
+              ))}
+              {trouves.length === 0 && (
+                <p className="muted" style={{ margin: 0 }}>
+                  Aucun patient à ce nom.
+                </p>
+              )}
+            </div>
+            <Bouton
+              type="button"
+              variante="discret"
+              onClick={() => {
+                setNouveau(true);
+                setPatientChoisi("");
+              }}
+            >
+              C’est un nouveau patient
+            </Bouton>
           </div>
         )}
-      </section>
+        {nouveau && (
+          <div style={{ display: "grid", gap: "var(--espace-3)", maxWidth: 420 }}>
+            <label className="field">
+              Prénom
+              <Champ value={prenom} autoFocus onChange={(e) => setPrenom(e.target.value)} />
+            </label>
+            <label className="field">
+              Nom
+              <Champ value={nom} onChange={(e) => setNom(e.target.value)} />
+            </label>
+            <Bouton type="button" variante="discret" onClick={() => setNouveau(false)}>
+              Revenir à la liste
+            </Bouton>
+          </div>
+        )}
+      </Carte>
 
-      <details className="card">
-        <summary>
-          <strong>Essayer sans parler</strong> — rejouer une consultation fictive écrite
-          pour les tests
-        </summary>
-        <p className="muted" style={{ marginTop: 12 }}>
-          Oris la traite comme une vraie : transcription, faits, documents. Utile pour voir
-          le résultat sans micro.
+      <Carte>
+        <div style={{ display: "grid", gap: "var(--espace-3)" }}>
+          <p className="muted" style={{ margin: 0 }}>
+            Oris écoute, transcrit, puis rédige le compte rendu.
+            {selectionne
+              ? ` Consultation de ${selectionne.first_name} ${selectionne.last_name}.`
+              : ""}{" "}
+            Le son est supprimé dès que la transcription a abouti.
+          </p>
+          <div>
+            <Bouton
+              type="button"
+              grand
+              disabled={busy || !pret}
+              onClick={() => void commencer()}
+            >
+              {busy ? "Préparation…" : "Commencer"}
+            </Bouton>
+          </div>
+          {!pret && (
+            <p className="muted" style={{ margin: 0 }}>
+              Choisissez d’abord un patient.
+            </p>
+          )}
+          {error && (
+            <div className="banner banner-critical" role="alert">
+              {error}
+            </div>
+          )}
+        </div>
+      </Carte>
+
+      <Carte titre="Essayer sans parler">
+        <p className="muted" style={{ marginTop: 0 }}>
+          Une consultation fictive, écrite pour les tests, qu’Oris traite comme une vraie :
+          transcription, faits, documents. Utile pour voir le résultat sans micro.
         </p>
-        {[...grouped.entries()].map(([domain, items]) => (
-          <div key={domain} style={{ marginTop: 16 }}>
-            <h3>{DOMAIN[domain] ?? domain}</h3>
+        {[...parDomaine.entries()].map(([domaine, items]) => (
+          <div key={domaine} style={{ marginTop: "var(--espace-3)" }}>
+            <h3 style={{ margin: "0 0 8px" }}>{DOMAIN[domaine] ?? domaine}</h3>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {items.slice(0, 6).map((item) => (
-                <button
+                <Bouton
                   key={item.case_id}
                   type="button"
-                  className="button button-secondary"
+                  variante="secondaire"
                   disabled={busy}
-                  onClick={() => void runSynthetic(item.case_id)}
+                  onClick={() => void rejouer(item.case_id)}
                 >
                   {item.patient_first_name} {item.patient_last_name}
-                </button>
+                </Bouton>
               ))}
             </div>
           </div>
         ))}
-      </details>
-    </div>
+      </Carte>
+    </>
+  );
+}
+
+export default function NouvelleConsultationPage() {
+  return (
+    <Suspense fallback={<Squelette lignes={5} />}>
+      <Formulaire />
+    </Suspense>
   );
 }

@@ -49,6 +49,8 @@ jobs:
           python-version: "3.13"
           cache: pip
           cache-dependency-path: services/api/pyproject.toml
+      # Conversion du son des séances jouées : sur macOS c'est afconvert, ici ffmpeg.
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
       - run: pip install -e ".[dev]"
       - run: ruff check .
       - run: ruff format --check .

@@ -10,6 +10,7 @@ import type {
   LearningEventView,
   TranscriptView,
 } from "@/lib/api";
+import { fiabiliteDe } from "@/lib/fiabilite";
 import { LEARNING_EVENT, correctionDetail, formatDateTime } from "@/lib/labels";
 
 import { FactChips } from "./FactChips";
@@ -54,6 +55,9 @@ export function RailRevision({
   const problemes = document?.validation_issues ?? [];
   const alertes = clinicalObject.warnings;
   const aVerifier = problemes.length + alertes.length;
+  const faitsAVerifier = clinicalObject.facts.filter(
+    (fait) => fiabiliteDe(fait, motDe(fait.concept) !== fait.concept).niveau === "a_verifier",
+  ).length;
 
   if (selection !== null && transcript) {
     return (
@@ -117,22 +121,41 @@ export function RailRevision({
       {onglet === "donnees" && (
         <div style={{ display: "grid", gap: "var(--espace-3)" }}>
           {clinicalObject.facts.length === 0 && <EtatVide titre="Aucun fait clinique" />}
-          {clinicalObject.facts.map((fait) => (
-            <div key={fait.fact_id} style={{ display: "grid", gap: 4 }}>
-              <button
-                type="button"
-                className="link-button"
-                style={{ textAlign: "left" }}
-                onClick={() => onSelect({ kind: "fact", factId: fait.fact_id })}
-              >
-                <strong>{motDe(fait.concept)}</strong>
-                {typeof fait.value === "string" && fait.value && fait.value !== motDe(fait.concept)
-                  ? ` : ${fait.value}`
-                  : ""}
-              </button>
-              <FactChips fact={fait} />
-            </div>
-          ))}
+          {clinicalObject.facts.length > 0 && (
+            <p className="muted" style={{ margin: 0 }}>
+              {faitsAVerifier === 0
+                ? `${clinicalObject.facts.length} ${clinicalObject.facts.length > 1 ? "informations relevées" : "information relevée"}, aucune n’appelle de vérification.`
+                : `${faitsAVerifier} ${faitsAVerifier > 1 ? "informations sont à vérifier" : "information est à vérifier"} sur ${clinicalObject.facts.length}. Passez la souris sur l’étiquette pour savoir pourquoi.`}
+            </p>
+          )}
+          {clinicalObject.facts.map((fait) => {
+            const lecture = fiabiliteDe(fait, motDe(fait.concept) !== fait.concept);
+            return (
+              <div key={fait.fact_id} style={{ display: "grid", gap: 4 }}>
+                <button
+                  type="button"
+                  className="link-button"
+                  style={{ textAlign: "left" }}
+                  onClick={() => onSelect({ kind: "fact", factId: fait.fact_id })}
+                >
+                  <strong>{motDe(fait.concept)}</strong>
+                  {typeof fait.value === "string" &&
+                  fait.value &&
+                  fait.value !== motDe(fait.concept)
+                    ? ` : ${fait.value}`
+                    : ""}
+                </button>
+                <span style={{ display: "inline-flex", flexWrap: "wrap", gap: 4 }}>
+                  <Pastille ton={lecture.niveau === "fiable" ? "valide" : "attention"}>
+                    <span title={lecture.raison}>
+                      {lecture.niveau === "fiable" ? "fiable" : "à vérifier"}
+                    </span>
+                  </Pastille>
+                  <FactChips fact={fait} />
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
 

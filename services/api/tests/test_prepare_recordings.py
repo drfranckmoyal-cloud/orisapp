@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import shutil
 import struct
 import sys
 import wave
@@ -13,6 +14,13 @@ from typing import Any
 import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
+
+# La conversion du son passe par un outil du système (afconvert sur macOS, ffmpeg
+# ailleurs). Sans lui, le test n'a rien à vérifier : on le saute au lieu d'échouer.
+besoin_convertisseur = pytest.mark.skipif(
+    shutil.which("afconvert") is None and shutil.which("ffmpeg") is None,
+    reason="ni afconvert ni ffmpeg sur cette machine",
+)
 
 
 def load() -> Any:
@@ -76,6 +84,7 @@ def test_nothing_is_written_without_a_consent_reference(tmp_path: Path) -> None:
     assert not (ROOT / "benchmarks/datasets/essai-sans-consentement").exists()
 
 
+@besoin_convertisseur
 def test_the_recordings_are_converted_and_the_manifest_is_written(tmp_path: Path) -> None:
     module = load()
     module.DATASETS = tmp_path / "datasets"
