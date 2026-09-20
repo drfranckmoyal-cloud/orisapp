@@ -349,7 +349,7 @@
           "patients"
         ],
         "summary": "Add Attachments",
-        "description": "Importer des photos, radios, empreintes ou documents.\n\nOris ne les lit pas : elles accompagnent le compte rendu, elles ne le nourrissent\njamais. Un format inconnu est refusé plutôt que rangé « au cas où ».",
+        "description": "Importer des photos, radios, empreintes ou documents.\n\nOris ne les lit pas : elles accompagnent le compte rendu, elles ne le nourrissent\njamais. Un format inconnu est refusé plutôt que rangé « au cas où ».\n\n`encounter_id` rattache la pièce à une consultation — c'est le cas quand on\nl'importe depuis l'écran de révision. Elle reste celle du patient : on la\nretrouvera depuis sa fiche.",
         "operationId": "add_attachments_patients__patient_id__attachments_post",
         "parameters": [
           {
@@ -2980,6 +2980,18 @@
             },
             "type": "array",
             "title": "Files"
+          },
+          "encounter_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Encounter Id"
           }
         },
         "type": "object",

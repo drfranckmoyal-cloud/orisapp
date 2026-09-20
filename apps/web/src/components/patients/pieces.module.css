@@ -110,3 +110,52 @@
   color: var(--alerte);
   text-decoration: underline;
 }
+
+/* Version resserrée, pour le rail de révision : on garde le geste, on perd le décor. */
+.compact {
+  gap: var(--espace-3);
+  padding: 0;
+}
+
+.compact .depot {
+  padding: var(--espace-4);
+  gap: var(--espace-2);
+  border-radius: 13px;
+}
+
+.compact .invite {
+  font-size: var(--texte-sm);
+}
+
+/* La vignette : on reconnaît une photo d'un coup d'œil, sans l'ouvrir. */
+.vignette,
+.vignetteVide {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 8px;
+  border: 1px solid var(--trait);
+  object-fit: cover;
+  background: var(--surface-douce);
+}
+
+.vignetteVide {
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: var(--graisse-forte);
+  letter-spacing: 0.06em;
+  color: var(--encre-tres-douce);
+}
+
+.lien {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-3);
+}
+
+.texte {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}

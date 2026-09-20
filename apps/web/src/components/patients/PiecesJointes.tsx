@@ -29,7 +29,17 @@ function poids(octets: number): string {
  * accompagnent le compte rendu, elles ne le nourrissent pas. C'est le praticien
  * qui s'y réfère, en écrivant.
  */
-export function PiecesJointes({ patientId }: { patientId: string }) {
+export function PiecesJointes({
+  patientId,
+  encounterId,
+  compact = false,
+}: {
+  patientId: string;
+  /** Rattache les pièces importées à cette consultation (écran de révision). */
+  encounterId?: string;
+  /** Version resserrée, pour le rail de révision. */
+  compact?: boolean;
+}) {
   const [pieces, recharger] = useApi<Attachment[]>(`/patients/${patientId}/attachments`);
   const [config] = useApi<ClientConfig>("/config/client");
   const [survol, setSurvol] = useState(false);
@@ -47,6 +57,7 @@ export function PiecesJointes({ patientId }: { patientId: string }) {
     setMessage(null);
     const corps = new FormData();
     for (const fichier of Array.from(fichiers)) corps.append("files", fichier);
+    if (encounterId) corps.append("encounter_id", encounterId);
     try {
       const reponse = await fetch(`${API_BASE_URL}/patients/${patientId}/attachments`, {
         method: "POST",
@@ -85,7 +96,7 @@ export function PiecesJointes({ patientId }: { patientId: string }) {
   }
 
   return (
-    <div className={styles.bloc}>
+    <div className={`${styles.bloc} ${compact ? styles.compact : ""}`}>
       <div
         className={`${styles.depot} ${survol ? styles.survol : ""}`}
         onDragOver={(event) => {
@@ -99,9 +110,16 @@ export function PiecesJointes({ patientId }: { patientId: string }) {
           void importer(event.dataTransfer.files);
         }}
       >
-        <Icone nom="import" taille={24} className={styles.fleche} />
+        <Icone nom="import" taille={compact ? 18 : 24} className={styles.fleche} />
         <p className={styles.invite}>
-          <strong>Déposez vos fichiers ici</strong> — photos, radios, empreintes, documents.
+          {compact ? (
+            <strong>Déposez une photo, une radio, une empreinte</strong>
+          ) : (
+            <>
+              <strong>Déposez vos fichiers ici</strong> — photos, radios, empreintes,
+              documents.
+            </>
+          )}
         </p>
         <Bouton variante="secondaire" disabled={envoi} onClick={() => champ.current?.click()}>
           {envoi ? "Importation…" : "Choisir des fichiers"}
@@ -114,14 +132,16 @@ export function PiecesJointes({ patientId }: { patientId: string }) {
           accept={formats.join(",")}
           onChange={(event) => void importer(event.target.files)}
         />
-        <p className={styles.formats}>
-          {formats.length > 0 && (
-            <>
-              {formats.map((f) => f.replace(".", "").toUpperCase()).join(" · ")}
-              {maxOctets > 0 && ` — ${Math.round(maxOctets / (1024 * 1024))} Mo par fichier`}
-            </>
-          )}
-        </p>
+        {!compact && (
+          <p className={styles.formats}>
+            {formats.length > 0 && (
+              <>
+                {formats.map((f) => f.replace(".", "").toUpperCase()).join(" · ")}
+                {maxOctets > 0 && ` — ${Math.round(maxOctets / (1024 * 1024))} Mo par fichier`}
+              </>
+            )}
+          </p>
+        )}
       </div>
 
       {message && (
@@ -131,7 +151,7 @@ export function PiecesJointes({ patientId }: { patientId: string }) {
       )}
 
       {pieces.state === "loading" && <Squelette lignes={2} />}
-      {pieces.state === "ready" && liste.length === 0 && (
+      {pieces.state === "ready" && liste.length === 0 && !compact && (
         <EtatVide titre="Aucune pièce jointe">
           Les fichiers importés ici accompagnent le dossier. Vous vous y référez en
           rédigeant ; Oris ne les interprète pas.
@@ -148,13 +168,27 @@ export function PiecesJointes({ patientId }: { patientId: string }) {
                 target="_blank"
                 rel="noreferrer"
               >
-                <span className={styles.nom}>{piece.filename}</span>
-                <span className={styles.detail}>
-                  {poids(piece.byte_size)} · {formatDateTime(piece.created_at)}
+                {piece.kind === "photo" ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    className={styles.vignette}
+                    src={`${API_BASE_URL}/patients/attachments/${piece.id}/contenu`}
+                    alt=""
+                  />
+                ) : (
+                  <span className={styles.vignetteVide}>
+                    {piece.filename.split(".").pop()?.toUpperCase()}
+                  </span>
+                )}
+                <span className={styles.texte}>
+                  <span className={styles.nom}>{piece.filename}</span>
+                  <span className={styles.detail}>
+                    {poids(piece.byte_size)} · {formatDateTime(piece.created_at)}
+                  </span>
                 </span>
               </a>
               <span className={styles.fin}>
-                <Pastille>{NATURE[piece.kind] ?? piece.kind}</Pastille>
+                {!compact && <Pastille>{NATURE[piece.kind] ?? piece.kind}</Pastille>}
                 <button
                   type="button"
                   className={styles.retirer}

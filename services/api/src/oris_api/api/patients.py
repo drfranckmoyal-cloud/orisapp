@@ -6,7 +6,7 @@ import hashlib
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Body, File, Header, Response, UploadFile, status
+from fastapi import APIRouter, Body, File, Form, Header, Response, UploadFile, status
 
 from oris_api.api.dependencies import ActorDep, MagasinDep, ProvidersDep, SessionDep
 from oris_api.api.schemas import (
@@ -121,16 +121,30 @@ async def add_attachments(
     actor: ActorDep,
     magasin: MagasinDep,
     fichiers: Annotated[list[UploadFile], File(alias="files")],
+    encounter_id: Annotated[UUID | None, Form()] = None,
 ) -> list[AttachmentOut]:
     """Importer des photos, radios, empreintes ou documents.
 
     Oris ne les lit pas : elles accompagnent le compte rendu, elles ne le nourrissent
     jamais. Un format inconnu est refusé plutôt que rangé « au cas où ».
+
+    `encounter_id` rattache la pièce à une consultation — c'est le cas quand on
+    l'importe depuis l'écran de révision. Elle reste celle du patient : on la
+    retrouvera depuis sa fiche.
     """
     patient = patients.get_patient(session, actor, patient_id)
+    if encounter_id is not None:
+        # La consultation doit exister et appartenir au même praticien.
+        encounters.get_encounter(session, actor, encounter_id)
     rangees = [
         attachments.add_attachment(
-            session, actor, magasin, patient, fichier.filename or "fichier", await fichier.read()
+            session,
+            actor,
+            magasin,
+            patient,
+            fichier.filename or "fichier",
+            await fichier.read(),
+            encounter_id=encounter_id,
         )
         for fichier in fichiers
     ]

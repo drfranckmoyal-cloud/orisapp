@@ -109,3 +109,30 @@ def test_a_dangerous_filename_cannot_escape_its_folder(api: Any) -> None:
     ).json()[0]
     assert "/" not in piece["filename"]
     assert ".." not in piece["filename"]
+
+
+def test_a_file_dropped_during_review_is_tied_to_that_consultation(api: Any) -> None:
+    """Déposée depuis l'écran de révision, la pièce garde le lien avec la séance."""
+    encounter = run_synthetic(api, "ORIS-SYN-001")
+    pid = encounter["patient"]["id"]
+    reponse = api.post(
+        f"/patients/{pid}/attachments",
+        files=[("files", ("avant.png", PNG, "image/png"))],
+        data={"encounter_id": encounter["id"]},
+    )
+    assert reponse.status_code == 201, reponse.text
+    assert reponse.json()[0]["encounter_id"] == encounter["id"]
+
+    # Elle reste celle du patient : on la retrouve depuis sa fiche.
+    assert [p["filename"] for p in api.get(f"/patients/{pid}/attachments").json()] == ["avant.png"]
+
+
+def test_an_unknown_consultation_is_refused(api: Any) -> None:
+    pid = nouveau_patient(api)
+    refuse = api.post(
+        f"/patients/{pid}/attachments",
+        files=[("files", ("a.png", PNG, "image/png"))],
+        data={"encounter_id": "00000000-0000-0000-0000-000000000000"},
+    )
+    assert refuse.status_code == 404
+    assert api.get(f"/patients/{pid}/attachments").json() == []

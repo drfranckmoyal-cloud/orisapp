@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
@@ -8,6 +10,7 @@ import { SpokenCorrectionPanel } from "@/components/review/SpokenCorrection";
 import { TreatmentPlanCards } from "@/components/review/TreatmentPlanCards";
 import { DocumentBody } from "@/components/review/DocumentView";
 import styles from "@/components/review/review.module.css";
+import { PiecesJointes } from "@/components/patients/PiecesJointes";
 import { RailRevision } from "@/components/review/RailRevision";
 import type { Selection } from "@/components/review/SourcePanel";
 import { Barre, Bouton, Carte, Zone } from "@/components/ui";
@@ -587,6 +590,25 @@ export default function ReviewPage() {
               onSelect={setSelection}
               motDe={motDe}
             />
+          )}
+
+          {/* Les pièces du patient, sous la main pendant qu'on rédige : on s'y réfère
+              en écrivant. Une pièce déposée ici est rattachée à cette consultation. */}
+          {encounter.state === "ready" && (
+            <Carte
+              titre="Pièces jointes"
+              action={
+                <Link href={`/patients/${encounter.data.patient.id}`} className="link-button">
+                  fiche patient
+                </Link>
+              }
+            >
+              <PiecesJointes
+                patientId={encounter.data.patient.id}
+                encounterId={encounter.data.id}
+                compact
+              />
+            </Carte>
           )}
 
           {object && !shadow && (

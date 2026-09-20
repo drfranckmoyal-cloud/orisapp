@@ -1,6 +1,10 @@
 # Changelog
 
 ## Pièces jointes et connecteurs — 2026-09-21
+- **Les pièces jointes sont sous la main pendant la révision** : une carte dans le rail,
+  avec vignettes pour les photos et zone de dépôt resserrée. Une pièce déposée là est
+  **rattachée à cette consultation** — tout en restant celle du patient, retrouvable
+  depuis sa fiche.
 - **L'onglet « Documents » de la fiche patient devient « Pièces jointes »** : ce qu'on
   importe pour s'y référer en rédigeant. Les documents produits par Oris restent visibles
   dans l'historique et dans l'écran Documents du menu — l'onglet ne les répétait plus.

@@ -114,6 +114,10 @@ export interface paths {
          *
          *     Oris ne les lit pas : elles accompagnent le compte rendu, elles ne le nourrissent
          *     jamais. Un format inconnu est refusé plutôt que rangé « au cas où ».
+         *
+         *     `encounter_id` rattache la pièce à une consultation — c'est le cas quand on
+         *     l'importe depuis l'écran de révision. Elle reste celle du patient : on la
+         *     retrouvera depuis sa fiche.
          */
         post: operations["add_attachments_patients__patient_id__attachments_post"];
         delete?: never;
@@ -1115,6 +1119,8 @@ export interface components {
         Body_add_attachments_patients__patient_id__attachments_post: {
             /** Files */
             files: string[];
+            /** Encounter Id */
+            encounter_id?: string | null;
         };
         /**
          * CabinetOut
