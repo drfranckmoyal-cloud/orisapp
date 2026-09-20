@@ -174,6 +174,60 @@ def mark_outdated(session: Session, encounter_id: UUID) -> None:
     session.flush()
 
 
+def edit_text(session: Session, actor: Actor, document_id: UUID, content: str) -> DocumentRow:
+    """Édition manuelle du texte par le praticien (§48).
+
+    Oris ne touche pas au dossier clinique : le texte devient celui du praticien, et il
+    est dit tel quel. La provenance phrase par phrase n'est plus disponible sur un texte
+    écrit à la main — l'interface doit le signaler plutôt que de faire semblant.
+    """
+    document = session.get(DocumentRow, document_id)
+    encounter = session.get(Encounter, document.encounter_id) if document else None
+    if document is None or encounter is None or encounter.organization_id != actor.organization_id:
+        raise NotFound("DOCUMENT_NOT_FOUND", str(document_id))
+    if encounter.mode == "shadow":
+        raise Conflict("SHADOW_ENCOUNTER", str(document_id))
+    last = current_version(session, document)
+    if last is None:
+        raise Conflict("DOCUMENT_EMPTY", str(document_id))
+    if content.strip() == last.content.strip():
+        raise Conflict("NO_CHANGE", str(document_id))
+
+    version = DocumentVersion(
+        document_id=document.id,
+        version=last.version + 1,
+        content=content.strip(),
+        claims=[],
+        supported_fact_ids=[],
+        validation_issues=[],
+        generated_from_object_version=last.generated_from_object_version,
+        generator="practitioner:manual",
+    )
+    session.add(version)
+    session.flush()
+    document.current_version_id = version.id
+    document.status = "draft_ai" if document.status == "outdated" else document.status
+    learning.emit(
+        session,
+        actor,
+        encounter.id,
+        last.generated_from_object_version,
+        "document_text_edit",
+        {"document_type": document.document_type, "longueur": len(last.content)},
+        {"document_type": document.document_type, "longueur": len(content.strip())},
+    )
+    audit.record(
+        session,
+        actor,
+        "document.edited",
+        "document",
+        document.id,
+        version=version.version,
+    )
+    session.flush()
+    return document
+
+
 def validate(
     session: Session,
     actor: Actor,

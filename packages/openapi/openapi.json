@@ -1162,6 +1162,60 @@
         }
       }
     },
+    "/documents/{document_id}/text": {
+      "post": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Edit Document Text",
+        "description": "Le praticien réécrit le texte. Le dossier clinique, lui, ne bouge pas (§48).",
+        "operationId": "edit_document_text_documents__document_id__text_post",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentTextEdit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/documents/{document_id}/validate": {
       "post": {
         "tags": [
@@ -1985,6 +2039,64 @@
         ],
         "title": "AddFact"
       },
+      "AddPlanItem": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "const": "add_plan_item",
+            "title": "Operation"
+          },
+          "action": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Action"
+          },
+          "teeth": {
+            "items": {
+              "type": "string",
+              "pattern": "^(?:1[1-8]|2[1-8]|3[1-8]|4[1-8]|5[1-5]|6[1-5]|7[1-5]|8[1-5])$"
+            },
+            "type": "array",
+            "title": "Teeth",
+            "default": []
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "discussed",
+              "proposed",
+              "accepted",
+              "refused",
+              "deferred",
+              "planned",
+              "completed"
+            ],
+            "title": "Status",
+            "default": "proposed"
+          },
+          "problem": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Problem"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "operation",
+          "action"
+        ],
+        "title": "AddPlanItem",
+        "description": "Ajout manuel d'un élément de plan (§34).\n\nLe praticien décide : l'élément est marqué comme le sien, sans fait d'appui\nextrait — c'est sa décision qui en tient lieu."
+      },
       "AudioGapOut": {
         "properties": {
           "duration_ms": {
@@ -2635,6 +2747,15 @@
                   "$ref": "#/components/schemas/SetPlanItemStatus"
                 },
                 {
+                  "$ref": "#/components/schemas/AddPlanItem"
+                },
+                {
+                  "$ref": "#/components/schemas/RemovePlanItem"
+                },
+                {
+                  "$ref": "#/components/schemas/ReorderPlanItems"
+                },
+                {
                   "$ref": "#/components/schemas/AddFact"
                 },
                 {
@@ -2645,7 +2766,10 @@
                 "propertyName": "operation",
                 "mapping": {
                   "add_fact": "#/components/schemas/AddFact",
+                  "add_plan_item": "#/components/schemas/AddPlanItem",
                   "remove_fact": "#/components/schemas/RemoveFact",
+                  "remove_plan_item": "#/components/schemas/RemovePlanItem",
+                  "reorder_plan_items": "#/components/schemas/ReorderPlanItems",
                   "replace_tooth": "#/components/schemas/ReplaceTooth",
                   "set_plan_item_status": "#/components/schemas/SetPlanItemStatus",
                   "update_fact": "#/components/schemas/UpdateFact"
@@ -2822,6 +2946,23 @@
           "status"
         ],
         "title": "DocumentSummary"
+      },
+      "DocumentTextEdit": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Content"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "DocumentTextEdit",
+        "description": "Texte réécrit par le praticien (§48)."
       },
       "DocumentValidate": {
         "properties": {
@@ -4040,6 +4181,52 @@
           "fact_id"
         ],
         "title": "RemoveFact"
+      },
+      "RemovePlanItem": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "const": "remove_plan_item",
+            "title": "Operation"
+          },
+          "item_id": {
+            "type": "string",
+            "title": "Item Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "operation",
+          "item_id"
+        ],
+        "title": "RemovePlanItem"
+      },
+      "ReorderPlanItems": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "const": "reorder_plan_items",
+            "title": "Operation"
+          },
+          "item_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Item Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "operation",
+          "item_ids"
+        ],
+        "title": "ReorderPlanItems",
+        "description": "Ordre voulu par le praticien : il devient la séquence énoncée (§33.3)."
       },
       "ReplaceTooth": {
         "properties": {

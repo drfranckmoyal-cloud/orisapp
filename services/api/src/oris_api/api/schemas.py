@@ -152,6 +152,13 @@ class SpokenCorrectionOut(BaseModel):
     object_version: int
 
 
+class DocumentTextEdit(BaseModel):
+    """Texte réécrit par le praticien (§48)."""
+
+    model_config = ConfigDict(extra="forbid")
+    content: Annotated[str, Field(min_length=1, max_length=20_000)]
+
+
 class ProgressOut(BaseModel):
     """Avancement réel du traitement : chaque nombre est lu en base (S06)."""
 

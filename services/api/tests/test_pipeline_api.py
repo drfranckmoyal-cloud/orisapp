@@ -184,3 +184,34 @@ def test_progress_reports_what_is_really_in_the_database(api: Any) -> None:
     assert arrivee["facts"] > 0
     assert arrivee["documents"] > 0
     assert arrivee["termine"] is True
+
+
+def test_the_practitioner_can_rewrite_the_text_without_touching_the_record(api: Any) -> None:
+    """§48 : éditer le texte est permis, mais Oris ne fait pas semblant d'en tirer des faits."""
+    eid = run_synthetic(api, "ORIS-SYN-092")["id"]
+    note = documents_by_type(api, eid)["consultation_note"]
+    version_objet = clinical_object(api, eid)["object_version"]
+
+    reecrit = api.post(
+        f"/documents/{note['id']}/text",
+        json={"content": "Compte rendu réécrit à la main par le praticien."},
+    )
+    assert reecrit.status_code == 200, reecrit.text
+    apres = reecrit.json()
+    assert apres["content"] == "Compte rendu réécrit à la main par le praticien."
+    assert apres["version"] == note["version"] + 1
+    assert apres["generator"] == "practitioner:manual"
+    # Aucune provenance inventée sur un texte écrit à la main.
+    assert apres["claims"] == [] and apres["supported_fact_ids"] == []
+    # Le dossier clinique n'a pas bougé.
+    assert clinical_object(api, eid)["object_version"] == version_objet
+
+    evenements = api.get(f"/encounters/{eid}/learning-events").json()
+    assert any(event["event_type"] == "document_text_edit" for event in evenements)
+
+
+def test_rewriting_with_the_same_text_changes_nothing(api: Any) -> None:
+    eid = run_synthetic(api, "ORIS-SYN-092")["id"]
+    note = documents_by_type(api, eid)["consultation_note"]
+    refus = api.post(f"/documents/{note['id']}/text", json={"content": note["content"]})
+    assert refus.status_code == 409 and refus.json()["code"] == "NO_CHANGE"

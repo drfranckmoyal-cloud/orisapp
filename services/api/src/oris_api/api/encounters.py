@@ -15,6 +15,7 @@ from oris_api.api.schemas import (
     ClinicalObjectOut,
     CorrectionRequest,
     DocumentOut,
+    DocumentTextEdit,
     DocumentValidate,
     EncounterCreate,
     EncounterFinish,
@@ -370,6 +371,19 @@ def generate_operative_note(
     if encounter.status != "review":
         encounters.transition(session, actor, encounter, "review")
     return list_documents(encounter_id, session, actor)
+
+
+@router.post("/documents/{document_id}/text", response_model=DocumentOut)
+def edit_document_text(
+    document_id: UUID, body: DocumentTextEdit, session: SessionDep, actor: ActorDep
+) -> DocumentOut:
+    """Le praticien réécrit le texte. Le dossier clinique, lui, ne bouge pas (§48)."""
+    document = documents.edit_text(session, actor, document_id, body.content)
+    version = documents.current_version(session, document)
+    encounter = encounters.get_encounter(session, actor, document.encounter_id)
+    if version is None:
+        raise Conflict("DOCUMENT_EMPTY", str(document_id))
+    return document_out(document, version, encounter.object_version)
 
 
 @router.post("/documents/{document_id}/validate", response_model=DocumentOut)

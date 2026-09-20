@@ -11,11 +11,13 @@ export function SourcePanel({
   clinicalObject,
   transcript,
   onClose,
+  motDe,
 }: {
   selection: Selection;
   clinicalObject: ClinicalObject;
   transcript: TranscriptView;
   onClose: () => void;
+  motDe: (concept: string) => string;
 }) {
   if (selection === null) {
     return (
@@ -42,8 +44,9 @@ export function SourcePanel({
       {facts.map((fact) => (
         <div key={fact.fact_id} style={{ display: "grid", gap: 4 }}>
           <span>
-            Fait {fact.fact_id} · {fact.concept}
-            {fact.manually_validated && " · vérifié par le praticien"}
+            <strong>{motDe(fact.concept)}</strong>
+            {typeof fact.value === "string" && fact.value ? ` : ${fact.value}` : ""}
+            {fact.manually_validated && " · vérifié par vous"}
           </span>
           <FactChips fact={fact} />
         </div>

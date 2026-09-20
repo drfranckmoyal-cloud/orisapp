@@ -161,3 +161,90 @@ def test_explicit_validation_then_correction_reopens_review(api: Any) -> None:
     note = docs["consultation_note"]["content"]
     assert "Accepté : dépose de la restauration et réévaluation (27)." in note
     assert "statut : accepté" in docs["treatment_plan_text"]["content"]
+
+
+def plan_de(api: Any, eid: str) -> list[dict[str, Any]]:
+    objet = api.get(f"/encounters/{eid}/clinical-object").json()["clinical_object"]
+    return list(objet["treatment_plan"]["items"]) if objet["treatment_plan"] else []
+
+
+def corriger(api: Any, eid: str, version: int, operation: dict[str, Any]) -> Any:
+    return api.patch(
+        f"/encounters/{eid}/clinical-object",
+        json={
+            "expected_object_version": version,
+            "operations": [operation],
+            "regenerate": True,
+        },
+    )
+
+
+def test_the_practitioner_adds_a_plan_item_of_his_own(api: Any) -> None:
+    eid = run_synthetic(api, "ORIS-SYN-001")["id"]
+    avant = len(plan_de(api, eid))
+    reponse = corriger(
+        api,
+        eid,
+        1,
+        {"operation": "add_plan_item", "action": "gouttière de protection", "teeth": ["11"]},
+    )
+    assert reponse.status_code == 200, reponse.text
+    apres = plan_de(api, eid)
+    assert len(apres) == avant + 1
+    ajoute = next(item for item in apres if item["action"] == "gouttière de protection")
+    assert ajoute["status"] == "proposed"
+    # Invariant 10 : l'élément est appuyé par un fait — ici la décision du praticien,
+    # enregistrée comme telle, d'origine manuelle.
+    objet = api.get(f"/encounters/{eid}/clinical-object").json()["clinical_object"]
+    appui = next(fact for fact in objet["facts"] if fact["fact_id"] in ajoute["evidence_fact_ids"])
+    assert appui["source_type"] == "manual" and appui["manually_validated"] is True
+    assert appui["value"] == "gouttière de protection"
+    # Le document suit.
+    assert (
+        "gouttière de protection" in documents_by_type(api, eid)["treatment_plan_text"]["content"]
+    )
+
+
+def test_the_practitioner_removes_a_plan_item(api: Any) -> None:
+    eid = run_synthetic(api, "ORIS-SYN-001")["id"]
+    premier = plan_de(api, eid)[0]
+    assert (
+        corriger(
+            api, eid, 1, {"operation": "remove_plan_item", "item_id": premier["item_id"]}
+        ).status_code
+        == 200
+    )
+    assert all(item["item_id"] != premier["item_id"] for item in plan_de(api, eid))
+
+
+def test_reordering_the_plan_writes_an_explicit_sequence(api: Any) -> None:
+    eid = run_synthetic(api, "ORIS-SYN-001")["id"]
+    corriger(
+        api,
+        eid,
+        1,
+        {"operation": "add_plan_item", "action": "contrôle à trois mois"},
+    )
+    items = plan_de(api, eid)
+    ordre = [item["item_id"] for item in items][::-1]
+    assert (
+        corriger(api, eid, 2, {"operation": "reorder_plan_items", "item_ids": ordre}).status_code
+        == 200
+    )
+
+    apres = plan_de(api, eid)
+    assert [item["item_id"] for item in apres] == ordre
+    # §33.3 : l'ordre voulu par le praticien est une séquence énoncée.
+    assert [item["sequence"] for item in apres] == list(range(1, len(apres) + 1))
+
+
+def test_an_incomplete_order_is_refused(api: Any) -> None:
+    eid = run_synthetic(api, "ORIS-SYN-001")["id"]
+    corriger(api, eid, 1, {"operation": "add_plan_item", "action": "contrôle"})
+    items = plan_de(api, eid)
+    assert len(items) > 1
+    refus = corriger(
+        api, eid, 2, {"operation": "reorder_plan_items", "item_ids": [items[0]["item_id"]]}
+    )
+    assert refus.status_code == 422
+    assert refus.json()["code"] == "PLAN_ORDER_INCOMPLETE"

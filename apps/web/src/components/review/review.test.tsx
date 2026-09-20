@@ -93,6 +93,7 @@ describe("review screen", () => {
         clinicalObject={clinicalObject}
         transcript={transcript}
         onClose={() => undefined}
+        motDe={(concept) => concept}
       />,
     );
     expect(screen.getByText("« Il y a peut-être une fissure sur 16. »")).toBeTruthy();

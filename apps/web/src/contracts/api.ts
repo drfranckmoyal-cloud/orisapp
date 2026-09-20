@@ -371,6 +371,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/documents/{document_id}/text": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Edit Document Text
+         * @description Le praticien réécrit le texte. Le dossier clinique, lui, ne bouge pas (§48).
+         */
+        post: operations["edit_document_text_documents__document_id__text_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/documents/{document_id}/validate": {
         parameters: {
             query?: never;
@@ -704,6 +724,35 @@ export interface components {
             operation: "add_fact";
             fact: components["schemas"]["NewFact"];
         };
+        /**
+         * AddPlanItem
+         * @description Ajout manuel d'un élément de plan (§34).
+         *
+         *     Le praticien décide : l'élément est marqué comme le sien, sans fait d'appui
+         *     extrait — c'est sa décision qui en tient lieu.
+         */
+        AddPlanItem: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            operation: "add_plan_item";
+            /** Action */
+            action: string;
+            /**
+             * Teeth
+             * @default []
+             */
+            teeth: string[];
+            /**
+             * Status
+             * @default proposed
+             * @enum {string}
+             */
+            status: "discussed" | "proposed" | "accepted" | "refused" | "deferred" | "planned" | "completed";
+            /** Problem */
+            problem?: string | null;
+        };
         /** AudioGapOut */
         AudioGapOut: {
             /** Duration Ms */
@@ -915,7 +964,7 @@ export interface components {
             /** Expected Object Version */
             expected_object_version: number;
             /** Operations */
-            operations: (components["schemas"]["ReplaceTooth"] | components["schemas"]["UpdateFact"] | components["schemas"]["SetPlanItemStatus"] | components["schemas"]["AddFact"] | components["schemas"]["RemoveFact"])[];
+            operations: (components["schemas"]["ReplaceTooth"] | components["schemas"]["UpdateFact"] | components["schemas"]["SetPlanItemStatus"] | components["schemas"]["AddPlanItem"] | components["schemas"]["RemovePlanItem"] | components["schemas"]["ReorderPlanItems"] | components["schemas"]["AddFact"] | components["schemas"]["RemoveFact"])[];
             /**
              * Regenerate
              * @default true
@@ -985,6 +1034,14 @@ export interface components {
              * @enum {string}
              */
             status: "draft_ai" | "needs_review" | "validated" | "exported" | "superseded" | "outdated";
+        };
+        /**
+         * DocumentTextEdit
+         * @description Texte réécrit par le praticien (§48).
+         */
+        DocumentTextEdit: {
+            /** Content */
+            content: string;
         };
         /** DocumentValidate */
         DocumentValidate: {
@@ -1413,6 +1470,29 @@ export interface components {
             operation: "remove_fact";
             /** Fact Id */
             fact_id: string;
+        };
+        /** RemovePlanItem */
+        RemovePlanItem: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            operation: "remove_plan_item";
+            /** Item Id */
+            item_id: string;
+        };
+        /**
+         * ReorderPlanItems
+         * @description Ordre voulu par le praticien : il devient la séquence énoncée (§33.3).
+         */
+        ReorderPlanItems: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            operation: "reorder_plan_items";
+            /** Item Ids */
+            item_ids: string[];
         };
         /**
          * ReplaceTooth
@@ -2385,6 +2465,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DocumentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_document_text_documents__document_id__text_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DocumentTextEdit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"];
                 };
             };
             /** @description Validation Error */

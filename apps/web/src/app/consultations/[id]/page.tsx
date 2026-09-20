@@ -7,9 +7,11 @@ import { CorrectionPanel } from "@/components/review/CorrectionPanel";
 import { SpokenCorrectionPanel } from "@/components/review/SpokenCorrection";
 import { TreatmentPlanCards } from "@/components/review/TreatmentPlanCards";
 import { DocumentBody } from "@/components/review/DocumentView";
-import { FactChips } from "@/components/review/FactChips";
 import styles from "@/components/review/review.module.css";
-import { type Selection, SourcePanel } from "@/components/review/SourcePanel";
+import { RailRevision } from "@/components/review/RailRevision";
+import type { Selection } from "@/components/review/SourcePanel";
+import { Barre, Bouton, Carte, Zone } from "@/components/ui";
+import { useConcepts } from "@/lib/useConcepts";
 import {
   ApiError,
   apiRequest,
@@ -25,25 +27,12 @@ import {
   DOCUMENT_STATUS,
   DOCUMENT_TYPE,
   ENCOUNTER_STATUS,
-  LEARNING_EVENT,
-  correctionDetail,
   PROCESSING_RULE,
   errorMessage,
   formatDateTime,
   formatDuration,
 } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
-
-const ISSUE_LABELS: Record<string, string> = {
-  unsupported_claim: "Phrase sans fait d’appui",
-  unknown_fact_id: "Phrase citant un fait inconnu",
-  tooth_not_supported: "Dent citée absente des faits",
-  performed_not_supported: "« Réalisé » sans acte réalisé",
-  fact_not_rendered: "Fait non repris dans le document",
-  unrendered_concept: "Élément non reconnu à rédiger",
-  operative_field_missing:
-    "Champ important non dicté — à compléter, jamais rempli",
-};
 
 function statusChipClass(status: DocumentView["status"]): string {
   if (status === "validated") return "chip chip-success";
@@ -77,6 +66,45 @@ export default function ReviewPage() {
   } | null>(null);
   // Si le navigateur refuse le presse-papiers, le texte doit rester récupérable.
   const [copyFallback, setCopyFallback] = useState<string | null>(null);
+  const motDe = useConcepts();
+  const [edition, setEdition] = useState<string | null>(null);
+
+  async function enregistrerTexte(document: DocumentView) {
+    if (edition === null) return;
+    setFeedback(null);
+    try {
+      await apiRequest(`/documents/${document.id}/text`, {
+        method: "POST",
+        body: { content: edition },
+      });
+      setEdition(null);
+      setFeedback({ tone: "ok", text: "Texte enregistré. Le dossier clinique est inchangé." });
+      reloadAll();
+    } catch (error) {
+      const code = error instanceof ApiError ? error.code : "UNKNOWN";
+      setFeedback({ tone: "error", text: errorMessage(code) });
+    }
+  }
+
+  /** Raccourcir = une préférence de rédaction, appliquée à partir de maintenant (§53). */
+  async function raccourcir() {
+    setFeedback(null);
+    try {
+      await apiRequest("/me/preferences", {
+        method: "PATCH",
+        body: { document_length: "concise" },
+      });
+      await apiRequest(`/encounters/${id}/documents/generate`, { method: "POST" });
+      setFeedback({
+        tone: "ok",
+        text: "Comptes rendus plus courts, à partir de maintenant. Réversible dans « Oris apprend ».",
+      });
+      reloadAll();
+    } catch (error) {
+      const code = error instanceof ApiError ? error.code : "UNKNOWN";
+      setFeedback({ tone: "error", text: errorMessage(code) });
+    }
+  }
 
   function reloadAll() {
     reloadEncounter();
@@ -407,43 +435,59 @@ export default function ReviewPage() {
                 />
               )}
 
-              <DocumentBody
-                document={active}
-                selected={selection?.kind === "claim" ? selection.claim : null}
-                onSelect={(claim) => setSelection({ kind: "claim", claim })}
-              />
+              {edition === null ? (
+                <DocumentBody
+                  document={active}
+                  selected={selection?.kind === "claim" ? selection.claim : null}
+                  onSelect={(claim) => setSelection({ kind: "claim", claim })}
+                />
+              ) : (
+                <div style={{ display: "grid", gap: 12 }}>
+                  <div className="banner banner-review">
+                    Vous réécrivez le texte. Le dossier clinique ne changera pas : si une
+                    donnée clinique est fausse, corrigez-la plutôt à droite.
+                  </div>
+                  <Zone
+                    value={edition}
+                    autoFocus
+                    aria-label="Texte du document"
+                    onChange={(event) => setEdition(event.target.value)}
+                  />
+                  <Barre>
+                    <Bouton onClick={() => void enregistrerTexte(active)}>Enregistrer</Bouton>
+                    <Bouton variante="secondaire" onClick={() => setEdition(null)}>
+                      Annuler
+                    </Bouton>
+                  </Barre>
+                </div>
+              )}
 
-              {!shadow && (
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 8,
-                    flexWrap: "wrap",
-                    borderTop: "1px solid var(--color-cloud)",
-                    paddingTop: 16,
-                  }}
-                >
-                  <button
-                    type="button"
-                    className="button button-secondary"
-                    onClick={() => copyForRecord(active)}
-                  >
+              {active.generator.startsWith("practitioner") && edition === null && (
+                <p className="muted" style={{ margin: 0 }}>
+                  Texte réécrit à la main : la provenance phrase par phrase n’est plus
+                  disponible sur ce document.
+                </p>
+              )}
+
+              {!shadow && edition === null && (
+                <div className="barre-document">
+                  <Bouton variante="secondaire" onClick={() => setEdition(active.content)}>
+                    Éditer le texte
+                  </Bouton>
+                  <Bouton variante="secondaire" onClick={() => void raccourcir()}>
+                    Raccourcir
+                  </Bouton>
+                  <Bouton variante="secondaire" onClick={() => copyForRecord(active)}>
                     Copier pour le dossier
-                  </button>
-                  <button
-                    type="button"
-                    className="button button-secondary"
-                    onClick={() => exportDocument(active)}
-                  >
+                  </Bouton>
+                  <Bouton variante="secondaire" onClick={() => exportDocument(active)}>
                     Exporter en PDF
-                  </button>
-                  {active.status !== "validated" &&
-                    active.status !== "exported" && (
-                      <span className="muted">
-                        Ce document n’est pas validé : il partira avec la
-                        mention « brouillon ».
-                      </span>
-                    )}
+                  </Bouton>
+                  {active.status !== "validated" && active.status !== "exported" && (
+                    <span className="muted">
+                      Non validé : le PDF portera la mention « brouillon ».
+                    </span>
+                  )}
                 </div>
               )}
 
@@ -523,76 +567,31 @@ export default function ReviewPage() {
         </section>
 
         <aside className={styles.side}>
-          {object && transcript.state === "ready" && (
-            <section className="card" aria-labelledby="source-heading">
-              <h2 id="source-heading">Source</h2>
-              <SourcePanel
-                selection={selection}
-                clinicalObject={object}
-                transcript={transcript.data}
-                onClose={() => setSelection(null)}
-              />
-            </section>
-          )}
-
-          {active && active.validation_issues.length > 0 && (
-            <section className="card" aria-labelledby="check-heading">
-              <h2 id="check-heading">
-                À vérifier ({active.validation_issues.length})
-              </h2>
-              <ul>
-                {active.validation_issues.map((issue, index) => (
-                  <li key={index}>
-                    {ISSUE_LABELS[issue.code] ?? issue.code}
-                    {issue.severity === "critical" && " — bloque la validation"}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
           {object && (
-            <section className="card" aria-labelledby="facts-heading">
-              <h2 id="facts-heading">
-                Faits cliniques ({object.facts.length})
-              </h2>
-              <ul className={styles.factList}>
-                {object.facts.map((fact) => (
-                  <li key={fact.fact_id} style={{ display: "grid", gap: 4 }}>
-                    <button
-                      type="button"
-                      className="link-button"
-                      style={{ textAlign: "left" }}
-                      onClick={() =>
-                        setSelection({ kind: "fact", factId: fact.fact_id })
-                      }
-                    >
-                      {fact.concept}
-                      {typeof fact.value === "string" &&
-                      fact.value !== fact.concept
-                        ? ` : ${fact.value}`
-                        : ""}
-                    </button>
-                    <FactChips fact={fact} />
-                  </li>
-                ))}
-              </ul>
-            </section>
+            <RailRevision
+              document={active}
+              clinicalObject={object}
+              versions={clinical.state === "ready" ? clinical.data.versions : []}
+              transcript={transcript.state === "ready" ? transcript.data : null}
+              learning={learning.state === "ready" ? learning.data : []}
+              selection={selection}
+              onSelect={setSelection}
+              motDe={motDe}
+            />
           )}
 
-          {object && (
-            <section className="card" aria-labelledby="correct-heading">
-              <h2 id="correct-heading">Corriger</h2>
-              <p className="muted">
-                Une correction modifie d’abord le dossier clinique ; Oris
-                réécrit ensuite les documents.
+          {object && !shadow && (
+            <Carte titre="Corriger">
+              <p className="muted" style={{ margin: 0 }}>
+                Une correction modifie d’abord le dossier clinique ; Oris réécrit ensuite
+                les documents.
               </p>
               <SpokenCorrectionPanel
                 encounter={data}
                 clinicalObject={object}
                 onCorrected={reloadAll}
               />
-              <details style={{ marginTop: 8 }}>
+              <details>
                 <summary>Corriger sans dicter</summary>
                 <div style={{ marginTop: 12 }}>
                   <CorrectionPanel
@@ -602,41 +601,7 @@ export default function ReviewPage() {
                   />
                 </div>
               </details>
-            </section>
-          )}
-
-          {object && (
-            <section className="card" aria-labelledby="history-heading">
-              <h2 id="history-heading">Historique</h2>
-              {clinical.state === "ready" && (
-                <ul>
-                  {clinical.data.versions.map((version) => (
-                    <li key={version.version}>
-                      v{version.version} —{" "}
-                      {version.change_kind === "extraction"
-                        ? "extraction"
-                        : "correction du praticien"}{" "}
-                      · {formatDateTime(version.created_at)}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {learning.state === "ready" && learning.data.length > 0 && (
-                <>
-                  <p className="muted">Enregistré pour l’apprentissage :</p>
-                  <ul>
-                    {learning.data.map((event) => (
-                      <li key={event.learning_event_id}>
-                        {LEARNING_EVENT[event.event_type] ?? event.event_type}
-                        {correctionDetail(event) && (
-                          <> — {correctionDetail(event)}</>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </section>
+            </Carte>
           )}
         </aside>
       </div>

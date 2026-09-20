@@ -14,7 +14,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from oris_api.contracts import ClinicalEncounter, ClinicalFact
+from oris_api.contracts import ClinicalEncounter, ClinicalFact, TreatmentPlanItem
 from oris_api.contracts.generated import (
     ClinicalFactAssertion,
     ClinicalFactCategory,
@@ -75,6 +75,35 @@ class SetPlanItemStatus(BaseModel):
     status: TreatmentPlanItemStatus
 
 
+class AddPlanItem(BaseModel):
+    """Ajout manuel d'un élément de plan (§34).
+
+    Le praticien décide : l'élément est marqué comme le sien, sans fait d'appui
+    extrait — c'est sa décision qui en tient lieu.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+    operation: Literal["add_plan_item"]
+    action: Annotated[str, Field(min_length=1, max_length=200)]
+    teeth: list[FdiTooth] = []
+    status: TreatmentPlanItemStatus = "proposed"
+    problem: Annotated[str, Field(max_length=300)] | None = None
+
+
+class RemovePlanItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    operation: Literal["remove_plan_item"]
+    item_id: str
+
+
+class ReorderPlanItems(BaseModel):
+    """Ordre voulu par le praticien : il devient la séquence énoncée (§33.3)."""
+
+    model_config = ConfigDict(extra="forbid")
+    operation: Literal["reorder_plan_items"]
+    item_ids: Annotated[list[str], Field(min_length=1, max_length=50)]
+
+
 class NewFact(BaseModel):
     model_config = ConfigDict(extra="forbid")
     category: ClinicalFactCategory
@@ -101,7 +130,14 @@ class RemoveFact(BaseModel):
 
 
 CorrectionOperation = Annotated[
-    ReplaceTooth | UpdateFact | SetPlanItemStatus | AddFact | RemoveFact,
+    ReplaceTooth
+    | UpdateFact
+    | SetPlanItemStatus
+    | AddPlanItem
+    | RemovePlanItem
+    | ReorderPlanItems
+    | AddFact
+    | RemoveFact,
     Field(discriminator="operation"),
 ]
 
@@ -247,6 +283,86 @@ def apply_operations(
                         ):
                             fact.clinical_status = fact_status  # type: ignore[assignment]
                             fact.manually_validated = True
+
+            case AddPlanItem(action=action, teeth=teeth, status=status, problem=problem):
+                if plan is None:
+                    raise CorrectionError("NO_TREATMENT_PLAN")
+                # Un élément de plan doit être appuyé par un fait (invariant 10). Pour un
+                # ajout manuel, ce fait est la décision du praticien elle-même : elle est
+                # enregistrée comme telle, d'origine « manual », et sert d'appui.
+                decision = ClinicalFact(
+                    fact_id=f"m-{uuid4().hex[:8]}",
+                    category="treatment_decision",
+                    concept="preferred_option",
+                    value=action,
+                    teeth=list(teeth),
+                    surfaces=[],
+                    assertion="present",
+                    temporality="current",
+                    clinical_status=PLAN_TO_FACT_STATUS[status],
+                    certainty="certain",
+                    speaker_role="manual",
+                    source_type="manual",
+                    evidence_segment_ids=[],
+                    confidence=1.0,
+                    manually_validated=True,
+                )
+                facts.append(decision)
+                item = TreatmentPlanItem(
+                    item_id=f"m-{uuid4().hex[:8]}",
+                    teeth=list(teeth),
+                    problem=problem,
+                    action=action,
+                    status=status,
+                    priority="routine",
+                    sequence=None,
+                    alternatives=[],
+                    prerequisites=[],
+                    uncertainties=[],
+                    evidence_fact_ids=[decision.fact_id],
+                )
+                plan.items.append(item)
+                events.append(
+                    LearningEventDraft(
+                        "clinical_fact_added",
+                        None,
+                        {"item_id": item.item_id, "action": action, "status": status},
+                    )
+                )
+
+            case RemovePlanItem(item_id=item_id):
+                if plan is None:
+                    raise CorrectionError("NO_TREATMENT_PLAN")
+                matches = [i for i in plan.items if i.item_id == item_id]
+                if not matches:
+                    raise CorrectionError("PLAN_ITEM_NOT_FOUND", item_id)
+                plan.items = [i for i in plan.items if i.item_id != item_id]
+                events.append(
+                    LearningEventDraft(
+                        "clinical_fact_removed",
+                        {"item_id": item_id, "action": matches[0].action},
+                        None,
+                    )
+                )
+
+            case ReorderPlanItems(item_ids=item_ids):
+                if plan is None:
+                    raise CorrectionError("NO_TREATMENT_PLAN")
+                connus = {i.item_id: i for i in plan.items}
+                if set(item_ids) != set(connus):
+                    raise CorrectionError("PLAN_ORDER_INCOMPLETE")
+                avant = [i.item_id for i in plan.items]
+                if avant == list(item_ids):
+                    raise CorrectionError("NO_CHANGE")
+                # L'ordre décidé par le praticien est une séquence explicite (§33.3).
+                plan.items = [connus[item_id] for item_id in item_ids]
+                for rang, item in enumerate(plan.items, start=1):
+                    item.sequence = rang
+                events.append(
+                    LearningEventDraft(
+                        "treatment_sequence_correction", {"order": avant}, {"order": list(item_ids)}
+                    )
+                )
 
             case AddFact(fact=new_fact):
                 fact = ClinicalFact(

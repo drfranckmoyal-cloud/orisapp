@@ -318,3 +318,30 @@ h3 {
 .lien:hover {
   text-decoration: underline;
 }
+
+/* --- Rail de révision ----------------------------------------------------------- */
+.ligne-verif {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--espace-3);
+  align-items: start;
+  font-size: var(--texte-md);
+}
+
+.liste-simple {
+  margin: 0;
+  padding-left: var(--espace-4);
+  display: grid;
+  gap: var(--espace-1);
+  font-size: var(--texte-sm);
+  color: var(--encre-douce);
+}
+
+.barre-document {
+  display: flex;
+  gap: var(--espace-2);
+  flex-wrap: wrap;
+  align-items: center;
+  border-top: 1px solid var(--trait);
+  padding-top: var(--espace-4);
+}
