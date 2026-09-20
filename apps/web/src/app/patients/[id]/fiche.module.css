@@ -1,9 +1,6 @@
-/* Le cadre d'informations : **une seule grille**, pas trois colonnes côte à côte.
-   Les cellules d'une même rangée partagent leur hauteur, donc les filets se
-   poursuivent d'un bout à l'autre. Trois colonnes empilées donnaient des
-   séparateurs décalés — une impression de brouillon. */
-/* Le cadre pèse plus lourd que les autres cartes : c'est l'identité du patient,
-   elle doit se détacher du reste de la page. Bordure franche, fond dégradé. */
+/* Le cadre d'informations : **une information par ligne**, l'intitulé à gauche, la
+   valeur à droite. Pas de colonnes côte à côte — les filets traversent, l'œil
+   descend, rien ne se cherche. */
 .carteInfos {
   border-width: 2px;
   border-color: var(--trait-fort);
@@ -13,16 +10,10 @@
 
 .cadre {
   display: grid;
-  /* Le courriel et la note sont les valeurs les plus longues : elles prennent
-     la largeur que l'état civil n'utilise pas. */
-  grid-template-columns:
-    auto minmax(0, 0.9fr)
-    auto minmax(0, 1.25fr)
-    auto minmax(0, 1.35fr);
+  grid-template-columns: 170px minmax(0, 1fr);
 }
 
-/* La ligne s'efface de la mise en page : ses deux cellules deviennent des cases
-   de la grille, et c'est la grille qui aligne tout. */
+/* La ligne s'efface de la mise en page : la grille aligne les deux cellules. */
 .ligne {
   display: contents;
 }
@@ -36,7 +27,7 @@
   border-top: 1px solid var(--trait-fort);
 }
 
-/* La colonne des intitulés est teintée : le cadre se lit comme un tableau. */
+/* La colonne des intitulés est teintée : on lit le cadre comme un état civil. */
 .cle {
   padding-left: var(--espace-4);
   padding-right: var(--espace-3);
@@ -49,44 +40,31 @@
   background: rgb(26 24 21 / 0.05);
 }
 
-/* Les valeurs sur fond clair : le cadre se lit comme un tableau. */
 .valeur {
-  padding-right: var(--espace-4);
   padding-left: var(--espace-3);
+  padding-right: var(--espace-4);
   font-size: var(--texte-md);
   font-weight: var(--graisse-moyenne);
   overflow-wrap: anywhere;
   background: var(--surface);
 }
 
-/* Une rangée incomplète ne laisse pas de trou : la dernière case va au bord. */
-.valeurReste {
-  grid-column-end: -1;
-}
-
-/* La note occupe le reste de la rangée : c'est la seule qui en a besoin. */
-.valeurLarge {
-  grid-column: 2 / -1;
-  align-items: stretch;
-  padding-top: var(--espace-2);
-  padding-bottom: var(--espace-2);
-}
-
-/* Première rangée : rien au-dessus. */
-.cadre > .ligne:nth-child(-n + 3) .cle,
-.cadre > .ligne:nth-child(-n + 3) .valeur {
+/* Première ligne : rien au-dessus. */
+.cadre > .ligne:first-child .cle,
+.cadre > .ligne:first-child .valeur {
   border-top: 0;
 }
 
-/* La rangée de la note est plus marquée : c'est un autre registre. */
+/* La note est d'un autre registre que l'état civil : le trait le dit. */
 .cadre > .ligne:last-child .cle,
 .cadre > .ligne:last-child .valeur {
   border-top: 2px solid var(--trait-fort);
 }
 
-/* Filet vertical avant les deuxième et troisième colonnes. */
-.cadre > .ligne:not(:nth-child(3n + 1)) .cle {
-  border-left: 1px solid var(--trait);
+.cadre > .ligne:last-child .valeur {
+  align-items: stretch;
+  padding-top: var(--espace-2);
+  padding-bottom: var(--espace-2);
 }
 
 .vide {
@@ -94,88 +72,22 @@
   font-weight: var(--graisse-normale);
 }
 
-/* La note tient dans une case comme les autres : une ligne, qui s'agrandit si on
-   écrit. Ce qu'elle est — un rappel qu'Oris ne lit pas — se dit au survol et dans
-   l'invite, pas en permanence sous le champ. */
-.note {
-  width: 100%;
-  font: inherit;
-  font-size: var(--texte-sm);
-  padding: 4px 8px;
-  border: 1px solid transparent;
-  border-radius: 7px;
-  background: var(--surface-douce);
-  color: var(--encre);
-  resize: vertical;
-  min-height: 0;
-  line-height: 1.4;
-}
-
-.note:hover {
-  border-color: var(--trait-fort);
-}
-
-.note:focus {
-  outline: 0;
-  background: var(--surface);
-  border-color: var(--accent);
-  box-shadow: var(--anneau-focus);
-}
-
-/* Le brut : accessible, mais il ne doit jamais attirer l'œil. */
-.brut {
-  font-size: 11.5px;
-  color: var(--encre-tres-douce);
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.brut:hover {
-  color: var(--encre-douce);
-  text-decoration: underline;
-}
-
-/* La sortie : on doit pouvoir remonter au dossier d'où l'on vient. */
-.retour {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: var(--texte-sm);
-  font-weight: var(--graisse-demi);
-  color: var(--encre-douce);
-  text-decoration: none;
-  margin-bottom: var(--espace-2);
-  padding: 5px 11px 5px 7px;
-  border-radius: 9px;
-  background: var(--surface);
-  border: 1px solid var(--trait);
-  box-shadow: var(--lumiere), 0 1px 2px rgb(26 24 21 / 0.05);
-  transition: transform var(--transition), border-color var(--transition);
-}
-
-.retour:hover {
-  border-color: var(--trait-fort);
-  color: var(--encre);
-  transform: translateX(-2px);
-}
-
-@media (max-width: 1180px) {
+@media (max-width: 680px) {
   .cadre {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: 1fr;
   }
-  .cadre > .ligne:nth-child(-n + 3) .cle,
-  .cadre > .ligne:nth-child(-n + 3) .valeur {
-    border-top: 1px solid var(--trait);
-  }
-  .cadre > .ligne:first-child .cle,
-  .cadre > .ligne:first-child .valeur {
+  .cle {
+    padding-bottom: 0;
     border-top: 0;
+    min-height: 0;
   }
-  .cadre > .ligne .cle {
-    border-left: 0;
+  .valeur {
+    border-top: 0;
+    padding-top: 0;
   }
-  .valeurLarge {
-    grid-column: 2 / -1;
+  .ligne + .ligne .cle {
+    border-top: 1px solid var(--trait-fort);
+    padding-top: var(--espace-3);
   }
 }
 
