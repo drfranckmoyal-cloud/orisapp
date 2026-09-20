@@ -163,6 +163,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/journee": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Journee */
+        get: operations["read_journee_journee_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters": {
         parameters: {
             query?: never;
@@ -1601,6 +1618,27 @@ export interface components {
             environment: "local" | "test" | "staging" | "production";
             providers: components["schemas"]["ProviderStatus"];
         };
+        /** JourneeOut */
+        JourneeOut: {
+            /** Jour */
+            jour: string;
+            /** Agenda */
+            agenda: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "serveur" | "fichier" | "absent";
+            /** Disponible */
+            disponible: boolean;
+            /** Lu Le */
+            lu_le?: string | null;
+            /**
+             * Rendezvous
+             * @default []
+             */
+            rendezvous: components["schemas"]["RendezVousOut"][];
+        };
         /** LearningEventOut */
         LearningEventOut: {
             /**
@@ -2019,6 +2057,29 @@ export interface components {
             operation: "remove_plan_item";
             /** Item Id */
             item_id: string;
+        };
+        /**
+         * RendezVousOut
+         * @description Une ligne de l'agenda du jour, telle que l'écran « Votre journée » l'affiche.
+         */
+        RendezVousOut: {
+            /** Heure */
+            heure: string;
+            /** Prenom */
+            prenom: string;
+            /** Nom */
+            nom: string;
+            /** Motif */
+            motif: string;
+            /** Statut */
+            statut: string;
+            /**
+             * Smilecloud
+             * @enum {string}
+             */
+            smilecloud: "trouve" | "absent" | "a_verifier" | "ambigu" | "demande" | "inconnu";
+            /** Patient Id */
+            patient_id?: string | null;
         };
         /**
          * ReorderPlanItems
@@ -2589,6 +2650,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_journee_journee_get: {
+        parameters: {
+            query?: {
+                jour?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JourneeOut"];
+                };
             };
             /** @description Validation Error */
             422: {

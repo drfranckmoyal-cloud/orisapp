@@ -870,3 +870,39 @@ l'adaptateur Claude.
 `providers.factory` importait les adaptateurs STT au chargement du module, qui
 importaient en retour `providers.base` : importer `oris_api.stt.deepgram` en premier
 cassait. Même correction que pour l'adaptateur Claude : import dans la fonction.
+
+## « Votre journée » branché sur Dental Lens (21 septembre 2026)
+
+L'écran affichait « chantier à venir ». Il affiche maintenant l'agenda réel du jour,
+sans qu'Oris ait à parler à Doctolib : **Dental Lens**, l'autre outil du cabinet, lit
+déjà l'agenda dans le navigateur et dépose la journée sur le poste. Oris vient la
+chercher, c'est tout.
+
+### Ce qui a été construit
+
+- `services/agenda.py` — lecteur à deux chemins : d'abord le serveur Dental Lens
+  (`http://127.0.0.1:8765/api/journee`), qui rapproche en prime chaque patient de son
+  dossier SmileCloud ; sinon le fichier du jour
+  (`~/Library/Application Support/SmileCloudPhotos/journees/AAAA-MM-JJ.json`), lisible
+  serveur éteint. Une journée absente est **dite absente**, jamais devinée.
+- `api/journee.py` — `GET /journee?jour=` ; pour chaque rendez-vous, l'identifiant du
+  dossier Oris s'il existe déjà. Rapprochement insensible à la casse et aux accents :
+  Doctolib écrit « MOREAU Chloé », Oris « Moreau Chloe ».
+- `agenda_provider` (`none` par défaut), `dental_lens_url`, `dental_lens_registre` dans
+  la configuration : un connecteur d'agenda est de la configuration, pas du domaine.
+- Écran `/journee` : une ligne par rendez-vous, heure, patient, motif, voyant
+  SmileCloud, et deux gestes — ouvrir le dossier, ou commencer l'écoute.
+
+### Ce qui n'a **pas** été fait, exprès
+
+Lire l'agenda n'écrit rien. Aucun dossier patient n'est créé automatiquement : il faut
+cliquer. Ces noms-là sont de vrais patients, et rien ne doit entrer dans Oris tant que
+l'hébergement de santé n'est pas en place — l'écran le dit en toutes lettres.
+
+### Deux défauts trouvés à la vérification
+
+- `new Date().toISOString()` donnait la veille après minuit : le jour est maintenant lu
+  sur l'heure locale.
+- `useApi` gardait les données de la ressource précédente pendant le chargement de la
+  suivante : les rendez-vous de la veille s'affichaient une seconde sous la date du
+  lendemain. Le résultat retient désormais de quelle ressource il vient.

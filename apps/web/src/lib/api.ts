@@ -199,3 +199,7 @@ export type LiveTranscript = Schemas["LiveTranscriptOut"];
 export type Progress = Schemas["ProgressOut"];
 
 export type Cabinet = Schemas["CabinetOut"];
+
+/** L'agenda du jour, repris de Dental Lens (écran « Votre journée »). */
+export type Journee = Schemas["JourneeOut"];
+export type RendezVous = Schemas["RendezVousOut"];

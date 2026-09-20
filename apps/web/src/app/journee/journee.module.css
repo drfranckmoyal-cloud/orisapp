@@ -1,0 +1,140 @@
+/* Votre journée : une ligne par rendez-vous, lisible d'un coup d'œil entre deux
+   patients. L'heure ancre la ligne à gauche, le geste attend à droite. */
+
+.rdvs {
+  display: grid;
+}
+
+.rdv {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--espace-4);
+  padding: 9px var(--espace-3);
+  border-top: 1px solid var(--trait);
+  transition: background var(--transition);
+}
+
+.rdv:first-child {
+  border-top: 0;
+}
+
+.rdv:hover {
+  background: #fbf8f3;
+}
+
+/* Un rendez-vous annulé ou manqué reste visible — la journée doit être fidèle —
+   mais il ne réclame plus rien : il s'efface. */
+.rdvPasse {
+  opacity: 0.55;
+}
+
+.heure {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--graisse-forte);
+  font-size: var(--texte-md);
+  color: var(--accent);
+}
+
+.qui {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.nom {
+  font-weight: var(--graisse-forte);
+  letter-spacing: -0.005em;
+}
+
+.prenom {
+  font-weight: var(--graisse-moyenne);
+  color: var(--encre-douce);
+}
+
+.motif {
+  font-size: var(--texte-xs);
+  color: var(--encre-tres-douce);
+  font-weight: var(--graisse-moyenne);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.etats {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-2);
+  flex: none;
+}
+
+.gestes {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-3);
+  justify-content: flex-end;
+  flex: none;
+  min-width: 190px;
+}
+
+/* Le dossier se consulte, l'écoute se commence : le second geste est le plus gros. */
+.lienFiche {
+  font-size: var(--texte-xs);
+  color: var(--encre-tres-douce);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--transition);
+}
+
+.lienFiche:hover {
+  color: var(--encre-douce);
+  text-decoration: underline;
+}
+
+.commencer {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 15px;
+  border-radius: var(--rayon-bouton);
+  background: var(--accent);
+  color: var(--encre-inverse);
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-demi);
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: var(--relief);
+  transition: background var(--transition), transform var(--transition);
+}
+
+.commencer:hover {
+  background: var(--accent-fonce);
+  transform: translateY(-1px);
+}
+
+.compte {
+  font-size: var(--texte-xs);
+  color: var(--encre-tres-douce);
+  font-weight: var(--graisse-moyenne);
+}
+
+/* D'où vient cette journée : jamais caché, jamais au milieu du chemin. */
+.provenance {
+  margin: 0;
+  font-size: 10.5px;
+  font-style: italic;
+  color: var(--trait-fort);
+}
+
+@media (max-width: 900px) {
+  .rdv {
+    grid-template-columns: 54px minmax(0, 1fr);
+    row-gap: var(--espace-2);
+  }
+
+  .etats,
+  .gestes {
+    grid-column: 2;
+    justify-content: flex-start;
+    min-width: 0;
+  }
+}

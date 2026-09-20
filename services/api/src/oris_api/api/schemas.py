@@ -342,3 +342,26 @@ class ClientConfigOut(BaseModel):
     attachment_formats: list[str]
     attachment_max_bytes: int
     smilecloud_connected: bool
+
+
+class RendezVousOut(BaseModel):
+    """Une ligne de l'agenda du jour, telle que l'écran « Votre journée » l'affiche."""
+
+    heure: str
+    prenom: str
+    nom: str
+    motif: str
+    statut: str
+    smilecloud: Literal["trouve", "absent", "a_verifier", "ambigu", "demande", "inconnu"]
+    # Dossier Oris correspondant, s'il existe déjà. `None` veut dire « à créer », et
+    # la création reste un geste du praticien : Oris n'ouvre aucun dossier tout seul.
+    patient_id: UUID | None = None
+
+
+class JourneeOut(BaseModel):
+    jour: str
+    agenda: str
+    source: Literal["serveur", "fichier", "absent"]
+    disponible: bool
+    lu_le: str | None = None
+    rendezvous: list[RendezVousOut] = []

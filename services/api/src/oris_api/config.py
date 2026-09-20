@@ -18,6 +18,7 @@ AppEnv = Literal["local", "test", "staging", "production"]
 ProviderName = Literal["mock"]
 SttProviderName = Literal["mock", "azure_speech", "deepgram"]
 ExtractionProviderName = Literal["mock", "anthropic"]
+AgendaProviderName = Literal["none", "dental_lens"]
 
 
 class Settings(BaseSettings):
@@ -52,6 +53,15 @@ class Settings(BaseSettings):
     attachment_dir: Path = Path.home() / "Library" / "Caches" / "Oris" / "attachments"
     # Connecteur SmileCloud : éteint tant qu'il n'est pas construit.
     smilecloud_enabled: bool = False
+
+    # Agenda du jour (écran « Votre journée »). Oris ne lit pas Doctolib : il lit ce
+    # que Dental Lens, l'autre outil du cabinet, a déposé sur le poste. `none` tant
+    # qu'aucun connecteur n'est configuré — l'écran le dit alors franchement.
+    agenda_provider: AgendaProviderName = "none"
+    dental_lens_url: str = "http://127.0.0.1:8765"
+    dental_lens_registre: Path = (
+        Path.home() / "Library" / "Application Support" / "SmileCloudPhotos"
+    )
     max_session_minutes: int = 90
     warn_session_minutes: int = 80
 

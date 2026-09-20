@@ -479,6 +479,55 @@
         }
       }
     },
+    "/journee": {
+      "get": {
+        "tags": [
+          "journee"
+        ],
+        "summary": "Read Journee",
+        "operationId": "read_journee_journee_get",
+        "parameters": [
+          {
+            "name": "jour",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Jour"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JourneeOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters": {
       "get": {
         "tags": [
@@ -4365,6 +4414,58 @@
         ],
         "title": "HealthResponse"
       },
+      "JourneeOut": {
+        "properties": {
+          "jour": {
+            "type": "string",
+            "title": "Jour"
+          },
+          "agenda": {
+            "type": "string",
+            "title": "Agenda"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "serveur",
+              "fichier",
+              "absent"
+            ],
+            "title": "Source"
+          },
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible"
+          },
+          "lu_le": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lu Le"
+          },
+          "rendezvous": {
+            "items": {
+              "$ref": "#/components/schemas/RendezVousOut"
+            },
+            "type": "array",
+            "title": "Rendezvous",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "jour",
+          "agenda",
+          "source",
+          "disponible"
+        ],
+        "title": "JourneeOut"
+      },
       "LearningEventOut": {
         "properties": {
           "learning_event_id": {
@@ -5425,6 +5526,65 @@
           "item_id"
         ],
         "title": "RemovePlanItem"
+      },
+      "RendezVousOut": {
+        "properties": {
+          "heure": {
+            "type": "string",
+            "title": "Heure"
+          },
+          "prenom": {
+            "type": "string",
+            "title": "Prenom"
+          },
+          "nom": {
+            "type": "string",
+            "title": "Nom"
+          },
+          "motif": {
+            "type": "string",
+            "title": "Motif"
+          },
+          "statut": {
+            "type": "string",
+            "title": "Statut"
+          },
+          "smilecloud": {
+            "type": "string",
+            "enum": [
+              "trouve",
+              "absent",
+              "a_verifier",
+              "ambigu",
+              "demande",
+              "inconnu"
+            ],
+            "title": "Smilecloud"
+          },
+          "patient_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Patient Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "heure",
+          "prenom",
+          "nom",
+          "motif",
+          "statut",
+          "smilecloud"
+        ],
+        "title": "RendezVousOut",
+        "description": "Une ligne de l'agenda du jour, telle que l'écran « Votre journée » l'affiche."
       },
       "ReorderPlanItems": {
         "properties": {

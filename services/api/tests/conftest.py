@@ -23,6 +23,8 @@ os.environ["ALLOW_EXTERNAL_STT"] = "false"
 os.environ["ALLOW_EXTERNAL_LLM"] = "false"
 # L'écoute en direct est injectée par les tests qui la veulent, jamais héritée du poste.
 os.environ["ENABLE_LIVE_TRANSCRIPT"] = "false"
+# L'agenda du jour vient d'un autre outil du poste : les tests ne le cherchent pas.
+os.environ["AGENDA_PROVIDER"] = "none"
 # Les pièces jointes des tests vivent dans un dossier jetable, jamais celui du poste.
 os.environ["ATTACHMENT_DIR"] = str(Path(tempfile.mkdtemp(prefix="oris-pieces-")))
 os.environ["APP_ENV"] = "local"
