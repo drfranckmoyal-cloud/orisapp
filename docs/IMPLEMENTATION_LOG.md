@@ -525,6 +525,23 @@ en vrai dans le navigateur intégré, pas seulement supposé.
 Les intitulés de section ne sont pas devinés à la mise en page : la liste vient du
 rédacteur (`SECTION_ORDER`), sinon une phrase en majuscules deviendrait un titre.
 
+## Cadre des séances jouées (2026-09-20)
+
+Ce que le jalon M11 laissait en suspens : de quoi organiser les enregistrements sans que
+je sois là. Trois documents pour le praticien (note d'information, consentement,
+protocole) et un outil qui refuse ce qui n'est pas en règle.
+
+Le protocole est écrit pour mesurer ce qui compte, pas pour produire du beau son : garder
+le bruit du cabinet, ne pas répéter les numéros de dents, ne pas recommencer une phrase
+hésitante. La sixième consultation, dite « piège », contient exprès les six situations où
+Oris peut se tromper gravement (correction de dent, négation, incertitude, parole du
+patient non reprise, acte futur, refus).
+
+`prepare_recordings.py` convertit (afconvert sur macOS, ffmpeg sinon), lit les
+transcriptions « rôle | texte » — un rôle inconnu est refusé, pas deviné — et écrit un
+manifeste que `check_dataset.py` accepte. Sans référence de consentement, il n'écrit
+rien : la règle est la même à l'entrée, au contrôle et à la porte d'entrée en bêta.
+
 ## M11 — mise en situation clinique (2026-09-20)
 
 Critères visés (`IMPLEMENTATION_PLAN` M11) : environnement cible compatible HDS, flux de

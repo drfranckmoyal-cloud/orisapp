@@ -1,5 +1,17 @@
 # Changelog
 
+## Cadre des séances jouées — 2026-09-20
+- `docs/consentement/note-information.md` et `consentement-participant.md` : ce qui est
+  enregistré, ce qui ne l'est pas, qui le traite (y compris hors UE), combien de temps,
+  et comment retirer son consentement ;
+- `docs/PROTOCOLE_ENREGISTREMENT.md` : matériel, six situations à jouer dont une
+  « consultation piège » qui teste correction de dent, négation, incertitude, parole du
+  patient, acte futur et refus ; nommage, transmission, suppression ;
+- `scripts/prepare_recordings.py` : conversion en 16 kHz mono, lecture des transcriptions
+  de référence (« praticien | … »), écriture du manifeste — **refus** d'écrire un jeu
+  sans consentement référencé ;
+- tests : API 271.
+
 ## M11 — 2026-09-20 — mise en situation clinique
 - **mode ombre** : Oris travaille en parallèle du praticien pour être comparé ; ses
   documents ne peuvent être ni validés ni exportés, la règle est appliquée côté serveur ;

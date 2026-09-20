@@ -137,6 +137,7 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 
 | Quoi | Pourquoi | Quand |
 |---|---|---|
+| **Organiser une séance d'enregistrement** avec des confrères (tout est prêt : note d'information, consentement, protocole) | C'est ce qui remplacera les voix de synthèse et dira la vérité sur la qualité | Dès que vous voulez |
 | **Logo et coordonnées du cabinet** (fichier image + adresse, téléphone, mention légale) | Ils s'impriment en tête de chaque document ; pour l'instant c'est le logo Oris | Quand vous voulez |
 | **Compléter `docs/VOCABULAIRE.md`** | Oris n'écrit que ce qu'il sait nommer ; ce qu'il ignore est signalé « à rédiger » | Quand vous voulez, thème par thème |
 | Clé Azure Speech (optionnel) | Comparer Deepgram à un fournisseur certifié HDS | Avant de choisir |
@@ -207,6 +208,8 @@ Détails, tests et banc d'essai : `docs/DEVELOPMENT.md` et `benchmarks/README.md
 | `docs/VOCABULAIRE.md` | **Les 269 termes qu'Oris sait écrire, par thème — à compléter par vous** |
 | `docs/VENDORS.md` | Ce qu'Oris envoie à Deepgram et à Claude, et ce qui ne sort jamais |
 | `scripts/beta_gate.py` | La vérification « est-ce prêt pour un patient ? » |
+| `docs/PROTOCOLE_ENREGISTREMENT.md` | **Comment enregistrer des consultations jouées** : matériel, six situations, transmission |
+| `docs/consentement/` | Note d'information et formulaire de consentement à faire signer |
 | `docs/KNOWN_LIMITATIONS.md` | Ce qui ne marche pas encore, et les pièges |
 | `docs/DEVELOPMENT.md` | Comment lancer et vérifier le projet |
 | `benchmarks/README.md` | Banc d'essai des services de transcription |
