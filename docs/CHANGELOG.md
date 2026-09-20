@@ -1,5 +1,24 @@
 # Changelog
 
+## Refonte produit (1) — 2026-09-20
+Première passe de la refonte décrite dans `docs/AUDIT_DESIGN.md` et `docs/ETAT_REEL.md`.
+
+- **fondations** : palette bleue figée, police Inter réellement chargée, jetons
+  sémantiques, bibliothèque de composants (bouton, carte, en-tête, pastille, onglets,
+  état vide, squelette, étapes, barre, zone de texte) ;
+- **accueil** : tableau de bord — à relire, aujourd'hui, terminées, à reprendre ;
+- **patients** : recherche insensible aux accents, création complète, et **fiche patient**
+  (consultations, documents, plan de traitement) ;
+- **écran d'attente** (S06) : trois étapes réelles lues en base (`/progress`), sans
+  pourcentage inventé ;
+- **révision** (S08) : rail à onglets À vérifier / Données cliniques / Historique, source
+  d'une phrase par-dessus le rail, faits en français (`/ontology/concepts`) ;
+- **édition manuelle du texte** (§48) et **raccourcir** (§53) ;
+- **plan de traitement** (§34) : ajouter, retirer, monter, descendre — la séquence
+  devient explicite quand l'ordre est décidé ;
+- **Documents** et **Paramètres** : les deux écrans manquants ;
+- tests : API 278, web 47.
+
 ## Cadre des séances jouées — 2026-09-20
 - `docs/consentement/note-information.md` et `consentement-participant.md` : ce qui est
   enregistré, ce qui ne l'est pas, qui le traite (y compris hors UE), combien de temps,

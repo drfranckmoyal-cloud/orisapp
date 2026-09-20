@@ -4,7 +4,7 @@
 fonctionne, ce qui bloque et ce qui est attendu de vous. Mis à jour à la fin de
 chaque jalon.
 
-Dernière mise à jour : 19 septembre 2026 (la chaîne complète micro → compte rendu est branchée).
+Dernière mise à jour : 20 septembre 2026 (la chaîne complète micro → compte rendu est branchée).
 Dépôt : `drfranckmoyal-cloud/orisapp` (privé) · Dossier : `~/Desktop/Claude-Projects/ORIS`
 
 ---
@@ -44,6 +44,9 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 ---
 
 ## 3. Ce qui fonctionne aujourd'hui
+
+*Refonte du 20 septembre : l'application a été reprise écran par écran d'après le cahier
+`docs/UI_SCREEN_SPEC.md`. L'écart restant est listé dans `docs/ETAT_REEL.md`.*
 
 **Sur le site (ordinateur)**
 - Créer des patients fictifs, lancer une des 100 consultations fictives, obtenir
