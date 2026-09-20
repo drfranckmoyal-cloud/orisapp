@@ -188,6 +188,9 @@ def validate(
     version = current_version(session, document)
     if version is None:
         raise Conflict("DOCUMENT_EMPTY", str(document_id))
+    if encounter.mode == "shadow":
+        # M11 : une sortie d'ombre ne devient jamais un document clinique.
+        raise Conflict("SHADOW_ENCOUNTER", str(document_id))
     if document.status == "validated":
         raise Conflict("DOCUMENT_ALREADY_VALIDATED", str(document_id))
     obj = load_current(session, encounter)
@@ -272,6 +275,8 @@ def export_document(
     version = current_version(session, document)
     if version is None:
         raise Conflict("DOCUMENT_EMPTY", str(document_id))
+    if encounter.mode == "shadow":
+        raise Conflict("SHADOW_ENCOUNTER", str(document_id))
 
     patient = session.get(Patient, encounter.patient_id)
     practitioner = session.get(User, encounter.practitioner_id)

@@ -58,7 +58,9 @@ def list_encounters(
 
 @router.post("/encounters", response_model=EncounterOut, status_code=status.HTTP_201_CREATED)
 def create_encounter(body: EncounterCreate, session: SessionDep, actor: ActorDep) -> EncounterOut:
-    encounter = encounters.create_encounter(session, actor, body.patient_id, body.synthetic_case_id)
+    encounter = encounters.create_encounter(
+        session, actor, body.patient_id, body.synthetic_case_id, shadow=body.shadow
+    )
     return encounter_out(session, encounter)
 
 

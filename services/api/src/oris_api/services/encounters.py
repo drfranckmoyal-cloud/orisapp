@@ -60,11 +60,24 @@ def list_encounters(
     return list(session.scalars(statement.order_by(Encounter.created_at.desc())))
 
 
+SHADOW_MODE = "shadow"
+
+
+def is_shadow(encounter: Encounter) -> bool:
+    """Mode ombre : Oris écrit en parallèle, le praticien ne s'en sert pas (M11).
+
+    Sert à mesurer Oris en conditions réelles sans qu'aucune de ses sorties n'entre
+    dans un dossier : un document d'ombre ne peut être ni validé ni exporté.
+    """
+    return encounter.mode == SHADOW_MODE
+
+
 def create_encounter(
     session: Session,
     actor: Actor,
     patient_id: UUID,
     synthetic_case_id: str | None = None,
+    shadow: bool = False,
 ) -> Encounter:
     get_patient(session, actor, patient_id)
     metadata: dict[str, object] = {}
@@ -75,13 +88,15 @@ def create_encounter(
         patient_id=patient_id,
         practitioner_id=actor.user_id,
         status="draft",
-        mode="consultation",
+        mode=SHADOW_MODE if shadow else "consultation",
         object_version=1,
         metadata_json=metadata,
     )
     session.add(encounter)
     session.flush()
-    audit.record(session, actor, "encounter.created", "encounter", encounter.id)
+    audit.record(
+        session, actor, "encounter.created", "encounter", encounter.id, mode=encounter.mode
+    )
     return encounter
 
 

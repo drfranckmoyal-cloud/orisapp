@@ -11,7 +11,13 @@ body {
   margin: 0;
   background: var(--color-cloud);
   color: var(--color-graphite);
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    system-ui,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -118,6 +124,10 @@ h3 {
   background: var(--color-white);
   border-color: var(--color-deep-blue);
   color: var(--color-deep-blue);
+}
+
+[hidden] {
+  display: none !important;
 }
 
 .chip {

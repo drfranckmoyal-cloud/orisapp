@@ -37,7 +37,7 @@ traitement et les comptes rendus opératoires. Trois principes tiennent tout :
 | M8 | Correction dictée (« remplace 26 par 27 ») | **Terminé** |
 | M9 | Personnalisation : dictionnaire, mots préférés, suggestions | **Terminé** |
 | M10 | Sécurisation : accès par jeton, journal d'audit, purge du son | **Terminé côté logiciel** |
-| M11 | Validation clinique, hébergement agréé | À faire |
+| M11 | Mise en situation clinique : mode ombre, porte d'entrée en bêta | **Terminé côté logiciel** |
 
 Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENTATION_LOG.md`.
 
@@ -105,6 +105,15 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
   voix (72 % reviennent d'une seule voix). Quand Oris ne sait pas qui parle, il le dit
   — alerte « vérifiez qui a dit quoi » — au lieu de faire semblant. Une phrase du
   patient ne peut plus devenir un constat du praticien par défaut.
+
+**Avant de vous en servir avec un patient (depuis le 20 septembre)**
+- **Mode ombre** : vous pouvez faire tourner Oris **à côté** de votre façon de travailler.
+  Il écoute, il écrit, vous comparez — et rien de ce qu'il produit ne peut être validé,
+  exporté ni versé au dossier. C'est bloqué dans le serveur, pas seulement caché à l'écran.
+- **Une porte d'entrée** répond à la question « est-ce prêt ? » à ma place. Je la lance,
+  elle vérifie, elle refuse tant qu'il manque quelque chose — et elle dit quoi. Aujourd'hui
+  elle refuse : pas de consultations jouées par des praticiens, fournisseurs non revus,
+  flux de données non documentés, pas d'hébergement agréé.
 
 **Sécurité (depuis le 20 septembre)**
 - L'accès à Oris passe par un **jeton** personnel : je peux en créer un, le révoquer, et
@@ -195,7 +204,9 @@ Détails, tests et banc d'essai : `docs/DEVELOPMENT.md` et `benchmarks/README.md
 | `docs/IMPLEMENTATION_PLAN.md` | Les jalons M0 à M11 |
 | `docs/IMPLEMENTATION_LOG.md` | Mon journal : ce que j'ai construit et pourquoi, jalon par jalon |
 | `docs/CHANGELOG.md` | Ce qui a été livré à chaque jalon |
-| `docs/VOCABULAIRE.md` | **Les 227 termes qu'Oris sait écrire, par thème — à compléter par vous** |
+| `docs/VOCABULAIRE.md` | **Les 269 termes qu'Oris sait écrire, par thème — à compléter par vous** |
+| `docs/VENDORS.md` | Ce qu'Oris envoie à Deepgram et à Claude, et ce qui ne sort jamais |
+| `scripts/beta_gate.py` | La vérification « est-ce prêt pour un patient ? » |
 | `docs/KNOWN_LIMITATIONS.md` | Ce qui ne marche pas encore, et les pièges |
 | `docs/DEVELOPMENT.md` | Comment lancer et vérifier le projet |
 | `benchmarks/README.md` | Banc d'essai des services de transcription |
@@ -216,6 +227,7 @@ Détails, tests et banc d'essai : `docs/DEVELOPMENT.md` et `benchmarks/README.md
 | 18 sept. 2026 | M4 — premier banc réel : Deepgram Nova-3, 100 consultations lues | dents 100 %, négations 100 %, WER 8,2 %, voix 86,9 % |
 | 18 sept. 2026 | M5 — extraction clinique par Claude, 100 consultations, 2 modèles | Sonnet : 94 % abouties, 0 % de rejet, négations 98,6 %, 3,2 c/consultation ; 186 tests serveur |
 | 19 sept. 2026 | Vocabulaire : 269 termes classés par thème, dont vos 51 termes dictés | 196 tests serveur |
+| 20 sept. 2026 | M11 — mise en situation clinique : mode ombre, porte d'entrée en bêta exécutable | 266 serveur · 47 web |
 | 20 sept. 2026 | M10 — sécurisation : accès par jeton, journal d'audit sans contenu clinique, purge du son rejouable | 255 serveur · 47 web |
 | 20 sept. 2026 | M9 — personnalisation : dictionnaire du praticien, mots préférés, suggestions réversibles | 245 serveur · 47 web |
 | 20 sept. 2026 | M8 — correction dictée : phrase → patch structuré, aperçu avant application | 239 serveur · 47 web |

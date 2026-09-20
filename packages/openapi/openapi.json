@@ -2785,6 +2785,11 @@
               }
             ],
             "title": "Synthetic Case Id"
+          },
+          "shadow": {
+            "type": "boolean",
+            "title": "Shadow",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -2903,6 +2908,10 @@
             ],
             "title": "Synthetic Case Id"
           },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
           "processing_errors": {
             "items": {
               "$ref": "#/components/schemas/ProcessingError"
@@ -2932,6 +2941,7 @@
           "ended_at",
           "created_at",
           "synthetic_case_id",
+          "mode",
           "processing_errors",
           "critical_warning_count",
           "documents"

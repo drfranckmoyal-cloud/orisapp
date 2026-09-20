@@ -16,6 +16,7 @@ ALLOWED_DETAIL_KEYS = {
     "document_status",
     "job",
     "reason",
+    "mode",
 }
 CLINICAL_WORDS = ("fissure", "douleur", "composite", "patient", "16", "sensibilité")
 

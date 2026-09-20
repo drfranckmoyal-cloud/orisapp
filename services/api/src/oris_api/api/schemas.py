@@ -57,6 +57,8 @@ class EncounterCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     patient_id: UUID
     synthetic_case_id: str | None = None
+    # Mode ombre : Oris travaille en parallèle, ses sorties ne sont pas utilisables.
+    shadow: bool = False
 
 
 class ProcessingError(BaseModel):
@@ -79,6 +81,7 @@ class EncounterOut(BaseModel):
     ended_at: datetime | None
     created_at: datetime
     synthetic_case_id: str | None
+    mode: str
     processing_errors: list[ProcessingError]
     critical_warning_count: int
     documents: list[DocumentSummary]

@@ -41,7 +41,8 @@ const ISSUE_LABELS: Record<string, string> = {
   performed_not_supported: "« Réalisé » sans acte réalisé",
   fact_not_rendered: "Fait non repris dans le document",
   unrendered_concept: "Élément non reconnu à rédiger",
-  operative_field_missing: "Champ important non dicté — à compléter, jamais rempli",
+  operative_field_missing:
+    "Champ important non dicté — à compléter, jamais rempli",
 };
 
 function statusChipClass(status: DocumentView["status"]): string {
@@ -158,10 +159,17 @@ export default function ReviewPage() {
   // Alertes non bloquantes : à voir avant de signer, sans interdire la validation.
   const reviewWarnings =
     object?.warnings.filter((warning) => warning.severity === "review") ?? [];
+  // M11 : en mode ombre, Oris écrit pour être mesuré, pas pour être utilisé.
+  const shadow = data.mode === "shadow";
   // §81 : un acte a été dit, mais le compte rendu de soins ne se crée jamais tout seul.
   const operativeProposed =
-    (object?.procedures ?? []).some((procedure) => procedure.status !== "cancelled") &&
-    !docs.some((doc) => doc.document_type === "operative_note" && doc.status !== "superseded");
+    (object?.procedures ?? []).some(
+      (procedure) => procedure.status !== "cancelled",
+    ) &&
+    !docs.some(
+      (doc) =>
+        doc.document_type === "operative_note" && doc.status !== "superseded",
+    );
   const allValidated =
     docs.length > 0 &&
     docs
@@ -190,6 +198,9 @@ export default function ReviewPage() {
           }}
         >
           <span className="chip">{ENCOUNTER_STATUS[data.status]}</span>
+          {data.mode === "shadow" && (
+            <span className="chip chip-review">mode ombre</span>
+          )}
           {object && (
             <span className="chip">
               Dossier clinique v{object.object_version}
@@ -198,6 +209,7 @@ export default function ReviewPage() {
           <button
             type="button"
             className="button button-primary"
+            hidden={data.mode === "shadow"}
             disabled={!allValidated || data.status !== "review"}
             onClick={() =>
               act(
@@ -224,7 +236,11 @@ export default function ReviewPage() {
                 type="button"
                 className="button button-secondary"
                 onClick={() =>
-                  act(`/encounters/${id}/process`, undefined, "Traitement relancé.")
+                  act(
+                    `/encounters/${id}/process`,
+                    undefined,
+                    "Traitement relancé.",
+                  )
                 }
               >
                 Relancer le traitement
@@ -272,10 +288,18 @@ export default function ReviewPage() {
           ne peut pas être considéré comme exhaustif.
         </div>
       ))}
+      {shadow && (
+        <div className="banner banner-review" role="status">
+          <strong>Mode ombre</strong> — Oris travaille en parallèle pour être
+          comparé à votre propre compte rendu. Rien de ce qu’il écrit ici ne
+          peut être validé, exporté ni versé au dossier.
+        </div>
+      )}
+
       {operativeProposed && (
         <div className="banner banner-info" role="status">
-          <strong>Un acte a été détecté</strong> — voulez-vous le compte rendu de
-          soins ? Il ne sera rédigé qu’à partir de ce qui a été dit pendant
+          <strong>Un acte a été détecté</strong> — voulez-vous le compte rendu
+          de soins ? Il ne sera rédigé qu’à partir de ce qui a été dit pendant
           l’intervention.
           <div>
             <button
@@ -376,7 +400,9 @@ export default function ReviewPage() {
                 <TreatmentPlanCards
                   encounter={data}
                   clinicalObject={object}
-                  onSelectFact={(factId) => setSelection({ kind: "fact", factId })}
+                  onSelectFact={(factId) =>
+                    setSelection({ kind: "fact", factId })
+                  }
                   onCorrected={reloadAll}
                 />
               )}
@@ -387,37 +413,39 @@ export default function ReviewPage() {
                 onSelect={(claim) => setSelection({ kind: "claim", claim })}
               />
 
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  flexWrap: "wrap",
-                  borderTop: "1px solid var(--color-cloud)",
-                  paddingTop: 16,
-                }}
-              >
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => copyForRecord(active)}
+              {!shadow && (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    flexWrap: "wrap",
+                    borderTop: "1px solid var(--color-cloud)",
+                    paddingTop: 16,
+                  }}
                 >
-                  Copier pour le dossier
-                </button>
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => exportDocument(active)}
-                >
-                  Exporter en PDF
-                </button>
-                {active.status !== "validated" &&
-                  active.status !== "exported" && (
-                    <span className="muted">
-                      Ce document n’est pas validé : il partira avec la mention
-                      « brouillon ».
-                    </span>
-                  )}
-              </div>
+                  <button
+                    type="button"
+                    className="button button-secondary"
+                    onClick={() => copyForRecord(active)}
+                  >
+                    Copier pour le dossier
+                  </button>
+                  <button
+                    type="button"
+                    className="button button-secondary"
+                    onClick={() => exportDocument(active)}
+                  >
+                    Exporter en PDF
+                  </button>
+                  {active.status !== "validated" &&
+                    active.status !== "exported" && (
+                      <span className="muted">
+                        Ce document n’est pas validé : il partira avec la
+                        mention « brouillon ».
+                      </span>
+                    )}
+                </div>
+              )}
 
               {copyFallback !== null && (
                 <label style={{ display: "grid", gap: 8 }}>
@@ -433,7 +461,8 @@ export default function ReviewPage() {
                 </label>
               )}
 
-              {active.status !== "validated" &&
+              {!shadow &&
+                active.status !== "validated" &&
                 active.status !== "exported" &&
                 active.status !== "superseded" && (
                   <div

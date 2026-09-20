@@ -525,6 +525,48 @@ en vrai dans le navigateur intégré, pas seulement supposé.
 Les intitulés de section ne sont pas devinés à la mise en page : la liste vient du
 rédacteur (`SECTION_ORDER`), sinon une phrase en majuscules deviendrait un titre.
 
+## M11 — mise en situation clinique (2026-09-20)
+
+Critères visés (`IMPLEMENTATION_PLAN` M11) : environnement cible compatible HDS, flux de
+données fournisseurs revus, séances synthétiques **et** jouées par des professionnels,
+cadre de mode ombre, porte d'entrée en bêta. Ce qui relève du contrat et de
+l'hébergement n'est pas du code : ce jalon fournit ce qui rend la décision **vérifiable**,
+pas la décision elle-même.
+
+Modules :
+- `services/encounters.py` : **mode ombre** — Oris écrit, personne ne s'en sert ; un
+  document d'ombre ne peut être ni validé ni exporté ;
+- `docs/VENDORS.md` + `benchmarks/providers.json` : inventaire des flux (finalité, données
+  envoyées, région, conservation, usage pour l'entraînement, sous-traitants, DPA) ;
+- `scripts/beta_gate.py` : la règle de sortie devient exécutable — elle refuse tant qu'un
+  fournisseur n'est pas revu, qu'un jeu de données n'a pas de consentement documenté ou
+  que les tests critiques ne passent pas ;
+- `benchmarks/datasets/` : format des séances jouées par des praticiens, avec
+  consentement, et validateur.
+
+### Résultat M11
+
+**Mode ombre.** Une consultation créée avec `shadow: true` est traitée comme les autres —
+c'est l'intérêt : mesurer Oris en conditions réelles. Mais ses documents sont refusés à
+la validation **et** à l'export (`SHADOW_ENCOUNTER`), le mode est écrit dans le journal
+d'audit, et l'écran le dit en toutes lettres. La règle est appliquée côté serveur, pas
+seulement masquée dans l'interface.
+
+**Porte d'entrée en bêta.** `scripts/beta_gate.py` remplace une case à cocher par une
+vérification. Aujourd'hui elle **refuse**, et elle dit pourquoi : aucun jeu de données
+joué par des praticiens, trois fournisseurs non revus, 21 cases « à documenter » dans
+`docs/VENDORS.md`, hébergement agréé absent. Un point qui dépend d'un contrat est déclaré
+comme tel : il ne se coche pas en écrivant du code.
+
+**Séances jouées.** `scripts/check_dataset.py` contrôle un jeu d'enregistrements avant
+usage : format 16 kHz mono 16 bits, consentement documenté **et** référencé, rôles
+présents dans la transcription de référence. Un jeu non synthétique sans consentement est
+refusé par le contrôle comme par la porte d'entrée.
+
+**Défaut d'interface corrigé au passage** : un attribut `hidden` ne pesait rien face à un
+`display` posé par une classe ou en ligne — deux boutons restaient visibles en mode ombre.
+Règle CSS globale ajoutée (`[hidden] { display: none !important }`).
+
 ## M10 — sécurisation (2026-09-20)
 
 Critères visés (`IMPLEMENTATION_PLAN` M10, `docs/SECURITY.md`) : journal d'audit,

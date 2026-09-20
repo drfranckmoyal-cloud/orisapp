@@ -961,6 +961,11 @@ export interface components {
             patient_id: string;
             /** Synthetic Case Id */
             synthetic_case_id?: string | null;
+            /**
+             * Shadow
+             * @default false
+             */
+            shadow: boolean;
         };
         /** EncounterFinish */
         EncounterFinish: {
@@ -1000,6 +1005,8 @@ export interface components {
             created_at: string;
             /** Synthetic Case Id */
             synthetic_case_id: string | null;
+            /** Mode */
+            mode: string;
             /** Processing Errors */
             processing_errors: components["schemas"]["ProcessingError"][];
             /** Critical Warning Count */

@@ -11,6 +11,7 @@
     ],
     "ended_at": "2026-09-17T09:00:00+00:00",
     "id": "00000000-0000-4000-8000-000000000002",
+    "mode": "consultation",
     "object_version": 1,
     "patient": {
       "birth_date": null,

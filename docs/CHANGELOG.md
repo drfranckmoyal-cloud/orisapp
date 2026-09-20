@@ -1,5 +1,18 @@
 # Changelog
 
+## M11 — 2026-09-20 — mise en situation clinique
+- **mode ombre** : Oris travaille en parallèle du praticien pour être comparé ; ses
+  documents ne peuvent être ni validés ni exportés, la règle est appliquée côté serveur ;
+- **porte d'entrée en bêta exécutable** (`scripts/beta_gate.py`) : elle refuse tant que
+  les fournisseurs ne sont pas revus, que les flux de données ne sont pas documentés, que
+  des séances jouées par des praticiens manquent, ou que l'hébergement agréé n'est pas là ;
+- **inventaire des flux fournisseurs** (`docs/VENDORS.md`) : finalité, données envoyées,
+  région, conservation, entraînement, sous-traitants, DPA — et ce qui ne sort jamais ;
+- **contrôle des jeux d'enregistrements** (`scripts/check_dataset.py`) : format,
+  consentement documenté et référencé, rôles présents ;
+- correction d'interface : un `hidden` était écrasé par un `display` de classe ;
+- tests : API 266, web 47.
+
 ## M10 — 2026-09-20 — sécurisation
 - **jetons d'accès** par praticien (`Authorization: Bearer`), empreinte scrypt salée,
   révocation immédiate ; `scripts/issue_token.py` pour créer, lister, révoquer ;
