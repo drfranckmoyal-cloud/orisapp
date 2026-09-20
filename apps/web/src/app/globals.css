@@ -1,4 +1,5 @@
 @import "./tokens.css";
+@import "./theme.css";
 
 *,
 *::before,
@@ -9,21 +10,23 @@
 html,
 body {
   margin: 0;
-  background: var(--color-cloud);
-  color: var(--color-graphite);
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    system-ui,
-    sans-serif;
+  background: var(--fond);
+  color: var(--encre);
+  font-family: var(--police), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: var(--texte-md);
+  line-height: var(--interligne);
   -webkit-font-smoothing: antialiased;
 }
 
+/* Durées, numéros de dent et dates : chiffres de largeur fixe, ils ne dansent pas. */
+time,
+[data-chiffres] {
+  font-variant-numeric: tabular-nums;
+}
+
 :focus-visible {
-  outline: 3px solid var(--color-oris-blue);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: var(--anneau-focus);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -42,8 +45,9 @@ a {
 h1,
 h2,
 h3 {
-  color: var(--color-deep-blue);
+  color: var(--encre);
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
 .page {
@@ -235,4 +239,37 @@ h3 {
   color: var(--color-deep-blue);
   text-decoration: underline;
   cursor: pointer;
+}
+
+/* --- Accueil ------------------------------------------------------------------- */
+.grille-accueil {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--espace-6);
+  align-items: start;
+}
+
+/* Action principale : une seule par écran, reconnaissable partout. */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espace-2);
+  background: var(--accent);
+  color: var(--accent-encre);
+  font-weight: var(--graisse-demi);
+  font-size: var(--texte-lg);
+  padding: 14px 24px;
+  border-radius: var(--rayon-bouton);
+  text-decoration: none;
+  box-shadow: var(--ombre-posee);
+  transition: background var(--transition);
+}
+
+.cta:hover {
+  background: var(--accent-fonce);
+}
+
+.cta span {
+  font-size: 10px;
+  opacity: 0.9;
 }

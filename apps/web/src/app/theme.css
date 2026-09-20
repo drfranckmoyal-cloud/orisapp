@@ -1,0 +1,113 @@
+/* Jetons sémantiques d'Oris.
+ *
+ * Deux palettes cohabitent le temps du choix : « bleu » (planche 1, figée dans
+ * design/tokens.json) et « sauge » (planche 2). Les écrans n'utilisent QUE les noms
+ * sémantiques ci-dessous — jamais une couleur brute — pour qu'un changement de palette
+ * ne demande aucune retouche d'écran.
+ */
+
+:root,
+[data-palette="bleu"] {
+  --fond: #f4f7fa;
+  --surface: #ffffff;
+  --surface-douce: #eaf1f6;
+  --surface-inverse: #0f2d46;
+
+  --encre: #14283c;
+  --encre-douce: #5b7186;
+  --encre-inverse: #ffffff;
+
+  --trait: #dbe5ee;
+  --trait-fort: #c3d2e0;
+
+  --accent: #3b82f6;
+  --accent-fonce: #2f6ad9;
+  --accent-douce: #e7f0fe;
+  --accent-encre: #ffffff;
+
+  --calme: #7dd3c7;
+  --valide: #067647;
+  --valide-douce: #e3f4ea;
+  --attention: #b7791f;
+  --attention-douce: #fdf3e1;
+  --alerte: #b42318;
+  --alerte-douce: #fdecea;
+
+  --ombre-posee: 0 1px 2px rgba(15, 45, 70, 0.06), 0 1px 3px rgba(15, 45, 70, 0.04);
+  --ombre-flottante: 0 12px 32px rgba(15, 45, 70, 0.14);
+  --anneau-focus: 0 0 0 3px rgba(59, 130, 246, 0.35);
+}
+
+[data-palette="sauge"] {
+  --fond: #f7f6f2;
+  --surface: #ffffff;
+  --surface-douce: #eef4f1;
+  --surface-inverse: #2e3a3f;
+
+  --encre: #23312f;
+  --encre-douce: #6b7a76;
+  --encre-inverse: #ffffff;
+
+  --trait: #e3e6df;
+  --trait-fort: #cfd6cd;
+
+  --accent: #2f6f67;
+  --accent-fonce: #245751;
+  --accent-douce: #dfece8;
+  --accent-encre: #ffffff;
+
+  --calme: #cfe5de;
+  --valide: #2f6f67;
+  --valide-douce: #dfece8;
+  --attention: #a2703f;
+  --attention-douce: #f5e7da;
+  --alerte: #a33a2c;
+  --alerte-douce: #f6e5e2;
+
+  --ombre-posee: 0 1px 2px rgba(46, 58, 63, 0.06), 0 1px 3px rgba(46, 58, 63, 0.04);
+  --ombre-flottante: 0 12px 32px rgba(46, 58, 63, 0.14);
+  --anneau-focus: 0 0 0 3px rgba(47, 111, 103, 0.3);
+}
+
+:root {
+  /* Échelle typographique — 1.25, arrondie pour rester lisible à l'écran. */
+  --texte-xs: 12px;
+  --texte-sm: 13px;
+  --texte-md: 15px;
+  --texte-lg: 18px;
+  --texte-xl: 22px;
+  --texte-2xl: 28px;
+  --texte-3xl: 36px;
+
+  --graisse-normale: 400;
+  --graisse-moyenne: 500;
+  --graisse-demi: 600;
+
+  --interligne-serre: 1.2;
+  --interligne: 1.55;
+
+  /* Espacement — échelle de la spec, rien entre les valeurs. */
+  --espace-1: 4px;
+  --espace-2: 8px;
+  --espace-3: 12px;
+  --espace-4: 16px;
+  --espace-6: 24px;
+  --espace-8: 32px;
+  --espace-12: 48px;
+
+  --rayon-carte: 16px;
+  --rayon-bouton: 14px;
+  --rayon-pastille: 999px;
+
+  --largeur-menu: 232px;
+  --largeur-contenu: 1180px;
+  --largeur-tache: 760px;
+
+  --transition: 160ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition: 0ms;
+  }
+}

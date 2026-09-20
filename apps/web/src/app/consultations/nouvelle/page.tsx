@@ -17,23 +17,31 @@ import { useApi } from "@/lib/useApi";
 export default function NewConsultationPage() {
   const router = useRouter();
   const [cases] = useApi<SyntheticCase[]>("/synthetic-cases");
-  const [name, setName] = useState("");
+  const [patients] = useApi<Patient[]>("/patients");
+  const [prenom, setPrenom] = useState("");
+  const [nom, setNom] = useState("");
+  const [patientChoisi, setPatientChoisi] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function startListening() {
     setBusy(true);
     setError(null);
-    const written = name.trim() || "Patient d’essai";
-    const [first, ...rest] = written.split(/\s+/);
     try {
-      const patient = await apiRequest<Patient>("/patients", {
-        method: "POST",
-        body: { first_name: first, last_name: rest.join(" ") || "—" },
-      });
+      const patientId =
+        patientChoisi ||
+        (
+          await apiRequest<Patient>("/patients", {
+            method: "POST",
+            body: {
+              first_name: prenom.trim() || "Patient",
+              last_name: nom.trim() || "Test",
+            },
+          })
+        ).id;
       const encounter = await apiRequest<Encounter>("/encounters", {
         method: "POST",
-        body: { patient_id: patient.id },
+        body: { patient_id: patientId },
       });
       router.push(`/consultations/${encounter.id}/ecoute`);
     } catch (caught) {
@@ -85,16 +93,46 @@ export default function NewConsultationPage() {
             void startListening();
           }}
         >
-          <label className="field" style={{ minWidth: 260 }}>
-            Nom du patient (inventé)
-            <input
-              className="input"
-              value={name}
-              placeholder="Patient d’essai"
-              autoFocus
-              onChange={(event) => setName(event.target.value)}
-            />
-          </label>
+          {patients.state === "ready" && patients.data.length > 0 && (
+            <label className="field" style={{ minWidth: 240 }}>
+              Patient suivi
+              <select
+                className="input"
+                value={patientChoisi}
+                onChange={(event) => setPatientChoisi(event.target.value)}
+              >
+                <option value="">Nouveau patient…</option>
+                {patients.data.map((patient) => (
+                  <option key={patient.id} value={patient.id}>
+                    {patient.first_name} {patient.last_name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {!patientChoisi && (
+            <>
+              <label className="field">
+                Prénom
+                <input
+                  className="input"
+                  value={prenom}
+                  placeholder="Patient"
+                  autoFocus
+                  onChange={(event) => setPrenom(event.target.value)}
+                />
+              </label>
+              <label className="field">
+                Nom
+                <input
+                  className="input"
+                  value={nom}
+                  placeholder="Test"
+                  onChange={(event) => setNom(event.target.value)}
+                />
+              </label>
+            </>
+          )}
           <button type="submit" className="button button-large" disabled={busy}>
             {busy ? "Préparation…" : "Démarrer l’écoute"}
           </button>

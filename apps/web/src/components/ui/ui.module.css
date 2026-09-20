@@ -1,0 +1,257 @@
+/* Composants de base d'Oris. Aucun écran ne dessine : tout passe par ici. */
+
+/* --- Bouton ------------------------------------------------------------------ */
+.bouton {
+  font: inherit;
+  font-weight: var(--graisse-demi);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espace-2);
+  border-radius: var(--rayon-bouton);
+  border: 1px solid transparent;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+  white-space: nowrap;
+}
+
+.bouton:focus-visible {
+  outline: none;
+  box-shadow: var(--anneau-focus);
+}
+
+.bouton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.principal {
+  background: var(--accent);
+  color: var(--accent-encre);
+}
+
+.principal:hover:not(:disabled) {
+  background: var(--accent-fonce);
+}
+
+.secondaire {
+  background: var(--surface);
+  border-color: var(--trait-fort);
+  color: var(--encre);
+}
+
+.secondaire:hover:not(:disabled) {
+  border-color: var(--encre-douce);
+}
+
+.discret {
+  background: transparent;
+  color: var(--encre-douce);
+  padding: 6px 10px;
+}
+
+.discret:hover:not(:disabled) {
+  color: var(--encre);
+  background: var(--surface-douce);
+}
+
+.grand {
+  padding: 15px 28px;
+  font-size: var(--texte-lg);
+  border-radius: var(--rayon-bouton);
+}
+
+/* --- Carte ------------------------------------------------------------------- */
+.carte {
+  background: var(--surface);
+  border: 1px solid var(--trait);
+  border-radius: var(--rayon-carte);
+  box-shadow: var(--ombre-posee);
+  padding: var(--espace-6);
+  display: grid;
+  gap: var(--espace-4);
+  align-content: start;
+}
+
+.carteSerree {
+  padding: var(--espace-4);
+  gap: var(--espace-3);
+}
+
+.enTeteCarte {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espace-4);
+}
+
+.titreCarte {
+  margin: 0;
+  font-size: var(--texte-lg);
+  font-weight: var(--graisse-demi);
+  color: var(--encre);
+  letter-spacing: -0.01em;
+}
+
+/* --- En-tête de page --------------------------------------------------------- */
+.enTetePage {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espace-6);
+  flex-wrap: wrap;
+}
+
+.surTitre {
+  margin: 0 0 var(--espace-1);
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-moyenne);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--encre-douce);
+}
+
+.titrePage {
+  margin: 0;
+  font-size: var(--texte-3xl);
+  line-height: var(--interligne-serre);
+  letter-spacing: -0.02em;
+  font-weight: var(--graisse-demi);
+  color: var(--encre);
+}
+
+/* --- Pastille ---------------------------------------------------------------- */
+.pastille {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--rayon-pastille);
+  padding: 3px 10px;
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-moyenne);
+  background: var(--surface-douce);
+  color: var(--encre);
+  white-space: nowrap;
+}
+
+.pastilleAccent {
+  background: var(--accent-douce);
+  color: var(--accent-fonce);
+}
+.pastilleValide {
+  background: var(--valide-douce);
+  color: var(--valide);
+}
+.pastilleAttention {
+  background: var(--attention-douce);
+  color: var(--attention);
+}
+.pastilleAlerte {
+  background: var(--alerte-douce);
+  color: var(--alerte);
+}
+
+.point {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+/* --- État vide --------------------------------------------------------------- */
+.vide {
+  display: grid;
+  gap: var(--espace-2);
+  justify-items: start;
+  padding: var(--espace-6) 0;
+  color: var(--encre-douce);
+  font-size: var(--texte-md);
+}
+
+.videTitre {
+  color: var(--encre);
+  font-weight: var(--graisse-moyenne);
+}
+
+/* --- Squelette de chargement -------------------------------------------------- */
+.squelette {
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, var(--surface-douce), var(--trait), var(--surface-douce));
+  background-size: 200% 100%;
+  animation: glisse 1.4s ease-in-out infinite;
+}
+
+@keyframes glisse {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .squelette {
+    animation: none;
+  }
+}
+
+/* --- Liste de lignes ---------------------------------------------------------- */
+.lignes {
+  display: grid;
+}
+
+.ligne {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--espace-4);
+  padding: var(--espace-3) 0;
+  border-top: 1px solid var(--trait);
+  text-decoration: none;
+  color: inherit;
+}
+
+.ligne:first-child {
+  border-top: none;
+}
+
+.ligne:hover {
+  background: var(--surface-douce);
+  border-radius: 10px;
+  box-shadow: 0 0 0 8px var(--surface-douce);
+}
+
+.ligneTitre {
+  font-weight: var(--graisse-moyenne);
+  color: var(--encre);
+}
+
+.ligneDetail {
+  font-size: var(--texte-sm);
+  color: var(--encre-douce);
+}
+
+/* --- Champ de recherche -------------------------------------------------------- */
+.champ {
+  font: inherit;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--rayon-bouton);
+  border: 1px solid var(--trait-fort);
+  background: var(--surface);
+  color: var(--encre);
+}
+
+.champ::placeholder {
+  color: var(--encre-douce);
+}
+
+.champ:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--anneau-focus);
+}

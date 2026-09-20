@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { AppShell } from "@/components/AppShell";
 
 import "./globals.css";
+
+// La police de la marque, réellement chargée et auto-hébergée (planche d'identité).
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--police",
+});
 
 export const metadata: Metadata = {
   title: "Oris",
@@ -12,8 +20,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="fr" data-palette="bleu" className={inter.variable}>
       <body>
+        {/* Palette retenue appliquée avant l'affichage du contenu : pas de clignotement. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var p=localStorage.getItem('oris-palette');if(p)document.documentElement.setAttribute('data-palette',p)}catch(e){}",
+          }}
+        />
         <AppShell>{children}</AppShell>
       </body>
     </html>
