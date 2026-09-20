@@ -1,5 +1,27 @@
 # Changelog
 
+## Refonte produit (5) — 2026-09-20 — l'infrastructure d'apprentissage
+Le cadrage (§202, §205) interdisait de construire une V1 non apprenante puis d'ajouter
+ces mécanismes plus tard. Les huit tables manquantes existent, et la plupart sont
+écrites par le produit lui-même.
+
+- **`prompt_versions` / `model_versions`** : chaque traitement inscrit la consigne et le
+  modèle qui ont réellement servi, avec l'**empreinte sha256 du texte de consigne** — une
+  retouche silencieuse se voit. Visibles dans **Paramètres › Moteurs** : « Extraction
+  clinique — anthropic · claude-sonnet-5/extraction-fr-5 · consigne extraction-fr-5 ».
+- **`model_runs`** : un appel fournisseur = une ligne (durée, état, code d'erreur,
+  compteurs). **Jamais de contenu patient**, pas même en métadonnée (§56) — un test
+  compare la trace à la transcription pour s'en assurer. Un transcript vide est tracé
+  comme un échec, pas comme une réussite.
+- **`practitioner_learning_profiles`** : le profil du contrat, recalculé à chaque
+  changement de préférence ou de dictionnaire. C'est un **miroir**, pas une seconde
+  source ; un terme désactivé en sort aussitôt. Route `GET /me/learning/profile`.
+- **`dataset_versions` / `evaluation_runs`** : le banc d'essai d'extraction écrit sa
+  mesure en base, avec le jeu de données cité et sa nature (jouée ou réelle). La porte
+  de sortie se ferme sur une **régression critique**, même si la moyenne s'améliore.
+- **`templates` / `attachments`** : prévues par le cadrage, créées, inactives en V1 —
+  comme §205 l'autorise explicitement.
+
 ## Refonte produit (4) — 2026-09-20 — les écrans restants
 - **accueil (§8)** : la **recherche patient** qui manquait — on tape un nom, on tombe sur
   la fiche.

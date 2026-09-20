@@ -88,17 +88,18 @@ n'est branchée à aucun écran : afficher un panneau vide serait un mensonge d'
 |---|---|
 | `LearningEvent` | fait |
 | Diff avant/après correction | fait |
-| **`PractitionerLearningProfile`** | **table absente** (le schéma existe pourtant dans le paquet) |
-| **`PromptVersion` / `ModelVersion`** | **tables absentes** — la version d'invite est une chaîne dans le code |
-| **`DatasetVersion` / `EvaluationRun`** | **tables absentes** — les rapports sont des fichiers |
+| `PractitionerLearningProfile` | fait — table, miroir recalculé à chaque changement, route `/me/learning/profile` |
+| `PromptVersion` / `ModelVersion` | fait — inscrites par le traitement lui-même, avec l'empreinte du texte de consigne ; visibles dans Paramètres |
+| `DatasetVersion` / `EvaluationRun` | fait — le banc d'essai écrit sa mesure en base, avec le jeu cité et la porte de sortie |
 | Golden tests | fait |
 | Dictionnaire personnel | fait |
 | Préférences explicites | fait |
-| Tables `templates`, `attachments`, `model_runs` (§56) | **absentes** |
+| Tables `templates`, `attachments`, `model_runs` (§56) | faites — `model_runs` est écrite à chaque appel fournisseur (durée, compteurs, jamais de contenu patient) ; `templates` et `attachments` sont prévues et inactives, comme le cadrage l'autorise |
 
 Le cadrage dit explicitement : « **Il ne faut surtout pas construire une V1 non
-apprenante puis tenter d'ajouter ces mécanismes plus tard.** » J'ai fait à moitié ce
-qu'il interdisait de remettre à plus tard.
+apprenante puis tenter d'ajouter ces mécanismes plus tard.** » C'est réparé depuis le
+20 septembre 2026 : les huit tables existent, et six d'entre elles sont écrites par le
+produit lui-même, pas par une intention.
 
 ---
 

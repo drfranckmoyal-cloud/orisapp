@@ -753,6 +753,52 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me/learning/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Learning Profile
+         * @description Ce qu'Oris croit savoir de vous, d'un bloc (§202, §205).
+         *
+         *     C'est un miroir : il se recalcule à partir des préférences et du dictionnaire, et
+         *     ne contient rien de clinique.
+         */
+        get: operations["read_learning_profile_me_learning_profile_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/system/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Engine Versions
+         * @description Quel moteur et quelle consigne ont réellement servi (§202).
+         *
+         *     Ces lignes sont écrites par le traitement lui-même : elles disent ce qui a tourné,
+         *     pas ce qui est configuré.
+         */
+        get: operations["list_engine_versions_system_versions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/me/learning/suggestions": {
         parameters: {
             query?: never;
@@ -1295,6 +1341,25 @@ export interface components {
             /** Message */
             message: string;
         };
+        /**
+         * EngineVersionOut
+         * @description Un moteur qui a réellement servi, et la consigne qui l'accompagnait.
+         */
+        EngineVersionOut: {
+            /** Component */
+            component: string;
+            /** Provider */
+            provider: string;
+            /** Model Id */
+            model_id: string;
+            /** Prompt Version */
+            prompt_version: string | null;
+            /**
+             * First Seen At
+             * Format: date-time
+             */
+            first_seen_at: string;
+        };
         /** FactChanges */
         FactChanges: {
             /** Assertion */
@@ -1556,6 +1621,35 @@ export interface components {
             /** External Id */
             external_id?: string | null;
         };
+        /** PractitionerLearningProfile */
+        PractitionerLearningProfile: {
+            /** User Id */
+            user_id: string;
+            /**
+             * Preferred Document Length
+             * @enum {string}
+             */
+            preferred_document_length: "short" | "standard" | "detailed";
+            /**
+             * Preferred Style
+             * @enum {string}
+             */
+            preferred_style: "sentences" | "semi_telegraphic";
+            /** Preferred Terms */
+            preferred_terms: {
+                [key: string]: string;
+            };
+            /** Frequent Materials */
+            frequent_materials: string[];
+            /** Speech Aliases */
+            speech_aliases: components["schemas"]["SpeechAlias"][];
+            /** Document Preferences */
+            document_preferences: {
+                [key: string]: unknown;
+            };
+            /** Last Updated At */
+            last_updated_at: string;
+        };
         /**
          * PractitionerPreferences
          * @description Ce que le praticien a choisi. Les valeurs par défaut sont celles d'Oris.
@@ -1738,6 +1832,13 @@ export interface components {
              * @enum {string}
              */
             status: "discussed" | "proposed" | "accepted" | "refused" | "deferred" | "planned" | "completed";
+        };
+        /** SpeechAlias */
+        SpeechAlias: {
+            /** Heard */
+            heard: string;
+            /** Canonical */
+            canonical: string;
         };
         /**
          * SpokenCorrectionOut
@@ -3392,6 +3493,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LearningExport"];
+                };
+            };
+        };
+    };
+    read_learning_profile_me_learning_profile_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PractitionerLearningProfile"];
+                };
+            };
+        };
+    };
+    list_engine_versions_system_versions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineVersionOut"][];
                 };
             };
         };

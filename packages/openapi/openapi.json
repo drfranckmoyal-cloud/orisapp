@@ -2152,6 +2152,54 @@
         }
       }
     },
+    "/me/learning/profile": {
+      "get": {
+        "tags": [
+          "personnalisation"
+        ],
+        "summary": "Read Learning Profile",
+        "description": "Ce qu'Oris croit savoir de vous, d'un bloc (§202, §205).\n\nC'est un miroir : il se recalcule à partir des préférences et du dictionnaire, et\nne contient rien de clinique.",
+        "operationId": "read_learning_profile_me_learning_profile_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PractitionerLearningProfile"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/system/versions": {
+      "get": {
+        "tags": [
+          "personnalisation"
+        ],
+        "summary": "List Engine Versions",
+        "description": "Quel moteur et quelle consigne ont réellement servi (§202).\n\nCes lignes sont écrites par le traitement lui-même : elles disent ce qui a tourné,\npas ce qui est configuré.",
+        "operationId": "list_engine_versions_system_versions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EngineVersionOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Engine Versions System Versions Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/me/learning/suggestions": {
       "get": {
         "tags": [
@@ -3590,6 +3638,48 @@
         ],
         "title": "EncounterWarning"
       },
+      "EngineVersionOut": {
+        "properties": {
+          "component": {
+            "type": "string",
+            "title": "Component"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "prompt_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Version"
+          },
+          "first_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "First Seen At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "component",
+          "provider",
+          "model_id",
+          "prompt_version",
+          "first_seen_at"
+        ],
+        "title": "EngineVersionOut",
+        "description": "Un moteur qui a réellement servi, et la consigne qui l'accompagnait."
+      },
       "FactChanges": {
         "properties": {
           "assertion": {
@@ -4367,6 +4457,74 @@
         "type": "object",
         "title": "PatientUpdate"
       },
+      "PractitionerLearningProfile": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "preferred_document_length": {
+            "type": "string",
+            "enum": [
+              "short",
+              "standard",
+              "detailed"
+            ],
+            "title": "Preferred Document Length"
+          },
+          "preferred_style": {
+            "type": "string",
+            "enum": [
+              "sentences",
+              "semi_telegraphic"
+            ],
+            "title": "Preferred Style"
+          },
+          "preferred_terms": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Preferred Terms"
+          },
+          "frequent_materials": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Frequent Materials"
+          },
+          "speech_aliases": {
+            "items": {
+              "$ref": "#/components/schemas/SpeechAlias"
+            },
+            "type": "array",
+            "title": "Speech Aliases"
+          },
+          "document_preferences": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Document Preferences"
+          },
+          "last_updated_at": {
+            "type": "string",
+            "title": "Last Updated At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "user_id",
+          "preferred_document_length",
+          "preferred_style",
+          "preferred_terms",
+          "frequent_materials",
+          "speech_aliases",
+          "document_preferences",
+          "last_updated_at"
+        ],
+        "title": "PractitionerLearningProfile"
+      },
       "PractitionerPreferences": {
         "properties": {
           "document_length": {
@@ -4802,6 +4960,25 @@
           "status"
         ],
         "title": "SetPlanItemStatus"
+      },
+      "SpeechAlias": {
+        "properties": {
+          "heard": {
+            "type": "string",
+            "title": "Heard"
+          },
+          "canonical": {
+            "type": "string",
+            "title": "Canonical"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "heard",
+          "canonical"
+        ],
+        "title": "SpeechAlias"
       },
       "SpokenCorrectionOut": {
         "properties": {

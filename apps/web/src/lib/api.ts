@@ -189,6 +189,8 @@ export type GlossaryTerm = Schemas["GlossaryTermOut"];
 export type LearningSuggestion = Schemas["SuggestionOut"];
 export type FrequentCorrection = Schemas["FrequentCorrectionOut"];
 export type LearningExport = Schemas["LearningExport"];
+/** Moteur qui a réellement tourné, et la consigne qui l'accompagnait (§202). */
+export type EngineVersion = Schemas["EngineVersionOut"];
 
 export type Progress = Schemas["ProgressOut"];
 

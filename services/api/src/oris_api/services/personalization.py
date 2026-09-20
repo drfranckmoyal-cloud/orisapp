@@ -12,12 +12,15 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from oris_api.contracts.generated import PractitionerLearningProfile, SpeechAlias
 from oris_api.db.models import GlossaryTermRow, LearningEventRow, User
+from oris_api.db.models import PractitionerLearningProfile as PractitionerLearningProfileRow
 from oris_api.domain.preferences import PractitionerPreferences, PreferencesPatch
 from oris_api.domain.types import GlossaryHint
 from oris_api.services.errors import Conflict, NotFound
@@ -71,6 +74,7 @@ def update_preferences(
     updated = patch.applied_to(PractitionerPreferences.load(user.preferences))
     user.preferences = updated.model_dump()
     session.flush()
+    refresh_profile(session, actor)
     return updated
 
 
@@ -96,6 +100,7 @@ def reset_preferences(
         updated = current.model_copy(update={field: getattr(defaults, field)})
     user.preferences = updated.model_dump()
     session.flush()
+    refresh_profile(session, actor)
     return updated
 
 
@@ -175,6 +180,7 @@ def add_term(
         existing.frequency += 1
         existing.status = "active"
         session.flush()
+        refresh_profile(session, actor)
         return existing
     term = GlossaryTermRow(
         organization_id=actor.organization_id,
@@ -186,6 +192,7 @@ def add_term(
     )
     session.add(term)
     session.flush()
+    refresh_profile(session, actor)
     return term
 
 
@@ -209,6 +216,7 @@ def update_term(
     if status is not None:
         term.status = status
     session.flush()
+    refresh_profile(session, actor)
     return term
 
 
@@ -298,3 +306,46 @@ def suggestions(session: Session, actor: Actor) -> list[Suggestion]:
         )
 
     return sorted(found, key=lambda item: (-item.occurrences, item.key))
+
+
+# --- Profil d'apprentissage du praticien (spec §202, §205) ----------------------------
+
+
+def refresh_profile(session: Session, actor: Actor) -> PractitionerLearningProfileRow:
+    """Recalcule le miroir de ce qu'Oris a retenu d'un praticien.
+
+    Ce profil ne décide rien : il **reflète** les préférences et le dictionnaire, qui
+    restent la source. Il existe parce que le cadrage l'exige dès la fondation (§205),
+    et parce qu'un jour il faudra pouvoir lire d'un bloc ce qu'Oris croit savoir d'un
+    praticien — sans reconstituer cette réponse à partir de cinq tables.
+    """
+    preferences = preferences_of(session, actor)
+    termes = [term for term in list_terms(session, actor) if term.status == "active"]
+    profil = PractitionerLearningProfile(
+        user_id=str(actor.user_id),
+        preferred_document_length=(
+            "short" if preferences.document_length == "concise" else "standard"
+        ),
+        preferred_style="sentences",
+        preferred_terms=dict(preferences.terminology),
+        frequent_materials=[t.canonical for t in termes if t.category == "material"],
+        speech_aliases=[
+            SpeechAlias(heard=alias, canonical=term.canonical)
+            for term in termes
+            for alias in term.aliases
+        ],
+        document_preferences={"document_length": preferences.document_length},
+        last_updated_at=datetime.now(UTC).isoformat(),
+    )
+    row = session.execute(
+        select(PractitionerLearningProfileRow).where(
+            PractitionerLearningProfileRow.user_id == actor.user_id
+        )
+    ).scalar_one_or_none()
+    if row is None:
+        row = PractitionerLearningProfileRow(user_id=actor.user_id, profile=profil.model_dump())
+        session.add(row)
+    else:
+        row.profile = profil.model_dump()
+    session.flush()
+    return row

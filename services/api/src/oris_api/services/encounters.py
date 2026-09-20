@@ -20,13 +20,14 @@ from oris_api.domain.resolver import resolve
 from oris_api.domain.speaker_roles import apply_roles
 from oris_api.domain.types import AudioChunk, AudioGap
 from oris_api.domain.warnings import compute_warnings
+from oris_api.llm.prompt import PROMPT_VERSION, SYSTEM_PROMPT
 from oris_api.providers import ProviderSet
 from oris_api.providers.base import (
     ExtractionUnavailable,
     TranscriptionUnavailable,
     rule_codes,
 )
-from oris_api.services import async_bridge, audio, audit, documents, personalization
+from oris_api.services import async_bridge, audio, audit, documents, personalization, registry
 from oris_api.services.audio_sink import AudioSink
 from oris_api.services.clinical_store import replace_segments, save_version
 from oris_api.services.errors import Conflict, NotFound
@@ -181,9 +182,19 @@ def process(
     stt = (
         providers.synthetic_speech_to_text if is_synthetic(encounter) else providers.speech_to_text
     )
+    stt_model = registry.model_version(session, "speech_to_text", stt.info.name, stt.info.version)
+    stt_timer = registry.start_run("speech_to_text", encounter.id)
     try:
         transcription = async_bridge.run(lambda: stt.transcribe(chunks, LOCALE, hints))
     except TranscriptionUnavailable as error:
+        registry.finish_run(
+            session,
+            stt_timer,
+            status="failed",
+            error_code=error.code,
+            model_version_id=stt_model.id,
+            counters={"chunks": len(chunks)},
+        )
         # Panne du fournisseur : l'audio est conservé pour relancer le traitement.
         set_processing_errors(encounter, [{"rule": "STT_UNAVAILABLE", "subject_id": error.code}])
         transition(session, actor, encounter, "transcription_failed")
@@ -204,20 +215,51 @@ def process(
             segments=apply_roles(transcription.segments, transcription.speaker_labels),
         )
     if not transcription.segments:
+        # Le fournisseur n'est pas tombé, mais rien d'exploitable n'est revenu : la
+        # trace doit le dire, sinon la panne se lira comme une réussite.
+        registry.finish_run(
+            session,
+            stt_timer,
+            status="failed",
+            error_code="NO_TRANSCRIPT",
+            model_version_id=stt_model.id,
+            counters={"chunks": len(chunks), "segments": 0},
+        )
         set_processing_errors(
             encounter, [{"rule": "NO_TRANSCRIPT", "subject_id": str(encounter.id)}]
         )
         transition(session, actor, encounter, "transcription_failed")
         logger.warning("pipeline.transcription_failed", extra={"encounter_id": str(encounter.id)})
         return encounter
+    registry.finish_run(
+        session,
+        stt_timer,
+        model_version_id=stt_model.id,
+        counters={"chunks": len(chunks), "segments": len(transcription.segments)},
+    )
     replace_segments(session, encounter.id, transcription.segments)
     session.commit()  # étape 1 visible : la transcription existe
 
+    extractor = providers.clinical_extraction
+    extraction_model = registry.model_version(
+        session, "clinical_extraction", extractor.info.name, extractor.info.version
+    )
+    extraction_prompt = registry.prompt_version(
+        session, "clinical_extraction", PROMPT_VERSION, SYSTEM_PROMPT
+    )
+    extraction_timer = registry.start_run("clinical_extraction", encounter.id)
     try:
-        extraction = async_bridge.run(
-            lambda: providers.clinical_extraction.extract(transcription.segments, hints)
-        )
+        extraction = async_bridge.run(lambda: extractor.extract(transcription.segments, hints))
     except ExtractionUnavailable as error:
+        registry.finish_run(
+            session,
+            extraction_timer,
+            status="failed",
+            error_code=error.code,
+            model_version_id=extraction_model.id,
+            prompt_version_id=extraction_prompt.id,
+            counters={"segments": len(transcription.segments)},
+        )
         # Panne du fournisseur ou sortie refusée après ses essais : la consultation
         # reste en échec explicite, avec ce qui a été refusé. Jamais de texte inventé.
         reasons = rule_codes(error.details) or (error.code,)
@@ -230,6 +272,13 @@ def process(
             extra={"encounter_id": str(encounter.id), "error_code": error.code},
         )
         return encounter
+    registry.finish_run(
+        session,
+        extraction_timer,
+        model_version_id=extraction_model.id,
+        prompt_version_id=extraction_prompt.id,
+        counters={"segments": len(transcription.segments), "facts": len(extraction.facts)},
+    )
     violations = resolve(
         extraction.facts,
         extraction.treatment_plan,

@@ -2,8 +2,22 @@
 
 import { useState } from "react";
 
-import { Bouton, Carte, Champ, EnTetePage, Pastille, Squelette } from "@/components/ui";
-import { ApiError, apiRequest, type Cabinet, type ClientConfig } from "@/lib/api";
+import {
+  Bouton,
+  Carte,
+  Champ,
+  EnTetePage,
+  EtatVide,
+  Pastille,
+  Squelette,
+} from "@/components/ui";
+import {
+  ApiError,
+  apiRequest,
+  type Cabinet,
+  type ClientConfig,
+  type EngineVersion,
+} from "@/lib/api";
 import { errorMessage } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
@@ -12,6 +26,11 @@ type Sante = {
   version: string;
   environment: string;
   providers: Record<string, string>;
+};
+
+const COMPOSANT: Record<string, string> = {
+  speech_to_text: "Transcription",
+  clinical_extraction: "Extraction clinique",
 };
 
 const MOTEURS: Record<string, string> = {
@@ -28,6 +47,7 @@ export default function ParametresPage() {
   const [cabinet, rechargerCabinet] = useApi<Cabinet>("/me/cabinet");
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const moteurs = sante.state === "ready" ? sante.data.providers : {};
+  const [versions] = useApi<EngineVersion[]>("/system/versions");
 
   async function enregistrerCabinet(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -147,6 +167,26 @@ export default function ParametresPage() {
               <dd>règles déterministes d’Oris</dd>
             </div>
           </dl>
+
+          <p className="muted" style={{ margin: 0 }}>
+            Ce qui a réellement tourné sur vos consultations — pas ce qui est réglé ici.
+            C’est ce qui permet de rattacher un compte rendu à la version exacte qui l’a
+            produit.
+          </p>
+          {versions.state === "ready" && versions.data.length === 0 && (
+            <EtatVide titre="Aucun traitement pour l’instant" />
+          )}
+          {versions.state === "ready" && versions.data.length > 0 && (
+            <ul className="liste-simple">
+              {versions.data.map((version) => (
+                <li key={`${version.component}-${version.model_id}`}>
+                  <strong>{COMPOSANT[version.component] ?? version.component}</strong> —{" "}
+                  {version.provider} · {version.model_id}
+                  {version.prompt_version && <> · consigne {version.prompt_version}</>}
+                </li>
+              ))}
+            </ul>
+          )}
         </Carte>
 
         <Carte titre="Écoute">

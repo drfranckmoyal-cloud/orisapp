@@ -164,6 +164,7 @@ def providers(
 
 def run_extraction(args: argparse.Namespace) -> int:
     from oris_api.benchmark.extraction import ModelReport, run_model, summarize, write_outputs
+    from oris_api.benchmark.record import record
     from oris_api.llm.anthropic_extraction import AnthropicExtractionProvider
 
     settings = Settings(_env_file=REPO / "services" / "api" / ".env")
@@ -195,6 +196,20 @@ def run_extraction(args: argparse.Namespace) -> int:
         reports.append(report)
         print(f"{model} : {report.summary['fact_recall']} de rappel")
     print(f"Rapport : {write_outputs(reports, len(cases), args.out)}")
+    for report in reports:
+        record(
+            component="clinical_extraction",
+            candidate_version=report.version,
+            dataset_name="oris-synthetic-consultations",
+            dataset_version="100",
+            item_count=len(cases),
+            metrics={
+                key: value
+                for key, value in report.summary.items()
+                if isinstance(value, int | float)
+            },
+            critical_regressions=report.critical_regressions,
+        )
     return 0
 
 

@@ -118,6 +118,20 @@ def api(migrated_engine: Engine) -> Iterator[Any]:
     truncate_all(migrated_engine)
 
 
+@pytest.fixture
+def db_session(api: Any, migrated_engine: Engine) -> Iterator[Any]:
+    """Lecture directe de la base, sur la même base propre que `api`.
+
+    Dépend de `api` pour hériter de son nettoyage : un test qui compte des lignes
+    compte celles qu'il a écrites, pas celles du test précédent.
+    """
+    from sqlalchemy.orm import sessionmaker
+
+    factory = sessionmaker(bind=migrated_engine, expire_on_commit=False)
+    with factory() as session:
+        yield session
+
+
 def run_synthetic(api: Any, case_id: str) -> dict[str, Any]:
     response = api.post(f"/synthetic-cases/{case_id}/encounters")
     assert response.status_code == 201, response.text

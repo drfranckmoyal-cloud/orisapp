@@ -12,9 +12,11 @@ from uuid import UUID
 
 from fastapi import APIRouter
 from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import select
 
 from oris_api.api.dependencies import ActorDep, SessionDep
-from oris_api.db.models import GlossaryTermRow, Organization, User
+from oris_api.contracts.generated import PractitionerLearningProfile
+from oris_api.db.models import GlossaryTermRow, ModelVersion, Organization, PromptVersion, User
 from oris_api.domain.preferences import PractitionerPreferences, PreferencesPatch
 from oris_api.services import personalization
 from oris_api.services.errors import NotFound
@@ -66,6 +68,16 @@ class LearningExport(BaseModel):
     practitioner: str
     preferences: PractitionerPreferences
     glossary: list[GlossaryTermOut]
+
+
+class EngineVersionOut(BaseModel):
+    """Un moteur qui a réellement servi, et la consigne qui l'accompagnait."""
+
+    component: str
+    provider: str
+    model_id: str
+    prompt_version: str | None
+    first_seen_at: datetime
 
 
 class SuggestionOut(BaseModel):
@@ -233,6 +245,45 @@ def export_learning(session: SessionDep, actor: ActorDep) -> LearningExport:
         preferences=personalization.preferences_of(session, actor),
         glossary=[term_out(term) for term in personalization.list_terms(session, actor)],
     )
+
+
+@router.get("/me/learning/profile", response_model=PractitionerLearningProfile)
+def read_learning_profile(session: SessionDep, actor: ActorDep) -> PractitionerLearningProfile:
+    """Ce qu'Oris croit savoir de vous, d'un bloc (§202, §205).
+
+    C'est un miroir : il se recalcule à partir des préférences et du dictionnaire, et
+    ne contient rien de clinique.
+    """
+    row = personalization.refresh_profile(session, actor)
+    return PractitionerLearningProfile.model_validate(row.profile)
+
+
+@router.get("/system/versions", response_model=list[EngineVersionOut])
+def list_engine_versions(session: SessionDep) -> list[EngineVersionOut]:
+    """Quel moteur et quelle consigne ont réellement servi (§202).
+
+    Ces lignes sont écrites par le traitement lui-même : elles disent ce qui a tourné,
+    pas ce qui est configuré.
+    """
+    modeles = session.scalars(
+        select(ModelVersion).where(ModelVersion.is_active).order_by(ModelVersion.component)
+    )
+    invites = {
+        row.component: row
+        for row in session.scalars(select(PromptVersion).where(PromptVersion.is_active))
+    }
+    return [
+        EngineVersionOut(
+            component=modele.component,
+            provider=modele.provider,
+            model_id=modele.model_id,
+            prompt_version=(
+                invites[modele.component].version if modele.component in invites else None
+            ),
+            first_seen_at=modele.created_at,
+        )
+        for modele in modeles
+    ]
 
 
 @router.get("/me/learning/suggestions", response_model=list[SuggestionOut])

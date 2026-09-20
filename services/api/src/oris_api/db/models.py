@@ -548,3 +548,176 @@ class ApiToken(Base):
     created_at: Mapped[datetime] = created_at()
     last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+# --- Infrastructure d'apprentissage (spec §56, §202, §205) -----------------------------
+#
+# Le cadrage interdit explicitement de construire une V1 non apprenante puis d'ajouter
+# ces mécanismes après coup. Ces tables existent donc dès maintenant, même quand
+# l'interface ne les expose pas encore. Aucune ne contient de contenu patient.
+
+
+class PromptVersion(Base):
+    """Une version de consigne donnée au modèle (spec §202).
+
+    Le texte vit dans le code ; ce qui est enregistré ici, c'est son identité et son
+    empreinte, pour qu'un résultat puisse toujours être rattaché à la consigne exacte
+    qui l'a produit.
+    """
+
+    __tablename__ = "prompt_versions"
+    __table_args__ = (
+        UniqueConstraint("component", "version", name="uq_prompt_versions_component_version"),
+        {"schema": LEARNING_SCHEMA},
+    )
+
+    id: Mapped[UUID] = uuid_pk()
+    component: Mapped[str] = mapped_column(String(60), index=True)
+    version: Mapped[str] = mapped_column(String(60))
+    # sha256 du texte de la consigne : une retouche silencieuse se voit.
+    content_hash: Mapped[str] = mapped_column(String(64))
+    parameters: Mapped[dict[str, Any]] = jsonb(dict)
+    is_active: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime] = created_at()
+
+
+class ModelVersion(Base):
+    """Un modèle de fournisseur, tel qu'il a réellement servi (spec §202)."""
+
+    __tablename__ = "model_versions"
+    __table_args__ = (
+        UniqueConstraint(
+            "component", "provider", "model_id", name="uq_model_versions_component_model"
+        ),
+        {"schema": LEARNING_SCHEMA},
+    )
+
+    id: Mapped[UUID] = uuid_pk()
+    component: Mapped[str] = mapped_column(String(60), index=True)
+    provider: Mapped[str] = mapped_column(String(60))
+    model_id: Mapped[str] = mapped_column(String(160))
+    parameters: Mapped[dict[str, Any]] = jsonb(dict)
+    is_active: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime] = created_at()
+
+
+class DatasetVersion(Base):
+    """Un jeu d'évaluation figé : de quoi rejouer une mesure des mois plus tard."""
+
+    __tablename__ = "dataset_versions"
+    __table_args__ = (
+        UniqueConstraint("name", "version", name="uq_dataset_versions_name_version"),
+        {"schema": LEARNING_SCHEMA},
+    )
+
+    id: Mapped[UUID] = uuid_pk()
+    name: Mapped[str] = mapped_column(String(120), index=True)
+    version: Mapped[str] = mapped_column(String(60))
+    item_count: Mapped[int] = mapped_column(Integer, default=0)
+    checksum: Mapped[str] = mapped_column(String(64), default="")
+    # « synthetic » ou « real » : une mesure sur données jouées ne vaut pas une mesure réelle.
+    nature: Mapped[str] = mapped_column(String(20), default="synthetic")
+    description: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = created_at()
+
+
+class EvaluationRun(Base):
+    """Le résultat d'une mesure, et sa porte de sortie (schemas/evaluation_run)."""
+
+    __tablename__ = "evaluation_runs"
+    __table_args__ = ({"schema": LEARNING_SCHEMA},)
+
+    id: Mapped[UUID] = uuid_pk()
+    component: Mapped[str] = mapped_column(String(60), index=True)
+    candidate_version: Mapped[str] = mapped_column(String(160))
+    dataset_version: Mapped[str] = mapped_column(String(120))
+    metrics: Mapped[dict[str, Any]] = jsonb(dict)
+    critical_regressions: Mapped[list[str]] = jsonb(list)
+    release_gate_passed: Mapped[bool] = mapped_column(default=False)
+    created_at: Mapped[datetime] = created_at()
+
+
+class PractitionerLearningProfile(Base):
+    """Ce qu'Oris a retenu d'un praticien, sous la forme du contrat (§202, §205).
+
+    C'est un **miroir** des préférences et du dictionnaire, pas une seconde source :
+    il se recalcule, et rien de clinique n'en sort jamais.
+    """
+
+    __tablename__ = "practitioner_learning_profiles"
+    __table_args__ = ({"schema": LEARNING_SCHEMA},)
+
+    id: Mapped[UUID] = uuid_pk()
+    user_id: Mapped[UUID] = mapped_column(unique=True, index=True)
+    profile: Mapped[dict[str, Any]] = jsonb(dict)
+    updated_at: Mapped[datetime] = updated_at()
+
+
+class ModelRun(Base):
+    """Un appel à un fournisseur : ce qui a servi, combien de temps, et le résultat.
+
+    Jamais de contenu patient, pas même en métadonnée (spec §56, dernière ligne) :
+    ni transcription, ni fait, ni nom, ni texte de document.
+    """
+
+    __tablename__ = "model_runs"
+    __table_args__ = ({"schema": LEARNING_SCHEMA},)
+
+    id: Mapped[UUID] = uuid_pk()
+    encounter_id: Mapped[UUID | None] = mapped_column(index=True)
+    component: Mapped[str] = mapped_column(String(60), index=True)
+    model_version_id: Mapped[UUID | None] = mapped_column()
+    prompt_version_id: Mapped[UUID | None] = mapped_column()
+    status: Mapped[str] = mapped_column(String(20), default="succeeded")
+    error_code: Mapped[str | None] = mapped_column(String(80))
+    latency_ms: Mapped[int | None] = mapped_column(Integer)
+    # Compteurs techniques seulement : nombre de segments, de faits, d'essais.
+    counters: Mapped[dict[str, Any]] = jsonb(dict)
+    created_at: Mapped[datetime] = created_at()
+
+
+class Template(Base):
+    """Modèle de document propre à un cabinet (spec §56).
+
+    Prévu par le cadrage, inactif en V1 : les modèles de rédaction vivent dans le code
+    et sont versionnés avec lui. La table existe pour ne pas avoir à migrer plus tard.
+    """
+
+    __tablename__ = "templates"
+    __table_args__ = (
+        UniqueConstraint("organization_id", "type", "name", name="uq_templates_org_type_name"),
+    )
+
+    id: Mapped[UUID] = uuid_pk()
+    organization_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("organizations.id", ondelete="CASCADE"), index=True
+    )
+    type: Mapped[str] = mapped_column(String(60))
+    name: Mapped[str] = mapped_column(String(160))
+    schema_json: Mapped[dict[str, Any]] = jsonb(dict)
+    prompt_config_json: Mapped[dict[str, Any]] = jsonb(dict)
+    is_active: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime] = created_at()
+    updated_at: Mapped[datetime] = updated_at()
+
+
+class Attachment(Base):
+    """Pièce jointe à une consultation (spec §55, §56).
+
+    Prévu par le cadrage, inactif en V1 : aucune route ne l'écrit encore. Le fichier
+    lui-même ne serait jamais dans cette table — seulement où il est rangé.
+    """
+
+    __tablename__ = "attachments"
+
+    id: Mapped[UUID] = uuid_pk()
+    encounter_id: Mapped[UUID] = mapped_column(
+        ForeignKey("encounters.id", ondelete="CASCADE"), index=True
+    )
+    kind: Mapped[str] = mapped_column(String(40))
+    filename: Mapped[str] = mapped_column(String(255))
+    media_type: Mapped[str] = mapped_column(String(120))
+    byte_size: Mapped[int] = mapped_column(Integer)
+    checksum: Mapped[str] = mapped_column(String(64))
+    storage_key: Mapped[str] = mapped_column(String(255))
+    created_at: Mapped[datetime] = created_at()

@@ -106,10 +106,12 @@ def test_extraction_failure_is_an_explicit_failed_consultation_not_a_crash(api: 
     import dataclasses
 
     from oris_api.main import app
-    from oris_api.providers.base import ExtractionUnavailable
+    from oris_api.providers.base import ExtractionUnavailable, ProviderInfo
 
     class Refusing:
-        info = None
+        # Le contrat fournisseur exige une identité : c'est elle qui rattache un
+        # résultat — ou un refus — à la version qui l'a produit.
+        info = ProviderInfo(name="test", version="refusing-1")
 
         async def extract(self, segments: Any, glossary: Any) -> Any:
             raise ExtractionUnavailable(
