@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+
+import { Barre, Bouton, Champ } from "@/components/ui";
 import type { ClinicalObject, Encounter } from "@/lib/api";
 import { PLAN_STATUS } from "@/lib/labels";
 import { useCorrection } from "@/lib/useCorrection";
@@ -43,17 +46,30 @@ export function TreatmentPlanCards({
     clinicalObject,
     onCorrected,
   );
+  const [ajout, setAjout] = useState("");
   const plan = clinicalObject.treatment_plan;
+
+  function deplacer(itemId: string, sens: -1 | 1) {
+    if (plan === null) return;
+    const ordre = ordonnes.map((item) => item.item_id);
+    const index = ordre.indexOf(itemId);
+    const cible = index + sens;
+    if (cible < 0 || cible >= ordre.length) return;
+    [ordre[index], ordre[cible]] = [ordre[cible]!, ordre[index]!];
+    void submit({ operation: "reorder_plan_items", item_ids: ordre });
+  }
+
   if (plan === null || plan.items.length === 0) {
     return <p className="muted">Aucun élément de plan n’a été énoncé pendant la consultation.</p>;
   }
   const byId = new Map(clinicalObject.facts.map((fact) => [fact.fact_id, fact]));
   // L'ordre n'est numéroté que si la séquence a été dite (§33.3).
-  const items = [...plan.items].sort(
+  const ordonnes = [...plan.items].sort(
     (a: PlanItem, b: PlanItem) =>
       Number(a.sequence === null) - Number(b.sequence === null) ||
       (a.sequence ?? 0) - (b.sequence ?? 0),
   );
+  const items = ordonnes;
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
@@ -110,6 +126,34 @@ export function TreatmentPlanCards({
             </p>
           )}
 
+          <Barre>
+            <Bouton
+              variante="discret"
+              disabled={busy || !correctable}
+              aria-label="Monter cet élément"
+              onClick={() => deplacer(item.item_id, -1)}
+            >
+              ↑
+            </Bouton>
+            <Bouton
+              variante="discret"
+              disabled={busy || !correctable}
+              aria-label="Descendre cet élément"
+              onClick={() => deplacer(item.item_id, 1)}
+            >
+              ↓
+            </Bouton>
+            <Bouton
+              variante="discret"
+              disabled={busy || !correctable}
+              onClick={() =>
+                void submit({ operation: "remove_plan_item", item_id: item.item_id })
+              }
+            >
+              Retirer
+            </Bouton>
+          </Barre>
+
           <label className="field" style={{ maxWidth: 320 }}>
             Statut
             <select
@@ -133,6 +177,34 @@ export function TreatmentPlanCards({
           </label>
         </article>
       ))}
+
+      <form
+        className="form-row"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!ajout.trim()) return;
+          void submit({
+            operation: "add_plan_item",
+            action: ajout.trim(),
+            teeth: [],
+            status: "proposed",
+          });
+          setAjout("");
+        }}
+      >
+        <label className="field" style={{ minWidth: 260 }}>
+          Ajouter un traitement au plan
+          <Champ
+            value={ajout}
+            placeholder="gouttière de protection"
+            disabled={busy || !correctable}
+            onChange={(event) => setAjout(event.target.value)}
+          />
+        </label>
+        <Bouton type="submit" variante="secondaire" disabled={busy || !correctable || !ajout.trim()}>
+          Ajouter
+        </Bouton>
+      </form>
 
       {message && (
         <div

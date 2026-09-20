@@ -345,3 +345,45 @@ h3 {
   border-top: 1px solid var(--trait);
   padding-top: var(--espace-4);
 }
+
+/* --- Listes de réglages --------------------------------------------------------- */
+.fiches {
+  display: grid;
+  gap: var(--espace-3);
+  margin: 0;
+}
+
+.fiches div {
+  display: grid;
+  gap: 2px;
+  padding-bottom: var(--espace-2);
+  border-bottom: 1px solid var(--trait);
+}
+
+.fiches div:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.fiches dt {
+  color: var(--encre-douce);
+  font-size: var(--texte-sm);
+}
+
+.fiches dd {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--espace-2);
+  flex-wrap: wrap;
+}
+
+/* Deux colonnes larges : les réglages se lisent, ils ne s'entassent pas. */
+.grille-reglages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: var(--espace-6);
+  align-items: start;
+}
+
+

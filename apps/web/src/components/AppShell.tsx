@@ -10,7 +10,9 @@ const NAVIGATION = [
   { href: "/", label: "Accueil", icone: "M4 10.5 12 4l8 6.5V20H4z" },
   { href: "/patients", label: "Patients", icone: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-8 8a8 8 0 0 1 16 0" },
   { href: "/consultations", label: "Consultations", icone: "M6 3h12v18l-6-4-6 4z" },
+  { href: "/documents", label: "Documents", icone: "M7 3h7l4 4v14H7zM14 3v5h5" },
   { href: "/apprentissage", label: "Oris apprend", icone: "M12 4 3 9l9 5 9-5zM6 12v5l6 3 6-3v-5" },
+  { href: "/parametres", label: "Paramètres", icone: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM4 12h2m12 0h2M12 4v2m0 12v2" },
 ] as const;
 
 function estActif(pathname: string, href: string): boolean {
