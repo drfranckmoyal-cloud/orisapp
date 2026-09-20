@@ -570,6 +570,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me/cabinet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Cabinet */
+        get: operations["read_cabinet_me_cabinet_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Patch Cabinet
+         * @description Ce que le praticien saisit ici s'imprime en tête de ses documents.
+         */
+        patch: operations["patch_cabinet_me_cabinet_patch"];
+        trace?: never;
+    };
     "/ontology/concepts": {
         parameters: {
             query?: never;
@@ -826,6 +847,66 @@ export interface components {
              * Format: date-time
              */
             occurred_at: string;
+        };
+        /**
+         * CabinetOut
+         * @description Identité imprimée en tête des documents (spec §78).
+         */
+        CabinetOut: {
+            /** Name */
+            name: string;
+            /**
+             * Address
+             * @default
+             */
+            address: string;
+            /**
+             * Phone
+             * @default
+             */
+            phone: string;
+            /**
+             * Email
+             * @default
+             */
+            email: string;
+            /**
+             * Legal
+             * @default
+             */
+            legal: string;
+            /**
+             * City
+             * @default
+             */
+            city: string;
+            /**
+             * Practitioner Title
+             * @default
+             */
+            practitioner_title: string;
+            /**
+             * Practitioner Name
+             * @default
+             */
+            practitioner_name: string;
+        };
+        /** CabinetPatch */
+        CabinetPatch: {
+            /** Name */
+            name?: string | null;
+            /** Address */
+            address?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Legal */
+            legal?: string | null;
+            /** City */
+            city?: string | null;
+            /** Practitioner Title */
+            practitioner_title?: string | null;
         };
         /** ChunkReceiptOut */
         ChunkReceiptOut: {
@@ -2824,6 +2905,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ClientConfigOut"];
+                };
+            };
+        };
+    };
+    read_cabinet_me_cabinet_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CabinetOut"];
+                };
+            };
+        };
+    };
+    patch_cabinet_me_cabinet_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CabinetPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CabinetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

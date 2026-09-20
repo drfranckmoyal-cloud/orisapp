@@ -3,6 +3,15 @@
 import { useState } from "react";
 
 import {
+  Bouton,
+  Carte,
+  Champ,
+  EnTetePage,
+  EtatVide,
+  Pastille,
+  Squelette,
+} from "@/components/ui";
+import {
   ApiError,
   apiRequest,
   type GlossaryTerm,
@@ -11,39 +20,41 @@ import {
 } from "@/lib/api";
 import { errorMessage } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
+import { useConcepts } from "@/lib/useConcepts";
 
-/** « Oris apprend de vous » (spec §124) : ce qui a été retenu, et comment le défaire. */
-export default function LearningPage() {
-  const [preferences, reloadPreferences] = useApi<Preferences>("/me/preferences");
-  const [glossary, reloadGlossary] = useApi<GlossaryTerm[]>("/glossary");
-  const [suggestions, reloadSuggestions] = useApi<LearningSuggestion[]>(
+/** « Oris apprend de vous » (S13, §124) : ce qui a été retenu, et comment le défaire. */
+export default function ApprentissagePage() {
+  const [preferences, rechargerPreferences] = useApi<Preferences>("/me/preferences");
+  const [glossaire, rechargerGlossaire] = useApi<GlossaryTerm[]>("/glossary");
+  const [suggestions, rechargerSuggestions] = useApi<LearningSuggestion[]>(
     "/me/learning/suggestions",
   );
+  const motDe = useConcepts();
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
-  const [term, setTerm] = useState("");
-  const [aliases, setAliases] = useState("");
+  const [terme, setTerme] = useState("");
+  const [variantes, setVariantes] = useState("");
 
-  function reloadAll() {
-    reloadPreferences();
-    reloadGlossary();
-    reloadSuggestions();
+  function toutRecharger() {
+    rechargerPreferences();
+    rechargerGlossaire();
+    rechargerSuggestions();
   }
 
-  async function act(run: () => Promise<unknown>, success: string) {
+  async function agir(action: () => Promise<unknown>, succes: string) {
     setMessage(null);
     try {
-      await run();
-      setMessage({ tone: "ok", text: success });
-      reloadAll();
+      await action();
+      setMessage({ tone: "ok", text: succes });
+      toutRecharger();
     } catch (error) {
       const code = error instanceof ApiError ? error.code : "UNKNOWN";
       setMessage({ tone: "error", text: errorMessage(code) });
     }
   }
 
-  function acceptSuggestion(suggestion: LearningSuggestion) {
+  function adopter(suggestion: LearningSuggestion) {
     if (suggestion.kind === "preference") {
-      void act(
+      void agir(
         () =>
           apiRequest("/me/preferences", {
             method: "PATCH",
@@ -53,7 +64,7 @@ export default function LearningPage() {
       );
       return;
     }
-    void act(
+    void agir(
       () =>
         apiRequest("/glossary", {
           method: "POST",
@@ -67,21 +78,18 @@ export default function LearningPage() {
     );
   }
 
-  const current = preferences.state === "ready" ? preferences.data : null;
-  const terminology = Object.entries(current?.terminology ?? {});
+  const actuelles = preferences.state === "ready" ? preferences.data : null;
+  const mots = Object.entries(actuelles?.terminology ?? {});
+  const propositions = suggestions.state === "ready" ? suggestions.data : [];
+  const termes = glossaire.state === "ready" ? glossaire.data : [];
 
   return (
     <div className="page">
-      <header className="page-header">
-        <div>
-          <p className="subtitle">Personnalisation</p>
-          <h1>Oris apprend de vous</h1>
-        </div>
-      </header>
+      <EnTetePage surTitre="Personnalisation" titre="Oris apprend de vous" />
 
-      <p className="muted">
-        Ce qu’Oris retient change la façon d’écrire et d’entendre, jamais le contenu
-        clinique. Tout se défait ici.
+      <p className="muted" style={{ margin: 0, maxWidth: 720 }}>
+        Ce qu’Oris retient change sa façon d’entendre et d’écrire — <strong>jamais</strong> le
+        contenu clinique. Rien ne s’installe sans votre accord, et tout se défait ici.
       </p>
 
       {message && (
@@ -93,190 +101,172 @@ export default function LearningPage() {
         </div>
       )}
 
-      <section className="card" aria-labelledby="suggestions-heading">
-        <h2 id="suggestions-heading">Ce qu’Oris a remarqué</h2>
-        {suggestions.state === "ready" && suggestions.data.length === 0 && (
-          <p className="muted">
-            Rien pour l’instant. Oris ne propose une règle qu’après plusieurs corrections
-            allant dans le même sens.
-          </p>
+      <Carte
+        titre="Ce qu’Oris a remarqué"
+        action={propositions.length > 0 ? <Pastille ton="attention">{propositions.length}</Pastille> : null}
+      >
+        {suggestions.state === "loading" && <Squelette lignes={2} />}
+        {suggestions.state === "ready" && propositions.length === 0 && (
+          <EtatVide titre="Rien pour l’instant">
+            Oris ne propose une règle qu’après plusieurs corrections allant dans le même
+            sens.
+          </EtatVide>
         )}
-        {suggestions.state === "ready" &&
-          suggestions.data.map((suggestion) => (
-            <div key={suggestion.key} className="banner banner-review">
-              {suggestion.message}
-              <div>
-                <button
-                  type="button"
-                  className="button button-primary"
-                  onClick={() => acceptSuggestion(suggestion)}
+        {propositions.map((suggestion) => (
+          <div key={suggestion.key} className="proposition">
+            <span>{suggestion.message}</span>
+            <Bouton onClick={() => adopter(suggestion)}>Adopter</Bouton>
+          </div>
+        ))}
+      </Carte>
+
+      <div className="grille-reglages">
+        <Carte titre="Vos préférences de rédaction">
+          <label className="field">
+            Longueur du compte rendu
+            <select
+              className="input"
+              value={actuelles?.document_length ?? "standard"}
+              onChange={(event) =>
+                void agir(
+                  () =>
+                    apiRequest("/me/preferences", {
+                      method: "PATCH",
+                      body: { document_length: event.target.value },
+                    }),
+                  "Préférence enregistrée.",
+                )
+              }
+            >
+              <option value="standard">Standard</option>
+              <option value="concise">Concis — sans les répétitions de titre</option>
+            </select>
+          </label>
+
+          <div>
+            <p style={{ margin: "0 0 8px", fontWeight: 500 }}>Vos mots</p>
+            {mots.length === 0 && (
+              <EtatVide titre="Aucun mot préféré">
+                Dites « appelle ça une avulsion » pendant une correction, ou ajoutez-le ici
+                plus tard.
+              </EtatVide>
+            )}
+            {mots.map(([concept, mot]) => (
+              <div key={concept} className="ligne-mot">
+                <span>
+                  {motDe(concept)} → <strong>{mot}</strong>
+                </span>
+                <Bouton
+                  variante="discret"
+                  onClick={() => {
+                    const suite = { ...(actuelles?.terminology ?? {}) };
+                    delete suite[concept];
+                    void agir(
+                      () =>
+                        apiRequest("/me/preferences", {
+                          method: "PATCH",
+                          body: { terminology: suite },
+                        }),
+                      "Mot retiré.",
+                    );
+                  }}
                 >
-                  Adopter
-                </button>
+                  retirer
+                </Bouton>
               </div>
+            ))}
+          </div>
+        </Carte>
+
+        <Carte titre="Votre dictionnaire">
+          <p className="muted" style={{ margin: 0 }}>
+            Marques, produits et termes que vous employez : Oris les entend mieux et les
+            écrit correctement.
+          </p>
+          <form
+            className="form-row"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (!terme.trim()) return;
+              void agir(
+                () =>
+                  apiRequest("/glossary", {
+                    method: "POST",
+                    body: {
+                      canonical: terme.trim(),
+                      aliases: variantes
+                        .split(",")
+                        .map((variante) => variante.trim())
+                        .filter(Boolean),
+                      category: "material",
+                    },
+                  }),
+                "Terme ajouté.",
+              ).then(() => {
+                setTerme("");
+                setVariantes("");
+              });
+            }}
+          >
+            <label className="field">
+              Terme exact
+              <Champ
+                value={terme}
+                placeholder="G-ænial A’CHORD"
+                onChange={(event) => setTerme(event.target.value)}
+              />
+            </label>
+            <label className="field">
+              Ce qu’on entend parfois
+              <Champ
+                value={variantes}
+                placeholder="genial accord, genial a chord"
+                onChange={(event) => setVariantes(event.target.value)}
+              />
+            </label>
+            <Bouton type="submit" variante="secondaire">
+              Ajouter
+            </Bouton>
+          </form>
+
+          {glossaire.state === "loading" && <Squelette lignes={3} />}
+          {glossaire.state === "ready" && termes.length === 0 && (
+            <EtatVide titre="Dictionnaire vide">
+              Ajoutez vos marques : ce sont elles que la machine entend le plus mal.
+            </EtatVide>
+          )}
+          {termes.map((entree) => (
+            <div key={entree.id} className="ligne-mot">
+              <span>
+                <strong>{entree.canonical}</strong>
+                {entree.aliases.length > 0 && (
+                  <span className="muted"> — entendu : {entree.aliases.join(", ")}</span>
+                )}
+              </span>
+              <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Pastille ton={entree.status === "active" ? "valide" : "neutre"}>
+                  {entree.status === "active" ? "actif" : "désactivé"}
+                </Pastille>
+                <Bouton
+                  variante="discret"
+                  onClick={() =>
+                    void agir(
+                      () =>
+                        apiRequest(`/glossary/${entree.id}`, {
+                          method: "PATCH",
+                          body: { status: entree.status === "active" ? "disabled" : "active" },
+                        }),
+                      entree.status === "active" ? "Terme désactivé." : "Terme réactivé.",
+                    )
+                  }
+                >
+                  {entree.status === "active" ? "désactiver" : "réactiver"}
+                </Bouton>
+              </span>
             </div>
           ))}
-      </section>
-
-      <section className="card" aria-labelledby="preferences-heading">
-        <h2 id="preferences-heading">Préférences de rédaction</h2>
-        <label className="field" style={{ maxWidth: 360 }}>
-          Longueur du compte rendu
-          <select
-            className="input"
-            value={current?.document_length ?? "standard"}
-            onChange={(event) =>
-              void act(
-                () =>
-                  apiRequest("/me/preferences", {
-                    method: "PATCH",
-                    body: { document_length: event.target.value },
-                  }),
-                "Préférence enregistrée.",
-              )
-            }
-          >
-            <option value="standard">Standard</option>
-            <option value="concise">Concis — sans les répétitions de titre</option>
-          </select>
-        </label>
-
-        <h3>Vos mots</h3>
-        {terminology.length === 0 && (
-          <p className="muted">
-            Aucun mot préféré. Oris utilise son vocabulaire par défaut.
-          </p>
-        )}
-        <ul>
-          {terminology.map(([concept, word]) => (
-            <li key={concept}>
-              {concept} → <strong>{word}</strong>{" "}
-              <button
-                type="button"
-                className="link-button"
-                onClick={() => {
-                  const next = { ...(current?.terminology ?? {}) };
-                  delete next[concept];
-                  void act(
-                    () =>
-                      apiRequest("/me/preferences", {
-                        method: "PATCH",
-                        body: { terminology: next },
-                      }),
-                    "Mot retiré.",
-                  );
-                }}
-              >
-                retirer
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="card" aria-labelledby="glossary-heading">
-        <h2 id="glossary-heading">Votre dictionnaire</h2>
-        <p className="muted">
-          Marques, produits et termes que vous employez : Oris les entend mieux et les
-          écrit correctement.
-        </p>
-        <form
-          className="form-row"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (!term.trim()) return;
-            void act(
-              () =>
-                apiRequest("/glossary", {
-                  method: "POST",
-                  body: {
-                    canonical: term.trim(),
-                    aliases: aliases
-                      .split(",")
-                      .map((alias) => alias.trim())
-                      .filter(Boolean),
-                    category: "material",
-                  },
-                }),
-              "Terme ajouté.",
-            ).then(() => {
-              setTerm("");
-              setAliases("");
-            });
-          }}
-        >
-          <label className="field">
-            Terme exact
-            <input
-              className="input"
-              value={term}
-              placeholder="G-ænial A’CHORD"
-              onChange={(event) => setTerm(event.target.value)}
-            />
-          </label>
-          <label className="field">
-            Ce qu’on entend parfois (séparé par des virgules)
-            <input
-              className="input"
-              value={aliases}
-              placeholder="genial accord, genial a chord"
-              onChange={(event) => setAliases(event.target.value)}
-            />
-          </label>
-          <button type="submit" className="button button-primary">
-            Ajouter
-          </button>
-        </form>
-
-        {glossary.state === "ready" && glossary.data.length === 0 && (
-          <p className="muted">Votre dictionnaire est vide.</p>
-        )}
-        {glossary.state === "ready" && glossary.data.length > 0 && (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Terme</th>
-                <th>Variantes entendues</th>
-                <th>État</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {glossary.data.map((entry) => (
-                <tr key={entry.id}>
-                  <td>{entry.canonical}</td>
-                  <td className="muted">{entry.aliases.join(", ") || "—"}</td>
-                  <td>
-                    <span className={`chip ${entry.status === "active" ? "chip-success" : ""}`}>
-                      {entry.status === "active" ? "actif" : "désactivé"}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      className="link-button"
-                      onClick={() =>
-                        void act(
-                          () =>
-                            apiRequest(`/glossary/${entry.id}`, {
-                              method: "PATCH",
-                              body: {
-                                status: entry.status === "active" ? "disabled" : "active",
-                              },
-                            }),
-                          entry.status === "active" ? "Terme désactivé." : "Terme réactivé.",
-                        )
-                      }
-                    >
-                      {entry.status === "active" ? "désactiver" : "réactiver"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
+        </Carte>
+      </div>
     </div>
   );
 }

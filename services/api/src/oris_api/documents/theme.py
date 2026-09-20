@@ -38,6 +38,22 @@ class Cabinet:
     logo: Path | None = field(default=None, compare=False)
 
     @classmethod
+    def from_identity(cls, identity: dict[str, str], nom: str, path: Path = CONFIG_PATH) -> Cabinet:
+        """Identité saisie par le praticien ; le fichier de configuration sert de repli."""
+        base = cls.load(path)
+        connus = {
+            "name": identity.get("name") or nom or base.name,
+            "address": identity.get("address", base.address),
+            "phone": identity.get("phone", base.phone),
+            "email": identity.get("email", base.email),
+            "legal": identity.get("legal", base.legal),
+            "city": identity.get("city", base.city),
+            "practitioner_title": identity.get("practitioner_title", base.practitioner_title),
+            "logo_path": base.logo_path,
+        }
+        return cls(**connus, logo=base.logo)
+
+    @classmethod
     def load(cls, path: Path = CONFIG_PATH) -> Cabinet:
         """Lit la configuration ; en son absence, un en-tête sobre sans logo."""
         try:

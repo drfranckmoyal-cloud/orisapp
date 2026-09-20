@@ -24,6 +24,7 @@ from oris_api.db.models import (
 )
 from oris_api.documents.export import ExportContext, render_pdf, render_text
 from oris_api.documents.renderer import Style
+from oris_api.documents.theme import Cabinet
 from oris_api.domain.preferences import PractitionerPreferences
 from oris_api.domain.types import GeneratedDocument, ValidationIssue
 from oris_api.providers import ProviderSet
@@ -335,18 +336,22 @@ def export_document(
     patient = session.get(Patient, encounter.patient_id)
     practitioner = session.get(User, encounter.practitioner_id)
     organization = session.get(Organization, encounter.organization_id)
+    cabinet = Cabinet.from_identity(
+        dict(organization.identity or {}) if organization else {},
+        organization.name if organization else "",
+    )
     context = ExportContext(
         document_type=document.document_type,
         content=version.content,
         practitioner=practitioner.name if practitioner else "Praticien",
-        organization=organization.name if organization else "Cabinet",
+        organization=cabinet.name,
         patient=f"{patient.first_name} {patient.last_name}" if patient else "Patient",
         encounter_date=encounter.started_at or encounter.created_at,
         validated_at=version.validated_at,
         version=version.version,
     )
     if fmt == "pdf":
-        payload = render_pdf(context)
+        payload = render_pdf(context, cabinet)
     else:
         payload = render_text(context, structured=fmt == "structured").encode("utf-8")
 

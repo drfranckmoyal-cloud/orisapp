@@ -3,11 +3,9 @@
 import Link from "next/link";
 
 import { Carte, EnTetePage, EtatVide, Ligne, Lignes, Pastille, Squelette } from "@/components/ui";
-import type { Encounter } from "@/lib/api";
+import type { Cabinet, Encounter } from "@/lib/api";
 import { ENCOUNTER_STATUS, errorMessage, formatDateTime } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
-
-const PRATICIEN = "Docteur Moyal";
 
 function salutation(heure: number): string {
   if (heure < 13) return "Bonjour";
@@ -41,6 +39,11 @@ function documentsDe(encounter: Encounter): string {
 /** Accueil : ce qui se passe aujourd'hui, ce qui attend, et une seule action. */
 export default function HomePage() {
   const [encounters] = useApi<Encounter[]>("/encounters");
+  const [cabinet] = useApi<Cabinet>("/me/cabinet");
+  const praticien =
+    cabinet.state === "ready"
+      ? `${cabinet.data.practitioner_title} ${cabinet.data.practitioner_name}`.trim()
+      : "";
   const toutes = encounters.state === "ready" ? encounters.data : [];
 
   const aValider = toutes.filter((e) => e.status === "review");
@@ -60,7 +63,7 @@ export default function HomePage() {
           day: "numeric",
           month: "long",
         })}
-        titre={`${salutation(new Date().getHours())} ${PRATICIEN}`}
+        titre={`${salutation(new Date().getHours())}${praticien ? ` ${praticien}` : ""}`}
         action={
           <Link href="/consultations/nouvelle" className="cta">
             <span aria-hidden="true">●</span> Démarrer une consultation

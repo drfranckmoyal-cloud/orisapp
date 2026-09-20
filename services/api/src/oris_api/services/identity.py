@@ -30,7 +30,7 @@ def demo_actor(session: Session, settings: Settings) -> Actor:
     user = session.scalar(select(User).where(User.email == DEMO_EMAIL))
     if user is None:
         organization = Organization(name="Cabinet de démonstration")
-        user = User(email=DEMO_EMAIL, name="Praticien de démonstration", role="practitioner")
+        user = User(email=DEMO_EMAIL, name="Franck Moyal", role="practitioner")
         session.add_all([organization, user])
         session.flush()
         session.add(

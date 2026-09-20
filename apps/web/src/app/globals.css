@@ -387,3 +387,38 @@ h3 {
 }
 
 
+
+.barre-filtres {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espace-4);
+  flex-wrap: wrap;
+}
+
+/* --- Apprentissage -------------------------------------------------------------- */
+.proposition {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espace-4);
+  padding: var(--espace-3) var(--espace-4);
+  border-radius: 12px;
+  background: var(--attention-douce);
+  color: var(--attention);
+  flex-wrap: wrap;
+}
+
+.ligne-mot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espace-3);
+  padding: var(--espace-2) 0;
+  border-top: 1px solid var(--trait);
+  flex-wrap: wrap;
+}
+
+.ligne-mot:first-of-type {
+  border-top: none;
+}

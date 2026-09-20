@@ -77,6 +77,8 @@ class Organization(Base):
 
     id: Mapped[UUID] = uuid_pk()
     name: Mapped[str] = mapped_column(String(200))
+    # En-tête des documents : adresse, téléphone, mention légale… (spec §78).
+    identity: Mapped[dict[str, Any]] = jsonb(dict)
     created_at: Mapped[datetime] = created_at()
 
 

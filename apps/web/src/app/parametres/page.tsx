@@ -1,7 +1,10 @@
 "use client";
 
-import { Carte, EnTetePage, Pastille } from "@/components/ui";
-import type { ClientConfig } from "@/lib/api";
+import { useState } from "react";
+
+import { Bouton, Carte, Champ, EnTetePage, Pastille, Squelette } from "@/components/ui";
+import { ApiError, apiRequest, type Cabinet, type ClientConfig } from "@/lib/api";
+import { errorMessage } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
 type Sante = {
@@ -22,7 +25,37 @@ const MOTEURS: Record<string, string> = {
 export default function ParametresPage() {
   const [sante] = useApi<Sante>("/health");
   const [config] = useApi<ClientConfig>("/config/client");
+  const [cabinet, rechargerCabinet] = useApi<Cabinet>("/me/cabinet");
+  const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const moteurs = sante.state === "ready" ? sante.data.providers : {};
+
+  async function enregistrerCabinet(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const donnees = new FormData(event.currentTarget);
+    setMessage(null);
+    try {
+      await apiRequest("/me/cabinet", {
+        method: "PATCH",
+        body: {
+          name: String(donnees.get("name") ?? ""),
+          address: String(donnees.get("address") ?? ""),
+          phone: String(donnees.get("phone") ?? ""),
+          email: String(donnees.get("email") ?? ""),
+          legal: String(donnees.get("legal") ?? ""),
+          city: String(donnees.get("city") ?? ""),
+          practitioner_title: String(donnees.get("practitioner_title") ?? ""),
+        },
+      });
+      setMessage({
+        tone: "ok",
+        text: "Enregistré. Vos prochains documents porteront cet en-tête.",
+      });
+      rechargerCabinet();
+    } catch (error) {
+      const code = error instanceof ApiError ? error.code : "UNKNOWN";
+      setMessage({ tone: "error", text: errorMessage(code) });
+    }
+  }
 
   return (
     <div className="page">
@@ -30,20 +63,71 @@ export default function ParametresPage() {
 
       <div className="grille-reglages">
         <Carte titre="Praticien et cabinet">
-          <dl className="fiches">
-            <div>
-              <dt>Praticien</dt>
-              <dd>Dr Franck Moyal</dd>
+          <p className="muted" style={{ margin: 0 }}>
+            Ces informations s’impriment en tête de vos comptes rendus et de vos courriers.
+          </p>
+          {cabinet.state === "loading" && <Squelette lignes={4} />}
+          {cabinet.state === "ready" && (
+            <form onSubmit={enregistrerCabinet} style={{ display: "grid", gap: 12 }}>
+              <label className="field">
+                Nom du cabinet
+                <Champ name="name" defaultValue={cabinet.data.name} />
+              </label>
+              <label className="field">
+                Adresse
+                <Champ name="address" defaultValue={cabinet.data.address} />
+              </label>
+              <div className="form-row">
+                <label className="field">
+                  Téléphone
+                  <Champ name="phone" defaultValue={cabinet.data.phone} />
+                </label>
+                <label className="field">
+                  Courriel
+                  <Champ name="email" type="email" defaultValue={cabinet.data.email} />
+                </label>
+              </div>
+              <div className="form-row">
+                <label className="field">
+                  Mention légale (RPPS, ADELI…)
+                  <Champ name="legal" defaultValue={cabinet.data.legal} />
+                </label>
+                <label className="field">
+                  Ville (pour les courriers)
+                  <Champ name="city" defaultValue={cabinet.data.city} />
+                </label>
+              </div>
+              <div className="form-row">
+                <label className="field">
+                  Titre du praticien
+                  <Champ
+                    name="practitioner_title"
+                    placeholder="Dr"
+                    defaultValue={cabinet.data.practitioner_title}
+                  />
+                </label>
+                <label className="field">
+                  Praticien
+                  <Champ value={cabinet.data.practitioner_name} disabled readOnly />
+                </label>
+              </div>
+              <div>
+                <Bouton type="submit">Enregistrer</Bouton>
+              </div>
+            </form>
+          )}
+          {message && (
+            <div
+              className={`banner ${message.tone === "ok" ? "banner-info" : "banner-critical"}`}
+              role="status"
+            >
+              {message.text}
             </div>
-            <div>
-              <dt>Cabinet</dt>
-              <dd className="muted">à renseigner (fichier config/cabinet.json)</dd>
-            </div>
-            <div>
-              <dt>En-tête des documents</dt>
-              <dd className="muted">logo Oris tant que celui du cabinet n’est pas fourni</dd>
-            </div>
-          </dl>
+          )}
+          <p className="muted" style={{ margin: 0 }}>
+            Le logo du cabinet n’est pas encore remplaçable depuis cet écran : les documents
+            portent le logo Oris.
+          </p>
         </Carte>
 
         <Carte titre="Moteurs">

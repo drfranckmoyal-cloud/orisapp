@@ -5,6 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+import type { Cabinet } from "@/lib/api";
+import { useApi } from "@/lib/useApi";
+
 import styles from "./AppShell.module.css";
 
 const NAVIGATION = [
@@ -22,6 +25,11 @@ function estActif(pathname: string, href: string): boolean {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const [cabinet] = useApi<Cabinet>("/me/cabinet");
+  const praticien =
+    cabinet.state === "ready"
+      ? `${cabinet.data.practitioner_title} ${cabinet.data.practitioner_name}`.trim()
+      : "";
 
   return (
     <div className={styles.shell}>
@@ -57,7 +65,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <div className={styles.bas}>
           <div className={styles.praticien}>
-            <span className={styles.praticienNom}>Dr Franck Moyal</span>
+            <span className={styles.praticienNom}>{praticien || "\u00a0"}</span>
             <span className={styles.mention}>Données fictives uniquement</span>
           </div>
         </div>

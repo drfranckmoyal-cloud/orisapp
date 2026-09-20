@@ -124,3 +124,37 @@ def test_repeated_style_requests_become_a_suggestion_not_a_rule(api: Any) -> Non
 
     api.patch("/me/preferences", json={"document_length": "concise"})
     assert api.get("/me/learning/suggestions").json() == []
+
+
+def test_the_practice_identity_is_saved_and_printed_on_documents(api: Any) -> None:
+    """Ce que le praticien saisit dans Paramètres s'imprime en tête de ses documents (§78)."""
+    depart = api.get("/me/cabinet").json()
+    assert depart["name"] == "Cabinet de démonstration"
+    assert depart["practitioner_name"] == "Franck Moyal"
+
+    enregistre = api.patch(
+        "/me/cabinet",
+        json={
+            "name": "Cabinet des Lilas",
+            "address": "12 rue des Lilas, 75000 Paris",
+            "phone": "01 23 45 67 89",
+            "legal": "RPPS 10101010101",
+            "practitioner_title": "Dr",
+        },
+    ).json()
+    assert enregistre["name"] == "Cabinet des Lilas"
+
+    eid = run_synthetic(api, "ORIS-SYN-092")["id"]
+    note = documents_by_type(api, eid)["consultation_note"]
+    texte = api.get(f"/documents/{note['id']}/export", params={"format": "structured"}).text
+    assert "Cabinet des Lilas" in texte
+
+    pdf = api.get(f"/documents/{note['id']}/export", params={"format": "pdf"})
+    assert pdf.content.startswith(b"%PDF")
+
+
+def test_an_empty_practice_identity_falls_back_without_breaking(api: Any) -> None:
+    api.patch("/me/cabinet", json={"address": ""})
+    eid = run_synthetic(api, "ORIS-SYN-092")["id"]
+    note = documents_by_type(api, eid)["consultation_note"]
+    assert api.get(f"/documents/{note['id']}/export", params={"format": "pdf"}).status_code == 200

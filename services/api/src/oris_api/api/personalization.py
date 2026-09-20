@@ -13,9 +13,10 @@ from fastapi import APIRouter
 from pydantic import BaseModel, ConfigDict, Field
 
 from oris_api.api.dependencies import ActorDep, SessionDep
-from oris_api.db.models import GlossaryTermRow
+from oris_api.db.models import GlossaryTermRow, Organization, User
 from oris_api.domain.preferences import PractitionerPreferences, PreferencesPatch
 from oris_api.services import personalization
+from oris_api.services.errors import NotFound
 
 router = APIRouter(tags=["personnalisation"])
 
@@ -62,6 +63,67 @@ def term_out(term: GlossaryTermRow) -> GlossaryTermOut:
         status=term.status,
         frequency=term.frequency,
     )
+
+
+class CabinetOut(BaseModel):
+    """Identité imprimée en tête des documents (spec §78)."""
+
+    name: str
+    address: str = ""
+    phone: str = ""
+    email: str = ""
+    legal: str = ""
+    city: str = ""
+    practitioner_title: str = ""
+    practitioner_name: str = ""
+
+
+class CabinetPatch(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    name: Annotated[str, Field(max_length=200)] | None = None
+    address: Annotated[str, Field(max_length=300)] | None = None
+    phone: Annotated[str, Field(max_length=60)] | None = None
+    email: Annotated[str, Field(max_length=200)] | None = None
+    legal: Annotated[str, Field(max_length=200)] | None = None
+    city: Annotated[str, Field(max_length=120)] | None = None
+    practitioner_title: Annotated[str, Field(max_length=80)] | None = None
+
+
+def cabinet_out(organisation: Organization, praticien: User | None) -> CabinetOut:
+    identite = dict(organisation.identity or {})
+    return CabinetOut(
+        name=identite.get("name") or organisation.name,
+        address=identite.get("address", ""),
+        phone=identite.get("phone", ""),
+        email=identite.get("email", ""),
+        legal=identite.get("legal", ""),
+        city=identite.get("city", ""),
+        practitioner_title=identite.get("practitioner_title", ""),
+        practitioner_name=praticien.name if praticien else "",
+    )
+
+
+@router.get("/me/cabinet", response_model=CabinetOut)
+def read_cabinet(session: SessionDep, actor: ActorDep) -> CabinetOut:
+    organisation = session.get(Organization, actor.organization_id)
+    if organisation is None:
+        raise NotFound("ORGANIZATION_NOT_FOUND", str(actor.organization_id))
+    return cabinet_out(organisation, session.get(User, actor.user_id))
+
+
+@router.patch("/me/cabinet", response_model=CabinetOut)
+def patch_cabinet(body: CabinetPatch, session: SessionDep, actor: ActorDep) -> CabinetOut:
+    """Ce que le praticien saisit ici s'imprime en tête de ses documents."""
+    organisation = session.get(Organization, actor.organization_id)
+    if organisation is None:
+        raise NotFound("ORGANIZATION_NOT_FOUND", str(actor.organization_id))
+    identite = dict(organisation.identity or {})
+    identite.update(body.model_dump(exclude_none=True))
+    organisation.identity = identite
+    if body.name:
+        organisation.name = body.name
+    session.flush()
+    return cabinet_out(organisation, session.get(User, actor.user_id))
 
 
 @router.get("/ontology/concepts", response_model=dict[str, str])

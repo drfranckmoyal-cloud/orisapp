@@ -187,3 +187,5 @@ export type GlossaryTerm = Schemas["GlossaryTermOut"];
 export type LearningSuggestion = Schemas["SuggestionOut"];
 
 export type Progress = Schemas["ProgressOut"];
+
+export type Cabinet = Schemas["CabinetOut"];
