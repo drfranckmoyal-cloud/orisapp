@@ -49,6 +49,7 @@ export default function ParametresPage() {
   const [cabinet, rechargerCabinet] = useApi<Cabinet>("/me/cabinet");
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const moteurs = sante.state === "ready" ? sante.data.providers : {};
+  const smilecloud = config.state === "ready" && config.data.smilecloud_connected;
   const [versions] = useApi<EngineVersion[]>("/system/versions");
 
   async function enregistrerCabinet(event: React.FormEvent<HTMLFormElement>) {
@@ -118,6 +119,44 @@ export default function ParametresPage() {
             </p>
           </div>
           <Bouton disabled>En attente</Bouton>
+        </div>
+      </Carte>
+
+      <Carte titre="Connecteurs">
+        <p className="muted" style={{ marginTop: 0 }}>
+          Ce qu’Oris ira chercher ailleurs plutôt que de vous le faire ressaisir.
+        </p>
+        <div className="rangs-reglages">
+          <div className="reglage-connecteur">
+            <div>
+              <strong>SmileCloud</strong>
+              <p className="muted" style={{ margin: "2px 0 0" }}>
+                Retrouver les photos, scans et documents du patient déjà déposés dans
+                SmileCloud, et les rattacher à sa fiche sans les réimporter à la main.
+              </p>
+            </div>
+            <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <Pastille ton={smilecloud ? "valide" : "attention"} point>
+                {smilecloud ? "connecté" : "non connecté"}
+              </Pastille>
+              <Bouton disabled>En attente</Bouton>
+            </span>
+          </div>
+          <div className="reglage-connecteur">
+            <div>
+              <strong>Doctolib</strong>
+              <p className="muted" style={{ margin: "2px 0 0" }}>
+                Reprendre les rendez-vous du jour et créer les dossiers sans ressaisie.
+                Décrit dans <strong>Votre journée</strong>.
+              </p>
+            </div>
+            <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <Pastille ton="attention" point>
+                non connecté
+              </Pastille>
+              <Bouton disabled>En attente</Bouton>
+            </span>
+          </div>
         </div>
       </Carte>
 

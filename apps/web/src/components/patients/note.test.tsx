@@ -43,7 +43,7 @@ describe("note dictée", () => {
     expect(enregistrer).toHaveBeenCalledWith("À rappeler la veille.");
   });
 
-  it("dit ce qu’elle est : un rappel qu’Oris ne lit pas", () => {
+  it("propose la dictée et annonce à quoi sert le champ", () => {
     render(
       <NoteDictee
         patientId="p1"
@@ -54,7 +54,7 @@ describe("note dictée", () => {
       />,
     );
     const champ = screen.getByLabelText("Note administrative");
-    expect(champ.getAttribute("placeholder")).toContain("Oris ne la lit pas");
+    expect(champ.getAttribute("placeholder")).toContain("Rappel pratique");
     expect(screen.getByRole("button", { name: /Dicter la note/ })).toBeTruthy();
   });
 });

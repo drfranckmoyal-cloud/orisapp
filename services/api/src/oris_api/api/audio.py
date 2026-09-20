@@ -16,7 +16,7 @@ from oris_api.api.schemas import (
     ClientConfigOut,
 )
 from oris_api.domain.types import AudioChunk
-from oris_api.services import audio, encounters
+from oris_api.services import attachments, audio, encounters
 
 router = APIRouter(tags=["audio"])
 
@@ -118,4 +118,7 @@ def client_config(settings: SettingsDep) -> ClientConfigOut:
         warn_session_minutes=settings.warn_session_minutes,
         patient_information_mode=settings.patient_information_mode,
         test_audio_source_enabled=settings.app_env in {"local", "test"},
+        attachment_formats=sorted(attachments.FORMATS),
+        attachment_max_bytes=attachments.MAX_BYTES,
+        smilecloud_connected=settings.smilecloud_enabled,
     )

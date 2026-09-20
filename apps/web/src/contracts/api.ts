@@ -98,6 +98,67 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/patients/{patient_id}/attachments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Attachments */
+        get: operations["list_attachments_patients__patient_id__attachments_get"];
+        put?: never;
+        /**
+         * Add Attachments
+         * @description Importer des photos, radios, empreintes ou documents.
+         *
+         *     Oris ne les lit pas : elles accompagnent le compte rendu, elles ne le nourrissent
+         *     jamais. Un format inconnu est refusé plutôt que rangé « au cas où ».
+         */
+        post: operations["add_attachments_patients__patient_id__attachments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/attachments/{attachment_id}/contenu": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Attachment
+         * @description Rend le fichier tel qu'il a été importé, sans transformation.
+         */
+        get: operations["read_attachment_patients_attachments__attachment_id__contenu_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/attachments/{attachment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Attachment */
+        delete: operations["remove_attachment_patients_attachments__attachment_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters": {
         parameters: {
             query?: never;
@@ -948,6 +1009,34 @@ export interface components {
             /** Problem */
             problem?: string | null;
         };
+        /**
+         * AttachmentOut
+         * @description Une pièce jointe. Oris ne la lit pas : elle accompagne, elle ne nourrit pas.
+         */
+        AttachmentOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Filename */
+            filename: string;
+            /** Media Type */
+            media_type: string;
+            /** Kind */
+            kind: string;
+            /** Byte Size */
+            byte_size: number;
+            /** Label */
+            label: string;
+            /** Encounter Id */
+            encounter_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** AudioGapOut */
         AudioGapOut: {
             /** Duration Ms */
@@ -1021,6 +1110,11 @@ export interface components {
              * Format: date-time
              */
             occurred_at: string;
+        };
+        /** Body_add_attachments_patients__patient_id__attachments_post */
+        Body_add_attachments_patients__patient_id__attachments_post: {
+            /** Files */
+            files: string[];
         };
         /**
          * CabinetOut
@@ -1126,6 +1220,12 @@ export interface components {
             patient_information_mode: "none" | "confirm";
             /** Test Audio Source Enabled */
             test_audio_source_enabled: boolean;
+            /** Attachment Formats */
+            attachment_formats: string[];
+            /** Attachment Max Bytes */
+            attachment_max_bytes: number;
+            /** Smilecloud Connected */
+            smilecloud_connected: boolean;
         };
         /** ClinicalEncounter */
         ClinicalEncounter: {
@@ -2341,6 +2441,132 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["DictationOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_attachments_patients__patient_id__attachments_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttachmentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_attachments_patients__patient_id__attachments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_add_attachments_patients__patient_id__attachments_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttachmentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_attachment_patients_attachments__attachment_id__contenu_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attachment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_attachment_patients_attachments__attachment_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attachment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

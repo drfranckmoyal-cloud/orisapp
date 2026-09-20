@@ -708,17 +708,26 @@ class Template(Base):
 
 
 class Attachment(Base):
-    """Pièce jointe à une consultation (spec §55, §56).
+    """Pièce jointe importée : photo, radio, empreinte, document scanné (§55, §56).
 
-    Prévu par le cadrage, inactif en V1 : aucune route ne l'écrit encore. Le fichier
-    lui-même ne serait jamais dans cette table — seulement où il est rangé.
+    Elle appartient au **patient** — on l'importe une fois, elle sert à plusieurs
+    consultations — et peut être rattachée à l'une d'elles. Le fichier lui-même
+    n'est pas dans cette table : seulement où il est rangé, sa taille et son
+    empreinte, pour savoir s'il a changé.
+
+    Une pièce jointe n'est **jamais** une source de fait clinique : Oris ne la lit
+    pas. Elle accompagne le compte rendu, elle ne le nourrit pas.
     """
 
     __tablename__ = "attachments"
+    __table_args__ = (CheckConstraint("byte_size > 0", name="attachment_size_positive"),)
 
     id: Mapped[UUID] = uuid_pk()
-    encounter_id: Mapped[UUID] = mapped_column(
-        ForeignKey("encounters.id", ondelete="CASCADE"), index=True
+    patient_id: Mapped[UUID] = mapped_column(
+        ForeignKey("patients.id", ondelete="CASCADE"), index=True
+    )
+    encounter_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("encounters.id", ondelete="SET NULL"), index=True
     )
     kind: Mapped[str] = mapped_column(String(40))
     filename: Mapped[str] = mapped_column(String(255))
@@ -726,4 +735,5 @@ class Attachment(Base):
     byte_size: Mapped[int] = mapped_column(Integer)
     checksum: Mapped[str] = mapped_column(String(64))
     storage_key: Mapped[str] = mapped_column(String(255))
+    label: Mapped[str] = mapped_column(Text, default="", server_default="")
     created_at: Mapped[datetime] = created_at()

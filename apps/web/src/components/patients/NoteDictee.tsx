@@ -89,9 +89,8 @@ export function NoteDictee({
         className={styles.champ}
         rows={1}
         maxLength={NOTE_MAX}
-        placeholder="Rappel pratique — Oris ne la lit pas"
+        placeholder="Rappel pratique — horaires, rappel à passer…"
         aria-label="Note administrative"
-        title="Rappel pratique pour vous. Oris ne la lit pas et ne la reprend dans aucun compte rendu."
         value={valeur}
         onChange={(event) => onChange(event.target.value)}
         onBlur={(event) => {

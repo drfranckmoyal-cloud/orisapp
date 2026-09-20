@@ -8,8 +8,6 @@ import {
   Carte,
   EnTetePage,
   EtatVide,
-  Ligne,
-  Lignes,
   LienBouton,
   Onglets,
   Pastille,
@@ -17,13 +15,14 @@ import {
 } from "@/components/ui";
 import { Icone } from "@/components/Icones";
 import { NoteDictee } from "@/components/patients/NoteDictee";
-import { apiRequest, type Encounter, type Patient } from "@/lib/api";
+import { PiecesJointes } from "@/components/patients/PiecesJointes";
+import { apiRequest, type ClientConfig, type Encounter, type Patient } from "@/lib/api";
 import { DOCUMENT_TYPE, ENCOUNTER_STATUS, errorMessage, formatDate, formatDateTime, nomPatient } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
 import styles from "./fiche.module.css";
 
-type Onglet = "consultations" | "documents";
+type Onglet = "consultations" | "pieces";
 
 const TERMINEES = new Set(["validated", "exported", "archived"]);
 
@@ -74,13 +73,12 @@ export default function PatientPage() {
   const { id } = useParams<{ id: string }>();
   const [patient, rechargerPatient] = useApi<Patient>(`/patients/${id}`);
   const [encounters] = useApi<Encounter[]>(`/encounters?patient_id=${id}`);
+  const [config] = useApi<ClientConfig>("/config/client");
   const [onglet, setOnglet] = useState<Onglet>("consultations");
+  const smilecloud = config.state === "ready" && config.data.smilecloud_connected;
   const [note, setNote] = useState<string | null>(null);
 
   const consultations = encounters.state === "ready" ? encounters.data : [];
-  const documents = consultations.flatMap((encounter) =>
-    encounter.documents.map((document) => ({ ...document, encounter })),
-  );
 
   /** Le champ de note rapporte lui-même l'échec : on le laisse remonter. */
   async function enregistrerNote(valeur: string) {
@@ -153,9 +151,14 @@ export default function PatientPage() {
             </Info>
 
             {/* Rangée 2 */}
-            <Info cle="Correspondants" reste>
+            <Info cle="Correspondants">
               {/* Le rattachement viendra avec l'écran dédié. */}
               <Absent quoi="aucun — à venir" />
+            </Info>
+            <Info cle="SmileCloud" reste>
+              <Pastille ton={smilecloud ? "valide" : "attention"} point>
+                {smilecloud ? "connecté" : "non connecté"}
+              </Pastille>
             </Info>
 
             {/* Rangée 3 — la note, sur toute la largeur */}
@@ -180,10 +183,7 @@ export default function PatientPage() {
             valeur: "consultations",
             libelle: `Historique${consultations.length ? ` (${consultations.length})` : ""}`,
           },
-          {
-            valeur: "documents",
-            libelle: `Documents${documents.length ? ` (${documents.length})` : ""}`,
-          },
+          { valeur: "pieces", libelle: "Pièces jointes" },
         ]}
       />
 
@@ -236,34 +236,9 @@ export default function PatientPage() {
         </Carte>
       )}
 
-      {onglet === "documents" && (
+      {onglet === "pieces" && (
         <Carte bords>
-          {documents.length === 0 && (
-            <div style={{ padding: "var(--espace-6)" }}>
-              <EtatVide titre="Aucun document">
-                Les comptes rendus apparaissent ici dès la première consultation traitée.
-              </EtatVide>
-            </div>
-          )}
-          {documents.length > 0 && (
-            <Lignes>
-              {documents.map((document) => (
-                <Ligne
-                  key={document.id}
-                  href={`/consultations/${document.encounter.id}`}
-                  titre={DOCUMENT_TYPE[document.document_type]}
-                  detail={formatDateTime(
-                    document.encounter.started_at ?? document.encounter.created_at,
-                  )}
-                  fin={
-                    <Pastille ton={document.status === "validated" ? "valide" : "neutre"}>
-                      {document.status === "validated" ? "validé" : "brouillon"}
-                    </Pastille>
-                  }
-                />
-              ))}
-            </Lignes>
-          )}
+          <PiecesJointes patientId={id} />
         </Carte>
       )}
     </div>

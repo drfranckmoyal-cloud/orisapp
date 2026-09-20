@@ -141,6 +141,8 @@ function filenameFrom(response: Response): string {
 }
 
 export type ClientConfig = Schemas["ClientConfigOut"];
+/** Pièce jointe importée : photo, radio, empreinte. Oris ne la lit pas (§55). */
+export type Attachment = Schemas["AttachmentOut"];
 /** Point marqué pendant l'écoute : un instant retenu, pas une donnée clinique (§11). */
 export type Mark = Schemas["MarkOut"];
 export type AudioSessionView = Schemas["AudioSessionOut"];

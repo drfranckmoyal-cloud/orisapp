@@ -6,13 +6,20 @@ import hashlib
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Header, status
+from fastapi import APIRouter, Body, File, Header, Response, UploadFile, status
 
-from oris_api.api.dependencies import ActorDep, ProvidersDep, SessionDep
-from oris_api.api.schemas import DictationOut, PatientCreate, PatientOut, PatientUpdate
+from oris_api.api.dependencies import ActorDep, MagasinDep, ProvidersDep, SessionDep
+from oris_api.api.schemas import (
+    AttachmentOut,
+    DictationOut,
+    PatientCreate,
+    PatientOut,
+    PatientUpdate,
+)
+from oris_api.db.models import Attachment
 from oris_api.domain.types import AudioChunk
 from oris_api.providers.base import TranscriptionUnavailable
-from oris_api.services import async_bridge, audio, encounters, patients
+from oris_api.services import async_bridge, attachments, audio, encounters, patients
 from oris_api.services.errors import Conflict, Unprocessable
 
 router = APIRouter(prefix="/patients", tags=["patients"])
@@ -79,3 +86,74 @@ def dictate_note(
 
     texte = " ".join(segment.text for segment in transcription.segments).strip()
     return DictationOut(text=texte)
+
+
+# --- Pièces jointes (spec §55) ---------------------------------------------------------
+
+
+def piece_out(piece: Attachment) -> AttachmentOut:
+    return AttachmentOut(
+        id=piece.id,
+        filename=piece.filename,
+        media_type=piece.media_type,
+        kind=piece.kind,
+        byte_size=piece.byte_size,
+        label=piece.label,
+        encounter_id=piece.encounter_id,
+        created_at=piece.created_at,
+    )
+
+
+@router.get("/{patient_id}/attachments", response_model=list[AttachmentOut])
+def list_attachments(patient_id: UUID, session: SessionDep, actor: ActorDep) -> list[AttachmentOut]:
+    patient = patients.get_patient(session, actor, patient_id)
+    return [piece_out(p) for p in attachments.list_attachments(session, patient)]
+
+
+@router.post(
+    "/{patient_id}/attachments",
+    response_model=list[AttachmentOut],
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_attachments(
+    patient_id: UUID,
+    session: SessionDep,
+    actor: ActorDep,
+    magasin: MagasinDep,
+    fichiers: Annotated[list[UploadFile], File(alias="files")],
+) -> list[AttachmentOut]:
+    """Importer des photos, radios, empreintes ou documents.
+
+    Oris ne les lit pas : elles accompagnent le compte rendu, elles ne le nourrissent
+    jamais. Un format inconnu est refusé plutôt que rangé « au cas où ».
+    """
+    patient = patients.get_patient(session, actor, patient_id)
+    rangees = [
+        attachments.add_attachment(
+            session, actor, magasin, patient, fichier.filename or "fichier", await fichier.read()
+        )
+        for fichier in fichiers
+    ]
+    return [piece_out(p) for p in rangees]
+
+
+@router.get("/attachments/{attachment_id}/contenu")
+def read_attachment(
+    attachment_id: UUID, session: SessionDep, actor: ActorDep, magasin: MagasinDep
+) -> Response:
+    """Rend le fichier tel qu'il a été importé, sans transformation."""
+    piece = attachments.get_attachment(session, actor, attachment_id)
+    contenu = attachments.read_attachment(magasin, piece)
+    return Response(
+        content=contenu,
+        media_type=piece.media_type,
+        headers={"Content-Disposition": f'inline; filename="{piece.filename}"'},
+    )
+
+
+@router.delete("/attachments/{attachment_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_attachment(
+    attachment_id: UUID, session: SessionDep, actor: ActorDep, magasin: MagasinDep
+) -> Response:
+    attachments.remove_attachment(session, actor, magasin, attachment_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

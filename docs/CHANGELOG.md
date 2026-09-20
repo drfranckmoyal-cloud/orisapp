@@ -1,5 +1,26 @@
 # Changelog
 
+## Pièces jointes et connecteurs — 2026-09-21
+- **L'onglet « Documents » de la fiche patient devient « Pièces jointes »** : ce qu'on
+  importe pour s'y référer en rédigeant. Les documents produits par Oris restent visibles
+  dans l'historique et dans l'écran Documents du menu — l'onglet ne les répétait plus.
+- **Import par glisser-déposer et par bouton.** Formats acceptés : JPEG, PNG, **HEIC**
+  et HEIF (l'iPhone par défaut), WEBP, TIFF, **DICOM**, **STL**, **PLY**, OBJ, PDF —
+  80 Mo par fichier. Un format inconnu est **refusé**, pas rangé « au cas où » : un
+  fichier qu'on ne saura pas rouvrir n'a pas sa place au dossier.
+- **Garanties** : le fichier ressort exactement tel qu'il est entré, rien n'est
+  recompressé ; le même fichier importé deux fois ne se range qu'une, l'empreinte le
+  dit ; un nom de fichier dangereux ne peut pas sortir de son dossier. Et surtout —
+  **Oris ne lit pas les pièces jointes** : aucun fait clinique n'en sort, un test le
+  vérifie.
+- **Modèle** : `attachments` appartient désormais au **patient** (une photo sert à
+  plusieurs consultations) et peut être rattachée à l'une d'elles. Le fichier vit dans
+  un magasin sur disque, la base garde le nom, la taille, l'empreinte et l'emplacement.
+- **Voyant SmileCloud** dans le cadre d'informations : vert connecté, orange non
+  connecté. Il lit un vrai réglage, il n'est pas décoratif.
+- **Paramètres › Connecteurs** : SmileCloud et Doctolib, leur état et ce qu'ils feront.
+  Grisés, en attente.
+
 ## Fiche patient — 2026-09-21
 - **Une sortie** : « ← Tous les patients » en tête de fiche. On entrait dans un dossier
   sans pouvoir en ressortir.

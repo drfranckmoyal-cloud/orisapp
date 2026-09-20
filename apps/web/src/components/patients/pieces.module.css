@@ -1,0 +1,112 @@
+.bloc {
+  display: grid;
+  gap: var(--espace-4);
+  padding: var(--espace-4);
+}
+
+/* La zone de dépôt : visible sans être criarde, franche quand on survole. */
+.depot {
+  display: grid;
+  justify-items: center;
+  gap: var(--espace-3);
+  padding: var(--espace-6);
+  border: 2px dashed var(--trait-fort);
+  border-radius: 16px;
+  background: var(--fond);
+  text-align: center;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.survol {
+  border-color: var(--accent);
+  background: var(--accent-douce);
+}
+
+.fleche {
+  color: var(--encre-tres-douce);
+}
+
+.survol .fleche {
+  color: var(--accent);
+}
+
+.invite {
+  margin: 0;
+  font-size: var(--texte-md);
+  color: var(--encre-douce);
+}
+
+.formats {
+  margin: 0;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--encre-tres-douce);
+}
+
+.liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+
+.piece {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-4);
+  border-top: 1px solid var(--trait);
+}
+
+.piece:first-child {
+  border-top: 0;
+}
+
+.piece:hover {
+  background: #fbf8f3;
+}
+
+.lien {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+  padding: 8px var(--espace-2);
+  text-decoration: none;
+  color: inherit;
+}
+
+.nom {
+  font-weight: var(--graisse-demi);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail {
+  font-size: var(--texte-xs);
+  color: var(--encre-tres-douce);
+  font-weight: var(--graisse-moyenne);
+}
+
+.fin {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-3);
+  padding-right: var(--espace-2);
+  flex: none;
+}
+
+.retirer {
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11.5px;
+  color: var(--encre-tres-douce);
+}
+
+.retirer:hover {
+  color: var(--alerte);
+  text-decoration: underline;
+}

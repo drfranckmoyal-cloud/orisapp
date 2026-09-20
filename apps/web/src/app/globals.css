@@ -441,3 +441,23 @@ h3 {
 .ligne-mot:first-of-type {
   border-top: none;
 }
+
+/* Les connecteurs : un par ligne, l'état à droite. */
+.rangs-reglages {
+  display: grid;
+}
+
+.reglage-connecteur {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espace-4);
+  flex-wrap: wrap;
+  padding: var(--espace-4) 0;
+  border-top: 1px solid var(--trait);
+}
+
+.reglage-connecteur:first-child {
+  border-top: 0;
+  padding-top: var(--espace-2);
+}

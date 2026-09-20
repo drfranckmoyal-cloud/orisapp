@@ -48,6 +48,10 @@ class Settings(BaseSettings):
     audio_sink: Literal["memory", "local_temp"] = "local_temp"
     audio_temp_dir: Path = Path.home() / "Library" / "Caches" / "Oris" / "audio"
     audio_max_chunk_bytes: int = 256_000
+    # Pièces jointes du patient : photos, radios, empreintes (spec §55).
+    attachment_dir: Path = Path.home() / "Library" / "Caches" / "Oris" / "attachments"
+    # Connecteur SmileCloud : éteint tant qu'il n'est pas construit.
+    smilecloud_enabled: bool = False
     max_session_minutes: int = 90
     warn_session_minutes: int = 80
 

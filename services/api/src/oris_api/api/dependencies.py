@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from oris_api.config import Settings, get_settings
 from oris_api.db.session import get_session
 from oris_api.providers import ProviderSet
-from oris_api.services import authentication
+from oris_api.services import attachments, authentication
 from oris_api.services.audio_sink import AudioSink
 from oris_api.services.errors import Forbidden
 from oris_api.services.identity import Actor, demo_actor
@@ -65,6 +65,10 @@ ActorDep = Annotated[Actor, Depends(current_actor)]
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 
 
+def magasin(settings: Annotated[Settings, Depends(get_settings)]) -> attachments.Magasin:
+    return attachments.magasin_de(settings)
+
+
 def live_transcription(request: Request) -> LiveTranscription:
     service: LiveTranscription = request.app.state.live
     return service
@@ -73,3 +77,4 @@ def live_transcription(request: Request) -> LiveTranscription:
 SinkDep = Annotated[AudioSink, Depends(audio_sink)]
 ProvidersDep = Annotated[ProviderSet, Depends(providers)]
 LiveDep = Annotated[LiveTranscription, Depends(live_transcription)]
+MagasinDep = Annotated[attachments.Magasin, Depends(magasin)]

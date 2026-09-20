@@ -23,6 +23,8 @@ dependencies = [
   # manque sur les Python installés depuis python.org (macOS).
   "certifi>=2024.8",
   "reportlab>=4.2",
+  # Import de pièces jointes : FastAPI lit le multipart avec cette bibliothèque.
+  "python-multipart>=0.0.20",
   "pillow>=11",
 ]
 

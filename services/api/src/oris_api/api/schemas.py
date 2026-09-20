@@ -180,6 +180,19 @@ class ProgressOut(BaseModel):
     termine: bool
 
 
+class AttachmentOut(BaseModel):
+    """Une pièce jointe. Oris ne la lit pas : elle accompagne, elle ne nourrit pas."""
+
+    id: UUID
+    filename: str
+    media_type: str
+    kind: str
+    byte_size: int
+    label: str
+    encounter_id: UUID | None
+    created_at: datetime
+
+
 class DictationOut(BaseModel):
     """Texte dicté, rendu au praticien. Le son n'est jamais conservé."""
 
@@ -316,3 +329,7 @@ class ClientConfigOut(BaseModel):
     warn_session_minutes: int
     patient_information_mode: Literal["none", "confirm"]
     test_audio_source_enabled: bool
+    # Formats de pièces jointes acceptés, et connecteurs disponibles.
+    attachment_formats: list[str]
+    attachment_max_bytes: int
+    smilecloud_connected: bool

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import tempfile
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,8 @@ os.environ["ALLOW_EXTERNAL_STT"] = "false"
 os.environ["ALLOW_EXTERNAL_LLM"] = "false"
 # L'écoute en direct est injectée par les tests qui la veulent, jamais héritée du poste.
 os.environ["ENABLE_LIVE_TRANSCRIPT"] = "false"
+# Les pièces jointes des tests vivent dans un dossier jetable, jamais celui du poste.
+os.environ["ATTACHMENT_DIR"] = str(Path(tempfile.mkdtemp(prefix="oris-pieces-")))
 os.environ["APP_ENV"] = "local"
 DEFAULT_TEST_DATABASE_URL = "postgresql+psycopg://oris:oris@localhost:5432/oris_test"
 

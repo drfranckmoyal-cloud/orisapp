@@ -298,6 +298,187 @@
         }
       }
     },
+    "/patients/{patient_id}/attachments": {
+      "get": {
+        "tags": [
+          "patients"
+        ],
+        "summary": "List Attachments",
+        "operationId": "list_attachments_patients__patient_id__attachments_get",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AttachmentOut"
+                  },
+                  "title": "Response List Attachments Patients  Patient Id  Attachments Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "patients"
+        ],
+        "summary": "Add Attachments",
+        "description": "Importer des photos, radios, empreintes ou documents.\n\nOris ne les lit pas : elles accompagnent le compte rendu, elles ne le nourrissent\njamais. Un format inconnu est refusé plutôt que rangé « au cas où ».",
+        "operationId": "add_attachments_patients__patient_id__attachments_post",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_add_attachments_patients__patient_id__attachments_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AttachmentOut"
+                  },
+                  "title": "Response Add Attachments Patients  Patient Id  Attachments Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patients/attachments/{attachment_id}/contenu": {
+      "get": {
+        "tags": [
+          "patients"
+        ],
+        "summary": "Read Attachment",
+        "description": "Rend le fichier tel qu'il a été importé, sans transformation.",
+        "operationId": "read_attachment_patients_attachments__attachment_id__contenu_get",
+        "parameters": [
+          {
+            "name": "attachment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Attachment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patients/attachments/{attachment_id}": {
+      "delete": {
+        "tags": [
+          "patients"
+        ],
+        "summary": "Remove Attachment",
+        "operationId": "remove_attachment_patients_attachments__attachment_id__delete",
+        "parameters": [
+          {
+            "name": "attachment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Attachment Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters": {
       "get": {
         "tags": [
@@ -2504,6 +2685,65 @@
         "title": "AddPlanItem",
         "description": "Ajout manuel d'un élément de plan (§34).\n\nLe praticien décide : l'élément est marqué comme le sien, sans fait d'appui\nextrait — c'est sa décision qui en tient lieu."
       },
+      "AttachmentOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "media_type": {
+            "type": "string",
+            "title": "Media Type"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "byte_size": {
+            "type": "integer",
+            "title": "Byte Size"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "encounter_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Encounter Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "filename",
+          "media_type",
+          "kind",
+          "byte_size",
+          "label",
+          "encounter_id",
+          "created_at"
+        ],
+        "title": "AttachmentOut",
+        "description": "Une pièce jointe. Oris ne la lit pas : elle accompagne, elle ne nourrit pas."
+      },
       "AudioGapOut": {
         "properties": {
           "duration_ms": {
@@ -2730,6 +2970,23 @@
           "occurred_at"
         ],
         "title": "AuditEventOut"
+      },
+      "Body_add_attachments_patients__patient_id__attachments_post": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string",
+              "contentMediaType": "application/octet-stream"
+            },
+            "type": "array",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "required": [
+          "files"
+        ],
+        "title": "Body_add_attachments_patients__patient_id__attachments_post"
       },
       "CabinetOut": {
         "properties": {
@@ -2968,6 +3225,21 @@
           "test_audio_source_enabled": {
             "type": "boolean",
             "title": "Test Audio Source Enabled"
+          },
+          "attachment_formats": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Attachment Formats"
+          },
+          "attachment_max_bytes": {
+            "type": "integer",
+            "title": "Attachment Max Bytes"
+          },
+          "smilecloud_connected": {
+            "type": "boolean",
+            "title": "Smilecloud Connected"
           }
         },
         "type": "object",
@@ -2980,7 +3252,10 @@
           "max_session_minutes",
           "warn_session_minutes",
           "patient_information_mode",
-          "test_audio_source_enabled"
+          "test_audio_source_enabled",
+          "attachment_formats",
+          "attachment_max_bytes",
+          "smilecloud_connected"
         ],
         "title": "ClientConfigOut"
       },
