@@ -6,6 +6,7 @@ préférence revient au défaut (§177).
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import Annotated, Literal
 from uuid import UUID
 
@@ -43,6 +44,28 @@ class GlossaryTermPatch(BaseModel):
     canonical: Annotated[str, Field(min_length=1, max_length=200)] | None = None
     aliases: Annotated[list[str], Field(max_length=20)] | None = None
     status: Literal["active", "disabled"] | None = None
+
+
+class FrequentCorrectionOut(BaseModel):
+    event_type: str
+    detail: str
+    occurrences: int
+
+
+class PreferenceReset(BaseModel):
+    """Champ à remettre au défaut ; absent, tout revient au défaut."""
+
+    model_config = ConfigDict(extra="forbid")
+    field: Annotated[str, Field(max_length=60)] | None = None
+
+
+class LearningExport(BaseModel):
+    """Tout ce qu'Oris a retenu de vous, en un fichier lisible (§124)."""
+
+    exported_at: datetime
+    practitioner: str
+    preferences: PractitionerPreferences
+    glossary: list[GlossaryTermOut]
 
 
 class SuggestionOut(BaseModel):
@@ -179,6 +202,37 @@ def patch_glossary_term(
         status=body.status,
     )
     return term_out(term)
+
+
+@router.post("/me/preferences/reset", response_model=PractitionerPreferences)
+def reset_preferences(
+    body: PreferenceReset, session: SessionDep, actor: ActorDep
+) -> PractitionerPreferences:
+    """Revenir au défaut d'Oris. Le dictionnaire n'est pas touché (§124, §177)."""
+    return personalization.reset_preferences(session, actor, body.field)
+
+
+@router.get("/me/learning/corrections", response_model=list[FrequentCorrectionOut])
+def list_frequent_corrections(session: SessionDep, actor: ActorDep) -> list[FrequentCorrectionOut]:
+    """Ce que vous corrigez le plus souvent. Oris le montre, il n'en déduit rien."""
+    return [
+        FrequentCorrectionOut(
+            event_type=item.event_type, detail=item.detail, occurrences=item.occurrences
+        )
+        for item in personalization.frequent_corrections(session, actor)
+    ]
+
+
+@router.get("/me/learning/export", response_model=LearningExport)
+def export_learning(session: SessionDep, actor: ActorDep) -> LearningExport:
+    """Emporter ses préférences et son dictionnaire : rien n'est enfermé dans Oris."""
+    praticien = session.get(User, actor.user_id)
+    return LearningExport(
+        exported_at=datetime.now(UTC),
+        practitioner=praticien.name if praticien else "",
+        preferences=personalization.preferences_of(session, actor),
+        glossary=[term_out(term) for term in personalization.list_terms(session, actor)],
+    )
 
 
 @router.get("/me/learning/suggestions", response_model=list[SuggestionOut])

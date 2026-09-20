@@ -29,3 +29,20 @@ describe("correctionDetail", () => {
     ).toBeNull();
   });
 });
+
+describe("changeEnFrancais", () => {
+  it("traduit les deux côtés d’un changement", async () => {
+    const { changeEnFrancais } = await import("./labels");
+    expect(changeEnFrancais("proposed → accepted")).toBe("proposé → accepté");
+  });
+
+  it("laisse les numéros de dents tels quels", async () => {
+    const { changeEnFrancais } = await import("./labels");
+    expect(changeEnFrancais("26 → 27")).toBe("26 → 27");
+  });
+
+  it("rend une chaîne sans flèche inchangée", async () => {
+    const { changeEnFrancais } = await import("./labels");
+    expect(changeEnFrancais("")).toBe("");
+  });
+});

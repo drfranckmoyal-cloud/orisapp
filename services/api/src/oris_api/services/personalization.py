@@ -32,6 +32,19 @@ LENGTH_PREFERENCE = {
 
 
 @dataclass(frozen=True)
+class FrequentCorrection:
+    """Une correction que le praticien refait souvent (§124, « corrections fréquentes »).
+
+    C'est une lecture du journal d'apprentissage, pas une règle : Oris montre ce qu'il
+    fait rater, il n'en déduit rien tout seul.
+    """
+
+    event_type: str
+    detail: str
+    occurrences: int
+
+
+@dataclass(frozen=True)
 class Suggestion:
     """Une habitude constatée, proposée — jamais appliquée d'office."""
 
@@ -59,6 +72,78 @@ def update_preferences(
     user.preferences = updated.model_dump()
     session.flush()
     return updated
+
+
+def reset_preferences(
+    session: Session, actor: Actor, field: str | None = None
+) -> PractitionerPreferences:
+    """Revenir au défaut d'Oris : un champ, ou tout (§124, §177).
+
+    `field=None` remet toutes les préférences. Le dictionnaire n'est pas touché :
+    il se gère terme par terme, pour qu'une remise à zéro ne fasse jamais disparaître
+    un mot que le praticien avait saisi à la main.
+    """
+    user = session.get(User, actor.user_id)
+    if user is None:
+        raise NotFound("USER_NOT_FOUND", str(actor.user_id))
+    defaults = PractitionerPreferences()
+    if field is None:
+        updated = defaults
+    else:
+        current = PractitionerPreferences.load(user.preferences)
+        if field not in PractitionerPreferences.model_fields:
+            raise Conflict("UNKNOWN_PREFERENCE", field)
+        updated = current.model_copy(update={field: getattr(defaults, field)})
+    user.preferences = updated.model_dump()
+    session.flush()
+    return updated
+
+
+def frequent_corrections(session: Session, actor: Actor) -> list[FrequentCorrection]:
+    """Ce que le praticien corrige le plus souvent, du plus fréquent au moins.
+
+    Le détail reste non clinique : un type de correction et, quand il est lisible,
+    le sens du changement (« 26 → 27 »). Jamais une phrase du dossier.
+    """
+    events = list(
+        session.scalars(
+            select(LearningEventRow).where(
+                LearningEventRow.user_id == actor.user_id,
+                LearningEventRow.event_type.notin_(
+                    ["document_validated_unchanged", "style_preference_detected"]
+                ),
+            )
+        )
+    )
+    counts: Counter[tuple[str, str]] = Counter()
+    for event in events:
+        counts[(event.event_type, _change_of(event))] += 1
+    ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0][0]))
+    return [
+        FrequentCorrection(event_type=event_type, detail=detail, occurrences=count)
+        for (event_type, detail), count in ranked
+    ]
+
+
+# Champs dont un changement se lit en une ligne sans rien révéler du dossier.
+READABLE_FIELDS = ("teeth", "status", "assertion", "temporality", "certainty")
+
+
+def _change_of(event: LearningEventRow) -> str:
+    before, after = event.before or {}, event.after or {}
+    if not isinstance(before, dict) or not isinstance(after, dict):
+        return ""
+    for field in READABLE_FIELDS:
+        old, new = before.get(field), after.get(field)
+        if old is not None and new is not None and old != new:
+            return f"{_plain(old)} → {_plain(new)}"
+    return ""
+
+
+def _plain(value: object) -> str:
+    if isinstance(value, list):
+        return ", ".join(str(item) for item in value)
+    return str(value)
 
 
 def list_terms(

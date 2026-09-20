@@ -337,6 +337,16 @@ h3 {
   color: var(--encre-douce);
 }
 
+/* Liste dont chaque ligne porte déjà sa marque (un ✓) : pas de puce en plus. */
+.liste-cochee {
+  list-style: none;
+  padding-left: 0;
+}
+
+.liste-cochee li {
+  color: var(--encre);
+}
+
 .barre-document {
   display: flex;
   gap: var(--espace-2);

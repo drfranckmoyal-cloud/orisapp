@@ -693,6 +693,66 @@ export interface paths {
         patch: operations["patch_glossary_term_glossary__term_id__patch"];
         trace?: never;
     };
+    "/me/preferences/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset Preferences
+         * @description Revenir au défaut d'Oris. Le dictionnaire n'est pas touché (§124, §177).
+         */
+        post: operations["reset_preferences_me_preferences_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/learning/corrections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Frequent Corrections
+         * @description Ce que vous corrigez le plus souvent. Oris le montre, il n'en déduit rien.
+         */
+        get: operations["list_frequent_corrections_me_learning_corrections_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/learning/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Learning
+         * @description Emporter ses préférences et son dictionnaire : rien n'est enfermé dans Oris.
+         */
+        get: operations["export_learning_me_learning_export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/me/learning/suggestions": {
         parameters: {
             query?: never;
@@ -1250,6 +1310,15 @@ export interface components {
             /** Value */
             value?: unknown;
         };
+        /** FrequentCorrectionOut */
+        FrequentCorrectionOut: {
+            /** Event Type */
+            event_type: string;
+            /** Detail */
+            detail: string;
+            /** Occurrences */
+            occurrences: number;
+        };
         /** GlossaryTermOut */
         GlossaryTermOut: {
             /**
@@ -1338,6 +1407,22 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /**
+         * LearningExport
+         * @description Tout ce qu'Oris a retenu de vous, en un fichier lisible (§124).
+         */
+        LearningExport: {
+            /**
+             * Exported At
+             * Format: date-time
+             */
+            exported_at: string;
+            /** Practitioner */
+            practitioner: string;
+            preferences: components["schemas"]["PractitionerPreferences"];
+            /** Glossary */
+            glossary: components["schemas"]["GlossaryTermOut"][];
         };
         /**
          * MarkCreate
@@ -1486,6 +1571,14 @@ export interface components {
             terminology?: {
                 [key: string]: string;
             };
+        };
+        /**
+         * PreferenceReset
+         * @description Champ à remettre au défaut ; absent, tout revient au défaut.
+         */
+        PreferenceReset: {
+            /** Field */
+            field?: string | null;
         };
         /**
          * PreferencesPatch
@@ -3226,6 +3319,79 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_preferences_me_preferences_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreferenceReset"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PractitionerPreferences"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_frequent_corrections_me_learning_corrections_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FrequentCorrectionOut"][];
+                };
+            };
+        };
+    };
+    export_learning_me_learning_export_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LearningExport"];
                 };
             };
         };

@@ -2062,6 +2062,96 @@
         }
       }
     },
+    "/me/preferences/reset": {
+      "post": {
+        "tags": [
+          "personnalisation"
+        ],
+        "summary": "Reset Preferences",
+        "description": "Revenir au défaut d'Oris. Le dictionnaire n'est pas touché (§124, §177).",
+        "operationId": "reset_preferences_me_preferences_reset_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferenceReset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PractitionerPreferences"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/learning/corrections": {
+      "get": {
+        "tags": [
+          "personnalisation"
+        ],
+        "summary": "List Frequent Corrections",
+        "description": "Ce que vous corrigez le plus souvent. Oris le montre, il n'en déduit rien.",
+        "operationId": "list_frequent_corrections_me_learning_corrections_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FrequentCorrectionOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Frequent Corrections Me Learning Corrections Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/learning/export": {
+      "get": {
+        "tags": [
+          "personnalisation"
+        ],
+        "summary": "Export Learning",
+        "description": "Emporter ses préférences et son dictionnaire : rien n'est enfermé dans Oris.",
+        "operationId": "export_learning_me_learning_export_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LearningExport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/me/learning/suggestions": {
       "get": {
         "tags": [
@@ -3598,6 +3688,29 @@
         "type": "object",
         "title": "FactChanges"
       },
+      "FrequentCorrectionOut": {
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "occurrences": {
+            "type": "integer",
+            "title": "Occurrences"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_type",
+          "detail",
+          "occurrences"
+        ],
+        "title": "FrequentCorrectionOut"
+      },
       "GlossaryTermOut": {
         "properties": {
           "id": {
@@ -3843,6 +3956,38 @@
           "created_at"
         ],
         "title": "LearningEventOut"
+      },
+      "LearningExport": {
+        "properties": {
+          "exported_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Exported At"
+          },
+          "practitioner": {
+            "type": "string",
+            "title": "Practitioner"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/PractitionerPreferences"
+          },
+          "glossary": {
+            "items": {
+              "$ref": "#/components/schemas/GlossaryTermOut"
+            },
+            "type": "array",
+            "title": "Glossary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exported_at",
+          "practitioner",
+          "preferences",
+          "glossary"
+        ],
+        "title": "LearningExport",
+        "description": "Tout ce qu'Oris a retenu de vous, en un fichier lisible (§124)."
       },
       "MarkCreate": {
         "properties": {
@@ -4246,6 +4391,26 @@
         "type": "object",
         "title": "PractitionerPreferences",
         "description": "Ce que le praticien a choisi. Les valeurs par défaut sont celles d'Oris."
+      },
+      "PreferenceReset": {
+        "properties": {
+          "field": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 60
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PreferenceReset",
+        "description": "Champ à remettre au défaut ; absent, tout revient au défaut."
       },
       "PreferencesPatch": {
         "properties": {

@@ -1,5 +1,23 @@
 # Changelog
 
+## Refonte produit (4) — 2026-09-20 — les écrans restants
+- **accueil (§8)** : la **recherche patient** qui manquait — on tape un nom, on tombe sur
+  la fiche.
+- **« Oris apprend de vous » (§124)** : les **sept sections** du cadrage, et plus trois.
+  - *Oris a appris* : la lecture en clair de ce qui est actif (« ✓ Vous dites « avulsion »
+    plutôt que « extraction » »), avec un bouton **Exporter** — préférences et dictionnaire
+    dans un fichier, rien n'est enfermé dans Oris ;
+  - *Matériaux reconnus* et *Termes appris* séparés, et le formulaire demande la nature ;
+  - *Ce que vous corrigez le plus souvent* : les corrections comptées, en français
+    (« Statut de traitement corrigé — proposé → accepté »). Oris **montre**, il n'en déduit
+    rien ;
+  - *Réinitialiser* : un champ, ou tout. La remise à zéro ne touche jamais au dictionnaire
+    saisi à la main.
+- **API** : `POST /me/preferences/reset`, `GET /me/learning/corrections`,
+  `GET /me/learning/export`.
+- Le détail d'une correction ne montre que le geste et son sens : jamais une phrase du
+  dossier. Un test le vérifie.
+
 ## Refonte produit (3) — 2026-09-20 — points marqués et fiabilité des faits
 - **« Marquer un point » (§11)** : pendant l'écoute, un bouton discret pose un repère
   temporel. Nouvelle table `encounter_marks`, routes `POST`/`GET /encounters/{id}/marks`.

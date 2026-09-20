@@ -87,6 +87,29 @@ export const PLAN_STATUS = {
   completed: "réalisé",
 } as const;
 
+/** Traduit une valeur technique isolée (« proposed », « absent »…) si on la connaît. */
+export function motTechnique(valeur: string): string {
+  const tables: Record<string, string>[] = [
+    PLAN_STATUS as unknown as Record<string, string>,
+    ASSERTION as unknown as Record<string, string>,
+    TEMPORALITY as unknown as Record<string, string>,
+    CERTAINTY as unknown as Record<string, string>,
+    CLINICAL_STATUS as unknown as Record<string, string>,
+  ];
+  for (const table of tables) {
+    const trouve = table[valeur];
+    if (trouve) return trouve;
+  }
+  return valeur;
+}
+
+/** « proposed → accepted » devient « proposé → accepté ». Les dents restent telles quelles. */
+export function changeEnFrancais(detail: string): string {
+  const [avant, apres] = detail.split(" → ");
+  if (avant === undefined || apres === undefined) return detail;
+  return `${motTechnique(avant)} → ${motTechnique(apres)}`;
+}
+
 export const DOMAIN: Record<string, string> = {
   aesthetic_consultation: "Consultation esthétique",
   tooth_wear_consultation: "Usures dentaires",

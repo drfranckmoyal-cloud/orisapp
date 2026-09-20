@@ -1,10 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo, useState } from "react";
 
-import { Carte, EnTetePage, EtatVide, Ligne, Lignes, Pastille, Squelette } from "@/components/ui";
-import type { Cabinet, Encounter } from "@/lib/api";
-import { ENCOUNTER_STATUS, errorMessage, formatDateTime } from "@/lib/labels";
+import {
+  Carte,
+  Champ,
+  EnTetePage,
+  EtatVide,
+  Ligne,
+  Lignes,
+  Pastille,
+  Squelette,
+} from "@/components/ui";
+import type { Cabinet, Encounter, Patient } from "@/lib/api";
+import { ENCOUNTER_STATUS, errorMessage, formatDate, formatDateTime } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
 function salutation(heure: number): string {
@@ -26,6 +36,13 @@ function heureDe(encounter: Encounter): string {
   return quand.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
+function sansAccents(texte: string): string {
+  return texte
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
 function nomDe(encounter: Encounter): string {
   return `${encounter.patient.first_name} ${encounter.patient.last_name}`.trim();
 }
@@ -40,6 +57,8 @@ function documentsDe(encounter: Encounter): string {
 export default function HomePage() {
   const [encounters] = useApi<Encounter[]>("/encounters");
   const [cabinet] = useApi<Cabinet>("/me/cabinet");
+  const [patients] = useApi<Patient[]>("/patients");
+  const [recherche, setRecherche] = useState("");
   const praticien =
     cabinet.state === "ready"
       ? `${cabinet.data.practitioner_title} ${cabinet.data.practitioner_name}`.trim()
@@ -49,6 +68,17 @@ export default function HomePage() {
   const aValider = toutes.filter((e) => e.status === "review");
   const aujourdhui = toutes.filter(estAujourdhui);
   const terminees = toutes.filter((e) => ["validated", "exported", "archived"].includes(e.status));
+  const trouves = useMemo(() => {
+    const cherche = sansAccents(recherche.trim());
+    if (!cherche) return [];
+    const liste = patients.state === "ready" ? patients.data : [];
+    return liste
+      .filter((patient) =>
+        sansAccents(`${patient.first_name} ${patient.last_name}`).includes(cherche),
+      )
+      .slice(0, 6);
+  }, [patients, recherche]);
+
   const enEchec = toutes.filter((e) =>
     ["transcription_failed", "generation_failed", "audio_error", "upload_interrupted"].includes(
       e.status,
@@ -70,6 +100,38 @@ export default function HomePage() {
           </Link>
         }
       />
+
+      <Carte serree>
+        <label className="field" style={{ margin: 0 }}>
+          <span className="muted">Retrouver un patient</span>
+          <Champ
+            type="search"
+            placeholder="Nom du patient"
+            value={recherche}
+            onChange={(event) => setRecherche(event.target.value)}
+          />
+        </label>
+        {recherche.trim() !== "" && (
+          <div style={{ marginTop: "var(--espace-3)" }}>
+            {trouves.length === 0 ? (
+              <EtatVide titre="Aucun patient à ce nom">
+                Vous pourrez le créer au moment de démarrer la consultation.
+              </EtatVide>
+            ) : (
+              <Lignes>
+                {trouves.map((patient) => (
+                  <Ligne
+                    key={patient.id}
+                    href={`/patients/${patient.id}`}
+                    titre={`${patient.first_name} ${patient.last_name}`}
+                    detail={patient.birth_date ? `né(e) le ${formatDate(patient.birth_date)}` : undefined}
+                  />
+                ))}
+              </Lignes>
+            )}
+          </div>
+        )}
+      </Carte>
 
       <div className="grille-accueil">
         <Carte

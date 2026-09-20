@@ -14,13 +14,42 @@ import {
 import {
   ApiError,
   apiRequest,
+  type FrequentCorrection,
   type GlossaryTerm,
+  type LearningExport,
   type LearningSuggestion,
   type Preferences,
 } from "@/lib/api";
-import { errorMessage } from "@/lib/labels";
+import { LEARNING_EVENT, changeEnFrancais, errorMessage } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 import { useConcepts } from "@/lib/useConcepts";
+
+function LigneTerme({
+  entree,
+  basculer,
+}: {
+  entree: GlossaryTerm;
+  basculer: (entree: GlossaryTerm) => void;
+}) {
+  return (
+    <div className="ligne-mot">
+      <span>
+        <strong>{entree.canonical}</strong>
+        {entree.aliases.length > 0 && (
+          <span className="muted"> — entendu : {entree.aliases.join(", ")}</span>
+        )}
+      </span>
+      <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <Pastille ton={entree.status === "active" ? "valide" : "neutre"}>
+          {entree.status === "active" ? "actif" : "désactivé"}
+        </Pastille>
+        <Bouton variante="discret" onClick={() => basculer(entree)}>
+          {entree.status === "active" ? "désactiver" : "réactiver"}
+        </Bouton>
+      </span>
+    </div>
+  );
+}
 
 /** « Oris apprend de vous » (S13, §124) : ce qui a été retenu, et comment le défaire. */
 export default function ApprentissagePage() {
@@ -29,15 +58,20 @@ export default function ApprentissagePage() {
   const [suggestions, rechargerSuggestions] = useApi<LearningSuggestion[]>(
     "/me/learning/suggestions",
   );
+  const [corrections, rechargerCorrections] = useApi<FrequentCorrection[]>(
+    "/me/learning/corrections",
+  );
   const motDe = useConcepts();
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const [terme, setTerme] = useState("");
   const [variantes, setVariantes] = useState("");
+  const [categorie, setCategorie] = useState("material");
 
   function toutRecharger() {
     rechargerPreferences();
     rechargerGlossaire();
     rechargerSuggestions();
+    rechargerCorrections();
   }
 
   async function agir(action: () => Promise<unknown>, succes: string) {
@@ -50,6 +84,17 @@ export default function ApprentissagePage() {
       const code = error instanceof ApiError ? error.code : "UNKNOWN";
       setMessage({ tone: "error", text: errorMessage(code) });
     }
+  }
+
+  function basculer(entree: GlossaryTerm) {
+    void agir(
+      () =>
+        apiRequest(`/glossary/${entree.id}`, {
+          method: "PATCH",
+          body: { status: entree.status === "active" ? "disabled" : "active" },
+        }),
+      entree.status === "active" ? "Terme désactivé." : "Terme réactivé.",
+    );
   }
 
   function adopter(suggestion: LearningSuggestion) {
@@ -82,6 +127,38 @@ export default function ApprentissagePage() {
   const mots = Object.entries(actuelles?.terminology ?? {});
   const propositions = suggestions.state === "ready" ? suggestions.data : [];
   const termes = glossaire.state === "ready" ? glossaire.data : [];
+  const materiaux = termes.filter((entree) => entree.category === "material");
+  const autresTermes = termes.filter((entree) => entree.category !== "material");
+  const frequentes = corrections.state === "ready" ? corrections.data : [];
+
+  // « Oris a appris : ✓ … » (§124) — la lecture en clair de ce qui est actif.
+  const regles: string[] = [
+    ...(actuelles?.document_length === "concise"
+      ? ["Vos comptes rendus sont rédigés courts."]
+      : []),
+    ...mots.map(([concept, mot]) => `Vous dites « ${mot} » plutôt que « ${motDe(concept)} ».`),
+    ...materiaux
+      .filter((entree) => entree.status === "active")
+      .map((entree) => `« ${entree.canonical} » est un matériau qu'Oris reconnaît.`),
+  ];
+
+  async function exporter() {
+    try {
+      const donnees = await apiRequest<LearningExport>("/me/learning/export");
+      const fichier = new Blob([JSON.stringify(donnees, null, 2)], {
+        type: "application/json",
+      });
+      const lien = document.createElement("a");
+      lien.href = URL.createObjectURL(fichier);
+      lien.download = `oris-preferences-${donnees.exported_at.slice(0, 10)}.json`;
+      lien.click();
+      URL.revokeObjectURL(lien.href);
+      setMessage({ tone: "ok", text: "Vos préférences ont été enregistrées sur l’ordinateur." });
+    } catch (error) {
+      const code = error instanceof ApiError ? error.code : "UNKNOWN";
+      setMessage({ tone: "error", text: errorMessage(code) });
+    }
+  }
 
   return (
     <div className="page">
@@ -120,6 +197,33 @@ export default function ApprentissagePage() {
         ))}
       </Carte>
 
+      <Carte
+        titre="Oris a appris"
+        action={
+          <Bouton variante="discret" onClick={() => void exporter()}>
+            Exporter
+          </Bouton>
+        }
+      >
+        {regles.length === 0 ? (
+          <EtatVide titre="Rien encore">
+            Oris écrit pour l’instant comme il le fait par défaut. Ce que vous corrigez
+            souvent finira ici.
+          </EtatVide>
+        ) : (
+          <ul className="liste-simple liste-cochee">
+            {regles.map((regle) => (
+              <li key={regle}>
+                <span aria-hidden="true" style={{ color: "var(--valide)" }}>
+                  ✓{" "}
+                </span>
+                {regle}
+              </li>
+            ))}
+          </ul>
+        )}
+      </Carte>
+
       <div className="grille-reglages">
         <Carte titre="Vos préférences de rédaction">
           <label className="field">
@@ -142,6 +246,23 @@ export default function ApprentissagePage() {
               <option value="concise">Concis — sans les répétitions de titre</option>
             </select>
           </label>
+          {actuelles?.document_length !== "standard" && (
+            <Bouton
+              variante="discret"
+              onClick={() =>
+                void agir(
+                  () =>
+                    apiRequest("/me/preferences/reset", {
+                      method: "POST",
+                      body: { field: "document_length" },
+                    }),
+                  "Longueur revenue au réglage d’Oris.",
+                )
+              }
+            >
+              revenir au réglage d’Oris
+            </Bouton>
+          )}
 
           <div>
             <p style={{ margin: "0 0 8px", fontWeight: 500 }}>Vos mots</p>
@@ -176,6 +297,20 @@ export default function ApprentissagePage() {
               </div>
             ))}
           </div>
+
+          {(actuelles?.document_length !== "standard" || mots.length > 0) && (
+            <Bouton
+              variante="discret"
+              onClick={() =>
+                void agir(
+                  () => apiRequest("/me/preferences/reset", { method: "POST", body: {} }),
+                  "Toutes vos préférences sont revenues aux réglages d’Oris. Votre dictionnaire est intact.",
+                )
+              }
+            >
+              tout remettre aux réglages d’Oris
+            </Bouton>
+          )}
         </Carte>
 
         <Carte titre="Votre dictionnaire">
@@ -198,7 +333,7 @@ export default function ApprentissagePage() {
                         .split(",")
                         .map((variante) => variante.trim())
                         .filter(Boolean),
-                      category: "material",
+                      category: categorie,
                     },
                   }),
                 "Terme ajouté.",
@@ -224,6 +359,17 @@ export default function ApprentissagePage() {
                 onChange={(event) => setVariantes(event.target.value)}
               />
             </label>
+            <label className="field">
+              Nature
+              <select
+                className="input"
+                value={categorie}
+                onChange={(event) => setCategorie(event.target.value)}
+              >
+                <option value="material">Matériau ou marque</option>
+                <option value="other">Autre terme</option>
+              </select>
+            </label>
             <Bouton type="submit" variante="secondaire">
               Ajouter
             </Bouton>
@@ -235,38 +381,51 @@ export default function ApprentissagePage() {
               Ajoutez vos marques : ce sont elles que la machine entend le plus mal.
             </EtatVide>
           )}
-          {termes.map((entree) => (
-            <div key={entree.id} className="ligne-mot">
-              <span>
-                <strong>{entree.canonical}</strong>
-                {entree.aliases.length > 0 && (
-                  <span className="muted"> — entendu : {entree.aliases.join(", ")}</span>
-                )}
-              </span>
-              <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Pastille ton={entree.status === "active" ? "valide" : "neutre"}>
-                  {entree.status === "active" ? "actif" : "désactivé"}
-                </Pastille>
-                <Bouton
-                  variante="discret"
-                  onClick={() =>
-                    void agir(
-                      () =>
-                        apiRequest(`/glossary/${entree.id}`, {
-                          method: "PATCH",
-                          body: { status: entree.status === "active" ? "disabled" : "active" },
-                        }),
-                      entree.status === "active" ? "Terme désactivé." : "Terme réactivé.",
-                    )
-                  }
-                >
-                  {entree.status === "active" ? "désactiver" : "réactiver"}
-                </Bouton>
-              </span>
+
+          {materiaux.length > 0 && (
+            <div>
+              <p style={{ margin: "0 0 8px", fontWeight: 500 }}>Matériaux reconnus</p>
+              {materiaux.map((entree) => (
+                <LigneTerme key={entree.id} entree={entree} basculer={basculer} />
+              ))}
             </div>
-          ))}
+          )}
+          {autresTermes.length > 0 && (
+            <div>
+              <p style={{ margin: "0 0 8px", fontWeight: 500 }}>Termes appris</p>
+              {autresTermes.map((entree) => (
+                <LigneTerme key={entree.id} entree={entree} basculer={basculer} />
+              ))}
+            </div>
+          )}
         </Carte>
       </div>
+
+      <Carte titre="Ce que vous corrigez le plus souvent">
+        <p className="muted" style={{ marginTop: 0 }}>
+          Ce qu’Oris fait rater. Rien n’en est déduit automatiquement : c’est à vous de
+          décider si une règle mérite d’être posée.
+        </p>
+        {corrections.state === "loading" && <Squelette lignes={3} />}
+        {corrections.state === "ready" && frequentes.length === 0 && (
+          <EtatVide titre="Aucune correction enregistrée">
+            Chaque correction que vous faites sur un compte rendu se retrouvera ici.
+          </EtatVide>
+        )}
+        {frequentes.slice(0, 8).map((item) => (
+          <div key={`${item.event_type}-${item.detail}`} className="ligne-mot">
+            <span>
+              {LEARNING_EVENT[item.event_type] ?? item.event_type}
+              {item.detail && (
+                <span className="muted"> — {changeEnFrancais(item.detail)}</span>
+              )}
+            </span>
+            <Pastille>
+              {item.occurrences === 1 ? "1 fois" : `${item.occurrences} fois`}
+            </Pastille>
+          </div>
+        ))}
+      </Carte>
     </div>
   );
 }

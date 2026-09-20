@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from tests.conftest import documents_by_type, run_synthetic
+from tests.conftest import clinical_object, documents_by_type, run_synthetic
 
 
 def test_preferences_start_at_oris_defaults_and_can_be_changed(api: Any) -> None:
@@ -158,3 +158,63 @@ def test_an_empty_practice_identity_falls_back_without_breaking(api: Any) -> Non
     eid = run_synthetic(api, "ORIS-SYN-092")["id"]
     note = documents_by_type(api, eid)["consultation_note"]
     assert api.get(f"/documents/{note['id']}/export", params={"format": "pdf"}).status_code == 200
+
+
+def test_a_preference_can_always_be_put_back_to_the_oris_default(api: Any) -> None:
+    """Rien de ce qu'Oris retient n'est définitif (§124, §177)."""
+    api.patch("/me/preferences", json={"document_length": "concise"})
+    api.patch("/me/preferences", json={"terminology": {"extraction": "avulsion"}})
+    api.post("/glossary", json={"canonical": "G-ænial A'CHORD", "category": "material"})
+
+    # Un seul champ.
+    remis = api.post("/me/preferences/reset", json={"field": "document_length"}).json()
+    assert remis["document_length"] == "standard"
+    assert remis["terminology"] == {"extraction": "avulsion"}
+
+    # Un champ qui n'existe pas ne casse rien : il est refusé.
+    assert api.post("/me/preferences/reset", json={"field": "couleur"}).json()["code"] == (
+        "UNKNOWN_PREFERENCE"
+    )
+
+    # Tout, d'un coup — sans toucher au dictionnaire saisi à la main.
+    tout = api.post("/me/preferences/reset", json={}).json()
+    assert tout == {"document_length": "standard", "terminology": {}}
+    assert [term["canonical"] for term in api.get("/glossary").json()] == ["G-ænial A'CHORD"]
+
+
+def test_frequent_corrections_are_shown_without_revealing_the_record(api: Any) -> None:
+    """« Corrections fréquentes » (§124) : le geste et son sens, jamais le dossier."""
+    assert api.get("/me/learning/corrections").json() == []
+
+    eid = run_synthetic(api, "ORIS-SYN-001")["id"]
+    obj = clinical_object(api, eid)
+    depart = next(fact["teeth"][0] for fact in obj["facts"] if fact["teeth"])
+    for avant, apres in ((depart, "27"), ("27", "28")):
+        reponse = api.patch(
+            f"/encounters/{eid}/clinical-object",
+            json={
+                "expected_object_version": api.get(f"/encounters/{eid}").json()["object_version"],
+                "operations": [
+                    {"operation": "replace_tooth", "from_tooth": avant, "to_tooth": apres}
+                ],
+            },
+        )
+        assert reponse.status_code == 200, reponse.text
+
+    corrections = api.get("/me/learning/corrections").json()
+    assert corrections
+    assert all(item["occurrences"] >= 1 for item in corrections)
+    assert any(item["event_type"] == "tooth_number_correction" for item in corrections)
+    # Aucun texte du dossier ne fuit dans cette liste.
+    assert all(" → " in item["detail"] or item["detail"] == "" for item in corrections)
+
+
+def test_what_oris_learned_can_be_exported(api: Any) -> None:
+    api.patch("/me/preferences", json={"document_length": "concise"})
+    api.post("/glossary", json={"canonical": "Variolink", "aliases": ["variolinque"]})
+
+    exporte = api.get("/me/learning/export").json()
+    assert exporte["practitioner"] == "Franck Moyal"
+    assert exporte["preferences"]["document_length"] == "concise"
+    assert [term["canonical"] for term in exporte["glossary"]] == ["Variolink"]
+    assert exporte["exported_at"]
