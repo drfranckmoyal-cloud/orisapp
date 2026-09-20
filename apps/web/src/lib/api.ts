@@ -142,3 +142,42 @@ function filenameFrom(response: Response): string {
 
 export type ClientConfig = Schemas["ClientConfigOut"];
 export type AudioSessionView = Schemas["AudioSessionOut"];
+
+export type SpokenCorrection = Schemas["SpokenCorrectionOut"];
+
+/** Correction dictée au micro : le son part dans la requête, il n'est pas stocké. */
+export async function sendVoiceCorrection(
+  encounterId: string,
+  pcm: Uint8Array,
+  options: { apply?: boolean; expectedObjectVersion?: number } = {},
+  fetcher: typeof fetch = fetch,
+  baseUrl: string = API_BASE_URL,
+): Promise<SpokenCorrection> {
+  const query = new URLSearchParams();
+  if (options.apply) query.set("apply", "true");
+  if (options.expectedObjectVersion !== undefined) {
+    query.set("expected_object_version", String(options.expectedObjectVersion));
+  }
+  let response: Response;
+  try {
+    response = await fetcher(
+      `${baseUrl}/encounters/${encounterId}/corrections/voice?${query.toString()}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "audio/pcm;rate=16000;channels=1;encoding=s16le" },
+        body: pcm as BodyInit,
+      },
+    );
+  } catch {
+    throw new ApiError(0, "NETWORK_UNREACHABLE");
+  }
+  const body: unknown = await response.json().catch(() => null);
+  if (!response.ok) {
+    const error = (body ?? {}) as { code?: unknown };
+    throw new ApiError(
+      response.status,
+      typeof error.code === "string" ? error.code : `HTTP_${response.status}`,
+    );
+  }
+  return body as SpokenCorrection;
+}

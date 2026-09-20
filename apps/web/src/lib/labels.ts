@@ -111,6 +111,9 @@ export const LEARNING_EVENT: Record<string, string> = {
 
 const ERRORS: Record<string, string> = {
   NETWORK_UNREACHABLE: "Serveur Oris injoignable.",
+  MICROPHONE_UNAVAILABLE: "Micro indisponible : autorisez-le dans le navigateur.",
+  OBJECT_VERSION_REQUIRED: "Rechargez la page avant d’appliquer cette correction.",
+  STT_UNAVAILABLE: "La transcription est indisponible : réessayez dans un instant.",
   NO_PROCEDURE_TO_DOCUMENT: "Aucun acte n’a été dit : il n’y a pas de compte rendu de soins à rédiger.",
   DOCUMENT_EMPTY: "Ce document n’a pas encore de contenu.",
   DOCUMENT_NOT_FOUND: "Ce document est introuvable.",

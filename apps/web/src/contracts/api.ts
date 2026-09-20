@@ -252,6 +252,51 @@ export interface paths {
         patch: operations["correct_clinical_object_encounters__encounter_id__clinical_object_patch"];
         trace?: never;
     };
+    "/encounters/{encounter_id}/corrections/text": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Correct From Speech
+         * @description Correction dictée ou écrite : aperçu du patch, puis application sur confirmation.
+         *
+         *     Rien n'est deviné : une commande ambiguë revient au praticien avec la raison.
+         */
+        post: operations["correct_from_speech_encounters__encounter_id__corrections_text_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/encounters/{encounter_id}/corrections/voice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Correct From Voice
+         * @description Correction dictée au micro : transcrite, interprétée, jamais conservée.
+         *
+         *     L'audio d'une correction ne traverse pas le stockage : il est transcrit dans la
+         *     requête, puis oublié (D010).
+         */
+        post: operations["correct_from_voice_encounters__encounter_id__corrections_voice_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters/{encounter_id}/documents": {
         parameters: {
             query?: never;
@@ -1105,6 +1150,51 @@ export interface components {
              */
             status: "discussed" | "proposed" | "accepted" | "refused" | "deferred" | "planned" | "completed";
         };
+        /**
+         * SpokenCorrectionOut
+         * @description Ce qu'Oris a compris, et ce qu'il a fait — ou pas.
+         */
+        SpokenCorrectionOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "clinical" | "editorial" | "unclear";
+            /** Summary */
+            summary: string;
+            /**
+             * Impact
+             * @enum {string}
+             */
+            impact: "normal" | "high";
+            /** Reason */
+            reason: string;
+            /** Candidates */
+            candidates: string[];
+            /** Operations */
+            operations: {
+                [key: string]: unknown;
+            }[];
+            /** Applied */
+            applied: boolean;
+            /** Object Version */
+            object_version: number;
+        };
+        /**
+         * SpokenCorrectionRequest
+         * @description Correction dictée ou écrite. Par défaut : aperçu, sans rien modifier.
+         */
+        SpokenCorrectionRequest: {
+            /** Command */
+            command: string;
+            /** Expected Object Version */
+            expected_object_version?: number | null;
+            /**
+             * Apply
+             * @default false
+             */
+            apply: boolean;
+        };
         /** SyntheticCaseOut */
         SyntheticCaseOut: {
             /** Case Id */
@@ -1785,6 +1875,81 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EncounterOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    correct_from_speech_encounters__encounter_id__corrections_text_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SpokenCorrectionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpokenCorrectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    correct_from_voice_encounters__encounter_id__corrections_voice_post: {
+        parameters: {
+            query?: {
+                apply?: boolean;
+                expected_object_version?: number | null;
+            };
+            header: {
+                "content-type": string;
+            };
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "audio/pcm;rate=16000;channels=1;encoding=s16le": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpokenCorrectionOut"];
                 };
             };
             /** @description Validation Error */

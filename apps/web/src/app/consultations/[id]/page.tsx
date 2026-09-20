@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 
 import { CorrectionPanel } from "@/components/review/CorrectionPanel";
+import { SpokenCorrectionPanel } from "@/components/review/SpokenCorrection";
 import { TreatmentPlanCards } from "@/components/review/TreatmentPlanCards";
 import { DocumentBody } from "@/components/review/DocumentView";
 import { FactChips } from "@/components/review/FactChips";
@@ -557,11 +558,21 @@ export default function ReviewPage() {
                 Une correction modifie d’abord le dossier clinique ; Oris
                 réécrit ensuite les documents.
               </p>
-              <CorrectionPanel
+              <SpokenCorrectionPanel
                 encounter={data}
                 clinicalObject={object}
                 onCorrected={reloadAll}
               />
+              <details style={{ marginTop: 8 }}>
+                <summary>Corriger sans dicter</summary>
+                <div style={{ marginTop: 12 }}>
+                  <CorrectionPanel
+                    encounter={data}
+                    clinicalObject={object}
+                    onCorrected={reloadAll}
+                  />
+                </div>
+              </details>
             </section>
           )}
 

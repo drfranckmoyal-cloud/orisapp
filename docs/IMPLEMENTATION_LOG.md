@@ -525,6 +525,44 @@ en vrai dans le navigateur intégré, pas seulement supposé.
 Les intitulés de section ne sont pas devinés à la mise en page : la liste vient du
 rédacteur (`SECTION_ORDER`), sinon une phrase en majuscules deviendrait un titre.
 
+## M8 — correction dictée (2026-09-20)
+
+Critères visés (spec §46–48, `IMPLEMENTATION_PLAN` M8) : interpréter la commande,
+produire un **patch structuré**, confirmer si l'impact est significatif, appliquer à
+l'objet clinique, invalider et régénérer les documents, garder l'historique, émettre un
+`LearningEvent`. Le moteur distingue une correction clinique d'une préférence de
+rédaction (§46 A/B).
+
+Modules :
+- `domain/correction_intent.py` (nouveau) : interprétation déterministe d'une phrase en
+  français → opérations existantes (`replace_tooth`, `set_plan_item_status`,
+  `update_fact`, `remove_fact`). Ce qui n'est pas clair n'est **pas** deviné : la
+  commande est rendue avec la raison et, si besoin, les cibles possibles ;
+- `api/encounters.py` : `POST /encounters/{id}/corrections/text` — aperçu par défaut,
+  application sur confirmation ;
+- `apps/web` : dicter ou écrire une correction, voir le patch avant d'appliquer.
+
+### Résultat M8
+
+Le pipeline de la spec §47 est en place : interpréter → patch → confirmer → appliquer →
+invalider → régénérer → historiser. L'aperçu est le comportement **par défaut** de la
+route : appliquer demande un `apply` explicite **et** la version d'objet attendue, sinon
+`OBJECT_VERSION_REQUIRED`. Une correction sur une version périmée est refusée.
+
+Ce que l'interprète sait faire, en français : remplacer une dent (quatre tournures),
+ajouter une dent à un élément, retirer un élément nommé, changer le statut d'un
+traitement (accepté, refusé, reporté, prévu, réalisé, proposé). Ce qu'il **refuse** de
+faire : deviner. Une cible ambiguë revient avec la liste des éléments possibles, écrits
+en français ; une phrase non reconnue revient avec des exemples.
+
+Une préférence de rédaction (« plus court », « reformule ») est reconnue comme telle :
+elle n'est jamais appliquée au dossier clinique, seulement retenue comme
+`style_preference_detected` (§46 B).
+
+La dictée passe par `POST /corrections/voice` : l'audio est transcrit **dans la requête**
+par le fournisseur configuré, puis oublié — il n'entre pas dans le stockage audio de la
+consultation (D010). Vérifié par un test ; un vrai micro reste à essayer par le praticien.
+
 ## M7 — comptes rendus opératoires (2026-09-19)
 
 Critères visés (`ACCEPTANCE_CRITERIA`, spec §37–45, §77, §81) : les champs d'un modèle

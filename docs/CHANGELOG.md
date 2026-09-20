@@ -1,5 +1,20 @@
 # Changelog
 
+## M8 — 2026-09-20 — correction dictée
+- une phrase du praticien devient un **patch structuré** de l'objet clinique, jamais une
+  retouche du texte : remplacement de dent, ajout de dent, retrait d'un élément,
+  changement de statut d'un traitement ;
+- **aperçu d'abord** : Oris montre ce qu'il a compris et l'impact ; appliquer demande une
+  confirmation explicite et la version d'objet attendue ;
+- ce qui est ambigu n'est pas deviné : la commande revient avec la raison et les éléments
+  possibles, écrits en français ;
+- une préférence de rédaction (« plus court ») est distinguée d'une correction clinique :
+  elle est retenue pour l'apprentissage et ne touche pas au dossier (§46) ;
+- `POST /encounters/{id}/corrections/voice` : l'audio est transcrit dans la requête puis
+  oublié, il n'entre jamais dans le stockage de la consultation ;
+- sur le site : dicter au micro ou écrire, relire le patch, appliquer ;
+- tests : API 239, web 47.
+
 ## M7 — 2026-09-19 — comptes rendus opératoires
 - les sept modèles de la spécification (composite, esthétique direct, facettes
   préparation, facettes collage, usures additives, avulsion, chirurgie mineure) : des

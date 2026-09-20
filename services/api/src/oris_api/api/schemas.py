@@ -127,6 +127,28 @@ class CorrectionRequest(BaseModel):
     regenerate: bool = True
 
 
+class SpokenCorrectionRequest(BaseModel):
+    """Correction dictée ou écrite. Par défaut : aperçu, sans rien modifier."""
+
+    model_config = ConfigDict(extra="forbid")
+    command: Annotated[str, Field(min_length=1, max_length=500)]
+    expected_object_version: Annotated[int, Field(ge=1)] | None = None
+    apply: bool = False
+
+
+class SpokenCorrectionOut(BaseModel):
+    """Ce qu'Oris a compris, et ce qu'il a fait — ou pas."""
+
+    kind: Literal["clinical", "editorial", "unclear"]
+    summary: str
+    impact: Literal["normal", "high"]
+    reason: str
+    candidates: list[str]
+    operations: list[dict[str, Any]]
+    applied: bool
+    object_version: int
+
+
 class ObjectVersionOut(BaseModel):
     version: int
     change_kind: str

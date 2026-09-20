@@ -831,6 +831,151 @@
         }
       }
     },
+    "/encounters/{encounter_id}/corrections/text": {
+      "post": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Correct From Speech",
+        "description": "Correction dictée ou écrite : aperçu du patch, puis application sur confirmation.\n\nRien n'est deviné : une commande ambiguë revient au praticien avec la raison.",
+        "operationId": "correct_from_speech_encounters__encounter_id__corrections_text_post",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpokenCorrectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpokenCorrectionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/corrections/voice": {
+      "post": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Correct From Voice",
+        "description": "Correction dictée au micro : transcrite, interprétée, jamais conservée.\n\nL'audio d'une correction ne traverse pas le stockage : il est transcrit dans la\nrequête, puis oublié (D010).",
+        "operationId": "correct_from_voice_encounters__encounter_id__corrections_voice_post",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          },
+          {
+            "name": "apply",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Apply"
+            }
+          },
+          {
+            "name": "expected_object_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Expected Object Version"
+            }
+          },
+          {
+            "name": "content-type",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Content-Type"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "audio/pcm;rate=16000;channels=1;encoding=s16le": {
+              "schema": {
+                "type": "string",
+                "contentMediaType": "application/octet-stream",
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpokenCorrectionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters/{encounter_id}/documents": {
       "get": {
         "tags": [
@@ -3272,6 +3417,105 @@
           "status"
         ],
         "title": "SetPlanItemStatus"
+      },
+      "SpokenCorrectionOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "clinical",
+              "editorial",
+              "unclear"
+            ],
+            "title": "Kind"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "impact": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "high"
+            ],
+            "title": "Impact"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "candidates": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Candidates"
+          },
+          "operations": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Operations"
+          },
+          "applied": {
+            "type": "boolean",
+            "title": "Applied"
+          },
+          "object_version": {
+            "type": "integer",
+            "title": "Object Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "summary",
+          "impact",
+          "reason",
+          "candidates",
+          "operations",
+          "applied",
+          "object_version"
+        ],
+        "title": "SpokenCorrectionOut",
+        "description": "Ce qu'Oris a compris, et ce qu'il a fait — ou pas."
+      },
+      "SpokenCorrectionRequest": {
+        "properties": {
+          "command": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Command"
+          },
+          "expected_object_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Object Version"
+          },
+          "apply": {
+            "type": "boolean",
+            "title": "Apply",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "command"
+        ],
+        "title": "SpokenCorrectionRequest",
+        "description": "Correction dictée ou écrite. Par défaut : aperçu, sans rien modifier."
       },
       "SyntheticCaseOut": {
         "properties": {

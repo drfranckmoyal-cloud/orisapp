@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import hashlib
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, Body, Header, Response, status
 
 from oris_api.api.dependencies import ActorDep, ProvidersDep, SessionDep, SettingsDep, SinkDep
 from oris_api.api.presenters import document_out, encounter_out
@@ -19,13 +21,26 @@ from oris_api.api.schemas import (
     EncounterStart,
     LearningEventOut,
     ObjectVersionOut,
+    SpokenCorrectionOut,
+    SpokenCorrectionRequest,
     TranscriptOut,
 )
 from oris_api.contracts.generated import ClinicalEncounterStatus
 from oris_api.db.models import DocumentRow
-from oris_api.services import clinical_store, corrections, documents, encounters, learning
+from oris_api.domain.correction_intent import interpret
+from oris_api.domain.types import AudioChunk
+from oris_api.providers.base import TranscriptionUnavailable
+from oris_api.services import (
+    async_bridge,
+    clinical_store,
+    corrections,
+    documents,
+    encounters,
+    learning,
+)
+from oris_api.services import audio as audio_service
 from oris_api.services.documents import ExportFormat
-from oris_api.services.errors import Conflict, NotFound
+from oris_api.services.errors import Conflict, NotFound, Unprocessable
 
 router = APIRouter(tags=["encounters"])
 
@@ -174,6 +189,111 @@ def correct_clinical_object(
         regenerate=body.regenerate,
     )
     return encounter_out(session, encounter)
+
+
+@router.post("/encounters/{encounter_id}/corrections/text", response_model=SpokenCorrectionOut)
+def correct_from_speech(
+    encounter_id: UUID,
+    body: SpokenCorrectionRequest,
+    session: SessionDep,
+    actor: ActorDep,
+    providers: ProvidersDep,
+) -> SpokenCorrectionOut:
+    """Correction dictée ou écrite : aperçu du patch, puis application sur confirmation.
+
+    Rien n'est deviné : une commande ambiguë revient au praticien avec la raison.
+    """
+    encounter = encounters.get_encounter(session, actor, encounter_id)
+    obj = clinical_store.load_current(session, encounter)
+    reading = interpret(body.command, obj)
+    applied = False
+
+    if body.apply and reading.kind == "clinical":
+        if body.expected_object_version is None:
+            raise Conflict("OBJECT_VERSION_REQUIRED", str(encounter.id))
+        corrections.apply_correction(
+            session,
+            actor,
+            encounter,
+            body.expected_object_version,
+            reading.operations,
+            providers,
+        )
+        applied = True
+    elif body.apply and reading.kind == "editorial":
+        # §46 B : une préférence de rédaction ne touche pas au dossier clinique ;
+        # elle est retenue pour l'apprentissage, et rien d'autre.
+        learning.emit(
+            session,
+            actor,
+            encounter.id,
+            obj.object_version,
+            "style_preference_detected",
+            None,
+            {"preference": reading.preference},
+        )
+        applied = True
+
+    return SpokenCorrectionOut(
+        kind=reading.kind,
+        summary=reading.summary,
+        impact=reading.impact,
+        reason=reading.reason,
+        candidates=reading.candidates,
+        operations=[operation.model_dump() for operation in reading.operations],
+        applied=applied,
+        object_version=encounter.object_version,
+    )
+
+
+@router.post("/encounters/{encounter_id}/corrections/voice", response_model=SpokenCorrectionOut)
+def correct_from_voice(
+    encounter_id: UUID,
+    payload: Annotated[bytes, Body(media_type=audio_service.AUDIO_FORMAT)],
+    content_type: Annotated[str, Header()],
+    session: SessionDep,
+    actor: ActorDep,
+    providers: ProvidersDep,
+    apply: bool = False,
+    expected_object_version: int | None = None,
+) -> SpokenCorrectionOut:
+    """Correction dictée au micro : transcrite, interprétée, jamais conservée.
+
+    L'audio d'une correction ne traverse pas le stockage : il est transcrit dans la
+    requête, puis oublié (D010).
+    """
+    encounter = encounters.get_encounter(session, actor, encounter_id)
+    if content_type.replace(" ", "").lower() != audio_service.AUDIO_FORMAT:
+        raise Unprocessable("UNSUPPORTED_AUDIO_FORMAT", str(encounter.id))
+    if not payload or len(payload) % 2:
+        raise Unprocessable("INVALID_CHUNK", str(encounter.id))
+
+    chunk = AudioChunk(
+        session_id=str(encounter.id),
+        sequence=0,
+        timestamp_ms=0,
+        checksum=hashlib.sha256(payload).hexdigest(),
+        payload=payload,
+    )
+    try:
+        transcription = async_bridge.run(
+            lambda: providers.speech_to_text.transcribe([chunk], encounters.LOCALE, [])
+        )
+    except TranscriptionUnavailable as error:
+        raise Conflict("STT_UNAVAILABLE", str(encounter.id), [error.code]) from error
+
+    command = " ".join(segment.text for segment in transcription.segments).strip()
+    return correct_from_speech(
+        encounter_id,
+        SpokenCorrectionRequest(
+            command=command or " ",
+            apply=apply,
+            expected_object_version=expected_object_version,
+        ),
+        session,
+        actor,
+        providers,
+    )
 
 
 @router.get("/encounters/{encounter_id}/documents", response_model=list[DocumentOut])
