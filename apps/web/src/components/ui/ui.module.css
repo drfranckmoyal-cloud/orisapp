@@ -121,13 +121,8 @@
 }
 
 /* Les filets vont d'un bord à l'autre, mais le texte garde sa marge. */
-.carteBords .lignes {
-  padding: var(--espace-2) 0;
-}
-
 .carteBords .ligne {
-  padding-left: var(--espace-6);
-  padding-right: var(--espace-6);
+  padding: var(--espace-2) var(--espace-4);
 }
 
 .enTeteCarte {
