@@ -20,13 +20,28 @@
 }
 
 /* Le logo est posé SUR le vert, pas inscrit dedans : une plaque, un objet. */
+.enTeteMarque {
+  margin-bottom: 26px;
+}
+
+/* Le slogan vit sous la plaque, sur le vert : il appartient à la marque, pas au
+   menu. Assez discret pour ne pas peser, assez présent pour être lu une fois. */
+.slogan {
+  display: block;
+  margin: 11px 4px 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  font-weight: var(--graisse-moyenne);
+  color: #a6c3b4;
+  letter-spacing: 0.005em;
+}
+
 .marque {
   display: flex;
   align-items: center;
   gap: 13px;
   padding: 15px 16px;
   border-radius: 17px;
-  margin-bottom: 26px;
   color: var(--accent-fonce);
   text-decoration: none;
   background: linear-gradient(180deg, #fdfcfa, #f2ede4);

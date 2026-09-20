@@ -52,14 +52,17 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className={styles.shell}>
       <nav className={styles.menu} aria-label="Navigation principale">
-        <Link href="/" className={styles.marque}>
-          <Symbole taille={36} />
-          <span className={styles.nom}>Oris</span>
-          <span className={styles.retour} aria-hidden="true">
-            accueil
-          </span>
-          <span className="sr-only">Revenir à l’accueil</span>
-        </Link>
+        <div className={styles.enTeteMarque}>
+          <Link href="/" className={styles.marque}>
+            <Symbole taille={36} />
+            <span className={styles.nom}>Oris</span>
+            <span className={styles.retour} aria-hidden="true">
+              accueil
+            </span>
+            <span className="sr-only">Revenir à l’accueil</span>
+          </Link>
+          <span className={styles.slogan}>Vous soignez. Oris documente.</span>
+        </div>
 
         <ul className={styles.nav}>
           {NAVIGATION.map(({ href, label, icone }) => (

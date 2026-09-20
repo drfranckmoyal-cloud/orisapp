@@ -24,29 +24,26 @@ adaptée à votre pratique.**
 
 ## Slogan
 
-Deux candidats, encore en balance. Mise en situation :
-`design/marque/slogans.html`.
+> # Vous soignez. Oris documente.
 
-| | |
-|---|---|
-| **A** | **Vous soignez. Oris documente.** |
-| **B** | **Votre temps reste au soin.** |
+**Arrêté le 20 septembre 2026.**
 
-**A explique, B revendique.** A dit la répartition des rôles : un confrère qui
-l'entend une fois sait ce qu'est Oris et peut le répéter. B ne dit pas ce que fait
-Oris, il dit ce qu'on y gagne — et « *reste* » suppose que ce temps était en train
-d'être pris, ce qui est exactement le vécu d'un praticien qui rédige le soir.
+Il dit la répartition des rôles en quatre mots, et met le praticien en premier —
+« Vous » est le premier mot. Un confrère qui l'entend une fois peut le répéter à un
+autre confrère, ce qui est la seule épreuve qui compte.
 
-B a la meilleure idée, A la meilleure utilité : sur une plaquette, B seul laisse le
-lecteur sans savoir de quoi il s'agit, il lui faut toujours une ligne d'explication
-en dessous.
+Emploi : partout. Couverture, application, signature, titre de la page web. Le point
+au milieu n'est pas négociable — c'est lui qui fait les deux temps.
 
-Deux réserves sur B : « au soin » au singulier est juste mais littéraire (certains
-liront « aux soins »), et le point après « Oris » coupe le souffle — *« Oris, votre
-temps reste au soin »* se dit mieux à voix haute.
+### L'autre finaliste, pour mémoire
 
-À l'usage, ils se complètent : **B** en couverture et en signature, **A** dans
-l'application et partout où il faut être compris sans effort.
+**« Votre temps reste au soin. »** — écarté. Il avait la meilleure idée : « *reste* »
+suppose que ce temps était en train d'être pris, ce qui est exactement le vécu d'un
+praticien qui rédige le soir. Mais il ne dit pas ce que fait Oris : sur une plaquette,
+il laisse le lecteur sans savoir de quoi il s'agit, et réclame toujours une ligne
+d'explication en dessous. Un slogan qu'il faut expliquer n'est pas encore un slogan.
+
+Mise en situation des deux : `design/marque/slogans.html`.
 
 ## Ce qu'Oris ne promet pas
 

@@ -98,32 +98,14 @@ traitement. **Aucun modèle n'est réentraîné sur les consultations.**)*
 
 ### A. Le slogan
 
-Deux finalistes, et j'hésite :
+Retenu : **« Vous soignez. Oris documente. »**
 
-- **« Vous soignez. Oris documente. »** — dit la répartition des rôles, se répète
-  après une seule écoute.
-- **« Votre temps reste au soin. »** — dit le bénéfice ; « reste » suppose que ce
-  temps était en train d'être pris.
+Il dit la répartition des rôles et met le praticien en premier. L'autre finaliste,
+« Votre temps reste au soin », a été écarté parce qu'il ne dit pas ce que fait Oris.
 
-Lequel tient en couverture de plaquette **et** dans l'application ? Y a-t-il une
-troisième voie ? Les autres pistes envisagées, pour information :
-
-**Sur la non-invention** — l'invariant technique transformé en promesse :
-« Rien que ce qui a été dit. » · « Ce qui est écrit a été dit. » · « Aucune phrase sans
-preuve. » · « Chaque phrase remonte à une parole. »
-
-**Sur le partage des rôles** :
-« Vous soignez. Oris écrit. » · « À vous le soin, à Oris le dossier. » · « Gardez les
-yeux sur le patient. »
-
-**Sur le temps rendu** :
-« Vos soirées vous appartiennent. » · « La consultation finie, le dossier aussi. » ·
-« Plus de comptes rendus le soir. »
-
-**Sur le mécanisme** :
-« La parole devient dossier. » · « Écouter. Comprendre. Documenter. »
-
-Y a-t-il une promesse qu'on ne devrait pas faire ?
+Questions : est-ce qu'il tient en couverture de plaquette **et** dans l'application ?
+Est-ce qu'un confrère le répète à un autre confrère ? Y a-t-il une promesse qu'on ne
+devrait pas faire ?
 
 ### B. Le nom et la marque
 

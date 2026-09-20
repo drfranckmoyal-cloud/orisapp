@@ -1,5 +1,19 @@
 # Changelog
 
+## Marque arrêtée — 2026-09-20
+- **Slogan : « Vous soignez. Oris documente. »** Il dit la répartition des rôles en
+  quatre mots et met le praticien en premier. Il vit sous le logo dans la barre de
+  gauche, dans le titre de la page, et partout ailleurs.
+  *« Votre temps reste au soin. »* a été écarté : la meilleure idée, mais il ne dit pas
+  ce que fait Oris — un slogan qu'il faut expliquer n'est pas encore un slogan.
+- **Texte de présentation** de référence dans `docs/POSITIONNEMENT.md`, avec une
+  précision qui ne doit jamais se perdre : « adaptatif » veut dire que le dictionnaire
+  et le style du praticien sont transmis à chaque traitement, **jamais** qu'un modèle
+  est réentraîné sur ses consultations.
+- **Le nom est vectorisé** — Fraunces 600, taille optique 48, axe WONK éteint, crénage
+  de la police. Plus aucun fichier de la marque ne dépend d'une police installée : les
+  verrouillages s'impriment. 50 PNG dans `design/marque/png/`.
+
 ## Direction visuelle appliquée — 2026-09-20
 La direction 4b passe des maquettes au produit, et devient le système verrouillé
 (`docs/DESIGN_SYSTEM.md`, `design/tokens.json`).

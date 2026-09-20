@@ -159,8 +159,8 @@ export default function HomePage() {
           <span>
             <span className={styles.titreDemarrer}>Commencer une consultation</span>
             <span className={styles.sousDemarrer}>
-              Vous soignez, Oris documente. Le dossier sera prêt avant la fin du
-              rendez-vous.
+              {/* Le slogan vit déjà sous le logo : ici, on dit la promesse concrète. */}
+              Oris écoute. Le dossier sera prêt avant la fin du rendez-vous.
             </span>
           </span>
         </Link>

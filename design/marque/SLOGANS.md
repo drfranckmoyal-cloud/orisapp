@@ -1,8 +1,10 @@
 # Slogans possibles pour Oris
 
-> **Arbitrage du 20 septembre 2026** — deux finalistes :
-> **« Vous soignez. Oris documente. »** et **« Votre temps reste au soin. »**
-> Mise en situation : `slogans.html`. Analyse : `docs/POSITIONNEMENT.md`.
+> **Arrêté le 20 septembre 2026 : « Vous soignez. Oris documente. »**
+>
+> Le reste de cette page garde la trace des pistes explorées — utile le jour où il
+> faudra une accroche de campagne, un objet de courriel ou un titre de section.
+> Analyse du choix : `docs/POSITIONNEMENT.md`. Mise en situation : `slogans.html`.
 
 Le slogan doit tenir une promesse qu'Oris **tient réellement**, sinon il se retourne
 contre le produit au premier compte rendu douteux. Ce qu'Oris fait, et qu'aucune
