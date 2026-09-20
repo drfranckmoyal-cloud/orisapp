@@ -15,6 +15,7 @@ import {
   Pastille,
   Squelette,
 } from "@/components/ui";
+import { NoteAdministrative } from "@/components/patients/NoteAdministrative";
 import type { ClinicalObjectView, Encounter, Patient } from "@/lib/api";
 import {
   DOCUMENT_TYPE,
@@ -40,7 +41,7 @@ function tonStatut(statut: string): "neutre" | "attention" | "valide" | "alerte"
 /** Fiche patient : la continuité entre les consultations (§9, votre cahier). */
 export default function PatientPage() {
   const { id } = useParams<{ id: string }>();
-  const [patient] = useApi<Patient>(`/patients/${id}`);
+  const [patient, rechargerPatient] = useApi<Patient>(`/patients/${id}`);
   const [encounters] = useApi<Encounter[]>(`/encounters?patient_id=${id}`);
   const [onglet, setOnglet] = useState<Onglet>("consultations");
 
@@ -86,6 +87,10 @@ export default function PatientPage() {
               : `${consultations.length} consultation${consultations.length > 1 ? "s" : ""}`}
           </span>
         </div>
+      )}
+
+      {patient.state === "ready" && (
+        <NoteAdministrative patient={patient.data} onSaved={rechargerPatient} />
       )}
 
       <Onglets

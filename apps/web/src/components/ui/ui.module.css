@@ -378,6 +378,12 @@
   resize: vertical;
 }
 
+/* Une note de quelques lignes : la hauteur du document éditable serait écrasante. */
+.zoneCompacte {
+  min-height: 0;
+  padding: var(--espace-3);
+}
+
 .zone:focus-visible {
   outline: none;
   border-color: var(--accent);

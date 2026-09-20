@@ -19,7 +19,8 @@
       "external_id": null,
       "first_name": "Test",
       "id": "00000000-0000-4000-8000-000000000003",
-      "last_name": "missing_audio"
+      "last_name": "missing_audio",
+      "note": ""
     },
     "processing_errors": [],
     "started_at": "2026-09-17T09:00:00+00:00",

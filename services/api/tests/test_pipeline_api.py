@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from oris_api.contracts import validate_contract
@@ -250,3 +251,39 @@ def test_a_marked_moment_is_kept_but_never_becomes_a_clinical_fact(api: Any) -> 
         3_000,
         12_000,
     ]
+
+
+def test_the_administrative_note_never_reaches_the_record(api: Any) -> None:
+    """La note de la fiche patient (§9) est administrative, jamais clinique.
+
+    Elle aide le praticien à s'organiser. Oris ne la lit pas : elle n'entre ni dans la
+    transcription, ni dans les faits, ni dans un document.
+    """
+    marqueur = "NOTE ADMINISTRATIVE : préfère le matin, allergie latex à confirmer"
+    patient = api.post(
+        "/patients",
+        json={"first_name": "Test", "last_name": "Note", "note": marqueur},
+    ).json()
+    assert patient["note"] == marqueur
+
+    encounter = api.post(
+        "/encounters", json={"patient_id": patient["id"], "synthetic_case_id": "ORIS-SYN-001"}
+    ).json()
+    eid = encounter["id"]
+    api.post(f"/encounters/{eid}/start", json={"patient_informed": True})
+    assert api.post(f"/encounters/{eid}/finish").json()["status"] == "review"
+
+    segments = api.get(f"/encounters/{eid}/transcript").json()["segments"]
+    assert all(marqueur not in segment["text"] for segment in segments)
+
+    objet = clinical_object(api, eid)
+    assert marqueur not in json.dumps(objet, ensure_ascii=False)
+
+    for document in documents_by_type(api, eid).values():
+        assert marqueur not in document["content"]
+
+    # Et elle se modifie comme le reste de la fiche.
+    modifie = api.patch(f"/patients/{patient['id']}", json={"note": "à rappeler au cabinet"})
+    assert modifie.json()["note"] == "à rappeler au cabinet"
+    # « Courte » est une contrainte, pas une suggestion : un roman est refusé.
+    assert api.patch(f"/patients/{patient['id']}", json={"note": "x" * 501}).status_code == 422

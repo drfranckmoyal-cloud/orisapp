@@ -218,6 +218,11 @@ export function Pousse() {
   return <span className={styles.pousse} />;
 }
 
-export function Zone(props: ComponentProps<"textarea">) {
-  return <textarea {...props} className={`${styles.zone} ${props.className ?? ""}`} />;
+/** Zone de texte. `compacte` pour une note de quelques lignes, pas un document. */
+export function Zone({
+  compacte = false,
+  ...props
+}: ComponentProps<"textarea"> & { compacte?: boolean }) {
+  const classes = [styles.zone, compacte ? styles.zoneCompacte : "", props.className ?? ""];
+  return <textarea {...props} className={classes.filter(Boolean).join(" ")} />;
 }

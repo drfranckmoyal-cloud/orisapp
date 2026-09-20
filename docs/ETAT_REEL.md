@@ -61,7 +61,7 @@ trois des dix-huit ne sont atteints que « côté serveur », sans écran digne 
 | Écran spécifié | Ce que dit le cadrage | Ce qui existe |
 |---|---|---|
 | **Accueil (§8, S01)** | logo, praticien, nouvelle consultation, consultations du jour, documents à valider, **recherche patient** | fait, recherche patient comprise |
-| **Sélection patient (§9, S02)** | recherche, patients récents, création, date de naissance, identifiant externe, note | fait — recherche insensible aux accents, fiche patient, date de naissance, identifiant externe. **La note libre manque** |
+| **Sélection patient (§9, S02)** | recherche, patients récents, création, date de naissance, identifiant externe, note | fait, note administrative comprise |
 | **Pré-consultation (§10, S03)** | patient, praticien, micro, information patient, un seul écran | fait |
 | **Écoute active (§11, S04/S05)** | chronomètre, micro, réseau, capture, pause, terminer, **« marquer un point »**, **transcript replié** | fait, transcript replié compris |
 | **Durée de session (§12)** | alerte avant 90 minutes | fait — avertissement à 80 min, pause forcée à 90 |
@@ -75,10 +75,10 @@ trois des dix-huit ne sont atteints que « côté serveur », sans écran digne 
 | **Documents** | historique clair | fait — tous les documents, filtre par type, recherche par patient |
 | **Paramètres** | cabinet, praticien, préférences, sécurité | fait — identité du cabinet modifiable, moteurs, écoute, sécurité (y compris ce qui manque) |
 
-**Ce qui reste, écran par écran :** la note libre sur la fiche patient (§9), et la
-transcription mot à mot **pendant** la dictée d'une correction (§46) — une commande
-vocale dure quelques secondes et part en un bloc ; l'aperçu du patch avant application
-reste la garantie qui compte.
+**Ce qui reste, écran par écran :** la transcription mot à mot **pendant** la dictée
+d'une correction (§46) — une commande vocale dure quelques secondes et part en un bloc ;
+l'aperçu du patch avant application reste la garantie qui compte. Tout le reste des
+écrans spécifiés existe.
 
 ---
 

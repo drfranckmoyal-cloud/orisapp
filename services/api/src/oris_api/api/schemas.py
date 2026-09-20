@@ -27,12 +27,18 @@ class ApiErrorBody(BaseModel):
     details: list[str] = []
 
 
+# Note administrative (§9) : « courte » est une contrainte du cadrage, pas un détail.
+# Un champ long inviterait à y écrire du clinique, qu'Oris ne lira jamais.
+AdminNote = Annotated[str, StringConstraints(max_length=500)]
+
+
 class PatientCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     first_name: Name
     last_name: Name
     birth_date: date | None = None
     external_id: str | None = None
+    note: AdminNote = ""
 
 
 class PatientUpdate(BaseModel):
@@ -41,6 +47,7 @@ class PatientUpdate(BaseModel):
     last_name: Name | None = None
     birth_date: date | None = None
     external_id: str | None = None
+    note: AdminNote | None = None
 
 
 class PatientOut(BaseModel):
@@ -50,6 +57,7 @@ class PatientOut(BaseModel):
     last_name: str
     birth_date: date | None
     external_id: str | None
+    note: str
     created_at: datetime
 
 

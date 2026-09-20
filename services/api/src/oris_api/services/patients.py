@@ -38,6 +38,7 @@ def create_patient(
     last_name: str,
     birth_date: date | None = None,
     external_id: str | None = None,
+    note: str = "",
 ) -> Patient:
     patient = Patient(
         organization_id=actor.organization_id,
@@ -45,6 +46,7 @@ def create_patient(
         last_name=last_name.strip(),
         birth_date=birth_date,
         external_id=external_id,
+        note=note.strip(),
     )
     session.add(patient)
     session.flush()

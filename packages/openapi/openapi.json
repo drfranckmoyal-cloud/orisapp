@@ -4462,6 +4462,12 @@
               }
             ],
             "title": "External Id"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Note",
+            "default": ""
           }
         },
         "additionalProperties": false,
@@ -4510,6 +4516,10 @@
             ],
             "title": "External Id"
           },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -4523,6 +4533,7 @@
           "last_name",
           "birth_date",
           "external_id",
+          "note",
           "created_at"
         ],
         "title": "PatientOut"
@@ -4577,6 +4588,18 @@
               }
             ],
             "title": "External Id"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
           }
         },
         "additionalProperties": false,

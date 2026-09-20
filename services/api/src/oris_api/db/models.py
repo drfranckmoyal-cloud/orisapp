@@ -118,6 +118,9 @@ class Patient(Base):
     last_name: Mapped[str] = mapped_column(String(200))
     birth_date: Mapped[date | None] = mapped_column(Date)
     external_id: Mapped[str | None] = mapped_column(String(200))
+    # Note **administrative** du praticien (§9) : un rappel pratique, jamais une
+    # donnée clinique. Oris ne la lit pas et ne la reprend dans aucun document.
+    note: Mapped[str] = mapped_column(Text, default="", server_default="")
     created_at: Mapped[datetime] = created_at()
     updated_at: Mapped[datetime] = updated_at()
 

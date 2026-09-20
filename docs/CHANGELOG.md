@@ -1,5 +1,21 @@
 # Changelog
 
+## Refonte produit (7) — 2026-09-20 — note administrative sur la fiche patient
+Dernier champ manquant du §9. « Note **administrative** courte », et les trois mots
+comptent :
+
+- **administrative** : un rappel d'organisation (horaires, rappel à passer, préférence),
+  pas un dossier médical. L'écran le dit en toutes lettres : « Oris ne la lit pas et ne
+  la reprend dans aucun compte rendu. » Un test le prouve — une note reconnaissable
+  n'apparaît ni dans la transcription, ni dans les faits, ni dans un document ;
+- **courte** : 500 caractères, refusés au-delà. Un champ long inviterait à y écrire du
+  clinique qui ne serait jamais repris nulle part ;
+- **facultative** : vide par défaut, elle ne réclame rien.
+
+Colonne `patients.note`, champ dans la création et la modification, carte en tête de la
+fiche patient. Variante compacte de la zone de texte dans le système de composants : la
+hauteur du document éditable écrasait la fiche.
+
 ## Refonte produit (6) — 2026-09-20 — la transcription en continu
 Dernier écart technique du cadrage (§11, §14.1) : l'adaptateur WebSocket existait mais
 n'était branché à aucun écran.

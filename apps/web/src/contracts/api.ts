@@ -1648,6 +1648,11 @@ export interface components {
             birth_date?: string | null;
             /** External Id */
             external_id?: string | null;
+            /**
+             * Note
+             * @default
+             */
+            note: string;
         };
         /** PatientOut */
         PatientOut: {
@@ -1664,6 +1669,8 @@ export interface components {
             birth_date: string | null;
             /** External Id */
             external_id: string | null;
+            /** Note */
+            note: string;
             /**
              * Created At
              * Format: date-time
@@ -1680,6 +1687,8 @@ export interface components {
             birth_date?: string | null;
             /** External Id */
             external_id?: string | null;
+            /** Note */
+            note?: string | null;
         };
         /** PractitionerLearningProfile */
         PractitionerLearningProfile: {
