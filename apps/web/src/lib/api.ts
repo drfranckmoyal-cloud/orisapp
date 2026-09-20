@@ -185,3 +185,5 @@ export async function sendVoiceCorrection(
 export type Preferences = Schemas["PractitionerPreferences"];
 export type GlossaryTerm = Schemas["GlossaryTermOut"];
 export type LearningSuggestion = Schemas["SuggestionOut"];
+
+export type Progress = Schemas["ProgressOut"];

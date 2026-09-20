@@ -1,28 +1,64 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { useMemo, useState } from "react";
 
-import { EncounterTable } from "@/components/EncounterTable";
-import { ApiError, apiRequest, type Encounter, type Patient } from "@/lib/api";
-import { errorMessage, formatDateTime } from "@/lib/labels";
+import {
+  Bouton,
+  Carte,
+  Champ,
+  EnTetePage,
+  EtatVide,
+  Ligne,
+  Lignes,
+  Pastille,
+  Squelette,
+} from "@/components/ui";
+import { ApiError, apiRequest, type Patient } from "@/lib/api";
+import { errorMessage, formatDate } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
+function sansAccents(texte: string): string {
+  return texte
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+}
+
+/** Liste des patients : recherche d'abord, création ensuite (S02). */
 export default function PatientsPage() {
   const [patients, reload] = useApi<Patient[]>("/patients");
-  const [selected, setSelected] = useState<Patient | null>(null);
-  const [encounters] = useApi<Encounter[]>(selected ? `/encounters?patient_id=${selected.id}` : null);
+  const [recherche, setRecherche] = useState("");
+  const [creation, setCreation] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  async function createPatient(event: FormEvent<HTMLFormElement>) {
+  const trouves = useMemo(() => {
+    const liste = patients.state === "ready" ? patients.data : [];
+    const cherche = sansAccents(recherche.trim());
+    if (!cherche) return liste;
+    return liste.filter((patient) =>
+      sansAccents(`${patient.first_name} ${patient.last_name} ${patient.external_id ?? ""}`).includes(
+        cherche,
+      ),
+    );
+  }, [patients, recherche]);
+
+  async function creer(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const data = new FormData(form);
+    setMessage(null);
     try {
       await apiRequest<Patient>("/patients", {
         method: "POST",
-        body: { first_name: data.get("first_name"), last_name: data.get("last_name") },
+        body: {
+          first_name: String(data.get("first_name") ?? "").trim(),
+          last_name: String(data.get("last_name") ?? "").trim(),
+          birth_date: String(data.get("birth_date") ?? "") || null,
+          external_id: String(data.get("external_id") ?? "").trim() || null,
+        },
       });
       form.reset();
+      setCreation(false);
       setMessage("Patient créé.");
       reload();
     } catch (error) {
@@ -32,68 +68,86 @@ export default function PatientsPage() {
 
   return (
     <div className="page">
-      <header>
-        <h1>Patients</h1>
-        <p className="subtitle">Patients fictifs uniquement tant qu’Oris n’est pas hébergé en HDS.</p>
-      </header>
+      <EnTetePage
+        surTitre="Données fictives uniquement"
+        titre="Patients"
+        action={
+          <Bouton onClick={() => setCreation((ouvert) => !ouvert)} variante="secondaire">
+            {creation ? "Annuler" : "Nouveau patient"}
+          </Bouton>
+        }
+      />
 
-      <section className="card" aria-labelledby="new-patient">
-        <h2 id="new-patient">Nouveau patient</h2>
-        <form className="form-row" onSubmit={createPatient}>
-          <label className="field">
-            Prénom
-            <input className="input" name="first_name" required maxLength={200} />
-          </label>
-          <label className="field">
-            Nom
-            <input className="input" name="last_name" required maxLength={200} />
-          </label>
-          <button type="submit" className="button button-primary">
-            Créer
-          </button>
-        </form>
-        {message && <p role="status" className="muted">{message}</p>}
-      </section>
-
-      <section className="card" aria-labelledby="patient-list">
-        <h2 id="patient-list">Liste</h2>
-        {patients.state === "loading" && <p className="muted">Chargement…</p>}
-        {patients.state === "error" && <p className="muted">{errorMessage(patients.code)}</p>}
-        {patients.state === "ready" && patients.data.length === 0 && (
-          <p className="muted">Aucun patient.</p>
-        )}
-        {patients.state === "ready" && patients.data.length > 0 && (
-          <table className="table">
-            <thead>
-              <tr>
-                <th scope="col">Nom</th>
-                <th scope="col">Créé le</th>
-              </tr>
-            </thead>
-            <tbody>
-              {patients.data.map((patient) => (
-                <tr key={patient.id}>
-                  <td>
-                    <button type="button" className="link-button" onClick={() => setSelected(patient)}>
-                      {patient.last_name} {patient.first_name}
-                    </button>
-                  </td>
-                  <td>{formatDateTime(patient.created_at)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
-
-      {selected && (
-        <section className="card" aria-labelledby="patient-encounters">
-          <h2 id="patient-encounters">
-            Consultations de {selected.first_name} {selected.last_name}
-          </h2>
-          {encounters.state === "ready" && <EncounterTable encounters={encounters.data} />}
-        </section>
+      {creation && (
+        <Carte titre="Nouveau patient">
+          <form className="form-row" onSubmit={creer}>
+            <label className="field">
+              Prénom
+              <Champ name="first_name" required autoFocus />
+            </label>
+            <label className="field">
+              Nom
+              <Champ name="last_name" required />
+            </label>
+            <label className="field">
+              Date de naissance
+              <Champ name="birth_date" type="date" />
+            </label>
+            <label className="field">
+              Identifiant du cabinet
+              <Champ name="external_id" placeholder="facultatif" />
+            </label>
+            <Bouton type="submit">Créer</Bouton>
+          </form>
+        </Carte>
       )}
+
+      {message && (
+        <div className="banner banner-info" role="status">
+          {message}
+        </div>
+      )}
+
+      <Carte
+        titre={`${trouves.length} patient${trouves.length > 1 ? "s" : ""}`}
+        action={
+          <Champ
+            type="search"
+            value={recherche}
+            placeholder="Rechercher un nom…"
+            aria-label="Rechercher un patient"
+            style={{ width: 260 }}
+            onChange={(event) => setRecherche(event.target.value)}
+          />
+        }
+      >
+        {patients.state === "loading" && <Squelette lignes={4} />}
+        {patients.state === "error" && <EtatVide titre={errorMessage(patients.code)} />}
+        {patients.state === "ready" && trouves.length === 0 && (
+          <EtatVide titre={recherche ? "Aucun patient à ce nom" : "Aucun patient"}>
+            {recherche
+              ? "Vérifiez l’orthographe, ou créez ce patient."
+              : "Créez votre premier patient pour démarrer une consultation."}
+          </EtatVide>
+        )}
+        {trouves.length > 0 && (
+          <Lignes>
+            {trouves.map((patient) => (
+              <Ligne
+                key={patient.id}
+                href={`/patients/${patient.id}`}
+                titre={`${patient.first_name} ${patient.last_name}`}
+                detail={
+                  patient.birth_date
+                    ? `né(e) le ${formatDate(patient.birth_date)}`
+                    : "date de naissance non renseignée"
+                }
+                fin={patient.external_id ? <Pastille>{patient.external_id}</Pastille> : undefined}
+              />
+            ))}
+          </Lignes>
+        )}
+      </Carte>
     </div>
   );
 }

@@ -153,3 +153,71 @@ export function Ligne({
 export function Champ(props: ComponentProps<"input">) {
   return <input {...props} className={`${styles.champ} ${props.className ?? ""}`} />;
 }
+
+/** Onglets. Un seul groupe visible à la fois, jamais de contenu caché sans onglet. */
+export function Onglets<T extends string>({
+  valeur,
+  onChange,
+  options,
+}: {
+  valeur: T;
+  onChange: (valeur: T) => void;
+  options: { valeur: T; libelle: ReactNode }[];
+}) {
+  return (
+    <div className={styles.onglets} role="tablist">
+      {options.map((option) => (
+        <button
+          key={option.valeur}
+          type="button"
+          role="tab"
+          aria-selected={option.valeur === valeur}
+          className={styles.onglet}
+          onClick={() => onChange(option.valeur)}
+        >
+          {option.libelle}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export type EtapeEtat = "attente" | "encours" | "faite";
+
+/** Étapes d'un traitement. Une étape n'est cochée que si elle est réellement faite. */
+export function Etapes({ etapes }: { etapes: { libelle: string; etat: EtapeEtat }[] }) {
+  return (
+    <ul className={styles.etapes}>
+      {etapes.map(({ libelle, etat }) => (
+        <li
+          key={libelle}
+          className={[
+            styles.etape,
+            etat === "faite" ? styles.etapeFaite : "",
+            etat === "encours" ? styles.etapeEnCours : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          <span className={styles.etapeMarque} aria-hidden="true">
+            {etat === "faite" ? "✓" : ""}
+          </span>
+          {libelle}
+          {etat === "encours" && <span className="sr-only">en cours</span>}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function Barre({ children }: { children: ReactNode }) {
+  return <div className={styles.barre}>{children}</div>;
+}
+
+export function Pousse() {
+  return <span className={styles.pousse} />;
+}
+
+export function Zone(props: ComponentProps<"textarea">) {
+  return <textarea {...props} className={`${styles.zone} ${props.className ?? ""}`} />;
+}

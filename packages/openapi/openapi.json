@@ -607,6 +607,50 @@
         }
       }
     },
+    "/encounters/{encounter_id}/progress": {
+      "get": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Read Progress",
+        "description": "Où en est le traitement, d'après la base — jamais une progression inventée (S06).",
+        "operationId": "read_progress_encounters__encounter_id__progress_get",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters/{encounter_id}/process": {
       "post": {
         "tags": [
@@ -1592,6 +1636,32 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ClientConfigOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ontology/concepts": {
+      "get": {
+        "tags": [
+          "personnalisation"
+        ],
+        "summary": "Read Concepts",
+        "description": "Vocabulaire d'Oris : code technique -> mot français.\n\nL'interface ne doit jamais montrer `cold_sensitivity` à un praticien.",
+        "operationId": "read_concepts_ontology_concepts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Read Concepts Ontology Concepts Get"
                 }
               }
             }
@@ -3816,6 +3886,55 @@
           "subject_id"
         ],
         "title": "ProcessingError"
+      },
+      "ProgressOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "recording",
+              "paused",
+              "finalizing",
+              "processing",
+              "review",
+              "validated",
+              "exported",
+              "archived",
+              "audio_error",
+              "upload_interrupted",
+              "transcription_failed",
+              "generation_failed"
+            ],
+            "title": "Status"
+          },
+          "transcript_segments": {
+            "type": "integer",
+            "title": "Transcript Segments"
+          },
+          "facts": {
+            "type": "integer",
+            "title": "Facts"
+          },
+          "documents": {
+            "type": "integer",
+            "title": "Documents"
+          },
+          "termine": {
+            "type": "boolean",
+            "title": "Termine"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "transcript_segments",
+          "facts",
+          "documents",
+          "termine"
+        ],
+        "title": "ProgressOut",
+        "description": "Avancement réel du traitement : chaque nombre est lu en base (S06)."
       },
       "ProviderStatus": {
         "properties": {

@@ -7,6 +7,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Body, Header, Response, status
+from sqlalchemy import func, select
 
 from oris_api.api.dependencies import ActorDep, ProvidersDep, SessionDep, SettingsDep, SinkDep
 from oris_api.api.presenters import document_out, encounter_out
@@ -21,12 +22,13 @@ from oris_api.api.schemas import (
     EncounterStart,
     LearningEventOut,
     ObjectVersionOut,
+    ProgressOut,
     SpokenCorrectionOut,
     SpokenCorrectionRequest,
     TranscriptOut,
 )
 from oris_api.contracts.generated import ClinicalEncounterStatus
-from oris_api.db.models import DocumentRow
+from oris_api.db.models import ClinicalFactRow, DocumentRow, TranscriptSegmentRow
 from oris_api.domain.correction_intent import interpret
 from oris_api.domain.types import AudioChunk
 from oris_api.providers.base import TranscriptionUnavailable
@@ -124,6 +126,34 @@ def finish(
         accept_gaps=options.accept_gaps,
     )
     return encounter_out(session, encounter)
+
+
+@router.get("/encounters/{encounter_id}/progress", response_model=ProgressOut)
+def read_progress(encounter_id: UUID, session: SessionDep, actor: ActorDep) -> ProgressOut:
+    """Où en est le traitement, d'après la base — jamais une progression inventée (S06)."""
+    encounter = encounters.get_encounter(session, actor, encounter_id)
+    segments = session.scalar(
+        select(func.count())
+        .select_from(TranscriptSegmentRow)
+        .where(TranscriptSegmentRow.encounter_id == encounter.id)
+    )
+    facts = session.scalar(
+        select(func.count())
+        .select_from(ClinicalFactRow)
+        .where(ClinicalFactRow.encounter_id == encounter.id)
+    )
+    produced = [
+        document
+        for document in documents.list_documents(session, encounter.id)
+        if document.status != "superseded"
+    ]
+    return ProgressOut(
+        status=encounter.status,
+        transcript_segments=segments or 0,
+        facts=facts or 0,
+        documents=len(produced),
+        termine=encounter.status not in {"finalizing", "processing"},
+    )
 
 
 @router.post("/encounters/{encounter_id}/process", response_model=EncounterOut)

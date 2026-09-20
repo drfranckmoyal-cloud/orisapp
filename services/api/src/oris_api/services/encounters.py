@@ -211,6 +211,7 @@ def process(
         logger.warning("pipeline.transcription_failed", extra={"encounter_id": str(encounter.id)})
         return encounter
     replace_segments(session, encounter.id, transcription.segments)
+    session.commit()  # étape 1 visible : la transcription existe
 
     try:
         extraction = async_bridge.run(
@@ -263,6 +264,7 @@ def process(
         warnings=compute_warnings([*capture_gaps, *transcription.gaps], transcription.segments),
     )
     save_version(session, encounter, clinical_object, "extraction", created_by=None)
+    session.commit()  # étape 2 visible : les faits cliniques sont enregistrés
     documents.generate(session, encounter, clinical_object, providers)
     transition(session, actor, encounter, "review")
     logger.info(

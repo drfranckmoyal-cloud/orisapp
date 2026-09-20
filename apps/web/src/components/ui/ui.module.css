@@ -14,6 +14,7 @@
   cursor: pointer;
   transition: background var(--transition), border-color var(--transition), color var(--transition);
   white-space: nowrap;
+  text-decoration: none;
 }
 
 .bouton:focus-visible {
@@ -251,6 +252,131 @@
 }
 
 .champ:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--anneau-focus);
+}
+
+/* --- Onglets ------------------------------------------------------------------- */
+.onglets {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--surface-douce);
+  border-radius: 12px;
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.onglet {
+  font: inherit;
+  font-weight: var(--graisse-moyenne);
+  font-size: var(--texte-sm);
+  border: none;
+  background: transparent;
+  color: var(--encre-douce);
+  padding: 7px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition), color var(--transition);
+}
+
+.onglet:hover {
+  color: var(--encre);
+}
+
+.onglet[aria-selected="true"] {
+  background: var(--surface);
+  color: var(--encre);
+  box-shadow: var(--ombre-posee);
+}
+
+.onglet:focus-visible {
+  outline: none;
+  box-shadow: var(--anneau-focus);
+}
+
+/* --- Étapes de traitement ------------------------------------------------------- */
+.etapes {
+  display: grid;
+  gap: var(--espace-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.etape {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-3);
+  color: var(--encre-douce);
+  font-size: var(--texte-md);
+}
+
+.etapeFaite {
+  color: var(--encre);
+}
+
+.etapeMarque {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--trait-fort);
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--accent-encre);
+  font-size: 12px;
+}
+
+.etapeFaite .etapeMarque {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.etapeEnCours .etapeMarque {
+  border-color: var(--accent);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.35); }
+  50% { box-shadow: 0 0 0 7px rgba(59, 130, 246, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .etapeEnCours .etapeMarque { animation: none; }
+}
+
+/* --- Barre d'outils ------------------------------------------------------------- */
+.barre {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-2);
+  flex-wrap: wrap;
+}
+
+.pousse {
+  margin-left: auto;
+}
+
+/* --- Zone de texte -------------------------------------------------------------- */
+.zone {
+  font: inherit;
+  width: 100%;
+  min-height: 320px;
+  padding: var(--espace-4);
+  border-radius: 12px;
+  border: 1px solid var(--trait-fort);
+  background: var(--surface);
+  color: var(--encre);
+  line-height: var(--interligne);
+  resize: vertical;
+}
+
+.zone:focus-visible {
   outline: none;
   border-color: var(--accent);
   box-shadow: var(--anneau-focus);

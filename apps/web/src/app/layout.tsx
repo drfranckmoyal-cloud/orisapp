@@ -22,13 +22,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr" data-palette="bleu" className={inter.variable}>
       <body>
-        {/* Palette retenue appliquée avant l'affichage du contenu : pas de clignotement. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "try{var p=localStorage.getItem('oris-palette');if(p)document.documentElement.setAttribute('data-palette',p)}catch(e){}",
-          }}
-        />
         <AppShell>{children}</AppShell>
       </body>
     </html>

@@ -1,13 +1,11 @@
 /* Jetons sémantiques d'Oris.
  *
- * Deux palettes cohabitent le temps du choix : « bleu » (planche 1, figée dans
- * design/tokens.json) et « sauge » (planche 2). Les écrans n'utilisent QUE les noms
- * sémantiques ci-dessous — jamais une couleur brute — pour qu'un changement de palette
- * ne demande aucune retouche d'écran.
+ * Palette retenue le 20/09/2026 : la bleue de la planche d'identité, figée dans
+ * design/tokens.json. Les écrans n'utilisent QUE les noms sémantiques ci-dessous —
+ * jamais une couleur brute.
  */
 
-:root,
-[data-palette="bleu"] {
+:root {
   --fond: #f4f7fa;
   --surface: #ffffff;
   --surface-douce: #eaf1f6;
@@ -36,37 +34,6 @@
   --ombre-posee: 0 1px 2px rgba(15, 45, 70, 0.06), 0 1px 3px rgba(15, 45, 70, 0.04);
   --ombre-flottante: 0 12px 32px rgba(15, 45, 70, 0.14);
   --anneau-focus: 0 0 0 3px rgba(59, 130, 246, 0.35);
-}
-
-[data-palette="sauge"] {
-  --fond: #f7f6f2;
-  --surface: #ffffff;
-  --surface-douce: #eef4f1;
-  --surface-inverse: #2e3a3f;
-
-  --encre: #23312f;
-  --encre-douce: #6b7a76;
-  --encre-inverse: #ffffff;
-
-  --trait: #e3e6df;
-  --trait-fort: #cfd6cd;
-
-  --accent: #2f6f67;
-  --accent-fonce: #245751;
-  --accent-douce: #dfece8;
-  --accent-encre: #ffffff;
-
-  --calme: #cfe5de;
-  --valide: #2f6f67;
-  --valide-douce: #dfece8;
-  --attention: #a2703f;
-  --attention-douce: #f5e7da;
-  --alerte: #a33a2c;
-  --alerte-douce: #f6e5e2;
-
-  --ombre-posee: 0 1px 2px rgba(46, 58, 63, 0.06), 0 1px 3px rgba(46, 58, 63, 0.04);
-  --ombre-flottante: 0 12px 32px rgba(46, 58, 63, 0.14);
-  --anneau-focus: 0 0 0 3px rgba(47, 111, 103, 0.3);
 }
 
 :root {

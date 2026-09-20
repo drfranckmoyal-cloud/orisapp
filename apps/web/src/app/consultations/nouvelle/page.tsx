@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import {
@@ -20,7 +20,8 @@ export default function NewConsultationPage() {
   const [patients] = useApi<Patient[]>("/patients");
   const [prenom, setPrenom] = useState("");
   const [nom, setNom] = useState("");
-  const [patientChoisi, setPatientChoisi] = useState("");
+  const parametres = useSearchParams();
+  const [patientChoisi, setPatientChoisi] = useState(parametres.get("patient") ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

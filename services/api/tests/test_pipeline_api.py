@@ -155,3 +155,32 @@ def test_fixture_consultation_never_reaches_the_configured_stt_provider(api: Any
     finally:
         app.state.providers = original
     assert encounter["status"] == "review"
+
+
+def test_progress_reports_what_is_really_in_the_database(api: Any) -> None:
+    """L'écran d'attente ne doit rien inventer : chaque étape est lue en base (S06)."""
+    patient = api.post("/patients", json={"first_name": "Marie", "last_name": "Dupont"}).json()
+    created = api.post(
+        "/encounters",
+        json={"patient_id": patient["id"], "synthetic_case_id": "ORIS-SYN-092"},
+    ).json()
+    eid = created["id"]
+
+    depart = api.get(f"/encounters/{eid}/progress").json()
+    assert depart == {
+        "status": "draft",
+        "transcript_segments": 0,
+        "facts": 0,
+        "documents": 0,
+        "termine": True,
+    }
+
+    api.post(f"/encounters/{eid}/start", json={"patient_informed": True})
+    api.post(f"/encounters/{eid}/finish")
+
+    arrivee = api.get(f"/encounters/{eid}/progress").json()
+    assert arrivee["status"] == "review"
+    assert arrivee["transcript_segments"] > 0
+    assert arrivee["facts"] > 0
+    assert arrivee["documents"] > 0
+    assert arrivee["termine"] is True

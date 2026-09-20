@@ -3,8 +3,20 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
-import { ApiError, apiRequest, type AudioSessionView, type ClientConfig, type Encounter } from "@/lib/api";
-import { type CaptureApi, CaptureController, type CaptureSnapshot, type FinishOutcome } from "@/lib/audio/controller";
+import { Traitement } from "@/components/listening/Traitement";
+import {
+  ApiError,
+  apiRequest,
+  type AudioSessionView,
+  type ClientConfig,
+  type Encounter,
+} from "@/lib/api";
+import {
+  type CaptureApi,
+  CaptureController,
+  type CaptureSnapshot,
+  type FinishOutcome,
+} from "@/lib/audio/controller";
 import { MicrophoneSource, TestToneSource } from "@/lib/audio/sources";
 import { HttpUploadTransport } from "@/lib/audio/transport";
 import { errorMessage, formatDuration } from "@/lib/labels";
@@ -22,21 +34,36 @@ function captureApi(encounterId: string): CaptureApi {
           body: { patient_informed: patientInformed },
         });
       } catch (error) {
-        throw new Error(error instanceof ApiError ? error.code : "START_FAILED");
+        throw new Error(
+          error instanceof ApiError ? error.code : "START_FAILED",
+        );
       }
     },
-    async finish({ finalSequence, recordedMs, acceptGaps }): Promise<FinishOutcome> {
+    async finish({
+      finalSequence,
+      recordedMs,
+      acceptGaps,
+    }): Promise<FinishOutcome> {
       try {
         await apiRequest(`/encounters/${encounterId}/finish`, {
           method: "POST",
-          body: { final_sequence: finalSequence, client_recorded_ms: recordedMs, accept_gaps: acceptGaps },
+          body: {
+            final_sequence: finalSequence,
+            client_recorded_ms: recordedMs,
+            accept_gaps: acceptGaps,
+          },
         });
         return { status: "finished", missing: [] };
       } catch (error) {
-        if (error instanceof ApiError && error.code === "AUDIO_CHUNKS_MISSING") {
+        if (
+          error instanceof ApiError &&
+          error.code === "AUDIO_CHUNKS_MISSING"
+        ) {
           return { status: "chunks_missing", missing: error.details };
         }
-        throw new Error(error instanceof ApiError ? error.code : "FINISH_FAILED");
+        throw new Error(
+          error instanceof ApiError ? error.code : "FINISH_FAILED",
+        );
       }
     },
   };
@@ -67,7 +94,11 @@ function subscribeOnline(callback: () => void): () => void {
 }
 
 function useOnline(): boolean {
-  return useSyncExternalStore(subscribeOnline, () => navigator.onLine, () => true);
+  return useSyncExternalStore(
+    subscribeOnline,
+    () => navigator.onLine,
+    () => true,
+  );
 }
 
 const PERMISSION_LABEL: Record<string, string> = {
@@ -104,13 +135,21 @@ export function ListeningScreen({
     setSourceKind(kind);
   }
 
-  const interrupted = snapshot === null && (encounter.status === "recording" || encounter.status === "paused");
+  const interrupted =
+    snapshot === null &&
+    (encounter.status === "recording" || encounter.status === "paused");
 
-  function createController(resumeFrom?: { nextSequence: number; nextTimestampMs: number }) {
+  function createController(resumeFrom?: {
+    nextSequence: number;
+    nextTimestampMs: number;
+  }) {
     const controller = new CaptureController({
       api: captureApi(encounter.id),
       transport: new HttpUploadTransport(encounter.id),
-      createSource: () => (sourceKindRef.current === "test" ? new TestToneSource() : new MicrophoneSource()),
+      createSource: () =>
+        sourceKindRef.current === "test"
+          ? new TestToneSource()
+          : new MicrophoneSource(),
       maxSessionMs: config.max_session_minutes * 60_000,
       warnSessionMs: config.warn_session_minutes * 60_000,
       ...(resumeFrom ? { resumeFrom } : {}),
@@ -129,7 +168,11 @@ export function ListeningScreen({
   }, []);
 
   useEffect(() => {
-    const active = snapshot && ["recording", "paused", "microphone_lost", "finishing"].includes(snapshot.phase);
+    const active =
+      snapshot &&
+      ["recording", "paused", "microphone_lost", "finishing"].includes(
+        snapshot.phase,
+      );
     if (!active) return;
     const warn = (event: BeforeUnloadEvent) => event.preventDefault();
     window.addEventListener("beforeunload", warn);
@@ -155,7 +198,9 @@ export function ListeningScreen({
       }
       router.push(`/consultations/${encounter.id}`);
     } catch (error) {
-      setFinishError(errorMessage(error instanceof Error ? error.message : "FINISH_FAILED"));
+      setFinishError(
+        errorMessage(error instanceof Error ? error.message : "FINISH_FAILED"),
+      );
     }
   }
 
@@ -164,9 +209,15 @@ export function ListeningScreen({
       nextSequence: audio?.next_sequence ?? 0,
       nextTimestampMs: audio?.next_timestamp_ms ?? 0,
     });
-    const last = audio?.last_received_at ? Date.parse(audio.last_received_at) : null;
-    const interruptionMs = last === null ? null : Math.max(0, Date.now() - last);
-    await controller.resumeAfterReload(interruptionMs, encounter.status === "paused");
+    const last = audio?.last_received_at
+      ? Date.parse(audio.last_received_at)
+      : null;
+    const interruptionMs =
+      last === null ? null : Math.max(0, Date.now() - last);
+    await controller.resumeAfterReload(
+      interruptionMs,
+      encounter.status === "paused",
+    );
   }
 
   async function finishInterrupted() {
@@ -177,10 +228,15 @@ export function ListeningScreen({
           body: { reason: "page_reloaded", duration_ms: null },
         });
       }
-      await apiRequest(`/encounters/${encounter.id}/finish`, { method: "POST", body: { accept_gaps: true } });
+      await apiRequest(`/encounters/${encounter.id}/finish`, {
+        method: "POST",
+        body: { accept_gaps: true },
+      });
       router.push(`/consultations/${encounter.id}`);
     } catch (error) {
-      setFinishError(errorMessage(error instanceof ApiError ? error.code : "FINISH_FAILED"));
+      setFinishError(
+        errorMessage(error instanceof ApiError ? error.code : "FINISH_FAILED"),
+      );
     }
   }
 
@@ -189,14 +245,25 @@ export function ListeningScreen({
   const name = `${encounter.patient.first_name} ${encounter.patient.last_name}`;
 
   const sourceChoice = config.test_audio_source_enabled ? (
-    <fieldset className={styles.choices} style={{ border: "none", padding: 0, margin: 0 }}>
+    <fieldset
+      className={styles.choices}
+      style={{ border: "none", padding: 0, margin: 0 }}
+    >
       <legend className="muted">Source du son</legend>
       <label className={styles.choice}>
-        <input type="radio" checked={sourceKind === "microphone"} onChange={() => chooseSource("microphone")} />
+        <input
+          type="radio"
+          checked={sourceKind === "microphone"}
+          onChange={() => chooseSource("microphone")}
+        />
         Micro de l’ordinateur
       </label>
       <label className={styles.choice}>
-        <input type="radio" checked={sourceKind === "test"} onChange={() => chooseSource("test")} />
+        <input
+          type="radio"
+          checked={sourceKind === "test"}
+          onChange={() => chooseSource("test")}
+        />
         Son de test, sans micro (développement uniquement)
       </label>
     </fieldset>
@@ -209,27 +276,44 @@ export function ListeningScreen({
         <h1>{name}</h1>
         <div className="banner banner-critical" role="alert">
           L’écoute a été interrompue (page fermée ou rechargée).
-          {encounter.status === "recording" && " La partie non captée sera signalée comme manquante."}
+          {encounter.status === "recording" &&
+            " La partie non captée sera signalée comme manquante."}
         </div>
         <p className="muted">
-          {audio ? `${formatDuration(audio.received_duration_ms)} d’audio déjà reçus par le serveur.` : null}
+          {audio
+            ? `${formatDuration(audio.received_duration_ms)} d’audio déjà reçus par le serveur.`
+            : null}
         </p>
         {sourceChoice}
         <div className={styles.actions}>
-          <button type="button" className="button button-large" onClick={resumeInterrupted}>
+          <button
+            type="button"
+            className="button button-large"
+            onClick={resumeInterrupted}
+          >
             Reprendre l’écoute
           </button>
-          <button type="button" className="button button-secondary" onClick={finishInterrupted}>
+          <button
+            type="button"
+            className="button button-secondary"
+            onClick={finishInterrupted}
+          >
             Terminer la consultation
           </button>
         </div>
-        {finishError && <div className="banner banner-critical">{finishError}</div>}
+        {finishError && (
+          <div className="banner banner-critical">{finishError}</div>
+        )}
       </div>
     );
   }
 
   // --- Pré-écran (S03) --------------------------------------------------------------
-  if (phase === "ready" || phase === "starting" || (phase === "error" && snapshot?.errorCode)) {
+  if (
+    phase === "ready" ||
+    phase === "starting" ||
+    (phase === "error" && snapshot?.errorCode)
+  ) {
     const needsInformation = config.patient_information_mode === "confirm";
     return (
       <div className={styles.card}>
@@ -239,17 +323,30 @@ export function ListeningScreen({
           <p className="muted">Praticien de démonstration</p>
         </div>
         <div className={styles.statusRow}>
-          <div className={styles.status} data-tone={permission === "denied" ? "critical" : undefined}>
-            🎙 {sourceKind === "test" ? "Son de test (sans micro)" : PERMISSION_LABEL[permission] ?? PERMISSION_LABEL.inconnue}
+          <div
+            className={styles.status}
+            data-tone={permission === "denied" ? "critical" : undefined}
+          >
+            🎙{" "}
+            {sourceKind === "test"
+              ? "Son de test (sans micro)"
+              : (PERMISSION_LABEL[permission] ?? PERMISSION_LABEL.inconnue)}
           </div>
-          <div className={styles.status} data-tone={online ? undefined : "critical"}>
+          <div
+            className={styles.status}
+            data-tone={online ? undefined : "critical"}
+          >
             {online ? "Connexion au serveur disponible" : "Hors connexion"}
           </div>
         </div>
         {sourceChoice}
         {needsInformation && (
           <label className={styles.choice}>
-            <input type="checkbox" checked={informed} onChange={(event) => setInformed(event.target.checked)} />
+            <input
+              type="checkbox"
+              checked={informed}
+              onChange={(event) => setInformed(event.target.checked)}
+            />
             Le patient a été informé de l’enregistrement de la consultation.
           </label>
         )}
@@ -263,7 +360,9 @@ export function ListeningScreen({
             type="button"
             className="button button-large"
             disabled={phase === "starting" || (needsInformation && !informed)}
-            onClick={() => void (controllerRef.current ?? createController()).start(informed)}
+            onClick={() =>
+              void (controllerRef.current ?? createController()).start(informed)
+            }
           >
             {phase === "starting" ? "Démarrage…" : "Commencer l’écoute"}
           </button>
@@ -274,48 +373,86 @@ export function ListeningScreen({
 
   // --- Écoute active (S05) et fin -----------------------------------------------------
   const state = snapshot!;
+  const enAttente = state.phase === "finishing" || state.phase === "finished";
   const labels: Record<string, string> = {
     recording: "Écoute en cours",
     paused: "En pause — micro coupé",
     microphone_lost: "Micro perdu",
-    finishing: state.pendingUploads > 0 ? "Envoi des derniers segments…" : "Oris prépare le dossier…",
+    finishing:
+      state.pendingUploads > 0
+        ? "Envoi des derniers segments…"
+        : "Oris prépare le dossier…",
     finished: "Oris prépare le dossier…",
     error: "Erreur",
   };
-  const indicator = state.phase === "recording" ? "recording" : state.phase === "microphone_lost" ? "alert" : "idle";
+  const indicator =
+    state.phase === "recording"
+      ? "recording"
+      : state.phase === "microphone_lost"
+        ? "alert"
+        : "idle";
 
   return (
     <div className={styles.card}>
-      <div className={styles.center}>
-        <p className="muted" style={{ margin: 0 }}>
-          {name}
-        </p>
-        <div className={styles.indicator} data-state={indicator} aria-hidden="true">
-          <span style={{ fontSize: 40 }}>{state.phase === "recording" ? "●" : state.phase === "microphone_lost" ? "!" : "❚❚"}</span>
+      {!enAttente && (
+        <div className={styles.center}>
+          <p className="muted" style={{ margin: 0 }}>
+            {name}
+          </p>
+          <div
+            className={styles.indicator}
+            data-state={indicator}
+            aria-hidden="true"
+          >
+            <span style={{ fontSize: 40 }}>
+              {state.phase === "recording"
+                ? "●"
+                : state.phase === "microphone_lost"
+                  ? "!"
+                  : "❚❚"}
+            </span>
+          </div>
+          <p className={styles.stateLabel} role="status" aria-live="polite">
+            {labels[state.phase] ?? state.phase}
+          </p>
+          <p className={styles.timer} aria-label="Durée écoutée">
+            {formatDuration(state.recordedMs)}
+          </p>
+          <div className={styles.meter} aria-hidden="true">
+            <div
+              className={styles.meterFill}
+              style={{ width: `${Math.round(state.level * 100)}%` }}
+            />
+          </div>
         </div>
-        <p className={styles.stateLabel} role="status" aria-live="polite">
-          {labels[state.phase] ?? state.phase}
-        </p>
-        <p className={styles.timer} aria-label="Durée écoutée">
-          {formatDuration(state.recordedMs)}
-        </p>
-        <div className={styles.meter} aria-hidden="true">
-          <div className={styles.meterFill} style={{ width: `${Math.round(state.level * 100)}%` }} />
-        </div>
-      </div>
+      )}
 
-      <div className={styles.statusRow}>
-        <div className={styles.status} data-tone={state.phase === "microphone_lost" ? "critical" : undefined}>
-          {state.phase === "recording" ? "Micro actif" : state.phase === "microphone_lost" ? "Micro coupé ou débranché" : "Micro coupé"}
+      {!enAttente && (
+        <div className={styles.statusRow}>
+          <div
+            className={styles.status}
+            data-tone={
+              state.phase === "microphone_lost" ? "critical" : undefined
+            }
+          >
+            {state.phase === "recording"
+              ? "Micro actif"
+              : state.phase === "microphone_lost"
+                ? "Micro coupé ou débranché"
+                : "Micro coupé"}
+          </div>
+          <div
+            className={styles.status}
+            data-tone={state.network === "reconnecting" ? "warning" : undefined}
+          >
+            {state.network === "reconnecting"
+              ? `Connexion interrompue — ${state.pendingUploads} envoi(s) en attente`
+              : state.pendingUploads > 1
+                ? `Envoi en cours (${state.pendingUploads})`
+                : "Audio envoyé au serveur"}
+          </div>
         </div>
-        <div className={styles.status} data-tone={state.network === "reconnecting" ? "warning" : undefined}>
-          {state.network === "reconnecting"
-            ? `Connexion interrompue — ${state.pendingUploads} envoi(s) en attente`
-            : state.pendingUploads > 1
-              ? `Envoi en cours (${state.pendingUploads})`
-              : "Audio envoyé au serveur"}
-        </div>
-      </div>
+      )}
 
       {state.phase === "microphone_lost" && (
         <div className="banner banner-critical" role="alert">
@@ -324,43 +461,61 @@ export function ListeningScreen({
       )}
       {state.lostUploads > 0 && (
         <div className="banner banner-critical" role="alert">
-          {state.lostUploads} segment(s) audio refusé(s) par le serveur : ils seront signalés comme manquants.
+          {state.lostUploads} segment(s) audio refusé(s) par le serveur : ils
+          seront signalés comme manquants.
         </div>
       )}
       {state.maxDurationReached ? (
         <div className="banner banner-review">
-          Durée maximale de {config.max_session_minutes} minutes atteinte : l’écoute est en pause. Terminez la consultation.
+          Durée maximale de {config.max_session_minutes} minutes atteinte :
+          l’écoute est en pause. Terminez la consultation.
         </div>
       ) : (
         state.warnDurationReached && (
           <div className="banner banner-review">
-            L’écoute approche de la durée maximale ({config.max_session_minutes} minutes).
+            L’écoute approche de la durée maximale ({config.max_session_minutes}{" "}
+            minutes).
           </div>
         )
       )}
 
       {state.phase === "finishing" || state.phase === "finished" ? (
         <div className={styles.center}>
+          <Traitement
+            encounterId={encounter.id}
+            envoiEnCours={state.pendingUploads > 0}
+          />
           {(stalledLong || missing) && (
             <div className="banner banner-review" style={{ textAlign: "left" }}>
               {missing
                 ? `${missing.length} segment(s) audio ne sont pas arrivés au serveur.`
                 : "La connexion ne revient pas : les derniers segments ne peuvent pas être envoyés."}{" "}
-              Vous pouvez attendre, ou terminer malgré tout : la partie manquante sera signalée par une alerte
-              critique et le compte rendu ne sera pas présenté comme complet.
+              Vous pouvez attendre, ou terminer malgré tout : la partie
+              manquante sera signalée par une alerte critique et le compte rendu
+              ne sera pas présenté comme complet.
               <div>
-                <button type="button" className="button button-secondary" onClick={() => void finish(true)}>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => void finish(true)}
+                >
                   Terminer malgré tout
                 </button>
               </div>
             </div>
           )}
-          {finishError && <div className="banner banner-critical">{finishError}</div>}
+          {finishError && (
+            <div className="banner banner-critical">{finishError}</div>
+          )}
         </div>
       ) : (
         <div className={styles.actions}>
           {state.phase === "recording" ? (
-            <button type="button" className="button button-secondary" onClick={() => controllerRef.current?.pause()}>
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={() => controllerRef.current?.pause()}
+            >
               Pause
             </button>
           ) : (
@@ -373,15 +528,20 @@ export function ListeningScreen({
               Reprendre
             </button>
           )}
-          <button type="button" className="button button-primary" onClick={() => void finish(false)}>
+          <button
+            type="button"
+            className="button button-primary"
+            onClick={() => void finish(false)}
+          >
             Terminer
           </button>
         </div>
       )}
       {state.errorCode && state.phase !== "microphone_lost" && (
-        <div className="banner banner-critical">{errorMessage(state.errorCode)}</div>
+        <div className="banner banner-critical">
+          {errorMessage(state.errorCode)}
+        </div>
       )}
     </div>
   );
 }
-

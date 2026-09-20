@@ -64,6 +64,17 @@ def term_out(term: GlossaryTermRow) -> GlossaryTermOut:
     )
 
 
+@router.get("/ontology/concepts", response_model=dict[str, str])
+def read_concepts() -> dict[str, str]:
+    """Vocabulaire d'Oris : code technique -> mot français.
+
+    L'interface ne doit jamais montrer `cold_sensitivity` à un praticien.
+    """
+    from oris_api.ontology.labels import CONCEPTS
+
+    return {concept: label.label for concept, label in sorted(CONCEPTS.items())}
+
+
 @router.get("/me/preferences", response_model=PractitionerPreferences)
 def read_preferences(session: SessionDep, actor: ActorDep) -> PractitionerPreferences:
     return personalization.preferences_of(session, actor)

@@ -152,6 +152,16 @@ class SpokenCorrectionOut(BaseModel):
     object_version: int
 
 
+class ProgressOut(BaseModel):
+    """Avancement réel du traitement : chaque nombre est lu en base (S06)."""
+
+    status: ClinicalEncounterStatus
+    transcript_segments: int
+    facts: int
+    documents: int
+    termine: bool
+
+
 class ObjectVersionOut(BaseModel):
     version: int
     change_kind: str

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { type ReactNode, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 
 import styles from "./AppShell.module.css";
 
@@ -13,33 +13,12 @@ const NAVIGATION = [
   { href: "/apprentissage", label: "Oris apprend", icone: "M12 4 3 9l9 5 9-5zM6 12v5l6 3 6-3v-5" },
 ] as const;
 
-const PALETTES = [
-  { valeur: "bleu", couleur: "#3B82F6", nom: "Bleu" },
-  { valeur: "sauge", couleur: "#2F6F67", nom: "Sauge" },
-] as const;
-
 function estActif(pathname: string, href: string): boolean {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  // La palette est posée sur <html> avant l'affichage (voir layout) : on la lit là,
-  // sans effet de bord ni clignotement.
-  const [palette, setPalette] = useState<string>(() =>
-    typeof document === "undefined"
-      ? "bleu"
-      : (document.documentElement.dataset.palette ?? "bleu"),
-  );
-
-  useEffect(() => {
-    document.documentElement.setAttribute("data-palette", palette);
-  }, [palette]);
-
-  function choisir(valeur: string) {
-    setPalette(valeur);
-    window.localStorage.setItem("oris-palette", valeur);
-  }
 
   return (
     <div className={styles.shell}>
@@ -66,21 +45,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         </ul>
 
         <div className={styles.bas}>
-          <div className={styles.palettes} role="group" aria-label="Palette de couleurs">
-            {PALETTES.map(({ valeur, couleur, nom }) => (
-              <button
-                key={valeur}
-                type="button"
-                className={styles.palette}
-                style={{ background: couleur }}
-                aria-pressed={palette === valeur}
-                aria-label={`Palette ${nom}`}
-                title={`Palette ${nom}`}
-                onClick={() => choisir(valeur)}
-              />
-            ))}
-            <span>palette</span>
-          </div>
           <div className={styles.praticien}>
             <span className={styles.praticienNom}>Dr Franck Moyal</span>
             <span className={styles.mention}>Données fictives uniquement</span>

@@ -180,6 +180,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/encounters/{encounter_id}/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Progress
+         * @description Où en est le traitement, d'après la base — jamais une progression inventée (S06).
+         */
+        get: operations["read_progress_encounters__encounter_id__progress_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters/{encounter_id}/process": {
         parameters: {
             query?: never;
@@ -522,6 +542,28 @@ export interface paths {
         };
         /** Client Config */
         get: operations["client_config_config_client_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ontology/concepts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Concepts
+         * @description Vocabulaire d'Oris : code technique -> mot français.
+         *
+         *     L'interface ne doit jamais montrer `cold_sensitivity` à un praticien.
+         */
+        get: operations["read_concepts_ontology_concepts_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1310,6 +1352,25 @@ export interface components {
             /** Subject Id */
             subject_id: string;
         };
+        /**
+         * ProgressOut
+         * @description Avancement réel du traitement : chaque nombre est lu en base (S06).
+         */
+        ProgressOut: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "recording" | "paused" | "finalizing" | "processing" | "review" | "validated" | "exported" | "archived" | "audio_error" | "upload_interrupted" | "transcription_failed" | "generation_failed";
+            /** Transcript Segments */
+            transcript_segments: number;
+            /** Facts */
+            facts: number;
+            /** Documents */
+            documents: number;
+            /** Termine */
+            termine: boolean;
+        };
         /** ProviderStatus */
         ProviderStatus: {
             /** Speech To Text */
@@ -1979,6 +2040,37 @@ export interface operations {
             };
         };
     };
+    read_progress_encounters__encounter_id__progress_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgressOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     process_encounters__encounter_id__process_post: {
         parameters: {
             query?: never;
@@ -2617,6 +2709,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ClientConfigOut"];
+                };
+            };
+        };
+    };
+    read_concepts_ontology_concepts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
                 };
             };
         };

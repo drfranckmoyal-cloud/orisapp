@@ -207,3 +207,12 @@ export function correctionDetail(event: {
   }
   return null;
 }
+
+/** Date seule, format français. */
+export function formatDate(value: string): string {
+  return new Date(value).toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
