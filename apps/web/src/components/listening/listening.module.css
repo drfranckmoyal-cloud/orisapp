@@ -16,33 +16,52 @@
 }
 
 .indicator {
-  width: 120px;
-  height: 120px;
+  width: 132px;
+  height: 132px;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: var(--color-cloud);
-  color: var(--color-deep-blue);
+  background: var(--surface-douce);
+  color: var(--encre);
 }
 
+/* Le symbole d'Oris respire pendant l'écoute. Une seule animation dans le produit. */
 .indicator[data-state="recording"] {
-  background: var(--color-oris-blue);
-  color: var(--color-white);
-  animation: pulse 1.6s ease-in-out infinite;
+  background: var(--accent-douce);
+  animation: pulse 2.4s ease-in-out infinite;
 }
 
 .indicator[data-state="alert"] {
-  background: #fdecea;
-  color: var(--color-danger);
+  background: var(--alerte-douce);
+  color: var(--alerte);
+}
+
+.symbole {
+  width: 62px;
+  height: auto;
+}
+
+.indicator[data-state="recording"] .symbole {
+  animation: souffle 2.4s ease-in-out infinite;
+}
+
+@keyframes souffle {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
 }
 
 @keyframes pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgb(59 130 246 / 0.45);
+    box-shadow: 0 0 0 0 rgb(59 130 246 / 0.35);
   }
   50% {
-    box-shadow: 0 0 0 18px rgb(59 130 246 / 0);
+    box-shadow: 0 0 0 20px rgb(59 130 246 / 0);
   }
 }
 

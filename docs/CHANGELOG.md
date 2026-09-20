@@ -1,5 +1,13 @@
 # Changelog
 
+## Refonte produit (2) — 2026-09-20 — identité visuelle appliquée
+- le **symbole d'Oris** entre dans l'application : dans le menu (version blanche sur fond
+  bleu profond, comme l'icône alternative de la planche) et au centre de l'écran d'écoute,
+  où il respire pendant la capture — c'est la seule animation du produit ;
+- **favicon** : le symbole blanc sur bleu profond ;
+- symbole extrait du logo de marque et recadré sur son encre (`assets/oris-symbole.png`),
+  sans redessiner la marque.
+
 ## Refonte produit (1) — 2026-09-20
 Première passe de la refonte décrite dans `docs/AUDIT_DESIGN.md` et `docs/ETAT_REEL.md`.
 

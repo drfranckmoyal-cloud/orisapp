@@ -20,10 +20,15 @@
 .marque {
   display: flex;
   align-items: center;
-  gap: var(--espace-2);
+  gap: 10px;
   padding: var(--espace-2) var(--espace-3);
   text-decoration: none;
   color: inherit;
+}
+
+.symbole {
+  width: 26px;
+  height: auto;
 }
 
 .logo {

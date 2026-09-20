@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -25,7 +26,15 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className={styles.shell}>
       <nav className={styles.menu} aria-label="Navigation principale">
-        <Link href="/" className={styles.marque}>
+        <Link href="/" className={styles.marque} aria-label="Oris — accueil">
+          <Image
+            src="/oris-symbole-blanc.png"
+            alt=""
+            width={368}
+            height={365}
+            className={styles.symbole}
+            priority
+          />
           <span className={styles.nom}>Oris</span>
         </Link>
 

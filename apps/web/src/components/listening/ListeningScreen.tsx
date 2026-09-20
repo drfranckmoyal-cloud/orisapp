@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
@@ -404,13 +405,19 @@ export function ListeningScreen({
             data-state={indicator}
             aria-hidden="true"
           >
-            <span style={{ fontSize: 40 }}>
-              {state.phase === "recording"
-                ? "●"
-                : state.phase === "microphone_lost"
-                  ? "!"
-                  : "❚❚"}
-            </span>
+            {state.phase === "microphone_lost" ? (
+              <span style={{ fontSize: 44, fontWeight: 600 }}>!</span>
+            ) : (
+              <Image
+                src="/oris-symbole.png"
+                alt=""
+                width={368}
+                height={365}
+                className={styles.symbole}
+                style={{ opacity: state.phase === "recording" ? 1 : 0.4 }}
+                priority
+              />
+            )}
           </div>
           <p className={styles.stateLabel} role="status" aria-live="polite">
             {labels[state.phase] ?? state.phase}
