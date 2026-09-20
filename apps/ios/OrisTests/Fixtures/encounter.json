@@ -22,6 +22,11 @@
     "last_name": "missing_audio",
     "note": ""
   },
+  "practitioner": {
+    "id": "00000000-0000-4000-8000-000000000004",
+    "name": "Franck Moyal",
+    "title": ""
+  },
   "processing_errors": [],
   "started_at": "2026-09-17T09:00:00+00:00",
   "status": "review",

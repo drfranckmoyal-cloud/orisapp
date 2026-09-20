@@ -1,6 +1,19 @@
 # Changelog
 
 ## Pièces jointes et connecteurs — 2026-09-21
+- **Aperçu des pièces jointes**, à la manière d'un coup d'œil rapide : un clic ne
+  déclenche plus un téléchargement sans prévenir. Les images et les PDF s'affichent ;
+  les **empreintes STL se tournent en 3D**, glisser pour pivoter, molette pour
+  approcher, sur fond blanc légèrement grisé. Le lecteur STL (binaire et ASCII) et le
+  rendu WebGL sont écrits à la main : six cents kilo-octets de bibliothèque pour
+  afficher une liste de triangles auraient été de trop. Un format non affichable le dit
+  franchement, avec « Ouvrir dans un onglet » et « Télécharger ».
+- **Vignette du praticien** sur chaque ligne de consultation — accueil, liste,
+  historique patient : deux initiales, le nom complet au survol. Dans un cabinet à
+  plusieurs, savoir de qui vient un compte rendu change tout. `EncounterOut` expose
+  désormais le praticien.
+- L'accès à la **transcription brute** passe en petit, gris et italique : c'est une
+  issue de secours, pas une action du quotidien.
 - **Les pièces jointes sont sous la main pendant la révision** : une carte dans le rail,
   avec vignettes pour les photos et zone de dépôt resserrée. Une pièce déposée là est
   **rattachée à cette consultation** — tout en restant celle du patient, retrouvable

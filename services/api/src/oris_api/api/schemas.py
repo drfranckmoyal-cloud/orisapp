@@ -83,9 +83,18 @@ class DocumentSummary(BaseModel):
     status: DocumentStatus
 
 
+class PractitionerOut(BaseModel):
+    """Qui a mené la consultation. Un cabinet à plusieurs praticiens doit le voir."""
+
+    id: UUID
+    name: str
+    title: str
+
+
 class EncounterOut(BaseModel):
     id: UUID
     patient: PatientOut
+    practitioner: PractitionerOut
     status: ClinicalEncounterStatus
     object_version: int
     started_at: datetime | None

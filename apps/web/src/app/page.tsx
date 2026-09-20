@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { JetonPraticien } from "@/components/JetonPraticien";
 import { Symbole } from "@/components/Marque";
 import { Carte, Champ, EnTetePage, EtatVide, Ligne, Lignes, Pastille, Squelette } from "@/components/ui";
 import type { Encounter, GlossaryTerm, LearningSuggestion, Patient } from "@/lib/api";
@@ -214,7 +215,16 @@ export default function HomePage() {
                   href={`/consultations/${encounter.id}`}
                   titre={nomDe(encounter)}
                   detail={`${formatDateTime(encounter.started_at ?? encounter.created_at)} · ${documentsDe(encounter)}`}
-                  fin={<Pastille ton="attention">à relire</Pastille>}
+                  fin={
+                    <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <JetonPraticien
+                        nom={encounter.practitioner.name}
+                        titre={encounter.practitioner.title}
+                        taille="petit"
+                      />
+                      <Pastille ton="attention">à relire</Pastille>
+                    </span>
+                  }
                 />
               ))}
             </Lignes>

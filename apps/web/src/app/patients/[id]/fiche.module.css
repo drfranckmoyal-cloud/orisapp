@@ -91,6 +91,48 @@
   }
 }
 
+/* La sortie : on doit pouvoir remonter au dossier d'où l'on vient. */
+.retour {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-demi);
+  color: var(--encre-douce);
+  text-decoration: none;
+  padding: 5px 12px 5px 8px;
+  border-radius: 9px;
+  background: var(--surface);
+  border: 1px solid var(--trait);
+  box-shadow: var(--lumiere), 0 1px 2px rgb(26 24 21 / 0.05);
+  transition: transform var(--transition), border-color var(--transition),
+    color var(--transition);
+}
+
+.retour:hover {
+  border-color: var(--trait-fort);
+  color: var(--encre);
+  transform: translateX(-2px);
+}
+
+/* L'accès au brut doit exister sans jamais se faire remarquer : c'est une issue de
+   secours, pas une action du quotidien. */
+.brut {
+  font-size: 10.5px;
+  font-style: italic;
+  font-weight: var(--graisse-normale);
+  color: var(--trait-fort);
+  text-decoration: none;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  transition: color var(--transition);
+}
+
+.brut:hover {
+  color: var(--encre-douce);
+  text-decoration: underline;
+}
+
 /* Une ligne d'historique porte deux liens : la consultation, et sa transcription.
    Ils ne peuvent donc pas être imbriqués — c'est du HTML invalide, et le navigateur
    s'en plaint. Le lien principal occupe toute la place restante. */

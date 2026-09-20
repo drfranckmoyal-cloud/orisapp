@@ -1,0 +1,133 @@
+.voile {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: var(--espace-8);
+  background: rgb(14 58 41 / 0.42);
+  backdrop-filter: blur(3px);
+}
+
+.fenetre {
+  width: min(980px, 100%);
+  max-height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  border: 1px solid var(--trait-fort);
+  box-shadow: var(--lumiere), 0 30px 70px -30px rgb(11 47 33 / 0.9);
+}
+
+.entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espace-4);
+  padding: var(--espace-4) var(--espace-4) var(--espace-4) var(--espace-6);
+  border-bottom: 1px solid var(--trait);
+}
+
+.nom {
+  font-weight: var(--graisse-demi);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fermer {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid var(--trait-fort);
+  background: var(--surface);
+  color: var(--encre-douce);
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: var(--lumiere);
+}
+
+.fermer:hover {
+  color: var(--encre);
+  border-color: var(--encre-tres-douce);
+}
+
+.corps {
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+  background: var(--surface-douce);
+  overflow: auto;
+}
+
+.image {
+  max-width: 100%;
+  max-height: 62vh;
+  display: block;
+}
+
+.cadre {
+  width: 100%;
+  height: 62vh;
+  border: 0;
+}
+
+.indisponible {
+  margin: 0;
+  padding: var(--espace-8);
+  max-width: 460px;
+  text-align: center;
+  color: var(--encre-douce);
+}
+
+/* La scène 3D : fond clair, le relief est porté par le modelé. */
+.scene {
+  width: 100%;
+  display: grid;
+  gap: 0;
+}
+
+.toile {
+  width: 100%;
+  height: 62vh;
+  background: #f5f4f1;
+  display: block;
+  cursor: grab;
+  touch-action: none;
+}
+
+.toile:active {
+  cursor: grabbing;
+}
+
+.aide {
+  margin: 0;
+  padding: 8px var(--espace-4);
+  font-size: var(--texte-xs);
+  color: var(--encre-tres-douce);
+  text-align: center;
+  background: var(--surface-douce);
+}
+
+.pied {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-3);
+  padding: var(--espace-4) var(--espace-6);
+  border-top: 1px solid var(--trait);
+}
+
+.telecharger {
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-demi);
+  color: var(--encre-douce);
+  text-decoration: none;
+}
+
+.telecharger:hover {
+  color: var(--encre);
+  text-decoration: underline;
+}

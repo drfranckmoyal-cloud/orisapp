@@ -12,6 +12,7 @@ from oris_api.api.schemas import (
     DocumentSummary,
     EncounterOut,
     PatientOut,
+    PractitionerOut,
     ProcessingError,
     ValidationIssueOut,
 )
@@ -20,7 +21,9 @@ from oris_api.db.models import (
     DocumentVersion,
     Encounter,
     EncounterObjectVersion,
+    Organization,
     Patient,
+    User,
 )
 from oris_api.services import documents
 
@@ -28,6 +31,9 @@ from oris_api.services import documents
 def encounter_out(session: Session, encounter: Encounter) -> EncounterOut:
     patient = session.get(Patient, encounter.patient_id)
     assert patient is not None  # noqa: S101 - clé étrangère non nulle
+    praticien = session.get(User, encounter.practitioner_id)
+    organisation = session.get(Organization, encounter.organization_id)
+    titre = str((organisation.identity or {}).get("practitioner_title", "")) if organisation else ""
     snapshot = (
         session.query(EncounterObjectVersion)
         .filter_by(encounter_id=encounter.id, version=encounter.object_version)
@@ -38,6 +44,11 @@ def encounter_out(session: Session, encounter: Encounter) -> EncounterOut:
     return EncounterOut(
         id=encounter.id,
         patient=PatientOut.model_validate(patient),
+        practitioner=PractitionerOut(
+            id=encounter.practitioner_id,
+            name=praticien.name if praticien else "",
+            title=titre,
+        ),
         status=encounter.status,
         object_version=encounter.object_version,
         started_at=encounter.started_at,

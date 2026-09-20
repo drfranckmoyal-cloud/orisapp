@@ -3904,6 +3904,9 @@
           "patient": {
             "$ref": "#/components/schemas/PatientOut"
           },
+          "practitioner": {
+            "$ref": "#/components/schemas/PractitionerOut"
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -3994,6 +3997,7 @@
         "required": [
           "id",
           "patient",
+          "practitioner",
           "status",
           "object_version",
           "started_at",
@@ -5062,6 +5066,31 @@
           "last_updated_at"
         ],
         "title": "PractitionerLearningProfile"
+      },
+      "PractitionerOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "title"
+        ],
+        "title": "PractitionerOut",
+        "description": "Qui a mené la consultation. Un cabinet à plusieurs praticiens doit le voir."
       },
       "PractitionerPreferences": {
         "properties": {

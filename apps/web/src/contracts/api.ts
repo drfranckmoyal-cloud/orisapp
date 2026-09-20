@@ -1455,6 +1455,7 @@ export interface components {
              */
             id: string;
             patient: components["schemas"]["PatientOut"];
+            practitioner: components["schemas"]["PractitionerOut"];
             /**
              * Status
              * @enum {string}
@@ -1865,6 +1866,21 @@ export interface components {
             };
             /** Last Updated At */
             last_updated_at: string;
+        };
+        /**
+         * PractitionerOut
+         * @description Qui a mené la consultation. Un cabinet à plusieurs praticiens doit le voir.
+         */
+        PractitionerOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Title */
+            title: string;
         };
         /**
          * PractitionerPreferences

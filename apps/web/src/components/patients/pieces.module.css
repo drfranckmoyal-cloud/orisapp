@@ -159,3 +159,13 @@
   gap: 1px;
   min-width: 0;
 }
+
+/* La ligne est un bouton, pas un lien : elle ouvre l'aperçu, elle ne télécharge pas. */
+.lien {
+  border: 0;
+  background: none;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  color: inherit;
+}

@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { Icone } from "@/components/Icones";
 import { Bouton, EtatVide, Pastille, Squelette } from "@/components/ui";
 import { API_BASE_URL, ApiError, type Attachment, type ClientConfig } from "@/lib/api";
+import { Apercu } from "./Apercu";
 import { errorMessage, formatDateTime } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
@@ -45,6 +46,7 @@ export function PiecesJointes({
   const [survol, setSurvol] = useState(false);
   const [envoi, setEnvoi] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [apercu, setApercu] = useState<Attachment | null>(null);
   const champ = useRef<HTMLInputElement | null>(null);
 
   const liste = pieces.state === "ready" ? pieces.data : [];
@@ -162,12 +164,7 @@ export function PiecesJointes({
         <ul className={styles.liste}>
           {liste.map((piece) => (
             <li key={piece.id} className={styles.piece}>
-              <a
-                className={styles.lien}
-                href={`${API_BASE_URL}/patients/attachments/${piece.id}/contenu`}
-                target="_blank"
-                rel="noreferrer"
-              >
+              <button type="button" className={styles.lien} onClick={() => setApercu(piece)}>
                 {piece.kind === "photo" ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -186,7 +183,7 @@ export function PiecesJointes({
                     {poids(piece.byte_size)} · {formatDateTime(piece.created_at)}
                   </span>
                 </span>
-              </a>
+              </button>
               <span className={styles.fin}>
                 {!compact && <Pastille>{NATURE[piece.kind] ?? piece.kind}</Pastille>}
                 <button
@@ -201,6 +198,14 @@ export function PiecesJointes({
             </li>
           ))}
         </ul>
+      )}
+
+      {apercu && (
+        <Apercu
+          piece={apercu}
+          url={`${API_BASE_URL}/patients/attachments/${apercu.id}/contenu`}
+          onFermer={() => setApercu(null)}
+        />
       )}
     </div>
   );

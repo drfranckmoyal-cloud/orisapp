@@ -14,6 +14,7 @@ import {
   Squelette,
 } from "@/components/ui";
 import { Icone } from "@/components/Icones";
+import { JetonPraticien } from "@/components/JetonPraticien";
 import { NoteDictee } from "@/components/patients/NoteDictee";
 import { PiecesJointes } from "@/components/patients/PiecesJointes";
 import { apiRequest, type ClientConfig, type Encounter, type Patient } from "@/lib/api";
@@ -203,6 +204,11 @@ export default function PatientPage() {
                     </span>
                   </Link>
                   <span className={styles.rangFin}>
+                    <JetonPraticien
+                      nom={encounter.practitioner.name}
+                      titre={encounter.practitioner.title}
+                      taille="petit"
+                    />
                     {/* Le brut reste accessible, sans jamais attirer l'œil. */}
                     <Link
                       href={`/consultations/${encounter.id}/transcription`}

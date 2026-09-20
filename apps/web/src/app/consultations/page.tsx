@@ -16,6 +16,7 @@ import {
 } from "@/components/ui";
 import type { Encounter } from "@/lib/api";
 import { DOCUMENT_TYPE, ENCOUNTER_STATUS, errorMessage, nomPatient } from "@/lib/labels";
+import { JetonPraticien } from "@/components/JetonPraticien";
 import { useApi } from "@/lib/useApi";
 
 type Filtre = "toutes" | "a_relire" | "terminees" | "a_reprendre";
@@ -165,9 +166,16 @@ export default function ConsultationsPage() {
                   </>
                 }
                 fin={
-                  <Pastille ton={ton(encounter.status)}>
-                    {ENCOUNTER_STATUS[encounter.status]}
-                  </Pastille>
+                  <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <JetonPraticien
+                      nom={encounter.practitioner.name}
+                      titre={encounter.practitioner.title}
+                      taille="petit"
+                    />
+                    <Pastille ton={ton(encounter.status)}>
+                      {ENCOUNTER_STATUS[encounter.status]}
+                    </Pastille>
+                  </span>
                 }
               />
             ))}
