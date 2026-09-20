@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oris — Direction 1 : Instrument</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Direction 1 : INSTRUMENT ──────────────────────────────────────────────
+   Un appareil de mesure. Blanc franc, aucun ombrage, séparations au filet d'un
+   pixel. Une seule couleur vive, réservée à l'action et à l'état d'écoute : elle
+   ne sert jamais à décorer. Chiffres tabulaires. Dense, précis, sans rondeur. */
+:root{
+  --fond:#ffffff; --panneau:#ffffff; --sourd:#f7f8f9;
+  --encre:#111418; --encre-2:#5c6670; --encre-3:#8b949d;
+  --filet:#e3e6e9; --filet-fort:#c9ced3;
+  --signal:#1f4fd8; --signal-clair:#eef2fe;
+  --attention:#8a5a00; --attention-clair:#fdf6e6;
+  --alerte:#a41d13; --alerte-clair:#fdeeec;
+  --valide:#0a6b3d;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fond);color:var(--encre);
+  font:400 14px/1.55 "IBM Plex Sans",system-ui,sans-serif;
+  font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.012em}
+h1{font-size:22px}h2{font-size:14px}h3{font-size:13px}
+p{margin:0}
+a{color:inherit;text-decoration:none}
+.app{display:grid;grid-template-columns:196px 1fr;min-height:100vh}
+
+/* Menu : une colonne de texte, pas de pastilles. Le filet dit où l'on est. */
+.menu{border-right:1px solid var(--filet);padding:18px 0;display:flex;flex-direction:column}
+.marque{display:flex;align-items:center;gap:8px;padding:0 18px 22px;font-weight:600;letter-spacing:.02em}
+.marque i{width:16px;height:16px;border:1.5px solid var(--signal);border-radius:50% 50% 45% 45%;border-bottom-color:transparent;display:block}
+.menu a{display:block;padding:7px 18px;color:var(--encre-2);border-left:2px solid transparent;font-size:13px}
+.menu a:hover{color:var(--encre)}
+.menu a.on{color:var(--encre);border-left-color:var(--signal);font-weight:500}
+.praticien{margin-top:auto;padding:14px 18px 0;border-top:1px solid var(--filet);font-size:12px;color:var(--encre-3)}
+.praticien b{display:block;color:var(--encre-2);font-weight:500}
+
+.vue{padding:26px 34px 60px;max-width:1180px}
+.entete{display:flex;justify-content:space-between;align-items:flex-end;
+  border-bottom:1px solid var(--filet-fort);padding-bottom:14px;margin-bottom:22px}
+.surtitre{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--encre-3);margin-bottom:5px}
+
+.btn{font:inherit;font-size:13px;font-weight:500;padding:7px 14px;border:1px solid var(--filet-fort);
+  background:#fff;color:var(--encre);border-radius:3px;cursor:pointer}
+.btn:hover{border-color:var(--encre-3)}
+.btn-1{background:var(--signal);border-color:var(--signal);color:#fff}
+.btn-1:hover{background:#1a44bb;border-color:#1a44bb}
+.btn-nu{border:0;background:none;color:var(--signal);padding:7px 0;cursor:pointer;font:inherit;font-size:13px}
+
+.bloc{border:1px solid var(--filet);border-radius:3px}
+.bloc-t{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 14px;border-bottom:1px solid var(--filet);background:var(--sourd)}
+.bloc-t h2{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--encre-2)}
+.bloc-c{padding:14px}
+.rangs>*{padding:9px 14px;border-bottom:1px solid var(--filet);display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.rangs>*:last-child{border-bottom:0}
+.rangs small{color:var(--encre-3);font-size:12px;display:block}
+
+.etiq{font-size:11px;letter-spacing:.04em;padding:2px 6px;border-radius:2px;white-space:nowrap;
+  border:1px solid currentColor;line-height:1.5}
+.e-att{color:var(--attention);background:var(--attention-clair)}
+.e-ale{color:var(--alerte);background:var(--alerte-clair)}
+.e-val{color:var(--valide);background:#eaf5ef}
+.e-neu{color:var(--encre-3);background:#fff}
+
+.champ{font:inherit;width:100%;padding:8px 10px;border:1px solid var(--filet-fort);border-radius:3px;color:var(--encre)}
+.champ:focus{outline:0;border-color:var(--signal);box-shadow:0 0 0 2px var(--signal-clair)}
+.grille3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grille2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.muet{color:var(--encre-3);font-size:12px}
+
+/* Écoute : tout est retiré sauf le chronomètre. L'écran ne raconte rien d'autre. */
+.ecoute{max-width:520px;margin:6vh auto;text-align:center}
+.oeil{width:96px;height:96px;margin:0 auto 22px;border:1.5px solid var(--signal);
+  border-radius:50%;display:grid;place-items:center;position:relative}
+.oeil::after{content:"";position:absolute;inset:-9px;border:1px solid var(--signal-clair);border-radius:50%;
+  animation:onde 2.6s ease-out infinite}
+@keyframes onde{0%{transform:scale(.94);opacity:1}100%{transform:scale(1.14);opacity:0}}
+.barres{display:flex;gap:3px;align-items:flex-end;height:26px}
+.barres i{width:3px;background:var(--signal);display:block;animation:vu 1.1s ease-in-out infinite}
+.barres i:nth-child(1){height:10px;animation-delay:0s}.barres i:nth-child(2){height:22px;animation-delay:.12s}
+.barres i:nth-child(3){height:15px;animation-delay:.24s}.barres i:nth-child(4){height:24px;animation-delay:.36s}
+.barres i:nth-child(5){height:9px;animation-delay:.48s}
+@keyframes vu{50%{transform:scaleY(.42)}}
+.chrono{font:500 54px/1 "IBM Plex Mono",monospace;letter-spacing:-.02em;margin:4px 0 6px}
+.etat{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--encre-2)}
+.jauges{display:flex;gap:10px;justify-content:center;margin:22px 0 18px;font-size:12px;color:var(--encre-2)}
+.jauges span{border:1px solid var(--filet);padding:5px 10px;border-radius:2px}
+.actes{display:flex;gap:8px;justify-content:center}
+.repli{margin-top:26px;border-top:1px solid var(--filet);padding-top:12px;text-align:left}
+
+/* Révision : 64 / 36. Le document tient la largeur, le contrôle tient le bord. */
+.rev{display:grid;grid-template-columns:1fr 340px;gap:22px;align-items:start}
+.doc h3{font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--encre-3);margin:20px 0 6px}
+.doc h3:first-child{margin-top:0}
+.doc p{margin-bottom:3px}
+.doc .src{color:var(--encre-3)}
+.onglets{display:flex;border-bottom:1px solid var(--filet)}
+.onglets button{font:inherit;font-size:12px;background:none;border:0;border-bottom:2px solid transparent;
+  padding:8px 11px;color:var(--encre-2);cursor:pointer}
+.onglets button.on{color:var(--encre);border-bottom-color:var(--signal);font-weight:500}
+.verif{display:flex;gap:9px;padding:10px 0;border-bottom:1px solid var(--filet);font-size:13px;align-items:flex-start}
+.verif:last-child{border-bottom:0}
+.pied{display:flex;gap:8px;border-top:1px solid var(--filet-fort);padding-top:14px;margin-top:22px}
+
+.bandeau{display:flex;gap:22px;font-size:12px;color:var(--encre-2);border-bottom:1px solid var(--filet);padding-bottom:12px;margin-bottom:18px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="menu">
+    <div class="marque"><i></i> ORIS</div>
+    <a href="#" class="on" data-v="accueil">Accueil</a>
+    <a href="#" data-v="patient">Patients</a>
+    <a href="#" data-v="ecoute">Consultations</a>
+    <a href="#" data-v="revision">Documents</a>
+    <a href="#">Oris apprend</a>
+    <a href="#">Paramètres</a>
+    <div class="praticien"><b>Dr Franck Moyal</b>Données fictives</div>
+  </nav>
+
+  <main>
+    <!-- ACCUEIL -->
+    <section class="vue" data-vue="accueil">
+      <div class="entete">
+        <div><p class="surtitre">Dimanche 20 septembre</p><h1>Bonsoir Dr Moyal</h1></div>
+        <button class="btn btn-1">Nouvelle consultation</button>
+      </div>
+      <div style="max-width:420px;margin-bottom:22px">
+        <input class="champ" type="search" placeholder="Retrouver un patient">
+      </div>
+      <div class="grille3">
+        <div class="bloc">
+          <div class="bloc-t"><h2>À relire</h2><span class="etiq e-att">3</span></div>
+          <div class="rangs">
+            <div><span>Marie Dupont<small>20/09 · 10:04 · 2 documents</small></span><span class="etiq e-att">à relire</span></div>
+            <div><span>Emma Martin<small>20/09 · 20:36 · 2 documents</small></span><span class="etiq e-att">à relire</span></div>
+            <div><span>Claire Repère<small>20/09 · 21:48 · 1 document</small></span><span class="etiq e-att">à relire</span></div>
+          </div>
+        </div>
+        <div class="bloc">
+          <div class="bloc-t"><h2>Aujourd'hui</h2><span class="muet">6</span></div>
+          <div class="rangs">
+            <div><span>Paul Durand<small>12:15</small></span><span class="etiq e-val">validée</span></div>
+            <div><span>Léa Simon<small>11:30</small></span><span class="etiq e-val">validée</span></div>
+            <div><span>Marie Dupont<small>10:14</small></span><span class="etiq e-ale">transcription</span></div>
+          </div>
+        </div>
+        <div class="bloc">
+          <div class="bloc-t"><h2>Terminées</h2><span class="muet">2</span></div>
+          <div class="rangs">
+            <div><span>Paul Durand<small>Exporté en PDF</small></span><span class="etiq e-neu">exportée</span></div>
+            <div><span>Léa Simon<small>Copié au dossier</small></span><span class="etiq e-neu">validée</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ÉCOUTE -->
+    <section class="vue" data-vue="ecoute" hidden>
+      <div class="ecoute">
+        <p class="muet" style="margin-bottom:18px">Marie Dupont</p>
+        <div class="oeil"><div class="barres"><i></i><i></i><i></i><i></i><i></i></div></div>
+        <p class="etat">Écoute en cours</p>
+        <p class="chrono">12:47</p>
+        <div class="jauges"><span>Micro actif</span><span>Audio envoyé au serveur</span></div>
+        <div class="actes">
+          <button class="btn">Pause</button>
+          <button class="btn">Marquer un point</button>
+          <button class="btn btn-1">Terminer</button>
+        </div>
+        <div class="repli">
+          <button class="btn-nu">▸ Ce qu'Oris entend — 34 paroles entendues</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RÉVISION -->
+    <section class="vue" data-vue="revision" hidden>
+      <div class="entete">
+        <div><p class="surtitre">Consultation du 20/09/2026 · 10:04</p><h1>Marie Dupont</h1></div>
+        <div style="display:flex;gap:8px"><button class="btn">Dossier clinique v1</button><button class="btn btn-1">Valider la consultation</button></div>
+      </div>
+      <div class="rev">
+        <div class="bloc">
+          <div class="bloc-t"><h2>Compte rendu de consultation</h2><span class="etiq e-neu">brouillon Oris · v1</span></div>
+          <div class="bloc-c doc">
+            <h3>Motif de consultation</h3>
+            <p>Rapporté par la patiente : sensibilité au froid sur le secteur maxillaire droit depuis trois semaines.</p>
+            <p>Rapporté par la patiente : absence de douleur nocturne.</p>
+            <h3>Examen clinique</h3>
+            <p>Constaté : carie occlusale sur 26.</p>
+            <p>Constaté : ancienne restauration composite infiltrée sur 27.</p>
+            <p>Constaté : absence de mobilité, sondage parodontal dans les normes.</p>
+            <h3>Options thérapeutiques discutées</h3>
+            <p>Option discutée : composite direct sur 26 et 27.</p>
+            <p>Option discutée : inlay céramique sur 27.</p>
+            <p>Option écartée : couronne — non justifiée à ce stade.</p>
+            <h3>Décision / plan retenu</h3>
+            <p>Accepté par la patiente : composites directs, en une séance.</p>
+            <h3>Actes réalisés</h3>
+            <p>Prévu : photographies cliniques.</p>
+            <h3>Informations données à la patiente</h3>
+            <p>Rapporté par la patiente : préférence pour la solution la plus conservatrice.</p>
+            <div class="pied">
+              <button class="btn">Éditer le texte</button>
+              <button class="btn">Raccourcir</button>
+              <button class="btn">Copier pour le dossier</button>
+              <button class="btn">Exporter en PDF</button>
+            </div>
+            <p class="muet" style="margin-top:10px">Non validé : le PDF portera la mention « brouillon ».</p>
+          </div>
+        </div>
+
+        <div class="bloc">
+          <div class="onglets">
+            <button class="on">À vérifier (2)</button><button>Données</button><button>Points</button><button>Historique</button>
+          </div>
+          <div class="bloc-c">
+            <div class="verif"><span class="etiq e-ale">critique</span><span>Les voix n'ont pas pu être distinguées sur l'ensemble de l'enregistrement.</span></div>
+            <div class="verif"><span class="etiq e-att">à vérifier</span><span>Dent citée absente des faits : 27 dans « inlay céramique ».</span></div>
+            <p class="muet" style="margin-top:14px">Chaque autre phrase du document s'appuie sur une parole de la consultation.</p>
+            <hr style="border:0;border-top:1px solid var(--filet);margin:16px 0">
+            <h2 style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--encre-2);margin-bottom:8px">Corriger</h2>
+            <input class="champ" placeholder="Remplace 26 par 27">
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button class="btn">Voir ce qu'Oris comprend</button>
+              <button class="btn">Dicter</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FICHE PATIENT -->
+    <section class="vue" data-vue="patient" hidden>
+      <div class="entete">
+        <div><p class="surtitre">Patient</p><h1>Marie Dupont</h1></div>
+        <button class="btn btn-1">Nouvelle consultation</button>
+      </div>
+      <div class="bandeau">
+        <span>Née le 14/03/1979</span><span>Dossier 4412</span><span>7 consultations</span><span>Dernière : 20/09/2026</span>
+      </div>
+      <div class="grille2" style="align-items:start">
+        <div class="bloc">
+          <div class="bloc-t"><h2>Historique</h2></div>
+          <div class="rangs">
+            <div><span>20/09/2026 · 10:04<small>Compte rendu · Plan de traitement</small></span><span class="etiq e-att">à relire</span></div>
+            <div><span>02/07/2026 · 15:20<small>Compte rendu · Opératoire</small></span><span class="etiq e-val">validée</span></div>
+            <div><span>11/04/2026 · 09:00<small>Compte rendu</small></span><span class="etiq e-val">validée</span></div>
+            <div><span>16/01/2026 · 17:45<small>Compte rendu · Courrier confrère</small></span><span class="etiq e-neu">exportée</span></div>
+          </div>
+        </div>
+        <div style="display:grid;gap:16px">
+          <div class="bloc">
+            <div class="bloc-t"><h2>Note</h2></div>
+            <div class="bloc-c">
+              <p class="muet" style="margin-bottom:8px">Un rappel pratique. Oris ne la lit pas.</p>
+              <input class="champ" value="Préfère les rendez-vous du matin. Rappeler la veille.">
+            </div>
+          </div>
+          <div class="bloc">
+            <div class="bloc-t"><h2>Plan de traitement en cours</h2></div>
+            <div class="rangs">
+              <div><span>26 — composite occlusal<small>1 · accepté le 20/09</small></span><span class="etiq e-val">accepté</span></div>
+              <div><span>27 — reprise de restauration<small>2 · accepté le 20/09</small></span><span class="etiq e-val">accepté</span></div>
+              <div><span>Contrôle à 6 mois<small>3 · proposé</small></span><span class="etiq e-neu">proposé</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+document.querySelectorAll('.menu a[data-v]').forEach(function(lien){
+  lien.addEventListener('click', function(e){
+    e.preventDefault();
+    document.querySelectorAll('.menu a').forEach(function(a){a.classList.remove('on')});
+    lien.classList.add('on');
+    document.querySelectorAll('[data-vue]').forEach(function(s){
+      s.hidden = s.dataset.vue !== lien.dataset.v;
+    });
+  });
+});
+</script>
+</body>
+</html>

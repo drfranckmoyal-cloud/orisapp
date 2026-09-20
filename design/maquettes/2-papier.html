@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oris — Direction 2 : Papier</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Direction 2 : PAPIER ──────────────────────────────────────────────────
+   Le compte rendu est un document, pas un écran : il est composé comme une
+   lettre médicale, en typographie à empattements, sur un fond crème. L'interface
+   s'efface autour — pas de cartes, pas d'ombres : des filets et du blanc.
+   Le pari : ce qu'on relit le mieux, c'est ce qui ressemble à du papier. */
+:root{
+  --papier:#fbf9f5; --page:#ffffff; --creme:#f3efe7;
+  --encre:#1a1815; --encre-2:#5d574d; --encre-3:#8d8579;
+  --filet:#e2dcd0; --filet-fort:#cfc7b7;
+  --signal:#2e4f6e; --signal-clair:#e8eef4;
+  --attention:#8a6300; --alerte:#9c2c1c; --valide:#2f6b45;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--papier);color:var(--encre);
+  font:400 15px/1.6 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-weight:600}
+p{margin:0}
+a{color:inherit;text-decoration:none}
+.serif{font-family:"Source Serif 4",Georgia,serif}
+
+/* Menu en bandeau haut : l'écran gagne toute sa largeur pour le document. */
+.haut{border-bottom:1px solid var(--filet-fort);background:var(--papier);
+  position:sticky;top:0;display:flex;align-items:center;gap:34px;padding:0 40px}
+.marque{font-family:"Source Serif 4",Georgia,serif;font-size:21px;font-weight:600;
+  letter-spacing:.01em;padding:16px 0;margin-right:6px}
+.haut nav{display:flex;gap:26px;flex:1}
+.haut nav a{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--encre-3);
+  padding:19px 0;border-bottom:2px solid transparent;cursor:pointer}
+.haut nav a.on{color:var(--encre);border-bottom-color:var(--signal)}
+.qui{font-size:12px;color:var(--encre-3);text-align:right}
+.qui b{display:block;color:var(--encre-2);font-weight:500;font-size:13px}
+
+.vue{max-width:1080px;margin:0 auto;padding:42px 40px 80px}
+.titre{margin-bottom:34px}
+.surtitre{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--encre-3);margin-bottom:8px}
+h1{font-family:"Source Serif 4",Georgia,serif;font-size:34px;font-weight:400;letter-spacing:-.01em}
+.section{border-top:1px solid var(--filet);padding-top:12px;margin-top:34px}
+.section>h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--encre-3);margin-bottom:14px}
+
+.btn{font:inherit;font-size:13px;padding:9px 18px;border:1px solid var(--filet-fort);
+  background:transparent;color:var(--encre);border-radius:2px;cursor:pointer}
+.btn:hover{background:var(--creme)}
+.btn-1{background:var(--signal);border-color:var(--signal);color:#fff}
+.btn-1:hover{background:#25405b}
+.lien{border:0;background:none;color:var(--signal);cursor:pointer;font:inherit;font-size:13px;
+  border-bottom:1px solid var(--filet-fort);padding:0 0 1px}
+
+.liste>a,.liste>div{display:flex;justify-content:space-between;gap:16px;align-items:baseline;
+  padding:12px 0;border-bottom:1px solid var(--filet)}
+.liste small{display:block;color:var(--encre-3);font-size:12.5px;margin-top:2px}
+.etiq{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--encre-3);white-space:nowrap}
+.e-att{color:var(--attention)}.e-ale{color:var(--alerte)}.e-val{color:var(--valide)}
+.grille3{display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
+.grille2{display:grid;grid-template-columns:1.25fr 1fr;gap:48px;align-items:start}
+.muet{color:var(--encre-3);font-size:13px}
+.champ{font:inherit;width:100%;padding:11px 0;border:0;border-bottom:1px solid var(--filet-fort);
+  background:transparent;color:var(--encre)}
+.champ::placeholder{color:var(--encre-3)}
+.champ:focus{outline:0;border-bottom-color:var(--signal)}
+
+/* Écoute : une page presque vide. Le chiffre est le seul objet. */
+.ecoute{text-align:center;padding-top:7vh}
+.ecoute .nom{font-family:"Source Serif 4",Georgia,serif;font-size:26px;margin-bottom:34px}
+.anneau{width:8px;height:8px;border-radius:50%;background:var(--signal);margin:0 auto 26px;
+  box-shadow:0 0 0 0 rgba(46,79,110,.34);animation:pouls 2.4s ease-out infinite}
+@keyframes pouls{0%{box-shadow:0 0 0 0 rgba(46,79,110,.34)}100%{box-shadow:0 0 0 26px rgba(46,79,110,0)}}
+.chrono{font-family:"Source Serif 4",Georgia,serif;font-size:76px;font-weight:400;
+  letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
+.etat{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--encre-3);margin-top:12px}
+.jauges{display:flex;gap:26px;justify-content:center;margin:30px 0 26px;font-size:12.5px;color:var(--encre-2)}
+.actes{display:flex;gap:12px;justify-content:center}
+.repli{margin:44px auto 0;max-width:520px;border-top:1px solid var(--filet);padding-top:14px;text-align:left}
+
+/* Le document : une vraie page, marge de gauche réglée, texte à empattements. */
+.feuille{background:var(--page);border:1px solid var(--filet);padding:44px 52px;
+  font-family:"Source Serif 4",Georgia,serif;font-size:16.5px;line-height:1.72}
+.feuille h3{font-family:Inter,sans-serif;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--encre-3);font-weight:600;margin:28px 0 8px}
+.feuille h3:first-child{margin-top:0}
+.feuille p{margin-bottom:2px}
+.filigrane{font-family:Inter,sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--encre-3);border-bottom:1px solid var(--filet);padding-bottom:12px;margin-bottom:26px;
+  display:flex;justify-content:space-between}
+.onglets{display:flex;gap:22px;border-bottom:1px solid var(--filet);margin-bottom:16px}
+.onglets button{font:inherit;font-size:12px;letter-spacing:.06em;text-transform:uppercase;background:none;border:0;
+  border-bottom:2px solid transparent;padding:0 0 9px;color:var(--encre-3);cursor:pointer}
+.onglets button.on{color:var(--encre);border-bottom-color:var(--signal)}
+.verif{padding:12px 0;border-bottom:1px solid var(--filet);font-size:14px}
+.verif .etiq{display:block;margin-bottom:3px}
+.pied{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px;border-top:1px solid var(--filet);padding-top:20px}
+.bandeau{display:flex;gap:30px;font-size:13px;color:var(--encre-2);border-bottom:1px solid var(--filet);padding-bottom:16px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header class="haut">
+  <div class="marque">Oris</div>
+  <nav>
+    <a class="on" data-v="accueil">Accueil</a><a data-v="patient">Patients</a>
+    <a data-v="ecoute">Consultations</a><a data-v="revision">Documents</a>
+    <a>Oris apprend</a><a>Paramètres</a>
+  </nav>
+  <div class="qui"><b>Dr Franck Moyal</b>Données fictives</div>
+</header>
+
+<!-- ACCUEIL -->
+<main class="vue" data-vue="accueil">
+  <div class="titre" style="display:flex;justify-content:space-between;align-items:flex-end">
+    <div><p class="surtitre">Dimanche 20 septembre</p><h1>Bonsoir Dr Moyal</h1></div>
+    <button class="btn btn-1">Nouvelle consultation</button>
+  </div>
+  <input class="champ" type="search" placeholder="Retrouver un patient" style="max-width:440px">
+  <div class="grille3" style="margin-top:14px">
+    <div class="section"><h2>À relire — 3</h2>
+      <div class="liste">
+        <div><span>Marie Dupont<small>20/09 · 10:04 · 2 documents</small></span><span class="etiq e-att">à relire</span></div>
+        <div><span>Emma Martin<small>20/09 · 20:36 · 2 documents</small></span><span class="etiq e-att">à relire</span></div>
+        <div><span>Claire Repère<small>20/09 · 21:48 · 1 document</small></span><span class="etiq e-att">à relire</span></div>
+      </div>
+    </div>
+    <div class="section"><h2>Aujourd'hui — 6</h2>
+      <div class="liste">
+        <div><span>Paul Durand<small>12:15</small></span><span class="etiq e-val">validée</span></div>
+        <div><span>Léa Simon<small>11:30</small></span><span class="etiq e-val">validée</span></div>
+        <div><span>Marie Dupont<small>10:14</small></span><span class="etiq e-ale">transcription</span></div>
+      </div>
+    </div>
+    <div class="section"><h2>Terminées — 2</h2>
+      <div class="liste">
+        <div><span>Paul Durand<small>Exporté en PDF</small></span><span class="etiq">exportée</span></div>
+        <div><span>Léa Simon<small>Copié au dossier</small></span><span class="etiq">validée</span></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ÉCOUTE -->
+<main class="vue" data-vue="ecoute" hidden>
+  <div class="ecoute">
+    <p class="nom">Marie Dupont</p>
+    <div class="anneau"></div>
+    <p class="chrono">12:47</p>
+    <p class="etat">Écoute en cours</p>
+    <div class="jauges"><span>Micro actif</span><span>Audio envoyé au serveur</span></div>
+    <div class="actes">
+      <button class="btn">Pause</button><button class="btn">Marquer un point</button>
+      <button class="btn btn-1">Terminer</button>
+    </div>
+    <div class="repli"><button class="lien">▸ Ce qu'Oris entend — 34 paroles entendues</button></div>
+  </div>
+</main>
+
+<!-- RÉVISION -->
+<main class="vue" data-vue="revision" hidden>
+  <div class="titre" style="display:flex;justify-content:space-between;align-items:flex-end">
+    <div><p class="surtitre">Consultation du 20/09/2026 · 10:04</p><h1>Marie Dupont</h1></div>
+    <div style="display:flex;gap:12px"><button class="btn">Dossier clinique v1</button><button class="btn btn-1">Valider la consultation</button></div>
+  </div>
+  <div class="grille2">
+    <div>
+      <div class="feuille">
+        <div class="filigrane"><span>Compte rendu de consultation</span><span>Brouillon Oris · version 1</span></div>
+        <h3>Motif de consultation</h3>
+        <p>Rapporté par la patiente : sensibilité au froid sur le secteur maxillaire droit depuis trois semaines.</p>
+        <p>Rapporté par la patiente : absence de douleur nocturne.</p>
+        <h3>Examen clinique</h3>
+        <p>Constaté : carie occlusale sur 26.</p>
+        <p>Constaté : ancienne restauration composite infiltrée sur 27.</p>
+        <p>Constaté : absence de mobilité, sondage parodontal dans les normes.</p>
+        <h3>Options thérapeutiques discutées</h3>
+        <p>Option discutée : composite direct sur 26 et 27.</p>
+        <p>Option discutée : inlay céramique sur 27.</p>
+        <p>Option écartée : couronne — non justifiée à ce stade.</p>
+        <h3>Décision / plan retenu</h3>
+        <p>Accepté par la patiente : composites directs, en une séance.</p>
+        <h3>Actes réalisés</h3>
+        <p>Prévu : photographies cliniques.</p>
+        <h3>Informations données à la patiente</h3>
+        <p>Rapporté par la patiente : préférence pour la solution la plus conservatrice.</p>
+      </div>
+      <div class="pied">
+        <button class="btn">Éditer le texte</button><button class="btn">Raccourcir</button>
+        <button class="btn">Copier pour le dossier</button><button class="btn">Exporter en PDF</button>
+      </div>
+      <p class="muet" style="margin-top:12px">Non validé : le PDF portera la mention « brouillon ».</p>
+    </div>
+
+    <aside>
+      <div class="onglets"><button class="on">À vérifier (2)</button><button>Données</button><button>Points</button><button>Historique</button></div>
+      <div class="verif"><span class="etiq e-ale">critique</span>Les voix n'ont pas pu être distinguées sur l'ensemble de l'enregistrement.</div>
+      <div class="verif"><span class="etiq e-att">à vérifier</span>Dent citée absente des faits : 27 dans « inlay céramique ».</div>
+      <p class="muet" style="margin-top:16px">Chaque autre phrase du document s'appuie sur une parole de la consultation.</p>
+      <div class="section"><h2>Corriger</h2>
+        <input class="champ" placeholder="Remplace 26 par 27">
+        <div style="display:flex;gap:12px;margin-top:16px">
+          <button class="btn">Voir ce qu'Oris comprend</button><button class="btn">Dicter</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<!-- FICHE PATIENT -->
+<main class="vue" data-vue="patient" hidden>
+  <div class="titre" style="display:flex;justify-content:space-between;align-items:flex-end">
+    <div><p class="surtitre">Patient</p><h1>Marie Dupont</h1></div>
+    <button class="btn btn-1">Nouvelle consultation</button>
+  </div>
+  <div class="bandeau"><span>Née le 14/03/1979</span><span>Dossier 4412</span><span>7 consultations</span><span>Dernière : 20/09/2026</span></div>
+  <div class="grille2" style="margin-top:8px">
+    <div class="section"><h2>Historique</h2>
+      <div class="liste">
+        <div><span>20/09/2026 · 10:04<small>Compte rendu · Plan de traitement</small></span><span class="etiq e-att">à relire</span></div>
+        <div><span>02/07/2026 · 15:20<small>Compte rendu · Opératoire</small></span><span class="etiq e-val">validée</span></div>
+        <div><span>11/04/2026 · 09:00<small>Compte rendu</small></span><span class="etiq e-val">validée</span></div>
+        <div><span>16/01/2026 · 17:45<small>Compte rendu · Courrier confrère</small></span><span class="etiq">exportée</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="section"><h2>Note</h2>
+        <p class="muet" style="margin-bottom:6px">Un rappel pratique. Oris ne la lit pas.</p>
+        <input class="champ" value="Préfère les rendez-vous du matin. Rappeler la veille.">
+      </div>
+      <div class="section"><h2>Plan de traitement en cours</h2>
+        <div class="liste">
+          <div><span>26 — composite occlusal<small>1 · accepté le 20/09</small></span><span class="etiq e-val">accepté</span></div>
+          <div><span>27 — reprise de restauration<small>2 · accepté le 20/09</small></span><span class="etiq e-val">accepté</span></div>
+          <div><span>Contrôle à 6 mois<small>3 · proposé</small></span><span class="etiq">proposé</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+document.querySelectorAll('.haut nav a[data-v]').forEach(function(lien){
+  lien.addEventListener('click', function(){
+    document.querySelectorAll('.haut nav a').forEach(function(a){a.classList.remove('on')});
+    lien.classList.add('on');
+    document.querySelectorAll('[data-vue]').forEach(function(s){s.hidden = s.dataset.vue !== lien.dataset.v});
+  });
+});
+</script>
+</body>
+</html>

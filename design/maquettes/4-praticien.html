@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oris — Direction 4 : Praticien</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Direction 4 : PRATICIEN ───────────────────────────────────────────────
+   Fait pour être lu debout, à un mètre, et vu par le patient assis en face.
+   Texte plus grand, cibles plus larges, contrastes francs. Neutres chauds et un
+   vert profond plutôt qu'un bleu technologique : moins « logiciel », plus
+   « cabinet ». Moins d'information par écran, assumé. */
+:root{
+  --fond:#f6f3ee; --surface:#ffffff; --sourd:#ece7de;
+  --encre:#1c1a17; --encre-2:#585149; --encre-3:#8b8276;
+  --trait:#e0d9cd; --trait-fort:#c9c0b1;
+  --vert:#14533b; --vert-clair:#e4efe9; --vert-vif:#1d7052;
+  --argile:#b45309; --argile-clair:#fdf1e3;
+  --rouge:#a3271a; --rouge-clair:#fceeec;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fond);color:var(--encre);
+  font:400 16px/1.62 "Instrument Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.015em}
+p{margin:0}a{color:inherit;text-decoration:none}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+
+.menu{padding:24px 0;display:flex;flex-direction:column;border-right:1px solid var(--trait)}
+.marque{display:flex;align-items:center;gap:11px;padding:0 24px 30px;font-size:20px;font-weight:600}
+.marque i{width:20px;height:20px;border:2.5px solid var(--vert);border-radius:50% 50% 45% 45%;
+  border-bottom-color:transparent;display:block}
+.menu a{display:block;margin:3px 14px;padding:12px 16px;border-radius:12px;color:var(--encre-2);cursor:pointer}
+.menu a:hover{background:var(--sourd)}
+.menu a.on{background:var(--vert);color:#fff;font-weight:500}
+.qui{margin-top:auto;padding:18px 24px 0;border-top:1px solid var(--trait);font-size:14px;color:var(--encre-3)}
+.qui b{display:block;color:var(--encre-2);font-weight:500;font-size:15px}
+
+.vue{padding:34px 40px 80px;max-width:1180px}
+.entete{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;gap:20px}
+.surtitre{font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:var(--encre-3);margin-bottom:7px}
+h1{font-size:34px}
+
+.btn{font:inherit;font-size:16px;font-weight:500;padding:13px 22px;border:1.5px solid var(--trait-fort);
+  background:var(--surface);color:var(--encre);border-radius:14px;cursor:pointer}
+.btn:hover{border-color:var(--encre-3)}
+.btn-1{background:var(--vert);border-color:var(--vert);color:#fff;font-weight:600}
+.btn-1:hover{background:var(--vert-vif)}
+.lien{border:0;background:none;color:var(--vert);cursor:pointer;font:inherit;font-size:16px;padding:0;font-weight:500}
+
+.carte{background:var(--surface);border:1px solid var(--trait);border-radius:20px;overflow:hidden;
+  box-shadow:0 1px 2px rgba(28,26,23,.04)}
+.carte-t{display:flex;justify-content:space-between;align-items:center;padding:18px 22px 14px}
+.carte-t h2{font-size:18px}
+.carte-c{padding:0 22px 22px}
+.rangs>div{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:15px 22px;border-top:1px solid var(--trait)}
+.rangs small{display:block;color:var(--encre-3);font-size:14px;margin-top:2px}
+
+.etiq{font-size:14px;font-weight:500;padding:5px 13px;border-radius:99px;white-space:nowrap}
+.e-att{background:var(--argile-clair);color:var(--argile)}
+.e-ale{background:#fceeec;color:var(--rouge)}
+.e-val{background:var(--vert-clair);color:var(--vert)}
+.e-neu{background:var(--sourd);color:var(--encre-2)}
+.champ{font:inherit;width:100%;padding:14px 16px;border:1.5px solid var(--trait-fort);border-radius:14px;
+  background:var(--surface);color:var(--encre)}
+.champ::placeholder{color:var(--encre-3)}
+.champ:focus{outline:0;border-color:var(--vert);box-shadow:0 0 0 3px rgba(20,83,59,.14)}
+.grille3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.grille2{display:grid;grid-template-columns:1.35fr 1fr;gap:22px;align-items:start}
+.muet{color:var(--encre-3);font-size:15px}
+
+/* Écoute : visible d'un mètre, lisible par le patient assis en face. */
+.ecoute{max-width:600px;margin:5vh auto;text-align:center}
+.rond{width:168px;height:168px;margin:0 auto 30px;border-radius:50%;display:grid;place-items:center;
+  background:var(--vert-clair);animation:respire 2.8s ease-in-out infinite}
+@keyframes respire{50%{transform:scale(1.045)}}
+.barres{display:flex;gap:6px;align-items:center;height:48px}
+.barres i{width:6px;border-radius:3px;background:var(--vert);display:block;animation:vu 1.15s ease-in-out infinite}
+.barres i:nth-child(1){height:18px}.barres i:nth-child(2){height:40px;animation-delay:.13s}
+.barres i:nth-child(3){height:26px;animation-delay:.26s}.barres i:nth-child(4){height:44px;animation-delay:.39s}
+.barres i:nth-child(5){height:16px;animation-delay:.52s}
+@keyframes vu{50%{transform:scaleY(.38)}}
+.chrono{font-size:82px;font-weight:600;letter-spacing:-.035em;font-variant-numeric:tabular-nums;line-height:1;margin:8px 0}
+.etat{font-size:20px;font-weight:500;color:var(--vert)}
+.jauges{display:flex;gap:12px;justify-content:center;margin:30px 0 26px;flex-wrap:wrap}
+.jauges span{background:var(--surface);border:1px solid var(--trait);padding:11px 18px;border-radius:99px;font-size:15px;color:var(--encre-2)}
+.actes{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.repli{margin-top:36px;border-top:1px solid var(--trait);padding-top:18px;text-align:left}
+
+.doc h3{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--encre-3);margin:26px 0 8px;font-weight:600}
+.doc h3:first-child{margin-top:0}
+.doc p{margin-bottom:4px;font-size:17px;line-height:1.7}
+.onglets{display:flex;gap:6px;padding:5px;background:var(--sourd);border-radius:14px;margin-bottom:18px;flex-wrap:wrap}
+.onglets button{font:inherit;font-size:15px;background:none;border:0;padding:10px 15px;border-radius:10px;color:var(--encre-2);cursor:pointer}
+.onglets button.on{background:var(--surface);color:var(--encre);font-weight:500;box-shadow:0 1px 2px rgba(28,26,23,.06)}
+.verif{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--trait);align-items:flex-start}
+.verif:last-child{border-bottom:0}
+.pied{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+.bandeau{display:flex;gap:26px;font-size:16px;color:var(--encre-2);margin-bottom:24px;flex-wrap:wrap}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="menu">
+    <div class="marque"><i></i> Oris</div>
+    <a class="on" data-v="accueil">Accueil</a><a data-v="patient">Patients</a>
+    <a data-v="ecoute">Consultations</a><a data-v="revision">Documents</a>
+    <a>Oris apprend</a><a>Paramètres</a>
+    <div class="qui"><b>Dr Franck Moyal</b>Données fictives</div>
+  </nav>
+  <main>
+    <!-- ACCUEIL -->
+    <section class="vue" data-vue="accueil">
+      <div class="entete">
+        <div><p class="surtitre">Dimanche 20 septembre</p><h1>Bonsoir Dr Moyal</h1></div>
+        <button class="btn btn-1">Nouvelle consultation</button>
+      </div>
+      <div style="max-width:480px;margin-bottom:24px"><input class="champ" type="search" placeholder="Retrouver un patient"></div>
+      <div class="grille3">
+        <div class="carte"><div class="carte-t"><h2>À relire</h2><span class="etiq e-att">3</span></div>
+          <div class="rangs">
+            <div><span>Marie Dupont<small>10:04 · 2 documents</small></span><span class="etiq e-att">à relire</span></div>
+            <div><span>Emma Martin<small>20:36 · 2 documents</small></span><span class="etiq e-att">à relire</span></div>
+            <div><span>Claire Repère<small>21:48 · 1 document</small></span><span class="etiq e-att">à relire</span></div>
+          </div></div>
+        <div class="carte"><div class="carte-t"><h2>Aujourd'hui</h2><span class="muet">6</span></div>
+          <div class="rangs">
+            <div><span>Paul Durand<small>12:15</small></span><span class="etiq e-val">validée</span></div>
+            <div><span>Léa Simon<small>11:30</small></span><span class="etiq e-val">validée</span></div>
+            <div><span>Marie Dupont<small>10:14</small></span><span class="etiq e-ale">transcription</span></div>
+          </div></div>
+        <div class="carte"><div class="carte-t"><h2>Terminées</h2><span class="muet">2</span></div>
+          <div class="rangs">
+            <div><span>Paul Durand<small>Exporté en PDF</small></span><span class="etiq e-neu">exportée</span></div>
+            <div><span>Léa Simon<small>Copié au dossier</small></span><span class="etiq e-neu">validée</span></div>
+          </div></div>
+      </div>
+    </section>
+
+    <!-- ÉCOUTE -->
+    <section class="vue" data-vue="ecoute" hidden>
+      <div class="ecoute">
+        <p class="muet" style="margin-bottom:22px;font-size:18px">Marie Dupont</p>
+        <div class="rond"><div class="barres"><i></i><i></i><i></i><i></i><i></i></div></div>
+        <p class="etat">Écoute en cours</p>
+        <p class="chrono">12:47</p>
+        <div class="jauges"><span>Micro actif</span><span>Audio envoyé au serveur</span></div>
+        <div class="actes"><button class="btn">Pause</button><button class="btn">Marquer un point</button><button class="btn btn-1">Terminer</button></div>
+        <div class="repli"><button class="lien">▸ Ce qu'Oris entend — 34 paroles entendues</button></div>
+      </div>
+    </section>
+
+    <!-- RÉVISION -->
+    <section class="vue" data-vue="revision" hidden>
+      <div class="entete">
+        <div><p class="surtitre">Consultation du 20/09/2026 · 10:04</p><h1>Marie Dupont</h1></div>
+        <div style="display:flex;gap:12px"><button class="btn">Dossier clinique v1</button><button class="btn btn-1">Valider</button></div>
+      </div>
+      <div class="grille2">
+        <div class="carte">
+          <div class="carte-t"><h2>Compte rendu</h2><span class="etiq e-neu">brouillon Oris · v1</span></div>
+          <div class="carte-c doc">
+            <h3>Motif de consultation</h3>
+            <p>Rapporté par la patiente : sensibilité au froid sur le secteur maxillaire droit depuis trois semaines.</p>
+            <p>Rapporté par la patiente : absence de douleur nocturne.</p>
+            <h3>Examen clinique</h3>
+            <p>Constaté : carie occlusale sur 26.</p>
+            <p>Constaté : ancienne restauration composite infiltrée sur 27.</p>
+            <p>Constaté : absence de mobilité, sondage parodontal dans les normes.</p>
+            <h3>Options thérapeutiques discutées</h3>
+            <p>Option discutée : composite direct sur 26 et 27.</p>
+            <p>Option discutée : inlay céramique sur 27.</p>
+            <p>Option écartée : couronne — non justifiée à ce stade.</p>
+            <h3>Décision / plan retenu</h3>
+            <p>Accepté par la patiente : composites directs, en une séance.</p>
+            <h3>Actes réalisés</h3>
+            <p>Prévu : photographies cliniques.</p>
+            <h3>Informations données à la patiente</h3>
+            <p>Rapporté par la patiente : préférence pour la solution la plus conservatrice.</p>
+            <div class="pied">
+              <button class="btn">Éditer</button><button class="btn">Raccourcir</button>
+              <button class="btn">Copier</button><button class="btn">Exporter en PDF</button>
+            </div>
+            <p class="muet" style="margin-top:12px">Non validé : le PDF portera la mention « brouillon ».</p>
+          </div>
+        </div>
+        <aside>
+          <div class="onglets"><button class="on">À vérifier (2)</button><button>Données</button><button>Points</button><button>Historique</button></div>
+          <div class="carte"><div class="carte-c" style="padding-top:20px">
+            <div class="verif"><span class="etiq e-ale">critique</span><span>Les voix n'ont pas pu être distinguées sur l'ensemble de l'enregistrement.</span></div>
+            <div class="verif"><span class="etiq e-att">à vérifier</span><span>Dent citée absente des faits : 27 dans « inlay céramique ».</span></div>
+            <p class="muet" style="margin-top:14px">Chaque autre phrase du document s'appuie sur une parole de la consultation.</p>
+          </div></div>
+          <div class="carte" style="margin-top:20px"><div class="carte-t"><h2>Corriger</h2></div>
+            <div class="carte-c">
+              <input class="champ" placeholder="Remplace 26 par 27">
+              <div style="display:flex;gap:12px;margin-top:14px"><button class="btn">Aperçu</button><button class="btn">Dicter</button></div>
+            </div></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- FICHE PATIENT -->
+    <section class="vue" data-vue="patient" hidden>
+      <div class="entete">
+        <div><p class="surtitre">Patient</p><h1>Marie Dupont</h1></div>
+        <button class="btn btn-1">Nouvelle consultation</button>
+      </div>
+      <div class="bandeau"><span>Née le 14/03/1979</span><span>Dossier 4412</span><span>7 consultations</span><span>Dernière : 20/09/2026</span></div>
+      <div class="grille2">
+        <div class="carte"><div class="carte-t"><h2>Historique</h2></div>
+          <div class="rangs">
+            <div><span>20/09/2026 · 10:04<small>Compte rendu · Plan de traitement</small></span><span class="etiq e-att">à relire</span></div>
+            <div><span>02/07/2026 · 15:20<small>Compte rendu · Opératoire</small></span><span class="etiq e-val">validée</span></div>
+            <div><span>11/04/2026 · 09:00<small>Compte rendu</small></span><span class="etiq e-val">validée</span></div>
+            <div><span>16/01/2026 · 17:45<small>Compte rendu · Courrier confrère</small></span><span class="etiq e-neu">exportée</span></div>
+          </div></div>
+        <div style="display:grid;gap:20px">
+          <div class="carte"><div class="carte-t"><h2>Note</h2></div>
+            <div class="carte-c">
+              <p class="muet" style="margin-bottom:12px">Un rappel pratique. Oris ne la lit pas.</p>
+              <input class="champ" value="Préfère les rendez-vous du matin. Rappeler la veille.">
+            </div></div>
+          <div class="carte"><div class="carte-t"><h2>Plan de traitement</h2></div>
+            <div class="rangs">
+              <div><span>26 — composite occlusal<small>1 · accepté le 20/09</small></span><span class="etiq e-val">accepté</span></div>
+              <div><span>27 — reprise de restauration<small>2 · accepté le 20/09</small></span><span class="etiq e-val">accepté</span></div>
+              <div><span>Contrôle à 6 mois<small>3 · proposé</small></span><span class="etiq e-neu">proposé</span></div>
+            </div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+document.querySelectorAll('.menu a[data-v]').forEach(function(lien){
+  lien.addEventListener('click', function(){
+    document.querySelectorAll('.menu a').forEach(function(a){a.classList.remove('on')});
+    lien.classList.add('on');
+    document.querySelectorAll('[data-vue]').forEach(function(s){s.hidden = s.dataset.vue !== lien.dataset.v});
+  });
+});
+</script>
+</body>
+</html>

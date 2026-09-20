@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oris — quatre directions à comparer</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--fond:#f7f7f8;--surface:#fff;--encre:#16181d;--encre-2:#5b6169;--encre-3:#8a9098;--trait:#e4e6e9}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fond);color:var(--encre);font:400 15px/1.6 Inter,system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;padding:48px 28px 80px}
+main{max-width:1060px;margin:0 auto}
+h1{font-size:30px;margin:0 0 10px;letter-spacing:-.02em}
+.intro{color:var(--encre-2);max-width:640px;margin-bottom:8px}
+.avert{color:var(--encre-3);font-size:13.5px;max-width:640px;margin-bottom:36px}
+.grille{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.carte{background:var(--surface);border:1px solid var(--trait);border-radius:16px;padding:24px;
+  display:flex;flex-direction:column;gap:12px;text-decoration:none;color:inherit}
+.carte:hover{border-color:#b9bfc7}
+.bande{height:54px;border-radius:10px;display:flex;align-items:center;gap:8px;padding:0 14px;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.pastilles{display:flex;gap:6px}
+.pastilles i{width:16px;height:16px;border-radius:50%;display:block;border:1px solid rgba(0,0,0,.08)}
+h2{font-size:19px;margin:0;letter-spacing:-.015em}
+.quoi{color:var(--encre-2);font-size:14.5px;margin:0}
+.pour,.contre{font-size:13.5px;margin:0;color:var(--encre-2)}
+.pour b,.contre b{font-weight:600;color:var(--encre)}
+.ouvrir{margin-top:auto;font-size:13.5px;color:#2563eb;font-weight:500}
+.apres{margin-top:44px;border-top:1px solid var(--trait);padding-top:24px;color:var(--encre-2);font-size:14.5px;max-width:700px}
+.apres h3{font-size:16px;margin:0 0 8px;color:var(--encre)}
+.apres li{margin-bottom:6px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Quatre directions pour l'interface d'Oris</h1>
+  <p class="intro">
+    Même contenu partout, même patiente, même compte rendu : seule l'écriture visuelle
+    change. Chaque direction montre les quatre écrans — <b>Accueil</b>, <b>Écoute en
+    cours</b>, <b>Révision</b>, <b>Fiche patient</b>. On passe de l'un à l'autre par le
+    menu, comme dans l'application.
+  </p>
+  <p class="avert">
+    Pages autonomes, écrites à la main, sans lien avec le code d'Oris. Patiente et
+    consultation fictives. La palette, la typographie et le logo sont rouverts : rien
+    n'est acquis.
+  </p>
+
+  <div class="grille">
+    <a class="carte" href="1-instrument.html">
+      <div class="bande" style="background:#fff;border:1px solid #e3e6e9;color:#5c6670">
+        <span class="pastilles"><i style="background:#fff"></i><i style="background:#1f4fd8"></i><i style="background:#111418"></i></span> Instrument
+      </div>
+      <h2>1 — Instrument</h2>
+      <p class="quoi">Un appareil de mesure. Blanc franc, aucune ombre, séparations au filet d'un pixel, chiffres tabulaires. Une seule couleur vive, réservée à l'action et à l'écoute.</p>
+      <p class="pour"><b>Pour :</b> dense, précis, sérieux. Beaucoup d'information sans fatigue. Vieillit bien.</p>
+      <p class="contre"><b>Contre :</b> froid. Le patient qui voit l'écran voit un logiciel, pas un soin.</p>
+      <span class="ouvrir">Ouvrir →</span>
+    </a>
+
+    <a class="carte" href="2-papier.html">
+      <div class="bande" style="background:#fbf9f5;border:1px solid #e2dcd0;color:#5d574d">
+        <span class="pastilles"><i style="background:#fbf9f5"></i><i style="background:#2e4f6e"></i><i style="background:#1a1815"></i></span> Papier
+      </div>
+      <h2>2 — Papier</h2>
+      <p class="quoi">Le compte rendu est composé comme une lettre médicale : typographie à empattements, fond crème, marges généreuses. Menu en bandeau haut, pas de cartes — des filets et du blanc.</p>
+      <p class="pour"><b>Pour :</b> le document devient le héros. On relit mieux ce qui ressemble à du papier.</p>
+      <p class="contre"><b>Contre :</b> moins d'information par écran. Peut paraître ancien.</p>
+      <span class="ouvrir">Ouvrir →</span>
+    </a>
+
+    <a class="carte" href="3-ardoise.html">
+      <div class="bande" style="background:#0d1620;color:#9db0c4">
+        <span class="pastilles"><i style="background:#16212e"></i><i style="background:#5eead4"></i><i style="background:#eef3f8"></i></span> Ardoise
+      </div>
+      <h2>3 — Ardoise</h2>
+      <p class="quoi">Fond sombre : l'écran cesse d'éclairer la pièce. L'état d'écoute devient impossible à confondre, c'est la seule chose qui brille. Le compte rendu, lui, reste sur fond clair.</p>
+      <p class="pour"><b>Pour :</b> se fait oublier au fauteuil. L'écoute est lisible de loin.</p>
+      <p class="contre"><b>Contre :</b> en salle très éclairée, reflets. Deux registres à tenir (sombre + feuille claire).</p>
+      <span class="ouvrir">Ouvrir →</span>
+    </a>
+
+    <a class="carte" href="4-praticien.html">
+      <div class="bande" style="background:#f6f3ee;border:1px solid #e0d9cd;color:#585149">
+        <span class="pastilles"><i style="background:#fff"></i><i style="background:#14533b"></i><i style="background:#b45309"></i></span> Praticien
+      </div>
+      <h2>4 — Praticien</h2>
+      <p class="quoi">Pensé pour être lu debout, à un mètre, et vu par le patient en face. Texte plus grand, cibles plus larges, neutres chauds et vert profond plutôt que bleu technologique.</p>
+      <p class="pour"><b>Pour :</b> lisible sans effort. Moins « logiciel », plus « cabinet ». Rassurant côté patient.</p>
+      <p class="contre"><b>Contre :</b> moins d'information par écran. Plus de défilement à la relecture.</p>
+      <span class="ouvrir">Ouvrir →</span>
+    </a>
+  </div>
+
+  <div class="apres">
+    <h3>Comment les juger</h3>
+    <ul>
+      <li>Ouvrez d'abord <b>Révision</b> dans chacune : c'est l'écran le plus dense, celui où une direction casse en premier.</li>
+      <li>Puis <b>Écoute</b> : imaginez le patient assis en face qui voit l'écran.</li>
+      <li>Vous pouvez en retenir une, ou dire « la mise en page de la 1 avec les couleurs de la 4 » — ce sont des directions, pas des paquets fermés.</li>
+    </ul>
+  </div>
+</main>
+</body>
+</html>
