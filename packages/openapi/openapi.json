@@ -1598,6 +1598,211 @@
           }
         }
       }
+    },
+    "/me/preferences": {
+      "get": {
+        "tags": [
+          "personnalisation"
+        ],
+        "summary": "Read Preferences",
+        "operationId": "read_preferences_me_preferences_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PractitionerPreferences"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "personnalisation"
+        ],
+        "summary": "Patch Preferences",
+        "description": "Ne change que la forme des documents ; le dossier clinique n'est pas touché.",
+        "operationId": "patch_preferences_me_preferences_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferencesPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PractitionerPreferences"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/glossary": {
+      "get": {
+        "tags": [
+          "personnalisation"
+        ],
+        "summary": "List Glossary",
+        "operationId": "list_glossary_glossary_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GlossaryTermOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Glossary Glossary Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "personnalisation"
+        ],
+        "summary": "Add Glossary Term",
+        "operationId": "add_glossary_term_glossary_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewGlossaryTerm"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GlossaryTermOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/glossary/{term_id}": {
+      "patch": {
+        "tags": [
+          "personnalisation"
+        ],
+        "summary": "Patch Glossary Term",
+        "description": "Corriger un terme, ou le désactiver : l'apprentissage doit être réversible.",
+        "operationId": "patch_glossary_term_glossary__term_id__patch",
+        "parameters": [
+          {
+            "name": "term_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Term Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GlossaryTermPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GlossaryTermOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/learning/suggestions": {
+      "get": {
+        "tags": [
+          "personnalisation"
+        ],
+        "summary": "List Suggestions",
+        "description": "Habitudes constatées, proposées au praticien. Rien n'est appliqué d'office.",
+        "operationId": "list_suggestions_me_learning_suggestions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SuggestionOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Suggestions Me Learning Suggestions Get"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2728,6 +2933,103 @@
         "type": "object",
         "title": "FactChanges"
       },
+      "GlossaryTermOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "canonical": {
+            "type": "string",
+            "title": "Canonical"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliases"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "frequency": {
+            "type": "integer",
+            "title": "Frequency"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "canonical",
+          "aliases",
+          "category",
+          "origin",
+          "status",
+          "frequency"
+        ],
+        "title": "GlossaryTermOut"
+      },
+      "GlossaryTermPatch": {
+        "properties": {
+          "canonical": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Canonical"
+          },
+          "aliases": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aliases"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "disabled"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "GlossaryTermPatch"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -2996,6 +3298,37 @@
         ],
         "title": "NewFact"
       },
+      "NewGlossaryTerm": {
+        "properties": {
+          "canonical": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Canonical"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Aliases",
+            "default": []
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 40,
+            "title": "Category",
+            "default": "other"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "canonical"
+        ],
+        "title": "NewGlossaryTerm"
+      },
       "ObjectVersionOut": {
         "properties": {
           "version": {
@@ -3189,6 +3522,68 @@
         "additionalProperties": false,
         "type": "object",
         "title": "PatientUpdate"
+      },
+      "PractitionerPreferences": {
+        "properties": {
+          "document_length": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "concise"
+            ],
+            "title": "Document Length",
+            "default": "standard"
+          },
+          "terminology": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "maxProperties": 200,
+            "title": "Terminology"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PractitionerPreferences",
+        "description": "Ce que le praticien a choisi. Les valeurs par défaut sont celles d'Oris."
+      },
+      "PreferencesPatch": {
+        "properties": {
+          "document_length": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "standard",
+                  "concise"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Length"
+          },
+          "terminology": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terminology"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PreferencesPatch",
+        "description": "Modification partielle : seuls les champs fournis changent."
       },
       "Procedure": {
         "properties": {
@@ -3516,6 +3911,42 @@
         ],
         "title": "SpokenCorrectionRequest",
         "description": "Correction dictée ou écrite. Par défaut : aperçu, sans rien modifier."
+      },
+      "SuggestionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "occurrences": {
+            "type": "integer",
+            "title": "Occurrences"
+          },
+          "payload": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Payload"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "kind",
+          "message",
+          "occurrences",
+          "payload"
+        ],
+        "title": "SuggestionOut"
       },
       "SyntheticCaseOut": {
         "properties": {

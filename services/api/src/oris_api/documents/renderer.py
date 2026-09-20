@@ -14,6 +14,7 @@ Les sections vides ne sont pas affichées (§32.1).
 from __future__ import annotations
 
 from collections.abc import Iterable
+from dataclasses import dataclass, field
 
 from oris_api.contracts import ClinicalEncounter, ClinicalFact, Procedure, TreatmentPlanItem
 from oris_api.documents.operative_templates import (
@@ -26,6 +27,13 @@ from oris_api.domain.types import Claim, GeneratedDocument
 from oris_api.ontology.labels import label_for, translate_value
 
 LIMITS_SECTION = "Limites du compte rendu"
+# Préfixes qui ne font que répéter l'intitulé de la section : en mode concis, ils
+# disparaissent. Rien d'autre ne disparaît : aucun fait, aucune nuance.
+REDUNDANT_PREFIXES = {
+    "Symptômes rapportés": ("Rapporté par le patient : ",),
+    "Examen clinique": ("Constaté : ",),
+    "Options thérapeutiques discutées": ("Option discutée : ",),
+}
 NON_EXHAUSTIVE = "Le compte rendu ne peut pas être considéré comme exhaustif."
 UNRENDERED_PREFIX = "À rédiger"
 
@@ -69,40 +77,64 @@ def de(noun: str) -> str:
     return f"d’{noun}" if noun[:1].lower() in "aeéèêiïoôuh" else f"de {noun}"
 
 
-def fact_phrase(fact: ClinicalFact) -> str | None:
+@dataclass(frozen=True)
+class Style:
+    """Préférences de forme du praticien. Elles ne changent jamais le fond."""
+
+    length: str = "standard"
+    terminology: dict[str, str] = field(default_factory=dict)
+
+    def label_of(self, concept: str, default: str) -> str:
+        return self.terminology.get(concept, default)
+
+
+DEFAULT_STYLE = Style()
+
+
+def fact_phrase(fact: ClinicalFact, style: Style = DEFAULT_STYLE) -> str | None:
     """Groupe nominal du fait (libellé, valeur dite, dents), ou None si concept inconnu."""
     known = label_for(fact.concept, fact.category)
     if known is None:
         return None
+    label = style.label_of(fact.concept, known.label)
     value = translate_value(fact.value)
     teeth = teeth_suffix(fact.teeth)
     match known.value_mode:
         case "value_only":
-            return f"{value or known.label}{teeth}"
-        case "show" if value and value != known.label:
-            return f"{known.label} : {value}{teeth}"
+            return f"{value or label}{teeth}"
+        case "show" if value and value != label:
+            return f"{label} : {value}{teeth}"
         case _:
-            return f"{known.label}{teeth}"
+            return f"{label}{teeth}"
 
 
-def fact_sentence(fact: ClinicalFact) -> str:
+def shorten(section: str, text: str) -> str:
+    """Retire un préfixe qui ne fait que répéter le titre de la section."""
+    for prefix in REDUNDANT_PREFIXES.get(section, ()):
+        if text.startswith(prefix):
+            return capitalize(text[len(prefix) :])
+    return text
+
+
+def fact_sentence(fact: ClinicalFact, style: Style = DEFAULT_STYLE) -> str:
     known = label_for(fact.concept, fact.category)
-    phrase = fact_phrase(fact)
+    phrase = fact_phrase(fact, style)
     if known is None or phrase is None:
         return f"{UNRENDERED_PREFIX} : élément « {fact.concept} » non reconnu par Oris."
     absent = fact.assertion == "absent"
     unsure = fact.assertion == "uncertain" or fact.certainty in {"possible", "probable"}
     status = fact.clinical_status
 
+    label = style.label_of(fact.concept, known.label)
     if known.value_mode == "statement":
         value = translate_value(fact.value) or ("non" if absent else "oui")
-        return f"{capitalize(known.label)}{teeth_suffix(fact.teeth)} : {value}."
+        return f"{capitalize(label)}{teeth_suffix(fact.teeth)} : {value}."
 
     if fact.category == "medication":
         if absent:
             detail = translate_value(fact.value)
-            suffix = f" ({detail})" if detail and detail != known.label else ""
-            return f"{capitalize(known.label)} : n’est plus pris actuellement{suffix}."
+            suffix = f" ({detail})" if detail and detail != label else ""
+            return f"{capitalize(label)} : n’est plus pris actuellement{suffix}."
         return f"Traitement en cours rapporté par le patient : {phrase}."
 
     if fact.category == "material":
@@ -182,12 +214,17 @@ def limits_claims(encounter: ClinicalEncounter) -> list[Claim]:
     ]
 
 
-def render_consultation_note(encounter: ClinicalEncounter) -> GeneratedDocument:
+def render_consultation_note(
+    encounter: ClinicalEncounter, style: Style = DEFAULT_STYLE
+) -> GeneratedDocument:
     claims = limits_claims(encounter)
     for section, categories in SECTION_ORDER:
         for fact in encounter.facts:
             if fact.category in categories:
-                claims.append(Claim(section, fact_sentence(fact), fact_ids=(fact.fact_id,)))
+                text = fact_sentence(fact, style)
+                if style.length == "concise":
+                    text = shorten(section, text)
+                claims.append(Claim(section, text, fact_ids=(fact.fact_id,)))
     return GeneratedDocument("consultation_note", render_content(claims), tuple(claims))
 
 

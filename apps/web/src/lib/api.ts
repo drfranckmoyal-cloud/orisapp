@@ -181,3 +181,7 @@ export async function sendVoiceCorrection(
   }
   return body as SpokenCorrection;
 }
+
+export type Preferences = Schemas["PractitionerPreferences"];
+export type GlossaryTerm = Schemas["GlossaryTermOut"];
+export type LearningSuggestion = Schemas["SuggestionOut"];

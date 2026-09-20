@@ -10,6 +10,7 @@ const NAVIGATION = [
   { href: "/", label: "Accueil" },
   { href: "/patients", label: "Patients" },
   { href: "/consultations", label: "Consultations" },
+  { href: "/apprentissage", label: "Oris apprend" },
 ] as const;
 
 function isActive(pathname: string, href: string): boolean {
@@ -34,7 +35,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Link>
             </li>
           ))}
-          {["Modèles", "Paramètres"].map((label) => (
+          {["Paramètres"].map((label) => (
             <li key={label}>
               <span className={styles.navItem} aria-disabled="true">
                 {label}

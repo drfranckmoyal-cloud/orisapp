@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from oris_api import __version__
-from oris_api.api import audio, encounters, health, patients, synthetic
+from oris_api.api import audio, encounters, health, patients, personalization, synthetic
 from oris_api.api.schemas import ApiErrorBody
 from oris_api.config import get_settings
 from oris_api.observability import configure_logging, request_logging_middleware
@@ -45,6 +45,7 @@ def create_app() -> FastAPI:
     app.include_router(encounters.router)
     app.include_router(synthetic.router)
     app.include_router(audio.router)
+    app.include_router(personalization.router)
     return app
 
 

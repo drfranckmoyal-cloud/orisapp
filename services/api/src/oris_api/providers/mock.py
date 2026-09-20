@@ -9,6 +9,8 @@ from __future__ import annotations
 from oris_api.contracts import ClinicalEncounter, TranscriptSegment, validate_contract
 from oris_api.contracts.generated import DocumentDocumentType
 from oris_api.documents.renderer import (
+    DEFAULT_STYLE,
+    Style,
     render_consultation_note,
     render_operative_note,
     render_treatment_plan,
@@ -95,11 +97,14 @@ class MockDocumentGenerationProvider:
     info = ProviderInfo(name="mock", version=MOCK_VERSION, capabilities=["french_templates"])
 
     async def generate(
-        self, encounter: ClinicalEncounter, document_type: DocumentDocumentType
+        self,
+        encounter: ClinicalEncounter,
+        document_type: DocumentDocumentType,
+        style: Style | None = None,
     ) -> GeneratedDocument:
         match document_type:
             case "consultation_note":
-                return render_consultation_note(encounter)
+                return render_consultation_note(encounter, style or DEFAULT_STYLE)
             case "treatment_plan_text":
                 return render_treatment_plan(encounter)
             case "operative_note":

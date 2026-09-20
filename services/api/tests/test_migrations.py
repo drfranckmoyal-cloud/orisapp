@@ -33,7 +33,10 @@ def test_upgrade_downgrade_upgrade(alembic_config: Config, db_engine: Engine) ->
     command.upgrade(alembic_config, "head")
     tables = set(inspect(db_engine).get_table_names())
     assert {"patients", "encounters", "clinical_facts", "documents"} <= tables
-    assert inspect(db_engine).get_table_names(schema="learning") == ["learning_events"]
+    assert set(inspect(db_engine).get_table_names(schema="learning")) == {
+        "learning_events",
+        "glossary_terms",
+    }
     command.downgrade(alembic_config, "base")
     assert set(inspect(db_engine).get_table_names()) <= {"alembic_version"}
     command.upgrade(alembic_config, "head")

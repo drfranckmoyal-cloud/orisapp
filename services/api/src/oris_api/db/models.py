@@ -475,3 +475,33 @@ class LearningEventRow(Base):
         contract_enum(LearningEventLearningStatus, "learning_status"), default="captured"
     )
     created_at: Mapped[datetime] = created_at()
+
+
+class GlossaryTermRow(Base):
+    """Dictionnaire personnel du praticien (spec §54, §120).
+
+    Vit dans le magasin d'apprentissage, jamais dans le dossier patient : un terme
+    appris améliore la reconnaissance et la rédaction, il n'ajoute aucun fait clinique.
+    """
+
+    __tablename__ = "glossary_terms"
+    __table_args__ = (
+        UniqueConstraint("user_id", "canonical", name="uq_glossary_terms_user_canonical"),
+        CheckConstraint("confidence >= 0 AND confidence <= 1", name="glossary_confidence_range"),
+        {"schema": LEARNING_SCHEMA},
+    )
+
+    id: Mapped[UUID] = uuid_pk()
+    organization_id: Mapped[UUID] = mapped_column(index=True)
+    user_id: Mapped[UUID] = mapped_column(index=True)
+    canonical: Mapped[str] = mapped_column(String(200))
+    aliases: Mapped[list[str]] = jsonb(list)
+    category: Mapped[str] = mapped_column(String(40), default="other")
+    # `suggested` : proposé par Oris à partir de corrections répétées, pas encore retenu.
+    origin: Mapped[str] = mapped_column(String(20), default="manual")
+    status: Mapped[str] = mapped_column(String(20), default="active")
+    frequency: Mapped[int] = mapped_column(Integer, default=1)
+    confidence: Mapped[float] = mapped_column(Float, default=1.0)
+    scope: Mapped[str] = mapped_column(String(20), default="user")
+    created_at: Mapped[datetime] = created_at()
+    updated_at: Mapped[datetime] = updated_at()

@@ -525,6 +525,48 @@ en vrai dans le navigateur intégré, pas seulement supposé.
 Les intitulés de section ne sont pas devinés à la mise en page : la liste vient du
 rédacteur (`SECTION_ORDER`), sinon une phrase en majuscules deviendrait un titre.
 
+## M9 — personnalisation (2026-09-20)
+
+Critères visés (`IMPLEMENTATION_PLAN` M9, spec §53–54, §120, §123, §124, §176–178) :
+dictionnaire du praticien, terminologie préférée, préférences rédactionnelles, suggestion
+à partir des corrections répétées, et **tout doit être réversible**. Invariants
+d'apprentissage : la personnalisation améliore la reconnaissance et le style, elle
+n'insère **jamais** un fait clinique ; rien ne devient global tout seul.
+
+Modules :
+- `db/models.py` + migration `0004` : `learning.glossary_terms` (dictionnaire personnel,
+  hors dossier patient) ;
+- `domain/preferences.py` (nouveau) : préférences validées (longueur, style, terminologie) ;
+- `services/personalization.py` (nouveau) : dictionnaire, préférences, suggestions issues
+  des corrections répétées ;
+- `services/encounters.py` : le dictionnaire du praticien est transmis à la transcription
+  **et** à l'extraction (il ne l'était pas) ;
+- `documents/renderer.py` : terminologie et concision appliquées à la rédaction, sans
+  jamais retirer un fait ;
+- `apps/web` : écran « Oris apprend de vous ».
+
+### Résultat M9
+
+Le dictionnaire du praticien part maintenant **avec** l'audio (mots soufflés à Deepgram)
+et **avec** le transcript (mots soufflés à Claude). Il ne l'était nulle part : la
+plomberie existait depuis M4, elle recevait une liste vide.
+
+Préférences appliquées au compte rendu de consultation : `terminology` remplace le mot
+d'Oris par celui du praticien (« avulsion » plutôt que « extraction ») ; `concise` retire
+les préfixes qui ne font que répéter le titre de la section (« Rapporté par le patient : »
+sous « Symptômes rapportés »). Une nuance — absence, incertitude, antécédent — n'est
+jamais retirée : c'est du fond, pas de la forme. Le plan et le compte rendu de soins
+gardent leur formulation (leurs mots viennent du modèle et des modèles d'actes, pas de
+l'ontologie).
+
+Suggestions (§123) : Oris **propose** après deux corrections allant dans le même sens, et
+ne décide jamais. Deux sources aujourd'hui — une préférence de rédaction demandée deux
+fois, et un nom de produit corrigé deux fois (`material_name_correction`, nouveau).
+
+Réversibilité (§177) : un terme se désactive sans être effacé (il cesse d'être soufflé
+aux fournisseurs), une préférence revient au défaut, un mot préféré se retire. L'écran
+« Oris apprend de vous » montre les trois et permet de les défaire.
+
 ## M8 — correction dictée (2026-09-20)
 
 Critères visés (spec §46–48, `IMPLEMENTATION_PLAN` M8) : interpréter la commande,

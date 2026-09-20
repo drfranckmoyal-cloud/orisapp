@@ -139,6 +139,9 @@ def event_type_for_field(field: str, fact: ClinicalFact) -> LearningEventEventTy
             return "certainty_correction"
         case "clinical_status" if fact.category in TREATMENT_CATEGORIES:
             return "treatment_status_correction"
+        case "value" if fact.category == "material":
+            # Un nom de produit corrigé alimente le dictionnaire du praticien (§120).
+            return "material_name_correction"
         case _:
             return "clinical_fact_corrected"
 

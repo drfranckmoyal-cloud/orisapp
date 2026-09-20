@@ -23,6 +23,8 @@ from oris_api.db.models import (
     User,
 )
 from oris_api.documents.export import ExportContext, render_pdf, render_text
+from oris_api.documents.renderer import Style
+from oris_api.domain.preferences import PractitionerPreferences
 from oris_api.domain.types import GeneratedDocument, ValidationIssue
 from oris_api.providers import ProviderSet
 from oris_api.services import async_bridge, audit, learning
@@ -55,9 +57,12 @@ def document_types_for(
 
 
 async def generate_and_check(
-    providers: ProviderSet, obj: ClinicalEncounter, document_type: DocumentDocumentType
+    providers: ProviderSet,
+    obj: ClinicalEncounter,
+    document_type: DocumentDocumentType,
+    style: Style | None = None,
 ) -> tuple[GeneratedDocument, list[ValidationIssue]]:
-    generated = await providers.document_generation.generate(obj, document_type)
+    generated = await providers.document_generation.generate(obj, document_type, style)
     return generated, await providers.clinical_validation.validate(generated, obj)
 
 
@@ -89,13 +94,18 @@ def generate(
     `include` : documents demandés explicitement par le praticien, en plus de ceux que
     l'objet justifie de lui-même.
     """
+    # Préférences de rédaction du praticien : la forme lui appartient, le fond non.
+    preferences = PractitionerPreferences.load(
+        (session.get(User, encounter.practitioner_id) or User()).preferences
+    )
+    style = Style(length=preferences.document_length, terminology=dict(preferences.terminology))
     existing = {doc.document_type: doc for doc in list_documents(session, encounter.id)}
     wanted = document_types_for(obj, {*existing, *include})
     produced: list[DocumentRow] = []
 
     for document_type in wanted:
         generated, issues = async_bridge.run(
-            partial(generate_and_check, providers, obj, document_type)
+            partial(generate_and_check, providers, obj, document_type, style)
         )
         document = existing.get(document_type)
         if document is None:

@@ -13,6 +13,7 @@ from typing import Literal, Protocol, runtime_checkable
 
 from oris_api.contracts import ClinicalEncounter, TranscriptSegment
 from oris_api.contracts.generated import DocumentDocumentType
+from oris_api.documents.renderer import Style
 from oris_api.domain.types import (
     AudioChunk,
     ExtractionResult,
@@ -111,9 +112,16 @@ class DocumentGenerationProvider(Protocol):
     info: ProviderInfo
 
     async def generate(
-        self, encounter: ClinicalEncounter, document_type: DocumentDocumentType
+        self,
+        encounter: ClinicalEncounter,
+        document_type: DocumentDocumentType,
+        style: Style | None = None,
     ) -> GeneratedDocument:
-        """Entrée : l'objet clinique uniquement, jamais le transcript (D008)."""
+        """Entrée : l'objet clinique uniquement, jamais le transcript (D008).
+
+        `style` : préférences de forme du praticien. Elles ne changent que la
+        formulation ; aucun fait n'est ajouté, retiré ni modifié.
+        """
         ...
 
 

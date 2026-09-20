@@ -26,7 +26,7 @@ from oris_api.providers.base import (
     TranscriptionUnavailable,
     rule_codes,
 )
-from oris_api.services import async_bridge, audio, audit, documents
+from oris_api.services import async_bridge, audio, audit, documents, personalization
 from oris_api.services.audio_sink import AudioSink
 from oris_api.services.clinical_store import replace_segments, save_version
 from oris_api.services.errors import Conflict, NotFound
@@ -158,13 +158,16 @@ def process(
     transition(session, actor, encounter, "processing")
     started = datetime.now(UTC)
 
+    # Dictionnaire du praticien : il aide la machine à entendre et à nommer ; il
+    # n'ajoute jamais un fait (invariants d'apprentissage).
+    hints = personalization.hints_for(session, encounter.practitioner_id)
     chunks, capture_gaps = audio_input(session, sink, encounter)
     # Vrai micro → fournisseur configuré ; consultation fictive → fournisseur factice.
     stt = (
         providers.synthetic_speech_to_text if is_synthetic(encounter) else providers.speech_to_text
     )
     try:
-        transcription = async_bridge.run(lambda: stt.transcribe(chunks, LOCALE, []))
+        transcription = async_bridge.run(lambda: stt.transcribe(chunks, LOCALE, hints))
     except TranscriptionUnavailable as error:
         # Panne du fournisseur : l'audio est conservé pour relancer le traitement.
         set_processing_errors(encounter, [{"rule": "STT_UNAVAILABLE", "subject_id": error.code}])
@@ -196,7 +199,7 @@ def process(
 
     try:
         extraction = async_bridge.run(
-            lambda: providers.clinical_extraction.extract(transcription.segments, [])
+            lambda: providers.clinical_extraction.extract(transcription.segments, hints)
         )
     except ExtractionUnavailable as error:
         # Panne du fournisseur ou sortie refusée après ses essais : la consultation

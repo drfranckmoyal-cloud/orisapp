@@ -35,7 +35,8 @@ traitement et les comptes rendus opératoires. Trois principes tiennent tout :
 | M6 | Écran de consultation : sortie des documents, plan en cartes | **Terminé** |
 | M7 | Comptes rendus opératoires (sept modèles d'actes) | **Terminé** |
 | M8 | Correction dictée (« remplace 26 par 27 ») | **Terminé** |
-| M9 à M11 | Apprentissage, sécurisation, validation clinique | À faire |
+| M9 | Personnalisation : dictionnaire, mots préférés, suggestions | **Terminé** |
+| M10 et M11 | Sécurisation, validation clinique | À faire |
 
 Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENTATION_LOG.md`.
 
@@ -47,6 +48,11 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 - Créer des patients fictifs, lancer une des 100 consultations fictives, obtenir
   compte rendu et plan de traitement.
 - Cliquer une phrase pour voir d'où elle vient : les faits et la parole d'origine.
+- **Votre dictionnaire et vos mots** (écran « Oris apprend »). Vous ajoutez vos marques
+  et vos produits : Oris les entend mieux et les écrit correctement. Vous pouvez imposer
+  votre mot (« avulsion » plutôt que « extraction ») et demander des comptes rendus plus
+  courts. Après deux corrections allant dans le même sens, Oris **propose** une règle —
+  il ne la prend jamais tout seul. Tout se défait d'un clic.
 - **Corriger en dictant** : « remplace 26 par 27 », « le patient a accepté les
   composites », « retire la phrase sur la sensibilité ». Oris montre d'abord ce qu'il a
   compris ; rien n'est appliqué sans votre confirmation. S'il hésite entre deux éléments,
@@ -200,6 +206,7 @@ Détails, tests et banc d'essai : `docs/DEVELOPMENT.md` et `benchmarks/README.md
 | 18 sept. 2026 | M4 — premier banc réel : Deepgram Nova-3, 100 consultations lues | dents 100 %, négations 100 %, WER 8,2 %, voix 86,9 % |
 | 18 sept. 2026 | M5 — extraction clinique par Claude, 100 consultations, 2 modèles | Sonnet : 94 % abouties, 0 % de rejet, négations 98,6 %, 3,2 c/consultation ; 186 tests serveur |
 | 19 sept. 2026 | Vocabulaire : 269 termes classés par thème, dont vos 51 termes dictés | 196 tests serveur |
+| 20 sept. 2026 | M9 — personnalisation : dictionnaire du praticien, mots préférés, suggestions réversibles | 245 serveur · 47 web |
 | 20 sept. 2026 | M8 — correction dictée : phrase → patch structuré, aperçu avant application | 239 serveur · 47 web |
 | 19 sept. 2026 | M7 — comptes rendus opératoires : sept modèles d'actes, vérifiés sur quatre types en conditions réelles | 222 serveur · 43 web |
 | 19 sept. 2026 | M6 — sortie des documents (PDF A4, copie pour le dossier) et plan de traitement en cartes | 202 serveur · 43 web |

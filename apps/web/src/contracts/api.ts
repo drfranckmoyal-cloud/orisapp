@@ -530,6 +530,85 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Preferences */
+        get: operations["read_preferences_me_preferences_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Patch Preferences
+         * @description Ne change que la forme des documents ; le dossier clinique n'est pas touché.
+         */
+        patch: operations["patch_preferences_me_preferences_patch"];
+        trace?: never;
+    };
+    "/glossary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Glossary */
+        get: operations["list_glossary_glossary_get"];
+        put?: never;
+        /** Add Glossary Term */
+        post: operations["add_glossary_term_glossary_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/glossary/{term_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Patch Glossary Term
+         * @description Corriger un terme, ou le désactiver : l'apprentissage doit être réversible.
+         */
+        patch: operations["patch_glossary_term_glossary__term_id__patch"];
+        trace?: never;
+    };
+    "/me/learning/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Suggestions
+         * @description Habitudes constatées, proposées au praticien. Rien n'est appliqué d'office.
+         */
+        get: operations["list_suggestions_me_learning_suggestions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -895,6 +974,35 @@ export interface components {
             /** Value */
             value?: unknown;
         };
+        /** GlossaryTermOut */
+        GlossaryTermOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Canonical */
+            canonical: string;
+            /** Aliases */
+            aliases: string[];
+            /** Category */
+            category: string;
+            /** Origin */
+            origin: string;
+            /** Status */
+            status: string;
+            /** Frequency */
+            frequency: number;
+        };
+        /** GlossaryTermPatch */
+        GlossaryTermPatch: {
+            /** Canonical */
+            canonical?: string | null;
+            /** Aliases */
+            aliases?: string[] | null;
+            /** Status */
+            status?: ("active" | "disabled") | null;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -997,6 +1105,21 @@ export interface components {
              */
             certainty: "certain" | "probable" | "possible" | "unknown";
         };
+        /** NewGlossaryTerm */
+        NewGlossaryTerm: {
+            /** Canonical */
+            canonical: string;
+            /**
+             * Aliases
+             * @default []
+             */
+            aliases: string[];
+            /**
+             * Category
+             * @default other
+             */
+            category: string;
+        };
         /** ObjectVersionOut */
         ObjectVersionOut: {
             /** Version */
@@ -1053,6 +1176,34 @@ export interface components {
             birth_date?: string | null;
             /** External Id */
             external_id?: string | null;
+        };
+        /**
+         * PractitionerPreferences
+         * @description Ce que le praticien a choisi. Les valeurs par défaut sont celles d'Oris.
+         */
+        PractitionerPreferences: {
+            /**
+             * Document Length
+             * @default standard
+             * @enum {string}
+             */
+            document_length: "standard" | "concise";
+            /** Terminology */
+            terminology?: {
+                [key: string]: string;
+            };
+        };
+        /**
+         * PreferencesPatch
+         * @description Modification partielle : seuls les champs fournis changent.
+         */
+        PreferencesPatch: {
+            /** Document Length */
+            document_length?: ("standard" | "concise") | null;
+            /** Terminology */
+            terminology?: {
+                [key: string]: string;
+            } | null;
         };
         /** Procedure */
         Procedure: {
@@ -1194,6 +1345,21 @@ export interface components {
              * @default false
              */
             apply: boolean;
+        };
+        /** SuggestionOut */
+        SuggestionOut: {
+            /** Key */
+            key: string;
+            /** Kind */
+            kind: string;
+            /** Message */
+            message: string;
+            /** Occurrences */
+            occurrences: number;
+            /** Payload */
+            payload: {
+                [key: string]: string;
+            };
         };
         /** SyntheticCaseOut */
         SyntheticCaseOut: {
@@ -2367,6 +2533,167 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ClientConfigOut"];
+                };
+            };
+        };
+    };
+    read_preferences_me_preferences_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PractitionerPreferences"];
+                };
+            };
+        };
+    };
+    patch_preferences_me_preferences_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreferencesPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PractitionerPreferences"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_glossary_glossary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GlossaryTermOut"][];
+                };
+            };
+        };
+    };
+    add_glossary_term_glossary_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewGlossaryTerm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GlossaryTermOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_glossary_term_glossary__term_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                term_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GlossaryTermPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GlossaryTermOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_suggestions_me_learning_suggestions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestionOut"][];
                 };
             };
         };

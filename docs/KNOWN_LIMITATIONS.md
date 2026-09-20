@@ -105,6 +105,12 @@
   correspondance stricte concept + dents : le modèle découpe l'information plus finement
   que le corpus et nomme parfois autrement. Ce n'est pas de l'invention (aucune dent
   inventée), mais la mesure est sévère ; à revoir avec une correspondance sémantique.
+- Les préférences de rédaction ne portent que sur le compte rendu de consultation : le
+  plan et le compte rendu de soins gardent la formulation d'Oris.
+- Le style télégraphique prévu par la spécification (§53) n'est pas encore rendu : seules
+  la longueur (standard/concis) et la terminologie le sont.
+- Les suggestions d'apprentissage ne s'appuient que sur deux signaux (préférence de
+  rédaction répétée, nom de produit corrigé deux fois).
 - Le PDF ne porte pas encore de logo de cabinet (prévu configurable, spec §78) et
   aucune signature numérique (hors V1).
 - La copie vers le presse-papiers dépend du navigateur : si elle est refusée, le texte

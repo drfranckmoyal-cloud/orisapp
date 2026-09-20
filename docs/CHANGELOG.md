@@ -1,5 +1,20 @@
 # Changelog
 
+## M9 — 2026-09-20 — personnalisation
+- **dictionnaire du praticien** (`learning.glossary_terms`, migration 0004) : marques,
+  produits et termes propres au cabinet, soufflés à la transcription **et** à
+  l'extraction — ils ne l'étaient pas ;
+- **préférences de rédaction** : mot préféré par concept (« avulsion » pour
+  « extraction ») et compte rendu concis (les préfixes qui répètent le titre de section
+  disparaissent, jamais une nuance clinique) ;
+- **suggestions** : après deux corrections dans le même sens, Oris propose une règle —
+  et ne l'applique jamais de lui-même ;
+- **tout est réversible** : désactiver un terme, retirer un mot préféré, revenir au
+  format standard ;
+- écran « Oris apprend de vous » sur le site ;
+- `material_name_correction` : corriger un nom de produit alimente les suggestions ;
+- tests : API 245.
+
 ## M8 — 2026-09-20 — correction dictée
 - une phrase du praticien devient un **patch structuré** de l'objet clinique, jamais une
   retouche du texte : remplacement de dent, ajout de dent, retrait d'un élément,
