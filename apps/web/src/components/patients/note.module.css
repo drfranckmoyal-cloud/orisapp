@@ -1,0 +1,79 @@
+.bloc {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+.champ {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: var(--texte-sm);
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: var(--surface-douce);
+  color: var(--encre);
+  resize: vertical;
+  min-height: 0;
+  line-height: 1.4;
+}
+
+.champ:hover {
+  border-color: var(--trait-fort);
+}
+
+.champ:focus {
+  outline: 0;
+  background: var(--surface);
+  border-color: var(--accent);
+  box-shadow: var(--anneau-focus);
+}
+
+.micro {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--encre-douce);
+  background: var(--surface);
+  border: 1px solid var(--trait-fort);
+  box-shadow: var(--lumiere), 0 1px 2px rgb(26 24 21 / 0.05);
+}
+
+.micro:hover {
+  color: var(--encre);
+  border-color: var(--encre-tres-douce);
+}
+
+/* Pendant la dictée, le bouton dit qu'il écoute : on ne doit jamais l'oublier ouvert. */
+.enCours {
+  color: #fff;
+  background: linear-gradient(180deg, var(--alerte), #7f2116);
+  border-color: #7f2116;
+  animation: pulseMicro 1.6s ease-in-out infinite;
+}
+
+@keyframes pulseMicro {
+  50% {
+    box-shadow: 0 0 0 5px rgb(156 42 28 / 0.18);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enCours {
+    animation: none;
+  }
+}
+
+.etat {
+  flex: none;
+  font-size: 11px;
+  color: var(--encre-tres-douce);
+  white-space: nowrap;
+}

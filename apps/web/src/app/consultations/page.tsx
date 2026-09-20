@@ -15,7 +15,7 @@ import {
   Squelette,
 } from "@/components/ui";
 import type { Encounter } from "@/lib/api";
-import { DOCUMENT_TYPE, ENCOUNTER_STATUS, errorMessage } from "@/lib/labels";
+import { DOCUMENT_TYPE, ENCOUNTER_STATUS, errorMessage, nomPatient } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
 type Filtre = "toutes" | "a_relire" | "terminees" | "a_reprendre";
@@ -149,7 +149,7 @@ export default function ConsultationsPage() {
                     ? `/consultations/${encounter.id}/ecoute`
                     : `/consultations/${encounter.id}`
                 }
-                titre={`${encounter.patient.first_name} ${encounter.patient.last_name}`}
+                titre={nomPatient(encounter.patient)}
                 detail={
                   <>
                     <time>{heure(encounter)}</time>

@@ -14,7 +14,7 @@ import {
   Squelette,
 } from "@/components/ui";
 import type { Encounter } from "@/lib/api";
-import { DOCUMENT_TYPE, errorMessage, formatDateTime } from "@/lib/labels";
+import { DOCUMENT_TYPE, errorMessage, formatDateTime, nomPatient } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
 type Filtre = "tous" | "consultation_note" | "treatment_plan_text" | "operative_note";
@@ -43,7 +43,7 @@ export default function DocumentsPage() {
           .map((document) => ({
             ...document,
             encounter,
-            patient: `${encounter.patient.first_name} ${encounter.patient.last_name}`,
+            patient: nomPatient(encounter.patient),
             quand: encounter.started_at ?? encounter.created_at,
           })),
       )

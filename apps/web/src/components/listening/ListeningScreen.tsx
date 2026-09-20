@@ -22,7 +22,7 @@ import {
 } from "@/lib/audio/controller";
 import { MicrophoneSource, TestToneSource } from "@/lib/audio/sources";
 import { HttpUploadTransport } from "@/lib/audio/transport";
-import { errorMessage, formatDuration } from "@/lib/labels";
+import { errorMessage, formatDuration, nomPatient } from "@/lib/labels";
 
 import styles from "./listening.module.css";
 
@@ -264,7 +264,7 @@ export function ListeningScreen({
 
   const stalledLong = stalled && snapshot?.network === "reconnecting";
   const phase = snapshot?.phase ?? "ready";
-  const name = `${encounter.patient.first_name} ${encounter.patient.last_name}`;
+  const name = nomPatient(encounter.patient);
 
   const sourceChoice = config.test_audio_source_enabled ? (
     <fieldset

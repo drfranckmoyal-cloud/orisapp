@@ -51,7 +51,12 @@ export function Carte({
   /** Le contenu va jusqu'au cadre : tableau d'informations, liste à filets pleins. */
   bords?: boolean;
 }) {
-  const variantes = [styles.carte, serree ? styles.carteSerree : "", bords ? styles.carteBords : ""];
+  const variantes = [
+    styles.carte,
+    serree ? styles.carteSerree : "",
+    bords ? styles.carteBords : "",
+    props.className ?? "",
+  ];
   return (
     <section {...props} className={variantes.filter(Boolean).join(" ")}>
       {(titre || action) && (

@@ -13,6 +13,7 @@ import styles from "./AppShell.module.css";
 
 const NAVIGATION: { href: string; label: string; icone: NomIcone }[] = [
   { href: "/", label: "Accueil", icone: "accueil" },
+  { href: "/journee", label: "Votre journée", icone: "journee" },
   { href: "/patients", label: "Patients", icone: "patients" },
   { href: "/correspondants", label: "Correspondants", icone: "correspondants" },
   { href: "/consultations", label: "Consultations", icone: "consultations" },

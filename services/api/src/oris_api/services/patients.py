@@ -38,6 +38,7 @@ def create_patient(
     last_name: str,
     birth_date: date | None = None,
     external_id: str | None = None,
+    email: str = "",
     note: str = "",
 ) -> Patient:
     patient = Patient(
@@ -46,6 +47,7 @@ def create_patient(
         last_name=last_name.strip(),
         birth_date=birth_date,
         external_id=external_id,
+        email=email.strip(),
         note=note.strip(),
     )
     session.add(patient)

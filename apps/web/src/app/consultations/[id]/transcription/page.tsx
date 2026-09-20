@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 
 import { Carte, EnTetePage, EtatVide, Squelette } from "@/components/ui";
 import type { Encounter, TranscriptView } from "@/lib/api";
-import { SPEAKER, errorMessage, formatClock, formatDateTime } from "@/lib/labels";
+import { SPEAKER, errorMessage, formatClock, formatDateTime, nomPatient } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
 /** La transcription brute, telle qu'elle est sortie de la machine.
@@ -22,7 +22,7 @@ export default function TranscriptionPage() {
   const segments = transcript.state === "ready" ? transcript.data.segments : [];
   const patient =
     encounter.state === "ready"
-      ? `${encounter.data.patient.first_name} ${encounter.data.patient.last_name}`
+      ? nomPatient(encounter.data.patient)
       : "";
   const quand =
     encounter.state === "ready"

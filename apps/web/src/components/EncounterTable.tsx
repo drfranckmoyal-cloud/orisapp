@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import type { Encounter } from "@/lib/api";
-import { DOCUMENT_STATUS, DOCUMENT_TYPE, ENCOUNTER_STATUS, formatDateTime } from "@/lib/labels";
+import { DOCUMENT_STATUS, DOCUMENT_TYPE, ENCOUNTER_STATUS, formatDateTime, nomPatient } from "@/lib/labels";
 
 export function EncounterTable({ encounters }: { encounters: Encounter[] }) {
   if (encounters.length === 0) {
@@ -28,7 +28,7 @@ export function EncounterTable({ encounters }: { encounters: Encounter[] }) {
                     : `/consultations/${encounter.id}`
                 }
               >
-                {encounter.patient.first_name} {encounter.patient.last_name}
+                {nomPatient(encounter.patient)}
               </Link>
             </td>
             <td>{formatDateTime(encounter.started_at ?? encounter.created_at)}</td>

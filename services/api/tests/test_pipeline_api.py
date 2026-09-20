@@ -287,3 +287,66 @@ def test_the_administrative_note_never_reaches_the_record(api: Any) -> None:
     assert modifie.json()["note"] == "à rappeler au cabinet"
     # « Courte » est une contrainte, pas une suggestion : un roman est refusé.
     assert api.patch(f"/patients/{patient['id']}", json={"note": "x" * 501}).status_code == 422
+
+
+def test_the_note_can_be_dictated_and_the_sound_is_never_kept(api: Any) -> None:
+    """Dicter la note (§9) : transcrire, rendre le texte, oublier le son."""
+    import hashlib
+    import struct
+    from dataclasses import replace
+    from typing import ClassVar
+
+    from oris_api.contracts import TranscriptSegment
+    from oris_api.domain.types import TranscriptionResult
+    from oris_api.main import app
+    from oris_api.providers.base import ProviderInfo
+    from oris_api.services.audio import AUDIO_FORMAT
+
+    class Dictee:
+        info = ProviderInfo(name="test", version="dictee-1")
+        recu: ClassVar[list[int]] = []
+
+        async def transcribe(self, chunks: Any, locale: str, glossary: Any) -> Any:
+            Dictee.recu.append(len(chunks[0].payload))
+            return TranscriptionResult(
+                segments=[
+                    TranscriptSegment(
+                        segment_id="d1",
+                        start_ms=0,
+                        end_ms=2000,
+                        speaker_role="practitioner",
+                        text="Préfère les rendez-vous du matin.",
+                        confidence=0.9,
+                        is_final=True,
+                    )
+                ],
+                gaps=[],
+            )
+
+    patient = api.post("/patients", json={"first_name": "Test", "last_name": "Dictée"}).json()
+    pcm = struct.pack("<h", 0) * 16_000
+    original = app.state.providers
+    app.state.providers = replace(original, speech_to_text=Dictee())
+    try:
+        reponse = api.post(
+            f"/patients/{patient['id']}/note/dictation",
+            content=pcm,
+            headers={"Content-Type": AUDIO_FORMAT},
+        )
+        assert reponse.status_code == 200, reponse.text
+        assert reponse.json()["text"] == "Préfère les rendez-vous du matin."
+        assert Dictee.recu == [len(pcm)]
+
+        # Un format refusé ne passe pas.
+        refuse = api.post(
+            f"/patients/{patient['id']}/note/dictation",
+            content=pcm,
+            headers={"Content-Type": "audio/mp3"},
+        )
+        assert refuse.json()["code"] == "UNSUPPORTED_AUDIO_FORMAT"
+    finally:
+        app.state.providers = original
+
+    # Le son n'est pas devenu une note : c'est le praticien qui enregistre.
+    assert api.get(f"/patients/{patient['id']}").json()["note"] == ""
+    assert hashlib.sha256(pcm).hexdigest()  # le condensé n'a servi qu'au transport

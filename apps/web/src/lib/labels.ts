@@ -231,6 +231,15 @@ export function correctionDetail(event: {
   return null;
 }
 
+/** Usage médical français : le nom de famille s'écrit en capitales.
+ *
+ * C'est un affichage, pas un enregistrement : la casse saisie reste intacte en base,
+ * pour les noms à particule et pour le jour où la convention changera.
+ */
+export function nomPatient(patient: { first_name: string; last_name: string }): string {
+  return `${patient.first_name} ${patient.last_name.toLocaleUpperCase("fr-FR")}`.trim();
+}
+
 /** Date seule, format français. */
 export function formatDate(value: string): string {
   return new Date(value).toLocaleDateString("fr-FR", {

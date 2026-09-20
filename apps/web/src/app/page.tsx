@@ -6,7 +6,7 @@ import { useMemo, useState } from "react";
 import { Symbole } from "@/components/Marque";
 import { Carte, Champ, EnTetePage, EtatVide, Ligne, Lignes, Pastille, Squelette } from "@/components/ui";
 import type { Encounter, GlossaryTerm, LearningSuggestion, Patient } from "@/lib/api";
-import { errorMessage, formatDate, formatDateTime } from "@/lib/labels";
+import { errorMessage, formatDate, formatDateTime, nomPatient } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
 import styles from "./accueil.module.css";
@@ -32,7 +32,7 @@ function quand(encounter: Encounter): Date {
 }
 
 function nomDe(encounter: Encounter): string {
-  return `${encounter.patient.first_name} ${encounter.patient.last_name}`.trim();
+  return nomPatient(encounter.patient);
 }
 
 function documentsDe(encounter: Encounter): string {
@@ -115,7 +115,7 @@ export default function HomePage() {
           day: "numeric",
           month: "long",
         })}
-        titre="Votre journée"
+        titre="Accueil"
         action={
           <div style={{ minWidth: 280 }}>
             <Champ
@@ -140,7 +140,7 @@ export default function HomePage() {
                 <Ligne
                   key={patient.id}
                   href={`/patients/${patient.id}`}
-                  titre={`${patient.first_name} ${patient.last_name}`}
+                  titre={nomPatient(patient)}
                   detail={
                     patient.birth_date ? `né(e) le ${formatDate(patient.birth_date)}` : undefined
                   }

@@ -24,15 +24,7 @@ import {
   type Mark,
   type TranscriptView,
 } from "@/lib/api";
-import {
-  DOCUMENT_STATUS,
-  DOCUMENT_TYPE,
-  ENCOUNTER_STATUS,
-  PROCESSING_RULE,
-  errorMessage,
-  formatDateTime,
-  formatDuration,
-} from "@/lib/labels";
+import { DOCUMENT_STATUS, DOCUMENT_TYPE, ENCOUNTER_STATUS, PROCESSING_RULE, errorMessage, formatDateTime, formatDuration, nomPatient } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
 function statusChipClass(status: DocumentView["status"]): string {
@@ -216,7 +208,7 @@ export default function ReviewPage() {
               ` · cas fictif ${data.synthetic_case_id}`}
           </p>
           <h1>
-            {data.patient.first_name} {data.patient.last_name}
+            {nomPatient(data.patient)}
           </h1>
         </div>
         <div

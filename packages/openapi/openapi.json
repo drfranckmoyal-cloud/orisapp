@@ -233,6 +233,71 @@
         }
       }
     },
+    "/patients/{patient_id}/note/dictation": {
+      "post": {
+        "tags": [
+          "patients"
+        ],
+        "summary": "Dictate Note",
+        "description": "Dicter la note administrative : le son est transcrit, puis oublié.\n\nIl n'est **jamais stocké** — ni en base, ni sur disque : transcrit dans la requête\net rendu au praticien, qui relit avant d'enregistrer. La note reste administrative :\nrien de ce qui est dicté ici n'entre dans un dossier clinique.",
+        "operationId": "dictate_note_patients__patient_id__note_dictation_post",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Patient Id"
+            }
+          },
+          {
+            "name": "content-type",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Content-Type"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "audio/pcm;rate=16000;channels=1;encoding=s16le": {
+              "schema": {
+                "type": "string",
+                "contentMediaType": "application/octet-stream",
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DictationOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters": {
       "get": {
         "tags": [
@@ -3277,6 +3342,20 @@
         ],
         "title": "CorrectionRequest"
       },
+      "DictationOut": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "DictationOut",
+        "description": "Texte dicté, rendu au praticien. Le son n'est jamais conservé."
+      },
       "DocumentOut": {
         "properties": {
           "id": {
@@ -4463,6 +4542,12 @@
             ],
             "title": "External Id"
           },
+          "email": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Email",
+            "default": ""
+          },
           "note": {
             "type": "string",
             "maxLength": 500,
@@ -4516,6 +4601,10 @@
             ],
             "title": "External Id"
           },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
           "note": {
             "type": "string",
             "title": "Note"
@@ -4533,6 +4622,7 @@
           "last_name",
           "birth_date",
           "external_id",
+          "email",
           "note",
           "created_at"
         ],
@@ -4588,6 +4678,18 @@
               }
             ],
             "title": "External Id"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
           },
           "note": {
             "anyOf": [

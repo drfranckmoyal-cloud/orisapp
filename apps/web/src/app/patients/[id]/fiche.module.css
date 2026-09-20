@@ -1,40 +1,70 @@
-/* Le cadre d'informations : un bloc, pas des bulles éparpillées. */
+/* Le cadre d'informations : **une seule grille**, pas trois colonnes côte à côte.
+   Les cellules d'une même rangée partagent leur hauteur, donc les filets se
+   poursuivent d'un bout à l'autre. Trois colonnes empilées donnaient des
+   séparateurs décalés — une impression de brouillon. */
+/* Le cadre pèse plus lourd que les autres cartes : c'est l'identité du patient,
+   elle doit se détacher du reste de la page. Bordure franche, fond dégradé. */
+.carteInfos {
+  border-width: 2px;
+  border-color: var(--trait-fort);
+  background: linear-gradient(180deg, var(--surface), var(--fond));
+  box-shadow: var(--lumiere), var(--relief-haut);
+}
+
 .cadre {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
+  /* Le courriel et la note sont les valeurs les plus longues : elles prennent
+     la largeur que l'état civil n'utilise pas. */
+  grid-template-columns:
+    auto minmax(0, 0.9fr)
+    auto minmax(0, 1.25fr)
+    auto minmax(0, 1.35fr);
 }
 
-.colonne {
-  display: grid;
-  align-content: start;
-}
-
-.colonne + .colonne {
-  border-left: 1px solid var(--trait);
-}
-
+/* La ligne s'efface de la mise en page : ses deux cellules deviennent des cases
+   de la grille, et c'est la grille qui aligne tout. */
 .ligne {
-  display: grid;
-  grid-template-columns: 148px 1fr;
-  gap: var(--espace-4);
-  align-items: baseline;
-  padding: 13px var(--espace-6);
+  display: contents;
+}
+
+.cle,
+.valeur {
+  display: flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 9px 0;
   border-top: 1px solid var(--trait);
 }
 
-.colonne > .ligne:first-child {
-  border-top: 0;
-}
-
+/* La colonne des intitulés est teintée : le cadre se lit comme un tableau. */
 .cle {
-  font-size: var(--texte-sm);
-  font-weight: var(--graisse-moyenne);
-  color: var(--encre-tres-douce);
+  padding-left: var(--espace-4);
+  padding-right: var(--espace-3);
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-demi);
+  color: var(--encre-douce);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: rgb(26 24 21 / 0.028);
 }
 
 .valeur {
+  padding-right: var(--espace-6);
+  font-size: var(--texte-md);
   font-weight: var(--graisse-moyenne);
+  overflow-wrap: anywhere;
+}
+
+/* Première rangée : rien au-dessus. */
+.cadre > .ligne:nth-child(-n + 3) .cle,
+.cadre > .ligne:nth-child(-n + 3) .valeur {
+  border-top: 0;
+}
+
+/* Filet vertical avant les deuxième et troisième colonnes. */
+.cadre > .ligne:not(:nth-child(3n + 1)) .cle {
+  border-left: 1px solid var(--trait);
 }
 
 .vide {
@@ -42,17 +72,21 @@
   font-weight: var(--graisse-normale);
 }
 
+/* La note tient dans une case comme les autres : une ligne, qui s'agrandit si on
+   écrit. Ce qu'elle est — un rappel qu'Oris ne lit pas — se dit au survol et dans
+   l'invite, pas en permanence sous le champ. */
 .note {
   width: 100%;
   font: inherit;
   font-size: var(--texte-sm);
-  padding: 8px 10px;
+  padding: 4px 8px;
   border: 1px solid transparent;
-  border-radius: 9px;
+  border-radius: 7px;
   background: var(--surface-douce);
   color: var(--encre);
   resize: vertical;
   min-height: 0;
+  line-height: 1.4;
 }
 
 .note:hover {
@@ -64,15 +98,6 @@
   background: var(--surface);
   border-color: var(--accent);
   box-shadow: var(--anneau-focus);
-}
-
-.noteBas {
-  display: flex;
-  align-items: center;
-  gap: var(--espace-3);
-  margin-top: 6px;
-  font-size: var(--texte-xs);
-  color: var(--encre-tres-douce);
 }
 
 /* Le brut : accessible, mais il ne doit jamais attirer l'œil. */
@@ -88,17 +113,44 @@
   text-decoration: underline;
 }
 
-@media (max-width: 900px) {
+/* La sortie : on doit pouvoir remonter au dossier d'où l'on vient. */
+.retour {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-demi);
+  color: var(--encre-douce);
+  text-decoration: none;
+  margin-bottom: var(--espace-2);
+  padding: 5px 11px 5px 7px;
+  border-radius: 9px;
+  background: var(--surface);
+  border: 1px solid var(--trait);
+  box-shadow: var(--lumiere), 0 1px 2px rgb(26 24 21 / 0.05);
+  transition: transform var(--transition), border-color var(--transition);
+}
+
+.retour:hover {
+  border-color: var(--trait-fort);
+  color: var(--encre);
+  transform: translateX(-2px);
+}
+
+@media (max-width: 1180px) {
   .cadre {
-    grid-template-columns: 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
   }
-  .colonne + .colonne {
-    border-left: 0;
+  .cadre > .ligne:nth-child(-n + 3) .cle,
+  .cadre > .ligne:nth-child(-n + 3) .valeur {
     border-top: 1px solid var(--trait);
   }
-  .ligne {
-    grid-template-columns: 1fr;
-    gap: 2px;
+  .cadre > .ligne:first-child .cle,
+  .cadre > .ligne:first-child .valeur {
+    border-top: 0;
+  }
+  .cadre > .ligne .cle {
+    border-left: 0;
   }
 }
 

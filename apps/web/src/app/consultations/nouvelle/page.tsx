@@ -11,7 +11,7 @@ import {
   type Patient,
   type SyntheticCase,
 } from "@/lib/api";
-import { DOMAIN, errorMessage } from "@/lib/labels";
+import { DOMAIN, errorMessage, nomPatient } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
 function sansAccents(texte: string): string {
@@ -118,7 +118,7 @@ function Formulaire() {
                   variante={patient.id === patientChoisi ? "principal" : "secondaire"}
                   onClick={() => setPatientChoisi(patient.id)}
                 >
-                  {patient.first_name} {patient.last_name}
+                  {nomPatient(patient)}
                 </Bouton>
               ))}
               {trouves.length === 0 && (
@@ -161,7 +161,7 @@ function Formulaire() {
           <p className="muted" style={{ margin: 0 }}>
             Oris écoute, transcrit, puis rédige le compte rendu.
             {selectionne
-              ? ` Consultation de ${selectionne.first_name} ${selectionne.last_name}.`
+              ? ` Consultation de ${nomPatient(selectionne)}.`
               : ""}{" "}
             Le son est supprimé dès que la transcription a abouti.
           </p>

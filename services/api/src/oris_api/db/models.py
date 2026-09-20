@@ -118,6 +118,9 @@ class Patient(Base):
     last_name: Mapped[str] = mapped_column(String(200))
     birth_date: Mapped[date | None] = mapped_column(Date)
     external_id: Mapped[str | None] = mapped_column(String(200))
+    # Adresse pour lui envoyer son résumé ou un courrier. Donnée personnelle :
+    # jamais journalisée, jamais reprise dans un compte rendu.
+    email: Mapped[str] = mapped_column(String(200), default="", server_default="")
     # Note **administrative** du praticien (§9) : un rappel pratique, jamais une
     # donnée clinique. Oris ne la lit pas et ne la reprend dans aucun document.
     note: Mapped[str] = mapped_column(Text, default="", server_default="")

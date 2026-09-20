@@ -29,6 +29,19 @@ const TRACES = {
     </>
   ),
   chevron: <path d="M4 10.5 8 6.5l4 4" />,
+  micro: (
+    <>
+      <path d="M10 2.6a2.3 2.3 0 0 1 2.3 2.3v4.4a2.3 2.3 0 0 1-4.6 0V4.9A2.3 2.3 0 0 1 10 2.6z" />
+      <path d="M5.2 9a4.8 4.8 0 0 0 9.6 0M10 13.8v3.4" />
+    </>
+  ),
+  retour: <path d="M16 10H4.6M9 4.8 4 10l5 5.2" />,
+  journee: (
+    <>
+      <path d="M3.2 5.4h13.6v11.4H3.2zM3.2 8.8h13.6" />
+      <path d="M6.6 3.2v3M13.4 3.2v3" />
+    </>
+  ),
 } as const;
 
 export type NomIcone = keyof typeof TRACES;

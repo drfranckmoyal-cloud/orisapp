@@ -14,7 +14,7 @@ import {
   Squelette,
 } from "@/components/ui";
 import { ApiError, apiRequest, type Patient } from "@/lib/api";
-import { errorMessage, formatDate } from "@/lib/labels";
+import { errorMessage, formatDate, nomPatient } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
 function sansAccents(texte: string): string {
@@ -55,6 +55,7 @@ export default function PatientsPage() {
           last_name: String(data.get("last_name") ?? "").trim(),
           birth_date: String(data.get("birth_date") ?? "") || null,
           external_id: String(data.get("external_id") ?? "").trim() || null,
+          email: String(data.get("email") ?? "").trim(),
         },
       });
       form.reset();
@@ -97,6 +98,10 @@ export default function PatientsPage() {
               Identifiant du cabinet
               <Champ name="external_id" placeholder="facultatif" />
             </label>
+            <label className="field">
+              Courriel
+              <Champ name="email" type="email" placeholder="facultatif" />
+            </label>
             <Bouton type="submit">Créer</Bouton>
           </form>
         </Carte>
@@ -136,7 +141,7 @@ export default function PatientsPage() {
               <Ligne
                 key={patient.id}
                 href={`/patients/${patient.id}`}
-                titre={`${patient.first_name} ${patient.last_name}`}
+                titre={nomPatient(patient)}
                 detail={
                   patient.birth_date
                     ? `né(e) le ${formatDate(patient.birth_date)}`

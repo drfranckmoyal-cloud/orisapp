@@ -38,6 +38,7 @@ class PatientCreate(BaseModel):
     last_name: Name
     birth_date: date | None = None
     external_id: str | None = None
+    email: Annotated[str, StringConstraints(max_length=200)] = ""
     note: AdminNote = ""
 
 
@@ -47,6 +48,7 @@ class PatientUpdate(BaseModel):
     last_name: Name | None = None
     birth_date: date | None = None
     external_id: str | None = None
+    email: Annotated[str, StringConstraints(max_length=200)] | None = None
     note: AdminNote | None = None
 
 
@@ -57,6 +59,7 @@ class PatientOut(BaseModel):
     last_name: str
     birth_date: date | None
     external_id: str | None
+    email: str
     note: str
     created_at: datetime
 
@@ -175,6 +178,12 @@ class ProgressOut(BaseModel):
     facts: int
     documents: int
     termine: bool
+
+
+class DictationOut(BaseModel):
+    """Texte dicté, rendu au praticien. Le son n'est jamais conservé."""
+
+    text: str
 
 
 class LiveSegmentOut(BaseModel):

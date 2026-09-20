@@ -15,14 +15,10 @@ import {
   Pastille,
   Squelette,
 } from "@/components/ui";
-import { ApiError, apiRequest, type Encounter, type Patient } from "@/lib/api";
-import {
-  DOCUMENT_TYPE,
-  ENCOUNTER_STATUS,
-  errorMessage,
-  formatDate,
-  formatDateTime,
-} from "@/lib/labels";
+import { Icone } from "@/components/Icones";
+import { NoteDictee } from "@/components/patients/NoteDictee";
+import { apiRequest, type Encounter, type Patient } from "@/lib/api";
+import { DOCUMENT_TYPE, ENCOUNTER_STATUS, errorMessage, formatDate, formatDateTime, nomPatient } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
 import styles from "./fiche.module.css";
@@ -30,7 +26,6 @@ import styles from "./fiche.module.css";
 type Onglet = "consultations" | "documents";
 
 const TERMINEES = new Set(["validated", "exported", "archived"]);
-const NOTE_MAX = 500;
 
 function tonStatut(statut: string): "neutre" | "attention" | "valide" | "alerte" {
   if (statut === "review") return "attention";
@@ -68,7 +63,6 @@ export default function PatientPage() {
   const [encounters] = useApi<Encounter[]>(`/encounters?patient_id=${id}`);
   const [onglet, setOnglet] = useState<Onglet>("consultations");
   const [note, setNote] = useState<string | null>(null);
-  const [etatNote, setEtatNote] = useState<string | null>(null);
 
   const consultations = encounters.state === "ready" ? encounters.data : [];
   const documents = consultations.flatMap((encounter) =>
@@ -76,18 +70,13 @@ export default function PatientPage() {
   );
   const derniere = consultations[0];
 
+  /** Le champ de note rapporte lui-même l'échec : on le laisse remonter. */
   async function enregistrerNote(valeur: string) {
-    setEtatNote(null);
-    try {
-      await apiRequest<Patient>(`/patients/${id}`, {
-        method: "PATCH",
-        body: { note: valeur.trim() },
-      });
-      setEtatNote("enregistrée");
-      rechargerPatient();
-    } catch (error) {
-      setEtatNote(errorMessage(error instanceof ApiError ? error.code : "UNKNOWN"));
-    }
+    await apiRequest<Patient>(`/patients/${id}`, {
+      method: "PATCH",
+      body: { note: valeur.trim() },
+    });
+    rechargerPatient();
   }
 
   if (patient.state === "error") return <p className="muted">{errorMessage(patient.code)}</p>;
@@ -97,9 +86,15 @@ export default function PatientPage() {
 
   return (
     <div className="page">
+      <div>
+        <Link href="/patients" className={styles.retour}>
+          <Icone nom="retour" taille={16} />
+          Tous les patients
+        </Link>
+      </div>
       <EnTetePage
         surTitre="Patient"
-        titre={fiche ? `${fiche.first_name} ${fiche.last_name}` : "Chargement…"}
+        titre={fiche ? nomPatient(fiche) : "Chargement…"}
         action={
           <LienBouton href={`/consultations/nouvelle?patient=${id}`}>
             Nouvelle consultation
@@ -107,7 +102,7 @@ export default function PatientPage() {
         }
       />
 
-      <Carte titre="Informations" bords>
+      <Carte titre="Informations" bords className={styles.carteInfos}>
         {patient.state === "loading" && (
           <div style={{ padding: "var(--espace-6)" }}>
             <Squelette lignes={4} />
@@ -115,67 +110,50 @@ export default function PatientPage() {
         )}
         {fiche && (
           <div className={styles.cadre}>
-            <div className={styles.colonne}>
-              <Info cle="Nom">
-                {fiche.first_name} {fiche.last_name}
-              </Info>
-              <Info cle="Naissance">
-                {fiche.birth_date ? (
-                  <>
-                    {formatDate(fiche.birth_date)} · {age(fiche.birth_date)}
-                  </>
-                ) : (
-                  <Absent quoi="non renseignée" />
-                )}
-              </Info>
-              <Info cle="Dossier">
-                {fiche.external_id || <Absent quoi="aucun identifiant externe" />}
-              </Info>
-              <Info cle="Correspondants">
-                {/* Le rattachement à un correspondant viendra avec l'écran dédié. */}
-                <Absent quoi="aucun — à venir" />
-              </Info>
-            </div>
+            {/* Rangée 1 */}
+            <Info cle="Nom">{nomPatient(fiche)}</Info>
+            <Info cle="Courriel">
+              {fiche.email ? (
+                <a href={`mailto:${fiche.email}`} className="link-button">
+                  {fiche.email}
+                </a>
+              ) : (
+                <Absent quoi="non renseigné" />
+              )}
+            </Info>
+            <Info cle="Dernière">
+              {derniere ? (
+                <Link href={`/consultations/${derniere.id}`} className="link-button">
+                  {formatDateTime(derniere.started_at ?? derniere.created_at)}
+                </Link>
+              ) : (
+                <Absent quoi="jamais vue" />
+              )}
+            </Info>
 
-            <div className={styles.colonne}>
-              <Info cle="Consultations">
-                {consultations.length === 0
-                  ? "aucune"
-                  : consultations.length === 1
-                    ? "1 consultation"
-                    : `${consultations.length} consultations`}
-              </Info>
-              <Info cle="Dernière">
-                {derniere ? (
-                  <Link href={`/consultations/${derniere.id}`} className="link-button">
-                    {formatDateTime(derniere.started_at ?? derniere.created_at)}
-                  </Link>
-                ) : (
-                  <Absent quoi="jamais vue" />
-                )}
-              </Info>
-              <Info cle="Suivi depuis">{formatDate(fiche.created_at)}</Info>
-              <Info cle="Note">
-                <textarea
-                  className={styles.note}
-                  rows={2}
-                  maxLength={NOTE_MAX}
-                  placeholder="Rappel pratique — horaires, rappel à passer…"
-                  aria-label="Note administrative"
-                  value={valeurNote}
-                  onChange={(event) => setNote(event.target.value)}
-                  onBlur={(event) => {
-                    if (event.target.value.trim() !== (fiche.note ?? "").trim()) {
-                      void enregistrerNote(event.target.value);
-                    }
-                  }}
-                />
-                <span className={styles.noteBas}>
-                  <span>Oris ne la lit pas. Enregistrée en quittant le champ.</span>
-                  {etatNote && <span>{etatNote}</span>}
-                </span>
-              </Info>
-            </div>
+            {/* Rangée 2 */}
+            <Info cle="Naissance">
+              {fiche.birth_date ? (
+                <>
+                  {formatDate(fiche.birth_date)} · {age(fiche.birth_date)}
+                </>
+              ) : (
+                <Absent quoi="non renseignée" />
+              )}
+            </Info>
+            <Info cle="Correspondants">
+              {/* Le rattachement viendra avec l'écran dédié. */}
+              <Absent quoi="aucun — à venir" />
+            </Info>
+            <Info cle="Note">
+              <NoteDictee
+                patientId={id}
+                valeur={valeurNote}
+                onChange={setNote}
+                onEnregistrer={enregistrerNote}
+                initiale={fiche.note ?? ""}
+              />
+            </Info>
           </div>
         )}
       </Carte>

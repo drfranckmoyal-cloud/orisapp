@@ -74,6 +74,30 @@ export interface paths {
         patch: operations["update_patient_patients__patient_id__patch"];
         trace?: never;
     };
+    "/patients/{patient_id}/note/dictation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dictate Note
+         * @description Dicter la note administrative : le son est transcrit, puis oublié.
+         *
+         *     Il n'est **jamais stocké** — ni en base, ni sur disque : transcrit dans la requête
+         *     et rendu au praticien, qui relit avant d'enregistrer. La note reste administrative :
+         *     rien de ce qui est dicté ici n'entre dans un dossier clinique.
+         */
+        post: operations["dictate_note_patients__patient_id__note_dictation_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters": {
         parameters: {
             query?: never;
@@ -1202,6 +1226,14 @@ export interface components {
              */
             regenerate: boolean;
         };
+        /**
+         * DictationOut
+         * @description Texte dicté, rendu au praticien. Le son n'est jamais conservé.
+         */
+        DictationOut: {
+            /** Text */
+            text: string;
+        };
         /** DocumentOut */
         DocumentOut: {
             /**
@@ -1649,6 +1681,11 @@ export interface components {
             /** External Id */
             external_id?: string | null;
             /**
+             * Email
+             * @default
+             */
+            email: string;
+            /**
              * Note
              * @default
              */
@@ -1669,6 +1706,8 @@ export interface components {
             birth_date: string | null;
             /** External Id */
             external_id: string | null;
+            /** Email */
+            email: string;
             /** Note */
             note: string;
             /**
@@ -1687,6 +1726,8 @@ export interface components {
             birth_date?: string | null;
             /** External Id */
             external_id?: string | null;
+            /** Email */
+            email?: string | null;
             /** Note */
             note?: string | null;
         };
@@ -2262,6 +2303,43 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PatientOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dictate_note_patients__patient_id__note_dictation_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "content-type": string;
+            };
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "audio/pcm;rate=16000;channels=1;encoding=s16le": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DictationOut"];
                 };
             };
             /** @description Validation Error */

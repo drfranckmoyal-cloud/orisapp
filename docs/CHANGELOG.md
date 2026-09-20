@@ -1,5 +1,28 @@
 # Changelog
 
+## Fiche patient — 2026-09-21
+- **Une sortie** : « ← Tous les patients » en tête de fiche. On entrait dans un dossier
+  sans pouvoir en ressortir.
+- **Le cadre d'informations est une seule grille**, pas trois colonnes côte à côte : les
+  cellules d'une rangée partagent leur hauteur, donc les filets se poursuivent d'un bout
+  à l'autre. Trois colonnes empilées donnaient des séparateurs décalés.
+  Cinq informations seulement — nom, naissance, courriel, correspondants, dernière
+  consultation — colonne d'intitulés teintée, bordure de 2 px, fond dégradé : l'identité
+  du patient se détache du reste de la page.
+- **Nom de famille en capitales** (`nomPatient`), partout où un patient s'affiche. C'est
+  un affichage : la casse saisie reste intacte en base, pour les particules et pour le
+  jour où la convention changera.
+- **Courriel du patient** : colonne `patients.email`, champ à la création, lien
+  `mailto:` sur la fiche.
+- **La note se dicte** : bouton micro dans le champ. Le son part dans la requête, est
+  transcrit, et n'est **jamais conservé** — ni en base, ni sur disque. Le texte dicté
+  **s'ajoute** à ce qui est écrit, il n'efface rien, et le praticien relit avant
+  d'enregistrer. Route `POST /patients/{id}/note/dictation`.
+- **« Votre journée »** entre au menu comme chantier à venir : extraction des
+  rendez-vous Doctolib, création automatique des dossiers, écoute démarrée d'un geste —
+  avec ce qu'il faudra régler avant (accès éditeur, cadre juridique, doublons).
+  L'accueil reprend son titre « Accueil ».
+
 ## Marque arrêtée — 2026-09-20
 - **Slogan : « Vous soignez. Oris documente. »** Il dit la répartition des rôles en
   quatre mots et met le praticien en premier. Il vit sous le logo dans la barre de
