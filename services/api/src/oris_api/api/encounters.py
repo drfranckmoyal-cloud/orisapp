@@ -9,7 +9,14 @@ from uuid import UUID
 from fastapi import APIRouter, Body, Header, Response, status
 from sqlalchemy import func, select
 
-from oris_api.api.dependencies import ActorDep, ProvidersDep, SessionDep, SettingsDep, SinkDep
+from oris_api.api.dependencies import (
+    ActorDep,
+    LiveDep,
+    ProvidersDep,
+    SessionDep,
+    SettingsDep,
+    SinkDep,
+)
 from oris_api.api.presenters import document_out, encounter_out
 from oris_api.api.schemas import (
     ClinicalObjectOut,
@@ -22,6 +29,8 @@ from oris_api.api.schemas import (
     EncounterOut,
     EncounterStart,
     LearningEventOut,
+    LiveSegmentOut,
+    LiveTranscriptOut,
     MarkCreate,
     MarkOut,
     ObjectVersionOut,
@@ -42,10 +51,12 @@ from oris_api.services import (
     documents,
     encounters,
     learning,
+    personalization,
 )
 from oris_api.services import audio as audio_service
 from oris_api.services.documents import ExportFormat
 from oris_api.services.errors import Conflict, NotFound, Unprocessable
+from oris_api.services.live import FENETRE as LIVE_WINDOW
 
 router = APIRouter(tags=["encounters"])
 
@@ -88,11 +99,22 @@ def start(
     session: SessionDep,
     actor: ActorDep,
     settings: SettingsDep,
+    providers: ProvidersDep,
+    live: LiveDep,
     body: EncounterStart | None = None,
 ) -> EncounterOut:
     encounter = encounters.get_encounter(session, actor, encounter_id)
     informed = body.patient_informed if body else False
     encounters.start(session, actor, encounter, settings, informed)
+    # L'écoute en direct est un confort : si elle ne s'ouvre pas, la consultation part
+    # quand même. Rien de ce qu'elle produit n'entre dans le dossier (§14.1).
+    if providers.live_speech_to_text is not None:
+        live.open(
+            encounter.id,
+            providers.live_speech_to_text,
+            "fr-FR",
+            personalization.hints_for(session, encounter.practitioner_id),
+        )
     return encounter_out(session, encounter)
 
 
@@ -113,10 +135,14 @@ def finish(
     actor: ActorDep,
     providers: ProvidersDep,
     sink: SinkDep,
+    live: LiveDep,
     body: EncounterFinish | None = None,
 ) -> EncounterOut:
     """Fin de l'écoute puis traitement. 409 AUDIO_CHUNKS_MISSING s'il manque des segments."""
     encounter = encounters.get_encounter(session, actor, encounter_id)
+    # Le direct s'arrête ici. La transcription du dossier est refaite sur l'audio
+    # complet, jamais reprise du direct (§14.1).
+    live.close(encounter.id)
     options = body or EncounterFinish()
     encounters.finish(
         session,
@@ -129,6 +155,45 @@ def finish(
         accept_gaps=options.accept_gaps,
     )
     return encounter_out(session, encounter)
+
+
+@router.get("/encounters/{encounter_id}/live", response_model=LiveTranscriptOut)
+def read_live_transcript(
+    encounter_id: UUID,
+    session: SessionDep,
+    actor: ActorDep,
+    providers: ProvidersDep,
+    live: LiveDep,
+) -> LiveTranscriptOut:
+    """Ce qu'Oris entend, à l'instant (§11, §14.1).
+
+    Vue provisoire : elle sert à voir que le micro capte et que les mots tombent juste.
+    Elle n'est jamais la source du compte rendu.
+    """
+    encounter = encounters.get_encounter(session, actor, encounter_id)
+    if providers.live_speech_to_text is None:
+        return LiveTranscriptOut(state="disabled", segments=[], total=0, reconnections=0)
+    session_live = live.snapshot(encounter.id)
+    if session_live is None:
+        return LiveTranscriptOut(state="idle", segments=[], total=0, reconnections=0)
+    recents = session_live.segments[-LIVE_WINDOW:]
+    return LiveTranscriptOut(
+        state=session_live.state,
+        error_code=session_live.error_code,
+        segments=[
+            LiveSegmentOut(
+                segment_id=segment.segment_id,
+                start_ms=segment.start_ms,
+                end_ms=segment.end_ms,
+                speaker_role=segment.speaker_role,
+                text=segment.text,
+                is_final=segment.is_final,
+            )
+            for segment in recents
+        ],
+        total=len(session_live.segments),
+        reconnections=session_live.reconnections,
+    )
 
 
 @router.get("/encounters/{encounter_id}/progress", response_model=ProgressOut)

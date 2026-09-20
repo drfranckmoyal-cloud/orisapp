@@ -1,5 +1,27 @@
 # Changelog
 
+## Refonte produit (6) — 2026-09-20 — la transcription en continu
+Dernier écart technique du cadrage (§11, §14.1) : l'adaptateur WebSocket existait mais
+n'était branché à aucun écran.
+
+- **Panneau « Ce qu'Oris entend »**, replié par défaut sous les boutons de l'écoute. Il
+  affiche les paroles à mesure : en italique pâle tant qu'elles sont provisoires, en
+  encre pleine une fois confirmées — un résultat acquis ne redevient jamais flou.
+- **Ce texte n'est jamais le dossier.** Le cadrage l'exige (§14.1) et un test le tient :
+  un fournisseur de direct qui produit un texte reconnaissable ne laisse **aucune trace**
+  dans la transcription enregistrée ni dans les faits cliniques. La finalisation refait
+  la transcription sur l'enregistrement complet.
+- **Le chemin durable de l'audio n'est pas touché** : les segments continuent d'arriver
+  par `PUT /audio/chunks/{n}`, avec empreinte et idempotence. Le direct **écoute** ce
+  flux, il ne le remplace pas. S'il tombe, l'écran le dit et précise que
+  *l'enregistrement continue* ; la consultation se termine normalement.
+- Derrière le drapeau `ENABLE_LIVE_TRANSCRIPT` (§85), éteint par défaut.
+- Route `GET /encounters/{id}/live`.
+
+**Correction au passage** : la liaison temps réel échouait sur ce Mac par
+`CERTIFICATE_VERIFY_FAILED` — le Python installé depuis python.org n'a pas de magasin
+d'autorités système. Les WebSockets utilisent désormais `certifi`, comme les appels HTTP.
+
 ## Refonte produit (5) — 2026-09-20 — l'infrastructure d'apprentissage
 Le cadrage (§202, §205) interdisait de construire une V1 non apprenante puis d'ajouter
 ces mécanismes plus tard. Les huit tables manquantes existent, et la plupart sont

@@ -607,6 +607,50 @@
         }
       }
     },
+    "/encounters/{encounter_id}/live": {
+      "get": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Read Live Transcript",
+        "description": "Ce qu'Oris entend, à l'instant (§11, §14.1).\n\nVue provisoire : elle sert à voir que le micro capte et que les mots tombent juste.\nElle n'est jamais la source du compte rendu.",
+        "operationId": "read_live_transcript_encounters__encounter_id__live_get",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveTranscriptOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters/{encounter_id}/progress": {
       "get": {
         "tags": [
@@ -4078,6 +4122,88 @@
         ],
         "title": "LearningExport",
         "description": "Tout ce qu'Oris a retenu de vous, en un fichier lisible (§124)."
+      },
+      "LiveSegmentOut": {
+        "properties": {
+          "segment_id": {
+            "type": "string",
+            "title": "Segment Id"
+          },
+          "start_ms": {
+            "type": "integer",
+            "title": "Start Ms"
+          },
+          "end_ms": {
+            "type": "integer",
+            "title": "End Ms"
+          },
+          "speaker_role": {
+            "type": "string",
+            "title": "Speaker Role"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "is_final": {
+            "type": "boolean",
+            "title": "Is Final"
+          }
+        },
+        "type": "object",
+        "required": [
+          "segment_id",
+          "start_ms",
+          "end_ms",
+          "speaker_role",
+          "text",
+          "is_final"
+        ],
+        "title": "LiveSegmentOut",
+        "description": "Une parole entendue en direct. Provisoire tant que `is_final` est faux."
+      },
+      "LiveTranscriptOut": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/LiveSegmentOut"
+            },
+            "type": "array",
+            "title": "Segments"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "reconnections": {
+            "type": "integer",
+            "title": "Reconnections"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state",
+          "segments",
+          "total",
+          "reconnections"
+        ],
+        "title": "LiveTranscriptOut",
+        "description": "Ce qu'Oris entend pendant la consultation (§11, §14.1).\n\n`state` : `disabled` (écoute en direct éteinte), `idle` (pas encore commencée),\n`running`, `stopped`, `failed`. Cette transcription ne sert jamais au dossier."
       },
       "MarkCreate": {
         "properties": {

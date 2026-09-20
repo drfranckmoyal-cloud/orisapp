@@ -180,6 +180,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/encounters/{encounter_id}/live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Live Transcript
+         * @description Ce qu'Oris entend, à l'instant (§11, §14.1).
+         *
+         *     Vue provisoire : elle sert à voir que le micro capte et que les mots tombent juste.
+         *     Elle n'est jamais la source du compte rendu.
+         */
+        get: operations["read_live_transcript_encounters__encounter_id__live_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters/{encounter_id}/progress": {
         parameters: {
             query?: never;
@@ -1490,6 +1513,43 @@ export interface components {
             glossary: components["schemas"]["GlossaryTermOut"][];
         };
         /**
+         * LiveSegmentOut
+         * @description Une parole entendue en direct. Provisoire tant que `is_final` est faux.
+         */
+        LiveSegmentOut: {
+            /** Segment Id */
+            segment_id: string;
+            /** Start Ms */
+            start_ms: number;
+            /** End Ms */
+            end_ms: number;
+            /** Speaker Role */
+            speaker_role: string;
+            /** Text */
+            text: string;
+            /** Is Final */
+            is_final: boolean;
+        };
+        /**
+         * LiveTranscriptOut
+         * @description Ce qu'Oris entend pendant la consultation (§11, §14.1).
+         *
+         *     `state` : `disabled` (écoute en direct éteinte), `idle` (pas encore commencée),
+         *     `running`, `stopped`, `failed`. Cette transcription ne sert jamais au dossier.
+         */
+        LiveTranscriptOut: {
+            /** State */
+            state: string;
+            /** Error Code */
+            error_code?: string | null;
+            /** Segments */
+            segments: components["schemas"]["LiveSegmentOut"][];
+            /** Total */
+            total: number;
+            /** Reconnections */
+            reconnections: number;
+        };
+        /**
          * MarkCreate
          * @description Point marqué pendant l'écoute : un instant, rien d'autre (spec §11).
          */
@@ -2421,6 +2481,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EncounterOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_live_transcript_encounters__encounter_id__live_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveTranscriptOut"];
                 };
             };
             /** @description Validation Error */

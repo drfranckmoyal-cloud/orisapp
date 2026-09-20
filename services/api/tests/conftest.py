@@ -20,6 +20,8 @@ os.environ["STT_PROVIDER"] = "mock"
 os.environ["CLINICAL_EXTRACTION_PROVIDER"] = "mock"
 os.environ["ALLOW_EXTERNAL_STT"] = "false"
 os.environ["ALLOW_EXTERNAL_LLM"] = "false"
+# L'écoute en direct est injectée par les tests qui la veulent, jamais héritée du poste.
+os.environ["ENABLE_LIVE_TRANSCRIPT"] = "false"
 os.environ["APP_ENV"] = "local"
 DEFAULT_TEST_DATABASE_URL = "postgresql+psycopg://oris:oris@localhost:5432/oris_test"
 

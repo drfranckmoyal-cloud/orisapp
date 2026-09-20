@@ -191,6 +191,8 @@ export type FrequentCorrection = Schemas["FrequentCorrectionOut"];
 export type LearningExport = Schemas["LearningExport"];
 /** Moteur qui a réellement tourné, et la consigne qui l'accompagnait (§202). */
 export type EngineVersion = Schemas["EngineVersionOut"];
+/** Ce qu'Oris entend pendant la consultation : provisoire, jamais le dossier (§14.1). */
+export type LiveTranscript = Schemas["LiveTranscriptOut"];
 
 export type Progress = Schemas["ProgressOut"];
 

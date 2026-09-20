@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Body, Header, Response, status
 
-from oris_api.api.dependencies import ActorDep, SessionDep, SettingsDep, SinkDep
+from oris_api.api.dependencies import ActorDep, LiveDep, SessionDep, SettingsDep, SinkDep
 from oris_api.api.schemas import (
     AudioGapOut,
     AudioGapReport,
@@ -15,6 +15,7 @@ from oris_api.api.schemas import (
     ChunkReceiptOut,
     ClientConfigOut,
 )
+from oris_api.domain.types import AudioChunk
 from oris_api.services import audio, encounters
 
 router = APIRouter(tags=["audio"])
@@ -37,6 +38,7 @@ def put_chunk(
     actor: ActorDep,
     settings: SettingsDep,
     sink: SinkDep,
+    live: LiveDep,
     response: Response,
 ) -> ChunkReceiptOut:
     """Idempotent : renvoyer le même segment est sans effet."""
@@ -54,6 +56,19 @@ def put_chunk(
     )
     if receipt.status == "duplicate":
         response.status_code = status.HTTP_200_OK
+    else:
+        # Le segment est **déjà** enregistré durablement ci-dessus. L'écoute en direct
+        # en reçoit une copie ; si elle est éteinte ou tombée, rien ne change ici.
+        live.feed(
+            encounter.id,
+            AudioChunk(
+                session_id=str(encounter.id),
+                sequence=sequence,
+                timestamp_ms=x_chunk_timestamp_ms,
+                checksum=x_chunk_checksum,
+                payload=payload,
+            ),
+        )
     return ChunkReceiptOut(sequence=receipt.sequence, status=receipt.status)
 
 

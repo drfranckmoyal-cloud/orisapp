@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { Traitement } from "@/components/listening/Traitement";
+import { TranscriptionDirecte } from "@/components/listening/TranscriptionDirecte";
 import {
   ApiError,
   apiRequest,
@@ -570,6 +571,7 @@ export function ListeningScreen({
           </button>
         </div>
       )}
+      {!enAttente && <TranscriptionDirecte encounterId={encounter.id} />}
       {marks.length > 0 && !enAttente && (
         <p className="muted" style={{ margin: 0, textAlign: "center" }} role="status">
           {marks.length === 1 ? "1 point marqué" : `${marks.length} points marqués`} :{" "}

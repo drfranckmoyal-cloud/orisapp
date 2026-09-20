@@ -6,6 +6,9 @@ un résultat vide. Toute sortie passe par la validation de contrat.
 
 from __future__ import annotations
 
+import time
+from collections.abc import AsyncIterator
+
 from oris_api.contracts import ClinicalEncounter, TranscriptSegment, validate_contract
 from oris_api.contracts.generated import DocumentDocumentType
 from oris_api.documents.renderer import (
@@ -26,7 +29,7 @@ from oris_api.domain.types import (
     TranscriptionResult,
     ValidationIssue,
 )
-from oris_api.providers.base import ProviderInfo
+from oris_api.providers.base import ProviderInfo, StreamEvent
 from oris_api.synthetic.corpus import SYNTHETIC_PAYLOAD_PREFIX, SyntheticCorpus
 
 MOCK_VERSION = "mock-0.2"
@@ -62,6 +65,43 @@ class MockSpeechToTextProvider:
                     gaps.append(AudioGap(after_segment_id=previous, duration_ms=None))
                 previous = segment.segment_id
         return TranscriptionResult(segments, gaps)
+
+
+class MockStreamingProvider:
+    """Écoute en direct factice : chaque segment du corpus passe intermédiaire puis final.
+
+    Elle sert à tenir la promesse du direct sans réseau : l'écran montre du texte qui
+    se précise, exactement comme avec un vrai fournisseur.
+    """
+
+    info = ProviderInfo(
+        name="mock", version=MOCK_VERSION, capabilities=["interim", "synthetic_corpus"]
+    )
+
+    def __init__(self, corpus: SyntheticCorpus) -> None:
+        self._corpus = corpus
+
+    async def stream(
+        self,
+        chunks: AsyncIterator[AudioChunk],
+        locale: str,
+        glossary: list[GlossaryHint],
+    ) -> AsyncIterator[StreamEvent]:
+        async for chunk in chunks:
+            if not chunk.payload.startswith(SYNTHETIC_PAYLOAD_PREFIX):
+                continue
+            case = self._corpus.get(chunk.payload.removeprefix(SYNTHETIC_PAYLOAD_PREFIX).decode())
+            if case is None:
+                continue
+            for segment in case.segments:
+                if is_gap_marker(segment):
+                    continue
+                # Intermédiaire : le texte n'est pas encore sûr, il est tronqué.
+                partiel = segment.model_copy(
+                    update={"text": segment.text.split(" ")[0] + "…", "is_final": False}
+                )
+                yield StreamEvent("interim", partiel, None, segment.end_ms, time.monotonic())
+                yield StreamEvent("final", segment, None, segment.end_ms, time.monotonic())
 
 
 class MockClinicalExtractionProvider:

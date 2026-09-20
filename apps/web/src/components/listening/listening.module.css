@@ -148,3 +148,41 @@
   height: 20px;
   margin-top: 1px;
 }
+
+/* Panneau « ce qu'Oris entend » (§11) : replié par défaut, discret une fois ouvert.
+   Il ne doit jamais prendre le pas sur le chronomètre et les deux boutons. */
+.direct {
+  border-top: 1px solid var(--trait);
+  padding-top: var(--espace-3);
+  display: grid;
+  gap: var(--espace-2);
+  text-align: left;
+}
+
+.directCorps {
+  display: grid;
+  gap: var(--espace-2);
+}
+
+.directLignes {
+  max-height: 220px;
+  overflow-y: auto;
+  display: grid;
+  gap: 4px;
+  font-size: var(--texte-sm);
+  line-height: 1.5;
+}
+
+.directLignes p {
+  margin: 0;
+}
+
+.directFinal {
+  color: var(--encre);
+}
+
+/* Un résultat non confirmé se lit comme tel : pâle, et il peut encore changer. */
+.directProvisoire {
+  color: var(--encre-douce);
+  font-style: italic;
+}

@@ -10,12 +10,14 @@ from oris_api.providers.base import (
     ClinicalValidationProvider,
     DocumentGenerationProvider,
     SpeechToTextProvider,
+    StreamingSpeechToTextProvider,
 )
 from oris_api.providers.mock import (
     MockClinicalExtractionProvider,
     MockClinicalValidationProvider,
     MockDocumentGenerationProvider,
     MockSpeechToTextProvider,
+    MockStreamingProvider,
 )
 from oris_api.synthetic.corpus import SyntheticCorpus, default_corpus
 
@@ -33,6 +35,9 @@ class ProviderSet:
     clinical_extraction: ClinicalExtractionProvider
     document_generation: DocumentGenerationProvider
     clinical_validation: ClinicalValidationProvider
+    # Écoute en direct (§14.1) : confort d'écran, jamais source du dossier.
+    # `None` quand le direct est éteint : la consultation se déroule sans lui.
+    live_speech_to_text: StreamingSpeechToTextProvider | None = None
 
 
 def build_providers(settings: Settings, corpus: SyntheticCorpus | None = None) -> ProviderSet:
@@ -52,6 +57,38 @@ def build_providers(settings: Settings, corpus: SyntheticCorpus | None = None) -
         clinical_extraction=build_clinical_extraction(settings, corpus),
         document_generation=MockDocumentGenerationProvider(),
         clinical_validation=MockClinicalValidationProvider(),
+        live_speech_to_text=build_live_speech_to_text(settings, corpus),
+    )
+
+
+def build_live_speech_to_text(
+    settings: Settings, corpus: SyntheticCorpus
+) -> StreamingSpeechToTextProvider | None:
+    """Fournisseur d'écoute en direct, ou rien si le drapeau est baissé (§85)."""
+    from oris_api.stt.azure_speech import AzureStreamingProvider
+    from oris_api.stt.deepgram import DeepgramStreamingProvider
+
+    if not settings.enable_live_transcript:
+        return None
+    if settings.stt_provider == "mock":
+        return MockStreamingProvider(corpus)
+    if not settings.allow_external_stt:
+        raise ProviderConfigurationError(
+            "ENABLE_LIVE_TRANSCRIPT exige ALLOW_EXTERNAL_STT=true (envoi d'audio hors Oris)"
+        )
+    if settings.stt_provider == "deepgram":
+        if settings.deepgram_api_key is None:
+            raise ProviderConfigurationError("DEEPGRAM_API_KEY manquante")
+        return DeepgramStreamingProvider(
+            settings.deepgram_api_key.get_secret_value(),
+            settings.deepgram_base_url.replace("https://", "wss://"),
+            use_glossary=settings.stt_use_glossary,
+        )
+    if settings.azure_speech_key is None or not settings.azure_speech_endpoint:
+        raise ProviderConfigurationError("AZURE_SPEECH_KEY ou AZURE_SPEECH_ENDPOINT manquante")
+    return AzureStreamingProvider(
+        settings.azure_speech_key.get_secret_value(),
+        settings.azure_speech_endpoint,
     )
 
 

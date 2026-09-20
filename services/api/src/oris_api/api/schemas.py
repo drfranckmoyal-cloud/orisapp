@@ -169,6 +169,31 @@ class ProgressOut(BaseModel):
     termine: bool
 
 
+class LiveSegmentOut(BaseModel):
+    """Une parole entendue en direct. Provisoire tant que `is_final` est faux."""
+
+    segment_id: str
+    start_ms: int
+    end_ms: int
+    speaker_role: str
+    text: str
+    is_final: bool
+
+
+class LiveTranscriptOut(BaseModel):
+    """Ce qu'Oris entend pendant la consultation (§11, §14.1).
+
+    `state` : `disabled` (écoute en direct éteinte), `idle` (pas encore commencée),
+    `running`, `stopped`, `failed`. Cette transcription ne sert jamais au dossier.
+    """
+
+    state: str
+    error_code: str | None = None
+    segments: list[LiveSegmentOut]
+    total: int
+    reconnections: int
+
+
 class MarkCreate(BaseModel):
     """Point marqué pendant l'écoute : un instant, rien d'autre (spec §11)."""
 

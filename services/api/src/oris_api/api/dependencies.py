@@ -15,6 +15,7 @@ from oris_api.services import authentication
 from oris_api.services.audio_sink import AudioSink
 from oris_api.services.errors import Forbidden
 from oris_api.services.identity import Actor, demo_actor
+from oris_api.services.live import LiveTranscription
 
 
 def transactional_session(session: Annotated[Session, Depends(get_session)]) -> Iterator[Session]:
@@ -62,5 +63,13 @@ def audio_sink(request: Request) -> AudioSink:
 
 ActorDep = Annotated[Actor, Depends(current_actor)]
 SettingsDep = Annotated[Settings, Depends(get_settings)]
+
+
+def live_transcription(request: Request) -> LiveTranscription:
+    service: LiveTranscription = request.app.state.live
+    return service
+
+
 SinkDep = Annotated[AudioSink, Depends(audio_sink)]
 ProvidersDep = Annotated[ProviderSet, Depends(providers)]
+LiveDep = Annotated[LiveTranscription, Depends(live_transcription)]

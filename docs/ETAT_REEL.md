@@ -52,7 +52,7 @@ trois des dix-huit ne sont atteints que « côté serveur », sans écran digne 
 | 19 | Audit events | Oui |
 | 20 | **MFA production prêt** | **Non** |
 | 21 | Tests critiques | Oui |
-| 22 | **Transcription en deux niveaux (§14.1) : streaming pendant la consultation** | **Non** — l'adaptateur WebSocket existe, il n'est branché à aucun écran |
+| 22 | Transcription en deux niveaux (§14.1) : streaming pendant la consultation | Oui — panneau « Ce qu'Oris entend » replié pendant l'écoute, derrière le drapeau `ENABLE_LIVE_TRANSCRIPT`. La finalisation reste indépendante : le dossier n'est jamais tiré du direct |
 
 ---
 
@@ -63,22 +63,22 @@ trois des dix-huit ne sont atteints que « côté serveur », sans écran digne 
 | **Accueil (§8, S01)** | logo, praticien, nouvelle consultation, consultations du jour, documents à valider, **recherche patient** | fait, recherche patient comprise |
 | **Sélection patient (§9, S02)** | recherche, patients récents, création, date de naissance, identifiant externe, note | fait — recherche insensible aux accents, fiche patient, date de naissance, identifiant externe. **La note libre manque** |
 | **Pré-consultation (§10, S03)** | patient, praticien, micro, information patient, un seul écran | fait |
-| **Écoute active (§11, S04/S05)** | chronomètre, micro, réseau, capture, pause, terminer, **« marquer un point »**, **transcript replié** | tout sauf le transcript replié — il supposerait la transcription en direct (§14.1), pas encore branchée |
+| **Écoute active (§11, S04/S05)** | chronomètre, micro, réseau, capture, pause, terminer, **« marquer un point »**, **transcript replié** | fait, transcript replié compris |
 | **Durée de session (§12)** | alerte avant 90 minutes | fait — avertissement à 80 min, pause forcée à 90 |
 | **Post-consultation (§51)** | « Oris prépare le dossier… », onglets, **à vérifier (n)**, corriger par la voix, valider | fait — écran d'attente à trois étapes lues en base, puis révision |
 | **Révision (§52, S07/S08)** | document à gauche, à vérifier et données à droite, panneau source, **éditer**, **raccourcir/allonger**, valider, exporter | fait — rail à onglets, édition du texte, raccourcir, graduation fiable / à vérifier (§31), points marqués |
 | **Plan de traitement (§34, S09)** | cartes, **réordonner**, corriger, changer le statut, **ajouter**, **supprimer** | fait |
 | **Opératoire (§10, S10)** | sections sur preuve, à vérifier séparé | fait |
-| **Correction vocale (§46, S11)** | micro, transcription en direct de la commande, aperçu du patch | aperçu oui, commande transcrite puis affichée. **En direct : non** — cela suppose le streaming (§14.1) |
+| **Correction vocale (§46, S11)** | micro, transcription en direct de la commande, aperçu du patch | aperçu oui, commande transcrite puis affichée. **Pendant la dictée : non** — la commande part en un bloc, c'est court et l'aperçu suffit |
 | **Provenance (§30, S12)** | fait, rôle, horodatage, extrait, statut, certitude | fait |
 | **Apprentissage (§124, S13)** | termes appris, préférences, corrections fréquentes, matériaux, règles, réinitialiser, exporter | les sept sections |
 | **Documents** | historique clair | fait — tous les documents, filtre par type, recherche par patient |
 | **Paramètres** | cabinet, praticien, préférences, sécurité | fait — identité du cabinet modifiable, moteurs, écoute, sécurité (y compris ce qui manque) |
 
-**Ce qui reste, écran par écran :** la note libre sur la fiche patient (§9), le panneau
-transcription replié pendant l'écoute (§11) et la transcription en direct de la commande
-vocale (§46). Les deux derniers supposent la **transcription en streaming (§14.1)**, qui
-n'est branchée à aucun écran : afficher un panneau vide serait un mensonge d'interface.
+**Ce qui reste, écran par écran :** la note libre sur la fiche patient (§9), et la
+transcription mot à mot **pendant** la dictée d'une correction (§46) — une commande
+vocale dure quelques secondes et part en un bloc ; l'aperçu du patch avant application
+reste la garantie qui compte.
 
 ---
 

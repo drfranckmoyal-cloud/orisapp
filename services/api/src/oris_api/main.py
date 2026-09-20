@@ -5,6 +5,10 @@ Lancement local : `uvicorn oris_api.main:app --reload --no-access-log`
 
 from __future__ import annotations
 
+import asyncio
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -25,6 +29,7 @@ from oris_api.observability import configure_logging, request_logging_middleware
 from oris_api.providers import build_providers
 from oris_api.services.audio_sink import build_sink
 from oris_api.services.errors import ServiceError
+from oris_api.services.live import LiveTranscription
 
 
 async def service_error_handler(request: Request, error: Exception) -> JSONResponse:
@@ -33,10 +38,19 @@ async def service_error_handler(request: Request, error: Exception) -> JSONRespo
     return JSONResponse(status_code=error.status_code, content=body.model_dump())
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """L'écoute en direct a besoin de la boucle de l'application : on la lui donne ici."""
+    app.state.live.bind_loop(asyncio.get_running_loop())
+    yield
+    app.state.live.shutdown()
+
+
 def create_app() -> FastAPI:
     settings = get_settings()
     configure_logging()
-    app = FastAPI(title="Oris API", version=__version__)
+    app = FastAPI(title="Oris API", version=__version__, lifespan=lifespan)
+    app.state.live = LiveTranscription()
     # Refuse de démarrer si un fournisseur configuré n'est pas disponible.
     app.state.providers = build_providers(settings)
     app.state.audio_sink = build_sink(settings)

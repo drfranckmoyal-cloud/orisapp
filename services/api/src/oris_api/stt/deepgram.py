@@ -7,11 +7,13 @@ from __future__ import annotations
 
 import asyncio
 import json
+import ssl
 import time
 from collections.abc import AsyncIterator
 from typing import Any
 from urllib.parse import urlencode
 
+import certifi
 import httpx
 import websockets
 
@@ -137,6 +139,17 @@ class DeepgramPrerecordedProvider:
         )
 
 
+def tls_context() -> ssl.SSLContext:
+    """Autorités de certification de `certifi`, comme pour les appels HTTP.
+
+    Sans cela, la liaison temps réel échoue sur les postes dont le Python n'a pas de
+    magasin d'autorités système — ce qui est le cas des installations python.org sur
+    macOS. L'erreur était silencieuse côté écran : « l'écoute en direct s'est
+    interrompue », sans jamais dire pourquoi.
+    """
+    return ssl.create_default_context(cafile=certifi.where())
+
+
 class DeepgramStreamingProvider:
     """WebSocket temps réel.
 
@@ -221,8 +234,12 @@ class DeepgramStreamingProvider:
                 start = acknowledged
                 sender: asyncio.Task[None] | None = None
                 try:
+                    url = self.url(locale, glossary)
                     async with websockets.connect(
-                        self.url(locale, glossary), additional_headers=headers
+                        url,
+                        additional_headers=headers,
+                        # `ws://` (serveur local de test) n'accepte pas de contexte TLS.
+                        ssl=tls_context() if url.startswith("wss://") else None,
                     ) as ws:
                         if attempts:
                             yield StreamEvent("reconnected", None, None, 0, time.monotonic())
