@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from oris_api.config import Settings
 from oris_api.contracts import ClinicalEncounter
 from oris_api.contracts.generated import ClinicalEncounterStatus
-from oris_api.db.models import Encounter
+from oris_api.db.models import Encounter, EncounterMarkRow
 from oris_api.domain.lifecycle import TransitionError, ensure_transition
 from oris_api.domain.resolver import resolve
 from oris_api.domain.speaker_roles import apply_roles
@@ -316,6 +316,42 @@ def finish(
     audio.finalize(session, actor, encounter, final_sequence, client_recorded_ms, accept_gaps)
     transition(session, actor, encounter, "finalizing")
     return process(session, actor, encounter, providers, sink)
+
+
+# --- Points marqués pendant l'écoute (spec §11) --------------------------------------
+#
+# Un point marqué dit « ce moment compte », pas ce qui s'y est dit. Il n'entre
+# jamais dans l'objet clinique : il sert à retrouver l'endroit à la relecture.
+
+
+def add_mark(
+    session: Session, actor: Actor, encounter: Encounter, timestamp_ms: int
+) -> EncounterMarkRow:
+    if encounter.status not in {"recording", "paused"}:
+        raise Conflict("INVALID_TRANSITION", str(encounter.id), [encounter.status, "recording"])
+    existing = session.execute(
+        select(EncounterMarkRow).where(
+            EncounterMarkRow.encounter_id == encounter.id,
+            EncounterMarkRow.timestamp_ms == timestamp_ms,
+        )
+    ).scalar_one_or_none()
+    if existing is not None:  # geste répété au même instant : sans effet
+        return existing
+    mark = EncounterMarkRow(encounter_id=encounter.id, timestamp_ms=timestamp_ms)
+    session.add(mark)
+    session.flush()
+    audit.record(session, actor, "encounter.mark_added", "encounter", encounter.id)
+    return mark
+
+
+def list_marks(session: Session, encounter: Encounter) -> list[EncounterMarkRow]:
+    return list(
+        session.execute(
+            select(EncounterMarkRow)
+            .where(EncounterMarkRow.encounter_id == encounter.id)
+            .order_by(EncounterMarkRow.timestamp_ms)
+        ).scalars()
+    )
 
 
 def validate_encounter(session: Session, actor: Actor, encounter: Encounter) -> Encounter:

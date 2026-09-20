@@ -215,3 +215,36 @@ def test_rewriting_with_the_same_text_changes_nothing(api: Any) -> None:
     note = documents_by_type(api, eid)["consultation_note"]
     refus = api.post(f"/documents/{note['id']}/text", json={"content": note["content"]})
     assert refus.status_code == 409 and refus.json()["code"] == "NO_CHANGE"
+
+
+def test_a_marked_moment_is_kept_but_never_becomes_a_clinical_fact(api: Any) -> None:
+    """« Marquer un point » (§11) pose un signet, jamais une donnée clinique."""
+    patient = api.post("/patients", json={"first_name": "Test", "last_name": "Repère"}).json()
+    encounter = api.post(
+        "/encounters", json={"patient_id": patient["id"], "synthetic_case_id": "ORIS-SYN-092"}
+    ).json()
+    eid = encounter["id"]
+
+    # Hors écoute, marquer n'a pas de sens.
+    assert api.post(f"/encounters/{eid}/marks", json={"timestamp_ms": 0}).json()["code"] == (
+        "INVALID_TRANSITION"
+    )
+
+    api.post(f"/encounters/{eid}/start", json={"patient_informed": True})
+    assert api.post(f"/encounters/{eid}/marks", json={"timestamp_ms": 12_000}).status_code == 201
+    api.post(f"/encounters/{eid}/marks", json={"timestamp_ms": 3_000})
+    # Le même instant deux fois ne crée qu'un repère.
+    api.post(f"/encounters/{eid}/marks", json={"timestamp_ms": 3_000})
+
+    marks = api.get(f"/encounters/{eid}/marks").json()
+    assert [m["timestamp_ms"] for m in marks] == [3_000, 12_000]
+
+    finished = api.post(f"/encounters/{eid}/finish").json()
+    assert finished["status"] == "review"
+    obj = clinical_object(api, eid)
+    # Aucun fait ne provient d'un repère : le dossier est celui du cas fictif seul.
+    assert all(fact["source_type"] != "mark" for fact in obj["facts"])
+    assert [m["timestamp_ms"] for m in api.get(f"/encounters/{eid}/marks").json()] == [
+        3_000,
+        12_000,
+    ]

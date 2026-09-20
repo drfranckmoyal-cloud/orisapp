@@ -651,6 +651,105 @@
         }
       }
     },
+    "/encounters/{encounter_id}/marks": {
+      "post": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Add Mark",
+        "description": "Marquer un moment de l'écoute. Ne touche jamais au dossier clinique (§11).",
+        "operationId": "add_mark_encounters__encounter_id__marks_post",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "List Marks",
+        "operationId": "list_marks_encounters__encounter_id__marks_get",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MarkOut"
+                  },
+                  "title": "Response List Marks Encounters  Encounter Id  Marks Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters/{encounter_id}/process": {
       "post": {
         "tags": [
@@ -3744,6 +3843,40 @@
           "created_at"
         ],
         "title": "LearningEventOut"
+      },
+      "MarkCreate": {
+        "properties": {
+          "timestamp_ms": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Timestamp Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp_ms"
+        ],
+        "title": "MarkCreate",
+        "description": "Point marqué pendant l'écoute : un instant, rien d'autre (spec §11)."
+      },
+      "MarkOut": {
+        "properties": {
+          "timestamp_ms": {
+            "type": "integer",
+            "title": "Timestamp Ms"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp_ms",
+          "created_at"
+        ],
+        "title": "MarkOut"
       },
       "NewFact": {
         "properties": {

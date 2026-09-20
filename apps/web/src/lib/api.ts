@@ -141,6 +141,8 @@ function filenameFrom(response: Response): string {
 }
 
 export type ClientConfig = Schemas["ClientConfigOut"];
+/** Point marqué pendant l'écoute : un instant retenu, pas une donnée clinique (§11). */
+export type Mark = Schemas["MarkOut"];
 export type AudioSessionView = Schemas["AudioSessionOut"];
 
 export type SpokenCorrection = Schemas["SpokenCorrectionOut"];

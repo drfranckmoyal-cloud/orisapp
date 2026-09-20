@@ -260,13 +260,15 @@
 /* --- Onglets ------------------------------------------------------------------- */
 .onglets {
   display: flex;
+  /* Les onglets passent à la ligne plutôt que de sortir du cadre : dans un rail
+     étroit, un onglet à moitié caché est un onglet qu'on ne trouve pas. */
+  flex-wrap: wrap;
   gap: 2px;
   padding: 3px;
   background: var(--surface-douce);
   border-radius: 12px;
   width: fit-content;
   max-width: 100%;
-  overflow-x: auto;
 }
 
 .onglet {

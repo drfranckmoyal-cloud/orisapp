@@ -11,6 +11,7 @@ import {
   type AudioSessionView,
   type ClientConfig,
   type Encounter,
+  type Mark,
 } from "@/lib/api";
 import {
   type CaptureApi,
@@ -127,6 +128,7 @@ export function ListeningScreen({
   const [missing, setMissing] = useState<string[] | null>(null);
   const [finishError, setFinishError] = useState<string | null>(null);
   const [stalled, setStalled] = useState(false);
+  const [marks, setMarks] = useState<Mark[]>([]);
   const controllerRef = useRef<CaptureController | null>(null);
   // Lu au moment d'ouvrir la source : un changement de choix après un échec est pris en compte.
   const sourceKindRef = useRef<SourceKind>("microphone");
@@ -186,6 +188,24 @@ export function ListeningScreen({
     const timer = setTimeout(() => setStalled(true), 15_000);
     return () => clearTimeout(timer);
   }, [snapshot?.network]);
+
+  // « Marquer un point » (§11) : un signet sur l'instant écouté, rien de clinique.
+  async function markMoment() {
+    const recordedMs = controllerRef.current?.state.recordedMs ?? snapshot?.recordedMs ?? 0;
+    try {
+      const mark = await apiRequest<Mark>(`/encounters/${encounter.id}/marks`, {
+        method: "POST",
+        body: { timestamp_ms: Math.round(recordedMs) },
+      });
+      setMarks((current) =>
+        current.some((item) => item.timestamp_ms === mark.timestamp_ms)
+          ? current
+          : [...current, mark],
+      );
+    } catch {
+      // Un repère raté ne doit jamais interrompre l'écoute : on n'en parle pas ici.
+    }
+  }
 
   async function finish(acceptGaps: boolean) {
     const controller = controllerRef.current;
@@ -321,7 +341,6 @@ export function ListeningScreen({
         <div>
           <p className="subtitle">Nouvelle consultation</p>
           <h1>{name}</h1>
-          <p className="muted">Praticien de démonstration</p>
         </div>
         <div className={styles.statusRow}>
           <div
@@ -537,12 +556,26 @@ export function ListeningScreen({
           )}
           <button
             type="button"
+            className="button button-secondary"
+            onClick={() => void markMoment()}
+          >
+            Marquer un point
+          </button>
+          <button
+            type="button"
             className="button button-primary"
             onClick={() => void finish(false)}
           >
             Terminer
           </button>
         </div>
+      )}
+      {marks.length > 0 && !enAttente && (
+        <p className="muted" style={{ margin: 0, textAlign: "center" }} role="status">
+          {marks.length === 1 ? "1 point marqué" : `${marks.length} points marqués`} :{" "}
+          {marks.map((mark) => formatDuration(mark.timestamp_ms)).join(", ")}. Vous les
+          retrouverez à la relecture.
+        </p>
       )}
       {state.errorCode && state.phase !== "microphone_lost" && (
         <div className="banner banner-critical">

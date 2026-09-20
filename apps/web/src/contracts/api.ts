@@ -200,6 +200,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/encounters/{encounter_id}/marks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Marks */
+        get: operations["list_marks_encounters__encounter_id__marks_get"];
+        put?: never;
+        /**
+         * Add Mark
+         * @description Marquer un moment de l'écoute. Ne touche jamais au dossier clinique (§11).
+         */
+        post: operations["add_mark_encounters__encounter_id__marks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters/{encounter_id}/process": {
         parameters: {
             query?: never;
@@ -1318,6 +1339,24 @@ export interface components {
              */
             created_at: string;
         };
+        /**
+         * MarkCreate
+         * @description Point marqué pendant l'écoute : un instant, rien d'autre (spec §11).
+         */
+        MarkCreate: {
+            /** Timestamp Ms */
+            timestamp_ms: number;
+        };
+        /** MarkOut */
+        MarkOut: {
+            /** Timestamp Ms */
+            timestamp_ms: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** NewFact */
         NewFact: {
             /**
@@ -2219,6 +2258,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProgressOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_marks_encounters__encounter_id__marks_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarkOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_mark_encounters__encounter_id__marks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarkOut"];
                 };
             };
             /** @description Validation Error */

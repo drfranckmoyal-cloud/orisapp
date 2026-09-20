@@ -169,6 +169,17 @@ class ProgressOut(BaseModel):
     termine: bool
 
 
+class MarkCreate(BaseModel):
+    """Point marqué pendant l'écoute : un instant, rien d'autre (spec §11)."""
+
+    timestamp_ms: Annotated[int, Field(ge=0)]
+
+
+class MarkOut(BaseModel):
+    timestamp_ms: int
+    created_at: datetime
+
+
 class ObjectVersionOut(BaseModel):
     version: int
     change_kind: str

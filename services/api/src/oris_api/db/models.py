@@ -144,6 +144,27 @@ class Encounter(Base):
     updated_at: Mapped[datetime] = updated_at()
 
 
+class EncounterMarkRow(Base):
+    """Repère temporel posé par le praticien pendant l'écoute (spec §11).
+
+    Ce n'est pas une donnée clinique : rien de ce qui est marqué n'entre dans
+    l'objet clinique. C'est un signet pour retrouver un moment à la relecture.
+    """
+
+    __tablename__ = "encounter_marks"
+    __table_args__ = (
+        CheckConstraint("timestamp_ms >= 0", name="mark_timestamp_positive"),
+        UniqueConstraint("encounter_id", "timestamp_ms", name="uq_encounter_marks_moment"),
+    )
+
+    id: Mapped[UUID] = uuid_pk()
+    encounter_id: Mapped[UUID] = mapped_column(
+        ForeignKey("encounters.id", ondelete="CASCADE"), index=True
+    )
+    timestamp_ms: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = created_at()
+
+
 class TranscriptSegmentRow(Base):
     __tablename__ = "transcript_segments"
     __table_args__ = (

@@ -8,15 +8,26 @@ import type {
   ClinicalObjectView,
   DocumentView,
   LearningEventView,
+  Mark,
   TranscriptView,
 } from "@/lib/api";
 import { fiabiliteDe } from "@/lib/fiabilite";
-import { LEARNING_EVENT, correctionDetail, formatDateTime } from "@/lib/labels";
+import {
+  LEARNING_EVENT,
+  SPEAKER,
+  correctionDetail,
+  formatDateTime,
+  formatDuration,
+} from "@/lib/labels";
 
 import { FactChips } from "./FactChips";
 import { type Selection, SourcePanel } from "./SourcePanel";
 
-type OngletRail = "verifier" | "donnees" | "historique";
+type OngletRail = "verifier" | "donnees" | "reperes" | "historique";
+
+/** Fenêtre autour d'un point marqué : le praticien marque après avoir entendu. */
+const AVANT_MS = 20_000;
+const APRES_MS = 5_000;
 
 const LIBELLES_PROBLEME: Record<string, string> = {
   unsupported_claim: "Phrase sans fait d’appui",
@@ -38,6 +49,7 @@ export function RailRevision({
   versions,
   transcript,
   learning,
+  marks,
   selection,
   onSelect,
   motDe,
@@ -47,6 +59,7 @@ export function RailRevision({
   versions: ClinicalObjectView["versions"];
   transcript: TranscriptView | null;
   learning: LearningEventView[];
+  marks: Mark[];
   selection: Selection;
   onSelect: (selection: Selection) => void;
   motDe: (concept: string) => string;
@@ -88,6 +101,9 @@ export function RailRevision({
         options={[
           { valeur: "verifier", libelle: `À vérifier${aVerifier ? ` (${aVerifier})` : ""}` },
           { valeur: "donnees", libelle: "Données cliniques" },
+          ...(marks.length > 0
+            ? [{ valeur: "reperes" as const, libelle: `Points marqués (${marks.length})` }]
+            : []),
           { valeur: "historique", libelle: "Historique" },
         ]}
       />
@@ -153,6 +169,41 @@ export function RailRevision({
                   </Pastille>
                   <FactChips fact={fait} />
                 </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {onglet === "reperes" && (
+        <div style={{ display: "grid", gap: "var(--espace-4)" }}>
+          <p className="muted" style={{ margin: 0 }}>
+            Les moments que vous avez marqués pendant la consultation, avec ce qui se
+            disait autour. Un repère n’ajoute rien au dossier : il vous ramène à l’endroit.
+          </p>
+          {marks.map((mark) => {
+            const autour = (transcript?.segments ?? []).filter(
+              (segment) =>
+                segment.end_ms >= mark.timestamp_ms - AVANT_MS &&
+                segment.start_ms <= mark.timestamp_ms + APRES_MS,
+            );
+            return (
+              <div key={mark.timestamp_ms} style={{ display: "grid", gap: 6 }}>
+                <strong>à {formatDuration(mark.timestamp_ms)}</strong>
+                {autour.length === 0 ? (
+                  <p className="muted" style={{ margin: 0 }}>
+                    Rien de transcrit à ce moment-là.
+                  </p>
+                ) : (
+                  <ul className="liste-simple">
+                    {autour.map((segment) => (
+                      <li key={segment.segment_id}>
+                        <span className="muted">{SPEAKER[segment.speaker_role] ?? segment.speaker_role} — </span>
+                        {segment.text}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             );
           })}

@@ -1,5 +1,22 @@
 # Changelog
 
+## Refonte produit (3) — 2026-09-20 — points marqués et fiabilité des faits
+- **« Marquer un point » (§11)** : pendant l'écoute, un bouton discret pose un repère
+  temporel. Nouvelle table `encounter_marks`, routes `POST`/`GET /encounters/{id}/marks`.
+  Un repère n'est **jamais** une donnée clinique : il n'entre pas dans l'objet, il sert à
+  retrouver le moment. À la relecture, un onglet **Points marqués** montre chaque instant
+  avec ce qui se disait autour (20 s avant, 5 s après) ; si la transcription a échoué, les
+  repères restent affichés — le geste du praticien n'est pas perdu.
+- **graduation de fiabilité (§31)** : chaque fait porte « fiable » ou « à vérifier », avec
+  la raison au survol (voix non identifiée, terme inconnu, incertitude clinique,
+  reconnaissance peu sûre) et le décompte en tête de liste.
+- **intégration continue réparée** : le test de conversion audio exigeait `afconvert` ou
+  `ffmpeg` — présents sur macOS, absents de la machine GitHub. Le test se saute sans
+  convertisseur et la chaîne installe `ffmpeg`. L'écran « Nouvelle consultation » cassait
+  la compilation de production (`useSearchParams` sans frontière Suspense) : repris avec
+  les composants maison et une frontière Suspense.
+- **onglets** : ils passent à la ligne au lieu de déborder du rail.
+
 ## Refonte produit (2) — 2026-09-20 — identité visuelle appliquée
 - le **symbole d'Oris** entre dans l'application : dans le menu (version blanche sur fond
   bleu profond, comme l'icône alternative de la planche) et au centre de l'écran d'écoute,

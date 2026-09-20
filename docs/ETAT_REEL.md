@@ -63,7 +63,7 @@ trois des dix-huit ne sont atteints que « côté serveur », sans écran digne 
 | **Accueil (§8, S01)** | logo, praticien, nouvelle consultation, consultations du jour, documents à valider, **recherche patient** | fait depuis aujourd'hui, **sauf la recherche patient** |
 | **Sélection patient (§9, S02)** | recherche, patients récents, création, date de naissance, identifiant externe, note | liste brute, deux champs, **pas de recherche, pas de fiche** |
 | **Pré-consultation (§10, S03)** | patient, praticien, micro, information patient, un seul écran | fait |
-| **Écoute active (§11, S04/S05)** | chronomètre, micro, réseau, capture, pause, terminer, **« marquer un point »**, **transcript replié** | chronomètre, micro, réseau, pause, terminer. **Les deux derniers manquent** |
+| **Écoute active (§11, S04/S05)** | chronomètre, micro, réseau, capture, pause, terminer, **« marquer un point »**, **transcript replié** | tout sauf le transcript replié — il supposerait la transcription en direct (§14.1), pas encore branchée |
 | **Durée de session (§12)** | alerte avant 90 minutes | **absent** |
 | **Post-consultation (§51)** | « Oris prépare le dossier… », onglets, **à vérifier (n)**, corriger par la voix, valider | **l'écran n'existe pas** : la page se fige puis bascule |
 | **Révision (§52, S07/S08)** | document à gauche, à vérifier et données à droite, panneau source, **éditer**, **raccourcir/allonger**, valider, exporter | colonnes oui, source oui, validation oui. **Édition : rien. Raccourcir/allonger : rien.** Rail en cartes empilées au lieu d'onglets |

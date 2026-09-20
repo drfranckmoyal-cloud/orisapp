@@ -21,6 +21,7 @@ import {
   type Encounter,
   fetchDocumentExport,
   type LearningEventView,
+  type Mark,
   type TranscriptView,
 } from "@/lib/api";
 import {
@@ -55,6 +56,7 @@ export default function ReviewPage() {
     `/encounters/${id}/learning-events`,
   );
   const [audio] = useApi<AudioSessionView>(`/encounters/${id}/audio`);
+  const [marks] = useApi<Mark[]>(`/encounters/${id}/marks`);
 
   const [activeType, setActiveType] =
     useState<DocumentView["document_type"]>("consultation_note");
@@ -567,6 +569,20 @@ export default function ReviewPage() {
         </section>
 
         <aside className={styles.side}>
+          {/* Sans dossier clinique (transcription échouée), les repères posés
+              pendant l'écoute restent visibles : le geste n'est pas perdu. */}
+          {!object && marks.state === "ready" && marks.data.length > 0 && (
+            <Carte titre="Points marqués">
+              <p className="muted" style={{ marginTop: 0 }}>
+                Les moments que vous avez marqués pendant la consultation.
+              </p>
+              <ul className="liste-simple">
+                {marks.data.map((mark) => (
+                  <li key={mark.timestamp_ms}>à {formatDuration(mark.timestamp_ms)}</li>
+                ))}
+              </ul>
+            </Carte>
+          )}
           {object && (
             <RailRevision
               document={active}
@@ -574,6 +590,7 @@ export default function ReviewPage() {
               versions={clinical.state === "ready" ? clinical.data.versions : []}
               transcript={transcript.state === "ready" ? transcript.data : null}
               learning={learning.state === "ready" ? learning.data : []}
+              marks={marks.state === "ready" ? marks.data : []}
               selection={selection}
               onSelect={setSelection}
               motDe={motDe}

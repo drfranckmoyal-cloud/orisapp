@@ -22,6 +22,8 @@ from oris_api.api.schemas import (
     EncounterOut,
     EncounterStart,
     LearningEventOut,
+    MarkCreate,
+    MarkOut,
     ObjectVersionOut,
     ProgressOut,
     SpokenCorrectionOut,
@@ -155,6 +157,28 @@ def read_progress(encounter_id: UUID, session: SessionDep, actor: ActorDep) -> P
         documents=len(produced),
         termine=encounter.status not in {"finalizing", "processing"},
     )
+
+
+@router.post(
+    "/encounters/{encounter_id}/marks",
+    response_model=MarkOut,
+    status_code=status.HTTP_201_CREATED,
+)
+def add_mark(encounter_id: UUID, body: MarkCreate, session: SessionDep, actor: ActorDep) -> MarkOut:
+    """Marquer un moment de l'écoute. Ne touche jamais au dossier clinique (§11)."""
+    encounter = encounters.get_encounter(session, actor, encounter_id)
+    mark = encounters.add_mark(session, actor, encounter, body.timestamp_ms)
+    session.commit()
+    return MarkOut(timestamp_ms=mark.timestamp_ms, created_at=mark.created_at)
+
+
+@router.get("/encounters/{encounter_id}/marks", response_model=list[MarkOut])
+def list_marks(encounter_id: UUID, session: SessionDep, actor: ActorDep) -> list[MarkOut]:
+    encounter = encounters.get_encounter(session, actor, encounter_id)
+    return [
+        MarkOut(timestamp_ms=mark.timestamp_ms, created_at=mark.created_at)
+        for mark in encounters.list_marks(session, encounter)
+    ]
 
 
 @router.post("/encounters/{encounter_id}/process", response_model=EncounterOut)
