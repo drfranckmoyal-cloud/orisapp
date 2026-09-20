@@ -81,7 +81,6 @@ export default function PatientPage() {
   const documents = consultations.flatMap((encounter) =>
     encounter.documents.map((document) => ({ ...document, encounter })),
   );
-  const derniere = consultations[0];
 
   /** Le champ de note rapporte lui-même l'échec : on le laisse remonter. */
   async function enregistrerNote(valeur: string) {
@@ -107,7 +106,18 @@ export default function PatientPage() {
       </div>
       <EnTetePage
         surTitre="Patient"
-        titre={fiche ? nomPatient(fiche) : "Chargement…"}
+        titre={
+          fiche ? (
+            <span className={styles.nomPatient}>
+              {nomPatient(fiche)}
+              {fiche.birth_date && (
+                <span className={styles.age}> ({age(fiche.birth_date)})</span>
+              )}
+            </span>
+          ) : (
+            "Chargement…"
+          )
+        }
         action={
           <LienBouton href={`/consultations/nouvelle?patient=${id}`}>
             Nouvelle consultation
@@ -136,24 +146,13 @@ export default function PatientPage() {
             </Info>
             <Info cle="Date de naissance">
               {fiche.birth_date ? (
-                <>
-                  {formatDate(fiche.birth_date)} ({age(fiche.birth_date)})
-                </>
+                formatDate(fiche.birth_date)
               ) : (
                 <Absent quoi="non renseignée" />
               )}
             </Info>
 
-            {/* Rangée 2 — le suivi */}
-            <Info cle="Dernière">
-              {derniere ? (
-                <Link href={`/consultations/${derniere.id}`} className="link-button">
-                  {formatDateTime(derniere.started_at ?? derniere.created_at)}
-                </Link>
-              ) : (
-                <Absent quoi="jamais vue" />
-              )}
-            </Info>
+            {/* Rangée 2 */}
             <Info cle="Correspondants" reste>
               {/* Le rattachement viendra avec l'écran dédié. */}
               <Absent quoi="aucun — à venir" />

@@ -230,3 +230,15 @@
   padding-right: var(--espace-6);
   flex: none;
 }
+
+/* Le nom du patient est le premier repère de l'écran : il doit peser. */
+.nomPatient {
+  font-weight: var(--graisse-forte);
+  letter-spacing: -0.035em;
+}
+
+.age {
+  font-weight: var(--graisse-moyenne);
+  color: var(--encre-tres-douce);
+  letter-spacing: -0.02em;
+}
