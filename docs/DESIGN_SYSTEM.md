@@ -81,6 +81,14 @@ surfaces creusées (onglets, champs) portent une ombre **interne**.
 
 Rayons : carte 20 px, bouton 13 px, grand bouton 16 px, pastille pleine.
 
+**Marges intérieures.** Une carte a **24 px** de remplissage — le texte n'affleure
+jamais le cadre. Deux variantes seulement :
+
+- `serree` (16 px) pour les cartes secondaires ;
+- `bords` (0) pour ce qui est **fait** pour toucher le cadre : un tableau
+  d'informations, une liste dont les filets vont d'un bord à l'autre. Dans ce cas,
+  ce sont les lignes qui portent la marge — jamais personne n'y échappe.
+
 ## Barre de gauche
 
 - Bloc vert plein en dégradé (`--menu-haut` → `--menu-bas`), jamais transparente.

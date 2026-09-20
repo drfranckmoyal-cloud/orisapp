@@ -107,7 +107,7 @@ export default function PatientPage() {
         }
       />
 
-      <Carte titre="Informations" serree>
+      <Carte titre="Informations" bords>
         {patient.state === "loading" && (
           <div style={{ padding: "var(--espace-6)" }}>
             <Squelette lignes={4} />
@@ -196,59 +196,62 @@ export default function PatientPage() {
       />
 
       {onglet === "consultations" && (
-        <Carte serree>
+        <Carte bords>
           {encounters.state === "loading" && (
             <div style={{ padding: "var(--espace-6)" }}>
               <Squelette lignes={3} />
             </div>
           )}
           {consultations.length === 0 && encounters.state === "ready" && (
-            <EtatVide titre="Aucune consultation">
-              Démarrez la première : Oris écoute et prépare le compte rendu.
-            </EtatVide>
+            <div style={{ padding: "var(--espace-6)" }}>
+              <EtatVide titre="Aucune consultation">
+                Démarrez la première : Oris écoute et prépare le compte rendu.
+              </EtatVide>
+            </div>
           )}
           {consultations.length > 0 && (
-            <Lignes>
+            <div className={styles.rangs}>
               {consultations.map((encounter) => (
-                <Ligne
-                  key={encounter.id}
-                  href={`/consultations/${encounter.id}`}
-                  titre={formatDateTime(encounter.started_at ?? encounter.created_at)}
-                  detail={
-                    encounter.documents.length === 0
-                      ? "aucun document"
-                      : encounter.documents
-                          .map((document) => DOCUMENT_TYPE[document.document_type])
-                          .join(" · ")
-                  }
-                  fin={
-                    <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      {/* Le brut reste accessible, sans jamais attirer l'œil. */}
-                      <Link
-                        href={`/consultations/${encounter.id}/transcription`}
-                        className={styles.brut}
-                        onClick={(event) => event.stopPropagation()}
-                      >
-                        transcription brute
-                      </Link>
-                      <Pastille ton={tonStatut(encounter.status)}>
-                        {ENCOUNTER_STATUS[encounter.status]}
-                      </Pastille>
+                <div key={encounter.id} className={styles.rang}>
+                  <Link href={`/consultations/${encounter.id}`} className={styles.rangLien}>
+                    <span className={styles.rangTitre}>
+                      {formatDateTime(encounter.started_at ?? encounter.created_at)}
                     </span>
-                  }
-                />
+                    <span className={styles.rangDetail}>
+                      {encounter.documents.length === 0
+                        ? "aucun document"
+                        : encounter.documents
+                            .map((document) => DOCUMENT_TYPE[document.document_type])
+                            .join(" · ")}
+                    </span>
+                  </Link>
+                  <span className={styles.rangFin}>
+                    {/* Le brut reste accessible, sans jamais attirer l'œil. */}
+                    <Link
+                      href={`/consultations/${encounter.id}/transcription`}
+                      className={styles.brut}
+                    >
+                      transcription brute
+                    </Link>
+                    <Pastille ton={tonStatut(encounter.status)}>
+                      {ENCOUNTER_STATUS[encounter.status]}
+                    </Pastille>
+                  </span>
+                </div>
               ))}
-            </Lignes>
+            </div>
           )}
         </Carte>
       )}
 
       {onglet === "documents" && (
-        <Carte serree>
+        <Carte bords>
           {documents.length === 0 && (
-            <EtatVide titre="Aucun document">
-              Les comptes rendus apparaissent ici dès la première consultation traitée.
-            </EtatVide>
+            <div style={{ padding: "var(--espace-6)" }}>
+              <EtatVide titre="Aucun document">
+                Les comptes rendus apparaissent ici dès la première consultation traitée.
+              </EtatVide>
+            </div>
           )}
           {documents.length > 0 && (
             <Lignes>

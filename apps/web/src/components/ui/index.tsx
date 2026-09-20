@@ -41,11 +41,19 @@ export function Carte({
   titre,
   action,
   serree = false,
+  bords = false,
   children,
   ...props
-}: ComponentProps<"section"> & { titre?: ReactNode; action?: ReactNode; serree?: boolean }) {
+}: ComponentProps<"section"> & {
+  titre?: ReactNode;
+  action?: ReactNode;
+  serree?: boolean;
+  /** Le contenu va jusqu'au cadre : tableau d'informations, liste à filets pleins. */
+  bords?: boolean;
+}) {
+  const variantes = [styles.carte, serree ? styles.carteSerree : "", bords ? styles.carteBords : ""];
   return (
-    <section {...props} className={`${styles.carte} ${serree ? styles.carteSerree : ""}`}>
+    <section {...props} className={variantes.filter(Boolean).join(" ")}>
       {(titre || action) && (
         <header className={styles.enTeteCarte}>
           {titre && <h2 className={styles.titreCarte}>{titre}</h2>}

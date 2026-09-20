@@ -101,3 +101,55 @@
     gap: 2px;
   }
 }
+
+/* Une ligne d'historique porte deux liens : la consultation, et sa transcription.
+   Ils ne peuvent donc pas être imbriqués — c'est du HTML invalide, et le navigateur
+   s'en plaint. Le lien principal occupe toute la place restante. */
+.rangs {
+  display: grid;
+  padding: var(--espace-2) 0;
+}
+
+.rang {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-4);
+  border-top: 1px solid var(--trait);
+  transition: background var(--transition);
+}
+
+.rang:first-child {
+  border-top: 0;
+}
+
+.rang:hover {
+  background: #fbf8f3;
+}
+
+.rangLien {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  padding: var(--espace-3) var(--espace-6);
+  text-decoration: none;
+  color: inherit;
+}
+
+.rangTitre {
+  font-weight: var(--graisse-demi);
+}
+
+.rangDetail {
+  font-size: var(--texte-sm);
+  color: var(--encre-tres-douce);
+  font-weight: var(--graisse-moyenne);
+}
+
+.rangFin {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-3);
+  padding-right: var(--espace-6);
+  flex: none;
+}

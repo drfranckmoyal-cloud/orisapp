@@ -96,13 +96,38 @@
   background: linear-gradient(180deg, var(--surface), var(--surface-2));
   border: 1px solid var(--trait);
   border-radius: var(--rayon-carte);
-  overflow: hidden;
   box-shadow: var(--lumiere), var(--relief);
+  padding: var(--espace-6);
+  display: grid;
+  gap: var(--espace-4);
+  align-content: start;
 }
 
 .carteSerree {
   padding: var(--espace-4);
   gap: var(--espace-3);
+}
+
+/* Carte à bords francs : le contenu touche le cadre parce qu'il est fait pour ça —
+   un tableau d'informations, une liste dont les filets doivent aller d'un bord à
+   l'autre. Le titre, lui, garde sa marge. */
+.carteBords {
+  padding: 0;
+  gap: 0;
+}
+
+.carteBords .enTeteCarte {
+  padding: var(--espace-6) var(--espace-6) var(--espace-4);
+}
+
+/* Les filets vont d'un bord à l'autre, mais le texte garde sa marge. */
+.carteBords .lignes {
+  padding: var(--espace-2) 0;
+}
+
+.carteBords .ligne {
+  padding-left: var(--espace-6);
+  padding-right: var(--espace-6);
 }
 
 .enTeteCarte {
