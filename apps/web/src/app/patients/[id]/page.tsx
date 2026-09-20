@@ -15,21 +15,22 @@ import {
   Pastille,
   Squelette,
 } from "@/components/ui";
-import { NoteAdministrative } from "@/components/patients/NoteAdministrative";
-import type { ClinicalObjectView, Encounter, Patient } from "@/lib/api";
+import { ApiError, apiRequest, type Encounter, type Patient } from "@/lib/api";
 import {
   DOCUMENT_TYPE,
   ENCOUNTER_STATUS,
-  PLAN_STATUS,
   errorMessage,
   formatDate,
   formatDateTime,
 } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
-type Onglet = "consultations" | "documents" | "plan";
+import styles from "./fiche.module.css";
+
+type Onglet = "consultations" | "documents";
 
 const TERMINEES = new Set(["validated", "exported", "archived"]);
+const NOTE_MAX = 500;
 
 function tonStatut(statut: string): "neutre" | "attention" | "valide" | "alerte" {
   if (statut === "review") return "attention";
@@ -38,34 +39,67 @@ function tonStatut(statut: string): "neutre" | "attention" | "valide" | "alerte"
   return "neutre";
 }
 
-/** Fiche patient : la continuité entre les consultations (§9, votre cahier). */
+function age(naissance: string): string {
+  const jour = new Date(naissance);
+  const maintenant = new Date();
+  let ans = maintenant.getFullYear() - jour.getFullYear();
+  const mois = maintenant.getMonth() - jour.getMonth();
+  if (mois < 0 || (mois === 0 && maintenant.getDate() < jour.getDate())) ans -= 1;
+  return `${ans} ans`;
+}
+
+function Info({ cle, children }: { cle: string; children: React.ReactNode }) {
+  return (
+    <div className={styles.ligne}>
+      <span className={styles.cle}>{cle}</span>
+      <span className={styles.valeur}>{children}</span>
+    </div>
+  );
+}
+
+function Absent({ quoi }: { quoi: string }) {
+  return <span className={styles.vide}>{quoi}</span>;
+}
+
+/** Fiche patient : qui il est, et tout ce qui s'est passé (§9). */
 export default function PatientPage() {
   const { id } = useParams<{ id: string }>();
   const [patient, rechargerPatient] = useApi<Patient>(`/patients/${id}`);
   const [encounters] = useApi<Encounter[]>(`/encounters?patient_id=${id}`);
   const [onglet, setOnglet] = useState<Onglet>("consultations");
+  const [note, setNote] = useState<string | null>(null);
+  const [etatNote, setEtatNote] = useState<string | null>(null);
 
   const consultations = encounters.state === "ready" ? encounters.data : [];
-  const derniere = consultations.find((encounter) => encounter.documents.length > 0);
-  const [clinique] = useApi<ClinicalObjectView>(
-    derniere ? `/encounters/${derniere.id}/clinical-object` : null,
-  );
-  const plan = clinique.state === "ready" ? clinique.data.clinical_object.treatment_plan : null;
   const documents = consultations.flatMap((encounter) =>
     encounter.documents.map((document) => ({ ...document, encounter })),
   );
+  const derniere = consultations[0];
+
+  async function enregistrerNote(valeur: string) {
+    setEtatNote(null);
+    try {
+      await apiRequest<Patient>(`/patients/${id}`, {
+        method: "PATCH",
+        body: { note: valeur.trim() },
+      });
+      setEtatNote("enregistrée");
+      rechargerPatient();
+    } catch (error) {
+      setEtatNote(errorMessage(error instanceof ApiError ? error.code : "UNKNOWN"));
+    }
+  }
 
   if (patient.state === "error") return <p className="muted">{errorMessage(patient.code)}</p>;
+
+  const fiche = patient.state === "ready" ? patient.data : null;
+  const valeurNote = note ?? fiche?.note ?? "";
 
   return (
     <div className="page">
       <EnTetePage
         surTitre="Patient"
-        titre={
-          patient.state === "ready"
-            ? `${patient.data.first_name} ${patient.data.last_name}`
-            : "Chargement…"
-        }
+        titre={fiche ? `${fiche.first_name} ${fiche.last_name}` : "Chargement…"}
         action={
           <LienBouton href={`/consultations/nouvelle?patient=${id}`}>
             Nouvelle consultation
@@ -73,39 +107,101 @@ export default function PatientPage() {
         }
       />
 
-      {patient.state === "ready" && (
-        <div className="bandeau-identite">
-          <span>
-            {patient.data.birth_date
-              ? `Né(e) le ${formatDate(patient.data.birth_date)}`
-              : "Date de naissance non renseignée"}
-          </span>
-          {patient.data.external_id && <span>Dossier {patient.data.external_id}</span>}
-          <span>
-            {consultations.length === 0
-              ? "Aucune consultation"
-              : `${consultations.length} consultation${consultations.length > 1 ? "s" : ""}`}
-          </span>
-        </div>
-      )}
+      <Carte titre="Informations" serree>
+        {patient.state === "loading" && (
+          <div style={{ padding: "var(--espace-6)" }}>
+            <Squelette lignes={4} />
+          </div>
+        )}
+        {fiche && (
+          <div className={styles.cadre}>
+            <div className={styles.colonne}>
+              <Info cle="Nom">
+                {fiche.first_name} {fiche.last_name}
+              </Info>
+              <Info cle="Naissance">
+                {fiche.birth_date ? (
+                  <>
+                    {formatDate(fiche.birth_date)} · {age(fiche.birth_date)}
+                  </>
+                ) : (
+                  <Absent quoi="non renseignée" />
+                )}
+              </Info>
+              <Info cle="Dossier">
+                {fiche.external_id || <Absent quoi="aucun identifiant externe" />}
+              </Info>
+              <Info cle="Correspondants">
+                {/* Le rattachement à un correspondant viendra avec l'écran dédié. */}
+                <Absent quoi="aucun — à venir" />
+              </Info>
+            </div>
 
-      {patient.state === "ready" && (
-        <NoteAdministrative patient={patient.data} onSaved={rechargerPatient} />
-      )}
+            <div className={styles.colonne}>
+              <Info cle="Consultations">
+                {consultations.length === 0
+                  ? "aucune"
+                  : consultations.length === 1
+                    ? "1 consultation"
+                    : `${consultations.length} consultations`}
+              </Info>
+              <Info cle="Dernière">
+                {derniere ? (
+                  <Link href={`/consultations/${derniere.id}`} className="link-button">
+                    {formatDateTime(derniere.started_at ?? derniere.created_at)}
+                  </Link>
+                ) : (
+                  <Absent quoi="jamais vue" />
+                )}
+              </Info>
+              <Info cle="Suivi depuis">{formatDate(fiche.created_at)}</Info>
+              <Info cle="Note">
+                <textarea
+                  className={styles.note}
+                  rows={2}
+                  maxLength={NOTE_MAX}
+                  placeholder="Rappel pratique — horaires, rappel à passer…"
+                  aria-label="Note administrative"
+                  value={valeurNote}
+                  onChange={(event) => setNote(event.target.value)}
+                  onBlur={(event) => {
+                    if (event.target.value.trim() !== (fiche.note ?? "").trim()) {
+                      void enregistrerNote(event.target.value);
+                    }
+                  }}
+                />
+                <span className={styles.noteBas}>
+                  <span>Oris ne la lit pas. Enregistrée en quittant le champ.</span>
+                  {etatNote && <span>{etatNote}</span>}
+                </span>
+              </Info>
+            </div>
+          </div>
+        )}
+      </Carte>
 
       <Onglets
         valeur={onglet}
         onChange={setOnglet}
         options={[
-          { valeur: "consultations", libelle: "Consultations" },
-          { valeur: "documents", libelle: `Documents${documents.length ? ` (${documents.length})` : ""}` },
-          { valeur: "plan", libelle: "Plan de traitement" },
+          {
+            valeur: "consultations",
+            libelle: `Historique${consultations.length ? ` (${consultations.length})` : ""}`,
+          },
+          {
+            valeur: "documents",
+            libelle: `Documents${documents.length ? ` (${documents.length})` : ""}`,
+          },
         ]}
       />
 
       {onglet === "consultations" && (
-        <Carte titre="Historique">
-          {encounters.state === "loading" && <Squelette lignes={3} />}
+        <Carte serree>
+          {encounters.state === "loading" && (
+            <div style={{ padding: "var(--espace-6)" }}>
+              <Squelette lignes={3} />
+            </div>
+          )}
           {consultations.length === 0 && encounters.state === "ready" && (
             <EtatVide titre="Aucune consultation">
               Démarrez la première : Oris écoute et prépare le compte rendu.
@@ -126,9 +222,19 @@ export default function PatientPage() {
                           .join(" · ")
                   }
                   fin={
-                    <Pastille ton={tonStatut(encounter.status)}>
-                      {ENCOUNTER_STATUS[encounter.status]}
-                    </Pastille>
+                    <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      {/* Le brut reste accessible, sans jamais attirer l'œil. */}
+                      <Link
+                        href={`/consultations/${encounter.id}/transcription`}
+                        className={styles.brut}
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        transcription brute
+                      </Link>
+                      <Pastille ton={tonStatut(encounter.status)}>
+                        {ENCOUNTER_STATUS[encounter.status]}
+                      </Pastille>
+                    </span>
                   }
                 />
               ))}
@@ -138,7 +244,7 @@ export default function PatientPage() {
       )}
 
       {onglet === "documents" && (
-        <Carte titre="Documents">
+        <Carte serree>
           {documents.length === 0 && (
             <EtatVide titre="Aucun document">
               Les comptes rendus apparaissent ici dès la première consultation traitée.
@@ -163,32 +269,6 @@ export default function PatientPage() {
               ))}
             </Lignes>
           )}
-        </Carte>
-      )}
-
-      {onglet === "plan" && (
-        <Carte
-          titre="Plan de traitement en cours"
-          action={
-            derniere ? (
-              <Link href={`/consultations/${derniere.id}`} className="lien">
-                Voir la consultation
-              </Link>
-            ) : null
-          }
-        >
-          {!plan && <EtatVide titre="Aucun plan de traitement" />}
-          {plan?.items.map((item) => (
-            <div key={item.item_id} className="ligne-plan">
-              <span>
-                {item.teeth.length > 0 && <Pastille>dent {item.teeth.join(", ")}</Pastille>}{" "}
-                <strong>{item.action}</strong>
-              </span>
-              <Pastille ton={item.status === "completed" ? "valide" : "neutre"}>
-                {PLAN_STATUS[item.status]}
-              </Pastille>
-            </div>
-          ))}
         </Carte>
       )}
     </div>

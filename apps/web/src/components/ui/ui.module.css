@@ -3,18 +3,41 @@
 /* --- Bouton ------------------------------------------------------------------ */
 .bouton {
   font: inherit;
+  font-size: var(--texte-md);
   font-weight: var(--graisse-demi);
+  padding: 12px 20px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--espace-2);
-  border-radius: var(--rayon-bouton);
-  border: 1px solid transparent;
-  padding: 10px 18px;
   cursor: pointer;
-  transition: background var(--transition), border-color var(--transition), color var(--transition);
-  white-space: nowrap;
   text-decoration: none;
+  border: 1px solid var(--trait-fort);
+  border-radius: var(--rayon-bouton);
+  color: var(--encre);
+  background: linear-gradient(180deg, #fff, #f8f5f0);
+  box-shadow: var(--lumiere), 0 1px 1px rgb(26 24 21 / 0.05),
+    0 3px 6px -3px rgb(26 24 21 / 0.14);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.bouton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--lumiere), 0 2px 3px rgb(26 24 21 / 0.06),
+    0 8px 14px -6px rgb(26 24 21 / 0.2);
+}
+
+.bouton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.bouton:disabled {
+  cursor: not-allowed;
+  color: var(--encre-tres-douce);
+  background: var(--surface-douce);
+  border-color: var(--trait);
+  box-shadow: none;
 }
 
 .bouton:focus-visible {
@@ -28,16 +51,20 @@
 }
 
 .principal {
-  background: var(--accent);
   color: var(--accent-encre);
+  border-color: var(--accent-fonce);
+  background: linear-gradient(180deg, var(--accent-vif), var(--accent));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 1px 1px rgb(14 58 41 / 0.2),
+    0 6px 14px -6px rgb(14 58 41 / 0.6);
 }
 
 .principal:hover:not(:disabled) {
-  background: var(--accent-fonce);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 3px 5px rgb(14 58 41 / 0.18),
+    0 14px 22px -10px rgb(14 58 41 / 0.6);
 }
 
 .secondaire {
-  background: var(--surface);
+  background: linear-gradient(180deg, #fff, #faf7f2);
   border-color: var(--trait-fort);
   color: var(--encre);
 }
@@ -60,19 +87,17 @@
 .grand {
   padding: 15px 28px;
   font-size: var(--texte-lg);
-  border-radius: var(--rayon-bouton);
+  border-radius: 16px;
+  min-height: 54px;
 }
 
 /* --- Carte ------------------------------------------------------------------- */
 .carte {
-  background: var(--surface);
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
   border: 1px solid var(--trait);
   border-radius: var(--rayon-carte);
-  box-shadow: var(--ombre-posee);
-  padding: var(--espace-6);
-  display: grid;
-  gap: var(--espace-4);
-  align-content: start;
+  overflow: hidden;
+  box-shadow: var(--lumiere), var(--relief);
 }
 
 .carteSerree {
@@ -127,13 +152,13 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border-radius: var(--rayon-pastille);
-  padding: 3px 10px;
   font-size: var(--texte-sm);
-  font-weight: var(--graisse-moyenne);
-  background: var(--surface-douce);
-  color: var(--encre);
+  font-weight: var(--graisse-demi);
+  padding: 5px 11px;
+  border-radius: var(--rayon-pastille);
   white-space: nowrap;
+  border: 1px solid transparent;
+  box-shadow: var(--lumiere);
 }
 
 .pastilleAccent {
@@ -260,15 +285,14 @@
 /* --- Onglets ------------------------------------------------------------------- */
 .onglets {
   display: flex;
-  /* Les onglets passent à la ligne plutôt que de sortir du cadre : dans un rail
-     étroit, un onglet à moitié caché est un onglet qu'on ne trouve pas. */
   flex-wrap: wrap;
-  gap: 2px;
-  padding: 3px;
+  gap: 5px;
+  padding: 5px;
   background: var(--surface-douce);
-  border-radius: 12px;
+  border-radius: 15px;
   width: fit-content;
   max-width: 100%;
+  box-shadow: inset 0 1px 3px rgb(26 24 21 / 0.09);
 }
 
 .onglet {

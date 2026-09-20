@@ -1,26 +1,34 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Fraunces, Manrope } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { AppShell } from "@/components/AppShell";
 
 import "./globals.css";
 
-// La police de la marque, réellement chargée et auto-hébergée (planche d'identité).
-const inter = Inter({
+// L'interface parle en Manrope : nette, ouverte, lisible debout à un mètre.
+const manrope = Manrope({
   subsets: ["latin"],
   display: "swap",
-  variable: "--police",
+  variable: "--police-interface",
+});
+
+// La marque parle d'une autre voix. Fraunces ne sert qu'au nom « Oris ».
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["600"],
+  variable: "--police-nom",
 });
 
 export const metadata: Metadata = {
   title: "Oris",
-  description: "Écouter. Comprendre. Documenter.",
+  description: "Rien que ce qui a été dit.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="fr" data-palette="bleu" className={inter.variable}>
+    <html lang="fr" className={`${manrope.variable} ${fraunces.variable}`}>
       <body>
         <AppShell>{children}</AppShell>
       </body>

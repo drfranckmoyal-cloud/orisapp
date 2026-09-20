@@ -1,49 +1,64 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
+import { Icone, type NomIcone } from "@/components/Icones";
+import { Symbole } from "@/components/Marque";
 import type { Cabinet } from "@/lib/api";
 import { useApi } from "@/lib/useApi";
 
 import styles from "./AppShell.module.css";
 
-const NAVIGATION = [
-  { href: "/", label: "Accueil", icone: "M4 10.5 12 4l8 6.5V20H4z" },
-  { href: "/patients", label: "Patients", icone: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-8 8a8 8 0 0 1 16 0" },
-  { href: "/consultations", label: "Consultations", icone: "M6 3h12v18l-6-4-6 4z" },
-  { href: "/documents", label: "Documents", icone: "M7 3h7l4 4v14H7zM14 3v5h5" },
-  { href: "/apprentissage", label: "Oris apprend", icone: "M12 4 3 9l9 5 9-5zM6 12v5l6 3 6-3v-5" },
-  { href: "/parametres", label: "Paramètres", icone: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM4 12h2m12 0h2M12 4v2m0 12v2" },
-] as const;
+const NAVIGATION: { href: string; label: string; icone: NomIcone }[] = [
+  { href: "/", label: "Accueil", icone: "accueil" },
+  { href: "/patients", label: "Patients", icone: "patients" },
+  { href: "/correspondants", label: "Correspondants", icone: "correspondants" },
+  { href: "/consultations", label: "Consultations", icone: "consultations" },
+  { href: "/documents", label: "Documents", icone: "documents" },
+  { href: "/apprentissage", label: "Oris apprend", icone: "apprend" },
+  { href: "/parametres", label: "Paramètres", icone: "parametres" },
+];
 
 function estActif(pathname: string, href: string): boolean {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
+/** Deux lettres pour le jeton : « Dr Franck Moyal » donne FM. */
+function initiales(nom: string): string {
+  const mots = nom.replace(/^Dr\.?\s+/i, "").split(/\s+/).filter(Boolean);
+  return mots.slice(0, 2).map((mot) => mot[0]?.toUpperCase() ?? "").join("") || "—";
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [cabinet] = useApi<Cabinet>("/me/cabinet");
-  const praticien =
-    cabinet.state === "ready"
-      ? `${cabinet.data.practitioner_title} ${cabinet.data.practitioner_name}`.trim()
-      : "";
+  const [ouvert, setOuvert] = useState(false);
+
+  const nom = cabinet.state === "ready" ? cabinet.data.practitioner_name : "";
+  const titre = cabinet.state === "ready" ? cabinet.data.practitioner_title : "";
+  const praticien = `${titre} ${nom}`.trim();
+  const lieu = cabinet.state === "ready" ? cabinet.data.name : "";
+
+  // Le menu de profil se referme dès qu'on clique ailleurs.
+  useEffect(() => {
+    if (!ouvert) return;
+    const fermer = () => setOuvert(false);
+    document.addEventListener("click", fermer);
+    return () => document.removeEventListener("click", fermer);
+  }, [ouvert]);
 
   return (
     <div className={styles.shell}>
       <nav className={styles.menu} aria-label="Navigation principale">
-        <Link href="/" className={styles.marque} aria-label="Oris — accueil">
-          <Image
-            src="/oris-symbole-blanc.png"
-            alt=""
-            width={368}
-            height={365}
-            className={styles.symbole}
-            priority
-          />
+        <Link href="/" className={styles.marque}>
+          <Symbole taille={36} />
           <span className={styles.nom}>Oris</span>
+          <span className={styles.retour} aria-hidden="true">
+            accueil
+          </span>
+          <span className="sr-only">Revenir à l’accueil</span>
         </Link>
 
         <ul className={styles.nav}>
@@ -54,20 +69,53 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className={styles.item}
                 aria-current={estActif(pathname, href) ? "page" : undefined}
               >
-                <svg className={styles.icone} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d={icone} stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-                </svg>
+                <Icone nom={icone} />
                 {label}
               </Link>
             </li>
           ))}
         </ul>
 
-        <div className={styles.bas}>
-          <div className={styles.praticien}>
-            <span className={styles.praticienNom}>{praticien || "\u00a0"}</span>
-            <span className={styles.mention}>Données fictives uniquement</span>
-          </div>
+        <div className={styles.profil}>
+          {ouvert && (
+            <ul className={styles.liste} onClick={(event) => event.stopPropagation()}>
+              <li>
+                <button type="button" className={styles.entree}>
+                  <span className={styles.jeton}>{initiales(praticien)}</span>
+                  {praticien || "Praticien"}
+                </button>
+              </li>
+              <li>
+                <hr className={styles.separateur} />
+              </li>
+              <li>
+                {/* La création d'un praticien attend son tour : l'écran le dit. */}
+                <button type="button" className={styles.entree} disabled>
+                  <span className={styles.jeton}>+</span>
+                  <span>
+                    Nouveau praticien
+                    <span className={styles.aVenir}>à venir</span>
+                  </span>
+                </button>
+              </li>
+            </ul>
+          )}
+          <button
+            type="button"
+            className={styles.profilBouton}
+            aria-expanded={ouvert}
+            onClick={(event) => {
+              event.stopPropagation();
+              setOuvert((etat) => !etat);
+            }}
+          >
+            <span className={styles.jeton}>{praticien ? initiales(praticien) : "—"}</span>
+            <span>
+              <span className={styles.praticienNom}>{praticien || " "}</span>
+              <span className={styles.mention}>{lieu || "Données fictives"}</span>
+            </span>
+            <Icone nom="chevron" taille={16} className={styles.chevron} />
+          </button>
         </div>
       </nav>
       <main className={styles.main}>{children}</main>

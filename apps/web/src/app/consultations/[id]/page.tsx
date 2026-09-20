@@ -515,7 +515,7 @@ export default function ReviewPage() {
                     style={{
                       display: "grid",
                       gap: 12,
-                      borderTop: "1px solid var(--color-cloud)",
+                      borderTop: "1px solid var(--surface-douce)",
                       paddingTop: 16,
                     }}
                   >

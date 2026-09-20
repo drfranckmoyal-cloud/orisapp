@@ -8,6 +8,8 @@ import {
   Champ,
   EnTetePage,
   EtatVide,
+  Ligne,
+  Lignes,
   Pastille,
   Squelette,
 } from "@/components/ui";
@@ -80,6 +82,44 @@ export default function ParametresPage() {
   return (
     <div className="page">
       <EnTetePage surTitre="Réglages" titre="Paramètres" />
+
+      <Carte titre="Praticiens du cabinet">
+        <p className="muted" style={{ marginTop: 0 }}>
+          Chaque praticien garde son dictionnaire, ses préférences de rédaction et ses
+          documents. Un praticien ne voit jamais les consultations d’un autre.
+        </p>
+        {cabinet.state === "loading" && <Squelette lignes={2} />}
+        {cabinet.state === "ready" && (
+          <Lignes>
+            <Ligne
+              href="/parametres"
+              titre={`${cabinet.data.practitioner_title} ${cabinet.data.practitioner_name}`.trim()}
+              detail={`${cabinet.data.name} · profil utilisé`}
+              fin={<Pastille ton="valide">actif</Pastille>}
+            />
+          </Lignes>
+        )}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 16,
+            flexWrap: "wrap",
+            borderTop: "1px solid var(--trait)",
+            paddingTop: "var(--espace-4)",
+          }}
+        >
+          <div>
+            <strong>Créer un nouveau praticien</strong>
+            <p className="muted" style={{ margin: "2px 0 0" }}>
+              Le cabinet est mono-praticien pour l’instant. La création de profils viendra
+              avec la gestion des accès — elle n’a pas de sens sans elle.
+            </p>
+          </div>
+          <Bouton disabled>En attente</Bouton>
+        </div>
+      </Carte>
 
       <div className="grille-reglages">
         <Carte titre="Praticien et cabinet">

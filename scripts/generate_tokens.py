@@ -31,6 +31,8 @@ def render_css(tokens: dict) -> str:
         lines.append(f"  --space-{name}: {token['$value']};")
     for name, token in tokens["radius"].items():
         lines.append(f"  --radius-{name}: {token['$value']};")
+    for name, token in tokens.get("font", {}).items():
+        lines.append(f"  --font-{kebab(name)}: {token['$value']};")
     lines += ["}", ""]
     return "\n".join(lines)
 

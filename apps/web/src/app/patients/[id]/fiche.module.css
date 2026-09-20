@@ -1,0 +1,103 @@
+/* Le cadre d'informations : un bloc, pas des bulles éparpillées. */
+.cadre {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.colonne {
+  display: grid;
+  align-content: start;
+}
+
+.colonne + .colonne {
+  border-left: 1px solid var(--trait);
+}
+
+.ligne {
+  display: grid;
+  grid-template-columns: 148px 1fr;
+  gap: var(--espace-4);
+  align-items: baseline;
+  padding: 13px var(--espace-6);
+  border-top: 1px solid var(--trait);
+}
+
+.colonne > .ligne:first-child {
+  border-top: 0;
+}
+
+.cle {
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-moyenne);
+  color: var(--encre-tres-douce);
+}
+
+.valeur {
+  font-weight: var(--graisse-moyenne);
+}
+
+.vide {
+  color: var(--encre-tres-douce);
+  font-weight: var(--graisse-normale);
+}
+
+.note {
+  width: 100%;
+  font: inherit;
+  font-size: var(--texte-sm);
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: var(--surface-douce);
+  color: var(--encre);
+  resize: vertical;
+  min-height: 0;
+}
+
+.note:hover {
+  border-color: var(--trait-fort);
+}
+
+.note:focus {
+  outline: 0;
+  background: var(--surface);
+  border-color: var(--accent);
+  box-shadow: var(--anneau-focus);
+}
+
+.noteBas {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-3);
+  margin-top: 6px;
+  font-size: var(--texte-xs);
+  color: var(--encre-tres-douce);
+}
+
+/* Le brut : accessible, mais il ne doit jamais attirer l'œil. */
+.brut {
+  font-size: 11.5px;
+  color: var(--encre-tres-douce);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.brut:hover {
+  color: var(--encre-douce);
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .cadre {
+    grid-template-columns: 1fr;
+  }
+  .colonne + .colonne {
+    border-left: 0;
+    border-top: 1px solid var(--trait);
+  }
+  .ligne {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}

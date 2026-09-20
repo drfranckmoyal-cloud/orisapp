@@ -1,5 +1,35 @@
 # Changelog
 
+## Direction visuelle appliquée — 2026-09-20
+La direction 4b passe des maquettes au produit, et devient le système verrouillé
+(`docs/DESIGN_SYSTEM.md`, `design/tokens.json`).
+
+- **Palette** : neutres chauds et vert profond, à la place du bleu. Quinze jetons
+  regénérés vers le CSS du site et le Swift de l'iPhone.
+- **Polices** : **Manrope** pour l'interface, **Fraunces** pour le nom « Oris ».
+- **Relief** : trois couches d'ombre plus un filet de lumière sur toute surface posée,
+  ombre interne sur les surfaces creusées. Une ombre plate inventée sur place est
+  désormais un écart au système.
+- **Barre de gauche** : bloc vert plein ; le logo est une **plaque crème posée dessus**,
+  cliquable, qui ramène à l'accueil ; les entrées portent des pictogrammes et chacune
+  sa surface en relief ; l'entrée active porte un repère argile sur le flanc. Le
+  praticien se choisit en bas, dans un menu déroulant ; « Nouveau praticien » y attend
+  son tour.
+- **Accueil** : plus de « Bonjour Docteur ». Un **grand bouton vert** pour commencer une
+  consultation, dont le logo s'anime au survol ; la semaine en barres ; la saisie évitée
+  **avec sa méthode de calcul affichée** ; ce qui attend ; ce qu'Oris a appris.
+- **Fiche patient** : un vrai **cadre d'informations** en deux colonnes à la place des
+  bulles éparpillées ; la note y est logée, discrète, enregistrée en quittant le champ ;
+  l'historique en dessous, lisible et cliquable, avec un accès minuscule à la
+  **transcription brute** (nouvel écran). Le plan de traitement quitte la fiche : il
+  appartient à la consultation.
+- **Correspondants** : entrée de menu et écran « chantier à venir », qui dit ce qu'il
+  fera et ce qui manque — plutôt qu'un lien mort.
+- **Paramètres** : liste des praticiens du cabinet, et création d'un profil grisée.
+- **Marque en PNG** : `design/marque/png/`, 35 fichiers de 16 à 1024 px, produits par
+  `scripts/export_marque.py` — dessinés directement, sans dépendre d'un moteur SVG.
+  Favicon, icône d'iPhone et symboles du site remplacés.
+
 ## Refonte produit (7) — 2026-09-20 — note administrative sur la fiche patient
 Dernier champ manquant du §9. « Note **administrative** courte », et les trois mots
 comptent :

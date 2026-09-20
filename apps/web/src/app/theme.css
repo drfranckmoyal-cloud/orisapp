@@ -1,59 +1,81 @@
 /* Jetons sémantiques d'Oris.
  *
- * Palette retenue le 20/09/2026 : la bleue de la planche d'identité, figée dans
- * design/tokens.json. Les écrans n'utilisent QUE les noms sémantiques ci-dessous —
- * jamais une couleur brute.
+ * Direction arrêtée le 20/09/2026 (design/maquettes/4b-praticien-affine.html) :
+ * neutres chauds et vert profond, délibérément pas le bleu technologique.
+ * Manrope pour l'interface, Fraunces pour le nom de la marque.
+ *
+ * Les écrans n'utilisent QUE les noms sémantiques ci-dessous — jamais une couleur
+ * brute. Le relief passe toujours par --relief / --lumiere : une ombre plate
+ * inventée sur place est un écart au système.
  */
 
 :root {
-  --fond: #f4f7fa;
+  /* Neutres chauds */
+  --fond: #f5f2ec;
   --surface: #ffffff;
-  --surface-douce: #eaf1f6;
-  --surface-inverse: #0f2d46;
+  --surface-2: #fdfbf8;
+  --surface-douce: #ebe5db;
+  --surface-inverse: #123f2d;
 
-  --encre: #14283c;
-  --encre-douce: #5b7186;
-  --encre-inverse: #ffffff;
+  --encre: #1a1815;
+  --encre-douce: #544d44;
+  --encre-tres-douce: #8a8073;
+  --encre-inverse: #f6f3ee;
 
-  --trait: #dbe5ee;
-  --trait-fort: #c3d2e0;
+  --trait: #e3dccf;
+  --trait-fort: #cdc4b3;
 
-  --accent: #3b82f6;
-  --accent-fonce: #2f6ad9;
-  --accent-douce: #e7f0fe;
+  /* Vert : l'action, l'écoute, le validé */
+  --accent: #14533b;
+  --accent-vif: #1a6b4c;
+  --accent-fonce: #0e3a29;
+  --accent-douce: #e5efe9;
   --accent-encre: #ffffff;
+  --menu-haut: #17503a;
+  --menu-bas: #0b2f21;
 
+  /* États */
   --calme: #7dd3c7;
-  --valide: #067647;
-  --valide-douce: #e3f4ea;
-  --attention: #b7791f;
-  --attention-douce: #fdf3e1;
-  --alerte: #b42318;
-  --alerte-douce: #fdecea;
+  --valide: #14533b;
+  --valide-douce: #e5efe9;
+  --attention: #a8540a;
+  --attention-vif: #d97a1f;
+  --attention-douce: #fbeedd;
+  --alerte: #9c2a1c;
+  --alerte-douce: #fbeae7;
 
-  --ombre-posee: 0 1px 2px rgba(15, 45, 70, 0.06), 0 1px 3px rgba(15, 45, 70, 0.04);
-  --ombre-flottante: 0 12px 32px rgba(15, 45, 70, 0.14);
-  --anneau-focus: 0 0 0 3px rgba(59, 130, 246, 0.35);
+  /* Relief : trois couches, plus un filet de lumière. Jamais une ombre seule. */
+  --lumiere: inset 0 1px 0 rgb(255 255 255 / 0.9);
+  --relief: 0 1px 1px rgb(26 24 21 / 0.05), 0 3px 6px -2px rgb(26 24 21 / 0.06),
+    0 14px 30px -18px rgb(26 24 21 / 0.28);
+  --relief-haut: 0 2px 3px rgb(26 24 21 / 0.06), 0 8px 14px -4px rgb(26 24 21 / 0.1),
+    0 26px 46px -24px rgb(26 24 21 / 0.34);
+  --ombre-posee: var(--relief);
+  --ombre-flottante: var(--relief-haut);
+  --anneau-focus: 0 0 0 3px rgb(20 83 59 / 0.18);
 }
 
 :root {
-  /* Échelle typographique — 1.25, arrondie pour rester lisible à l'écran. */
+  /* Typographie — Manrope pour l'interface, Fraunces pour le nom. */
+  --police: var(--police-interface);
+  --police-marque: var(--police-nom);
+
   --texte-xs: 12px;
-  --texte-sm: 13px;
-  --texte-md: 15px;
-  --texte-lg: 18px;
+  --texte-sm: 13.5px;
+  --texte-md: 15.5px;
+  --texte-lg: 17.5px;
   --texte-xl: 22px;
   --texte-2xl: 28px;
-  --texte-3xl: 36px;
+  --texte-3xl: 35px;
 
   --graisse-normale: 400;
-  --graisse-moyenne: 500;
-  --graisse-demi: 600;
+  --graisse-moyenne: 600;
+  --graisse-demi: 700;
+  --graisse-forte: 800;
 
-  --interligne-serre: 1.2;
-  --interligne: 1.55;
+  --interligne-serre: 1.18;
+  --interligne: 1.62;
 
-  /* Espacement — échelle de la spec, rien entre les valeurs. */
   --espace-1: 4px;
   --espace-2: 8px;
   --espace-3: 12px;
@@ -62,15 +84,15 @@
   --espace-8: 32px;
   --espace-12: 48px;
 
-  --rayon-carte: 16px;
-  --rayon-bouton: 14px;
+  --rayon-carte: 20px;
+  --rayon-bouton: 13px;
   --rayon-pastille: 999px;
 
-  --largeur-menu: 232px;
-  --largeur-contenu: 1180px;
+  --largeur-menu: 262px;
+  --largeur-contenu: 1260px;
   --largeur-tache: 760px;
 
-  --transition: 160ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  --transition: 150ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -4,13 +4,13 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Oris — planche de marque</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
 <style>
 :root{--fond:#f6f3ee;--surface:#fff;--encre:#1c1a17;--encre-2:#585149;--encre-3:#8b8276;
   --trait:#e0d9cd;--vert:#14533b;--creme:#f6f3ee;--sombre:#0e2a1f}
 *{box-sizing:border-box}
 body{margin:0;background:var(--fond);color:var(--encre);
-  font:400 16px/1.6 "Instrument Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+  font:400 16px/1.6 Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;
   padding:52px 32px 90px}
 main{max-width:980px;margin:0 auto}
 h1{font-size:32px;margin:0 0 10px;letter-spacing:-.02em}
@@ -27,7 +27,7 @@ h2{font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:var(--encr
   box-shadow:0 1px 1px rgba(28,26,23,.04),0 10px 26px -16px rgba(28,26,23,.26);
   display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:18px;min-height:172px}
 .tuile p{margin:0;font-size:13px;color:var(--encre-3)}
-.tuile b{display:block;font-size:14px;color:var(--encre);font-weight:600;margin-bottom:2px}
+.tuile b{display:block;font-size:14px;color:var(--encre);font-weight:700;margin-bottom:2px;font-family:Manrope,sans-serif}
 .tuile.sombre{background:var(--sombre);border-color:var(--sombre)}
 .tuile.sombre p{color:#93a99e}.tuile.sombre b{color:var(--creme)}
 .echelle{display:flex;align-items:flex-end;gap:32px;flex-wrap:wrap}
@@ -37,7 +37,7 @@ h2{font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:var(--encr
 .note code{background:#ece7de;padding:1px 6px;border-radius:5px;font-size:13.5px}
 .onglet{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--trait);
   border-radius:9px 9px 0 0;padding:7px 14px 7px 10px;font-size:13px;color:var(--encre-2)}
-.mot{font-weight:600;letter-spacing:-.03em}
+.mot{font-family:Fraunces,Georgia,serif;font-weight:600;letter-spacing:-.025em}
 .lock{display:flex;align-items:center;gap:12px}
 .lock .mot{font-size:34px;color:var(--vert)}
 .lock-v{display:grid;justify-items:center;gap:8px}
@@ -178,6 +178,16 @@ svg{display:block}
     </div>
     <p class="note">Crème sur vert, dégradé très retenu : assez pour donner du corps
       dans une grille d'icônes, pas assez pour faire bibelot.</p>
+  </div>
+
+  <h2>Les fichiers</h2>
+  <div class="bloc">
+    <p class="note" style="margin-top:0">
+      Vectoriels dans <code>design/marque/*.svg</code>. <b>Tous les formats en PNG</b>
+      dans <code>design/marque/png/</code> — symbole vert, crème et encre de 16 à
+      1024 px, icône d'application jusqu'à 1024, favicon à trois barres. Régénérés par
+      <code>python3 scripts/export_marque.py</code>.
+    </p>
   </div>
 
   <h2>Ce qui reste à faire</h2>

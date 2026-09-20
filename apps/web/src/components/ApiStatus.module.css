@@ -10,7 +10,7 @@
 .detail {
   margin: var(--space-8) 0 0;
   font-size: 14px;
-  color: var(--color-graphite);
+  color: var(--encre-douce);
   opacity: 0.8;
 }
 
@@ -19,7 +19,7 @@
   height: 10px;
   border-radius: 50%;
   flex: none;
-  background: var(--color-graphite);
+  background: var(--encre-douce);
 }
 
 .dot[data-state="reachable"] {

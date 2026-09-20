@@ -17,6 +17,7 @@ littéralement.
 | `oris-icone-app.svg` | Icône d'application (512 px, coins arrondis). |
 | `oris-favicon.svg` | Onglet : trois barres, les deux cuspides et le sillon. |
 | `planche.html` | La planche à ouvrir pour juger l'ensemble. |
+| `png/` | **Tous les formats en PNG** — symbole (vert, crème, encre), icône d'application, favicon, de 16 à 1024 px. Régénérés par `python3 scripts/export_marque.py`. |
 
 ## Règles
 
@@ -28,6 +29,11 @@ littéralement.
 - **Ne jamais étirer** : le rapport des barres porte le sens (cuspides, sillon,
   racines).
 - Marge de protection autour du symbole : la largeur d'une barre.
+
+## Polices
+
+- **Manrope** pour l'interface.
+- **Fraunces** (600) pour le nom « Oris ».
 
 ## Ce qui reste à faire
 

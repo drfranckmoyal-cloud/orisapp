@@ -1,15 +1,21 @@
 /* Généré par scripts/generate_tokens.py depuis design/tokens.json — ne pas modifier à la main. */
 
 :root {
-  --color-deep-blue: #0F2D46;
-  --color-oris-blue: #3B82F6;
-  --color-misty-teal: #7DD3C7;
-  --color-cloud: #EAF1F6;
-  --color-graphite: #1F2937;
+  --color-deep-green: #0E3A29;
+  --color-oris-green: #14533B;
+  --color-bright-green: #1A6B4C;
+  --color-mist-green: #E5EFE9;
+  --color-sand: #F5F2EC;
+  --color-cream: #F6F3EE;
+  --color-linen: #EBE5DB;
+  --color-ink: #1A1815;
+  --color-ink-soft: #544D44;
+  --color-rule: #E3DCCF;
   --color-white: #FFFFFF;
-  --color-warning: #B7791F;
-  --color-danger: #B42318;
-  --color-success: #067647;
+  --color-clay: #A8540A;
+  --color-warning: #A8540A;
+  --color-danger: #9C2A1C;
+  --color-success: #14533B;
   --space-4: 4px;
   --space-8: 8px;
   --space-12: 12px;
@@ -17,6 +23,9 @@
   --space-24: 24px;
   --space-32: 32px;
   --space-48: 48px;
-  --radius-card: 16px;
-  --radius-button: 14px;
+  --radius-card: 20px;
+  --radius-button: 13px;
+  --radius-pill: 999px;
+  --font-interface: Manrope;
+  --font-brand: Fraunces;
 }

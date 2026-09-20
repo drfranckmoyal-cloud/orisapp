@@ -54,7 +54,7 @@ export function SourcePanel({
       {segments.length > 0 && (
         <div style={{ display: "grid", gap: 8 }}>
           {segments.map((segment) => (
-            <blockquote key={segment.segment_id} style={{ margin: 0, paddingLeft: 12, borderLeft: "3px solid var(--color-misty-teal)" }}>
+            <blockquote key={segment.segment_id} style={{ margin: 0, paddingLeft: 12, borderLeft: "3px solid var(--accent-vif)" }}>
               <div className="muted">
                 {SPEAKER[segment.speaker_role] ?? segment.speaker_role} — {formatClock(segment.start_ms)}
               </div>

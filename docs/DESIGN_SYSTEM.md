@@ -1,79 +1,116 @@
-# Design System — Oris V1
+# Design System — Oris
 
-## Brand idea
-**Écouter. Comprendre. Documenter.**
+**Verrouillé le 20 septembre 2026.** Cette page remplace la première version bleue.
+Référence vivante : `design/maquettes/4b-praticien-affine.html`.
 
-Oris should feel like a clinical instrument: calm, precise, premium and almost invisible during care.
+## Idée de marque
 
-## Logo/icon
-Primary symbol: an open rounded contour with a subtle tooth silhouette + vertical waveform inside.
-- tooth reference must remain implicit;
-- no smile/tooth cartoon;
-- strong silhouette at 24 px;
-- app icon uses white/Cloud background with Oris Blue→Misty Teal mark;
-- dark variant uses Deep Blue background and pale mark.
+**Rien que ce qui a été dit.**
 
-Concept PNGs live in `/assets`. They are visual references, not production vector masters.
+Oris doit se tenir comme un cabinet établi : calme, précis, lisible debout à un
+mètre, et lisible aussi par le patient assis en face. Surtout pas « chatbot », pas
+« start-up tech ».
 
-## Color tokens
-| Token | Hex | Use |
+## Logo
+
+Une **ligne de son dont les montées et descentes composent le profil d'une
+molaire** : deux cuspides séparées d'un sillon en haut, deux racines en bas. De
+loin un niveau sonore, de près une dent. **Jamais de dent dessinée littéralement.**
+
+Pendant l'écoute, les cinq barres deviennent le niveau réel du micro : la marque
+n'illustre pas le produit, elle en est l'instrument.
+
+- Fichiers vectoriels : `design/marque/*.svg`
+- Fichiers PNG, toutes tailles : `design/marque/png/` — régénérés par
+  `python3 scripts/export_marque.py`
+- Planche à ouvrir pour juger : `design/marque/planche.html`
+- Règles d'emploi : `design/marque/README.md`
+
+**Jamais sous 20 px** pour la version à cinq barres : elles se referment. En
+dessous, la version à trois barres (`favicon-*.png`).
+
+## Couleurs
+
+Source unique : `design/tokens.json` → `apps/web/src/app/tokens.css` et
+`apps/ios/Oris/DesignSystem/Tokens.swift` (`scripts/generate_tokens.py`).
+
+| Jeton | Hex | Emploi |
 |---|---|---|
-| deepBlue | #0F2D46 | headings, navigation, high-trust UI |
-| orisBlue | #3B82F6 | primary action, listening state |
-| mistyTeal | #7DD3C7 | secondary accent, learning/success nuance |
-| cloud | #EAF1F6 | panels/background surfaces |
-| graphite | #1F2937 | body text |
-| white | #FFFFFF | main surfaces |
-| warning | #B7791F | review-needed only |
-| danger | #B42318 | destructive/error/recording failure |
-| success | #067647 | validated state |
+| `deepGreen` | `#0E3A29` | fond du menu, bord des boutons verts |
+| `orisGreen` | `#14533B` | action principale, écoute, validé |
+| `brightGreen` | `#1A6B4C` | haut du dégradé des boutons |
+| `mistGreen` | `#E5EFE9` | fonds doux, pastilles validées |
+| `sand` | `#F5F2EC` | fond de page |
+| `cream` | `#F6F3EE` | plaque du logo, texte sur vert |
+| `linen` | `#EBE5DB` | surfaces creusées (onglets) |
+| `ink` | `#1A1815` | texte |
+| `inkSoft` | `#544D44` | texte secondaire |
+| `rule` | `#E3DCCF` | filets |
+| `clay` | `#A8540A` | **à vérifier** — et rien d'autre |
+| `danger` | `#9C2A1C` | alerte critique, échec |
 
-## Typography
-- iOS: SF Pro / system.
-- Web: Inter or system fallback.
-- Numeric timer: tabular figures.
+Les écrans n'emploient **que** les noms sémantiques de `theme.css`
+(`--accent`, `--encre`, `--attention`…), jamais une couleur brute.
 
-## Shape
-- cards radius: 16 px web / native equivalent iOS;
-- primary button radius: 14–16 px;
-- app icon: platform-standard rounded square;
-- avoid excessive pills except status badges.
+## Typographie
 
-## Spacing scale
-4, 8, 12, 16, 24, 32, 48.
+- **Manrope** — toute l'interface. Chiffres tabulaires partout.
+- **Fraunces** (600) — **le nom « Oris » uniquement**, et les titres qui portent la
+  marque (le bouton « Commencer une consultation »). Classe `.marque-nom`.
+- Chargées par `next/font/google`, auto-hébergées.
 
-## Core screens
+Échelle : 12 / 13,5 / 15,5 / 17,5 / 22 / 28 / 35 px. Graisses : 400, 600, 700, 800.
 
-### Home
-Primary CTA `Nouvelle consultation` above the fold. Today list + items to review. No analytics dashboard in V1.
+## Relief
 
-### Active listening
-Center-weighted icon, timer, waveform/voice activity, pause and stop. Transcript hidden by default. Network/mic status always visible.
+Tout ce qui est posé sur la page porte **trois couches d'ombre plus un filet de
+lumière**. Une ombre plate inventée sur place est un écart au système.
 
-### Review desktop
-Two-column layout:
-- left 65%: document;
-- right 35%: warnings + clinical facts;
-- evidence drawer opens from fact or sentence.
+```css
+--lumiere: inset 0 1px 0 rgb(255 255 255 / .9);
+--relief:  0 1px 1px rgb(26 24 21 / .05),
+           0 3px 6px -2px rgb(26 24 21 / .06),
+           0 14px 30px -18px rgb(26 24 21 / .28);
+```
 
-### Review iPhone
-Segmented view: `Compte rendu | Plan | Opératoire` when available. `À vérifier` badge. Bottom action area: Corriger / Valider.
+Les surfaces claires portent un dégradé d'un souffle (`#fff` → `#fdfbf8`). Les
+surfaces creusées (onglets, champs) portent une ombre **interne**.
 
-### Treatment plan
-Vertical cards with step number only when sequence was explicit. Status chips use neutral semantics; do not over-color clinical choices.
+Rayons : carte 20 px, bouton 13 px, grand bouton 16 px, pastille pleine.
 
-### Learning
-Quiet feedback: “Terme appris” or “Préférence enregistrée”; never gamified.
+## Barre de gauche
 
-## Motion
-- subtle pulse during listening;
-- no decorative loaders for clinical processing;
-- progress states explicit;
-- reduce motion respected.
+- Bloc vert plein en dégradé (`--menu-haut` → `--menu-bas`), jamais transparente.
+- **Le logo est une plaque crème posée dessus** — un objet, pas une inscription.
+  Elle est cliquable et ramène à l'accueil.
+- Les entrées portent des **pictogrammes** et **chacune sa propre surface** en
+  relief. Jamais de puces : une liste à puces n'est pas une navigation.
+- L'entrée active s'éclaire et porte un **repère argile sur le flanc gauche**.
+- Le praticien se choisit en bas, dans un menu déroulant discret.
 
-## Accessibility
-- state not encoded by color alone;
-- 44pt minimum touch target on iOS;
-- keyboard navigation on web;
-- dynamic type support;
-- contrast AA minimum for functional text.
+## Écrans
+
+**Accueil** — un seul geste qui compte : le grand bouton vert *Commencer une
+consultation*, avec le logo qui s'anime au survol. Puis la semaine en barres, la
+saisie évitée (avec sa méthode de calcul affichée), ce qui attend, ce qu'Oris a
+appris. Pas de « Bonjour Docteur ».
+
+**Écoute active** — le symbole au centre dans un disque qui respire, ses barres au
+niveau du micro. Chronomètre en 88 px. Micro, réseau, pause, marquer un point,
+terminer. Panneau « ce qu'Oris entend » replié.
+
+**Révision** — document à gauche sur une feuille à marge réglée, rail à onglets à
+droite. Les mentions (« Rapporté par la patiente : ») en gris clair pour que le
+clinique ressorte.
+
+**Fiche patient** — un **cadre d'informations** en deux colonnes, pas des bulles
+éparpillées. La note y est logée, discrète. L'historique en dessous, très lisible,
+chaque ligne cliquable, avec un accès minuscule à la transcription brute. Pas de
+plan de traitement : il appartient à la consultation.
+
+## Ce qui n'est pas encore fait
+
+- Le mot « Oris » des verrouillages n'est pas vectorisé : à faire avant toute
+  impression. Les PNG n'exportent donc que le symbole.
+- Le logo du cabinet ne remplace pas encore celui d'Oris sur les documents.
+- Les écrans iPhone n'ont pas été repris sur cette direction.
