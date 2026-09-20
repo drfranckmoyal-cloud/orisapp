@@ -3,106 +3,142 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Oris — Direction 4 affinée</title>
+<title>Oris — Direction retenue</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
 <style>
-/* ── DIRECTION 4, AFFINÉE ──────────────────────────────────────────────────
-   Trois corrections demandées, et une idée.
-   1. La barre de gauche ne flottait plus : elle devient un bloc vert plein, et sa
-      typographie passe en 16 px demi-gras sur crème. Elle porte enfin l'écran.
-   2. Les cadres n'avaient pas de corps : ombres en trois couches, filet de lumière
-      en haut de chaque surface, dégradé d'un souffle. Du relief, jamais du bibelot.
-   3. L'idée : le logo est une ligne de son. Pendant l'écoute, ses cinq barres
-      deviennent le niveau réel du micro. La marque n'illustre pas le produit,
-      elle en est l'instrument.                                                    */
+/* ── DIRECTION RETENUE ─────────────────────────────────────────────────────
+   Manrope pour l'interface, Fraunces pour le nom : la marque parle d'une autre
+   voix que le produit.
+
+   La barre de gauche, reprise sur deux reproches justes.
+   1. Le logo se fondait dans le vert. Il est maintenant posé **sur** une plaque
+      crème, plus grand, isolé — et cliquable : il ramène à l'accueil.
+   2. Les entrées ressemblaient à une liste à puces. Les puces sont remplacées par
+      des pictogrammes, et chaque entrée repose sur sa propre surface en relief :
+      un voile de lumière en haut, une ombre portée dessous. L'entrée active
+      s'éclaire franchement et porte un repère argile sur son flanc.              */
 :root{
-  /* Neutres chauds — la palette retenue, resserrée. */
   --fond:#f5f2ec; --surface:#ffffff; --surface-2:#fdfbf8; --sourd:#ebe5db;
   --encre:#1a1815; --encre-2:#544d44; --encre-3:#8a8073;
   --trait:#e3dccf; --trait-fort:#cdc4b3;
-  /* Verts */
   --vert:#14533b; --vert-fonce:#0e3a29; --vert-vif:#1a6b4c; --vert-clair:#e5efe9;
-  --vert-menu:#123f2d; --vert-menu-haut:#164a35;
-  /* États */
-  --argile:#a8540a; --argile-clair:#fbeedd;
+  --vert-menu:#123f2d; --vert-menu-haut:#17503a; --vert-menu-bas:#0b2f21;
+  --argile:#a8540a; --argile-vif:#d97a1f; --argile-clair:#fbeedd;
   --rouge:#9c2a1c; --rouge-clair:#fbeae7;
-  /* Relief : trois couches, jamais une seule ombre plate. */
   --relief:0 1px 1px rgba(26,24,21,.05), 0 3px 6px -2px rgba(26,24,21,.06), 0 14px 30px -18px rgba(26,24,21,.28);
-  --relief-haut:0 2px 3px rgba(26,24,21,.06), 0 8px 14px -4px rgba(26,24,21,.10), 0 26px 46px -24px rgba(26,24,21,.34);
   --lumiere:inset 0 1px 0 rgba(255,255,255,.9);
   --anneau:0 0 0 3px rgba(20,83,59,.16);
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--fond);color:var(--encre);
-  font:400 16px/1.62 "Instrument Sans",system-ui,sans-serif;
+  font:400 16px/1.62 Manrope,system-ui,sans-serif;
   font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.018em}
+h1,h2,h3{margin:0;font-weight:700;letter-spacing:-.022em}
 p{margin:0}a{color:inherit;text-decoration:none}
 svg{display:block}
-.app{display:grid;grid-template-columns:252px 1fr;min-height:100vh}
+.serif{font-family:Fraunces,Georgia,serif;font-weight:600;letter-spacing:-.02em}
+.app{display:grid;grid-template-columns:262px 1fr;min-height:100vh}
 
-/* ── Barre de gauche : un bloc, pas un bord ───────────────────────────────── */
+/* ── Barre de gauche ─────────────────────────────────────────────────────── */
 .menu{
-  background:linear-gradient(180deg,var(--vert-menu-haut),var(--vert-fonce));
-  color:#eef4f0;padding:26px 0 22px;display:flex;flex-direction:column;
-  box-shadow:inset -1px 0 0 rgba(255,255,255,.07), 4px 0 28px -18px rgba(14,58,41,.7)}
-.marque{display:flex;align-items:center;gap:12px;padding:0 22px 30px}
-.marque span{font-size:23px;font-weight:600;letter-spacing:-.03em;color:#f6f3ee}
-.menu nav{display:grid;gap:3px;padding:0 12px}
-.menu a{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;
-  color:#cfe0d7;font-size:16px;font-weight:500;letter-spacing:-.008em;cursor:pointer;
-  transition:background .14s ease,color .14s ease}
-.menu a:hover{background:rgba(255,255,255,.09);color:#f6f3ee}
-.menu a.on{background:#f6f3ee;color:var(--vert-fonce);font-weight:600;
-  box-shadow:0 2px 6px -1px rgba(0,0,0,.28)}
-.menu a .p{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.42}
-.menu a.on .p{opacity:1;background:var(--argile)}
-.praticien{margin-top:auto;padding:20px 22px 0;display:flex;align-items:center;gap:12px;
-  border-top:1px solid rgba(255,255,255,.12)}
-.jeton{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.14);
-  display:grid;place-items:center;font-size:14px;font-weight:600;color:#f6f3ee;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
-.praticien b{display:block;font-size:15px;font-weight:600;color:#f6f3ee;letter-spacing:-.01em}
-.praticien small{font-size:13px;color:#a8c0b4}
+  background:linear-gradient(180deg,var(--vert-menu-haut),var(--vert-menu-bas));
+  color:#eef4f0;padding:18px 14px 16px;display:flex;flex-direction:column;
+  box-shadow:inset -1px 0 0 rgba(255,255,255,.08), 6px 0 34px -20px rgba(11,47,33,.9)}
+
+/* 1. Le logo : une plaque posée sur le vert, pas une inscription dedans. */
+.plaque{display:flex;align-items:center;gap:13px;padding:15px 16px;border-radius:17px;margin-bottom:26px;
+  background:linear-gradient(180deg,#fdfcfa,#f2ede4);cursor:pointer;
+  box-shadow:inset 0 1px 0 #fff, 0 1px 2px rgba(0,0,0,.24), 0 12px 24px -12px rgba(0,0,0,.6);
+  transition:transform .12s ease, box-shadow .16s ease}
+.plaque:hover{transform:translateY(-1px);
+  box-shadow:inset 0 1px 0 #fff, 0 2px 4px rgba(0,0,0,.24), 0 18px 32px -14px rgba(0,0,0,.65)}
+.plaque:active{transform:translateY(0)}
+.plaque .nom{font-family:Fraunces,Georgia,serif;font-size:31px;font-weight:600;
+  letter-spacing:-.025em;color:var(--vert-fonce);line-height:1}
+.plaque .retour{margin-left:auto;font-size:11px;color:var(--encre-3);opacity:0;transition:opacity .16s ease;
+  font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.plaque:hover .retour{opacity:1}
+
+/* 2. Les entrées : des surfaces, pas des puces. */
+.menu nav{display:grid;gap:7px}
+.menu a{position:relative;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:13px;
+  color:#c6dad0;font-size:15.5px;font-weight:600;letter-spacing:-.012em;cursor:pointer;
+  background:rgba(255,255,255,.045);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.085), 0 1px 2px rgba(0,0,0,.22);
+  transition:background .14s ease,color .14s ease,transform .1s ease,box-shadow .16s ease}
+.menu a svg{opacity:.75;flex:none}
+.menu a:hover{background:rgba(255,255,255,.1);color:#f2f8f5;transform:translateY(-1px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13), 0 4px 10px -3px rgba(0,0,0,.4)}
+.menu a:hover svg{opacity:1}
+.menu a.on{background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.13));
+  color:#ffffff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.34), 0 2px 4px rgba(0,0,0,.26), 0 10px 20px -10px rgba(0,0,0,.55)}
+.menu a.on svg{opacity:1}
+/* Le repère argile sur le flanc : on sait où l'on est sans lire. */
+.menu a.on::before{content:"";position:absolute;left:-14px;top:50%;transform:translateY(-50%);
+  width:4px;height:22px;border-radius:0 4px 4px 0;background:var(--argile-vif);
+  box-shadow:0 0 12px rgba(217,122,31,.7)}
+
+/* 3. Le profil : discret, en bas, et on en change. */
+.profil{margin-top:auto;position:relative}
+.profil-btn{width:100%;display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:14px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);cursor:pointer;
+  font:inherit;color:inherit;text-align:left;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.profil-btn:hover{background:rgba(255,255,255,.1)}
+.jeton{width:34px;height:34px;border-radius:11px;flex:none;display:grid;place-items:center;
+  font-size:12.5px;font-weight:800;color:var(--vert-fonce);
+  background:linear-gradient(180deg,#fdfcfa,#e9e3d8);box-shadow:inset 0 1px 0 #fff,0 1px 2px rgba(0,0,0,.3)}
+.profil-btn b{display:block;font-size:14px;font-weight:700;color:#f6f3ee;letter-spacing:-.012em}
+.profil-btn small{font-size:12px;color:#9dbcae;font-weight:500}
+.chevron{margin-left:auto;opacity:.6;flex:none}
+.liste-profils{position:absolute;bottom:calc(100% + 8px);left:0;right:0;border-radius:14px;padding:6px;
+  background:#fdfcfa;box-shadow:0 2px 6px rgba(0,0,0,.2),0 18px 38px -14px rgba(0,0,0,.6);z-index:5}
+.liste-profils button{width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border:0;
+  border-radius:10px;background:none;font:inherit;font-size:14px;font-weight:600;color:var(--encre);
+  cursor:pointer;text-align:left}
+.liste-profils button:hover{background:var(--sourd)}
+.liste-profils .jeton{width:28px;height:28px;border-radius:9px;font-size:11px;box-shadow:none;background:var(--vert-clair)}
+.liste-profils hr{border:0;border-top:1px solid var(--trait);margin:6px 4px}
+.liste-profils .ajout{color:var(--encre-3);font-weight:600}
+.liste-profils .ajout small{display:block;font-weight:500;font-size:11.5px}
 
 /* ── Contenu ──────────────────────────────────────────────────────────────── */
-.vue{padding:36px 42px 84px;max-width:1220px}
-.entete{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:30px;gap:24px}
-.surtitre{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--encre-3);
-  font-weight:600;margin-bottom:8px}
-h1{font-size:36px;letter-spacing:-.028em}
+.vue{padding:34px 42px 84px;max-width:1260px}
+.entete{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;gap:24px}
+.surtitre{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--encre-3);
+  font-weight:700;margin-bottom:8px}
+h1{font-size:35px;letter-spacing:-.032em}
 
-.btn{font:inherit;font-size:15.5px;font-weight:500;padding:12px 20px;cursor:pointer;
+.btn{font:inherit;font-size:15.5px;font-weight:700;padding:12px 20px;cursor:pointer;
   border:1px solid var(--trait-fort);border-radius:13px;color:var(--encre);
   background:linear-gradient(180deg,#fff,#f8f5f0);
   box-shadow:var(--lumiere),0 1px 1px rgba(26,24,21,.05),0 3px 6px -3px rgba(26,24,21,.14);
   transition:transform .1s ease,box-shadow .14s ease}
 .btn:hover{box-shadow:var(--lumiere),0 2px 3px rgba(26,24,21,.06),0 8px 14px -6px rgba(26,24,21,.2);transform:translateY(-1px)}
-.btn:active{transform:translateY(0)}
 .btn:focus-visible{outline:0;box-shadow:var(--anneau)}
 .btn-1{color:#fff;border-color:var(--vert-fonce);
   background:linear-gradient(180deg,var(--vert-vif),var(--vert));
   box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 1px 1px rgba(14,58,41,.2),0 6px 14px -6px rgba(14,58,41,.6)}
 .btn-1:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 3px 5px rgba(14,58,41,.18),0 14px 22px -10px rgba(14,58,41,.6)}
-.lien{border:0;background:none;color:var(--vert);cursor:pointer;font:inherit;font-size:15.5px;font-weight:500;padding:0}
+.btn-gris{color:var(--encre-3);background:var(--sourd);border-color:var(--trait);box-shadow:none;cursor:not-allowed}
+.btn-gris:hover{transform:none;box-shadow:none}
+.lien{border:0;background:none;color:var(--vert);cursor:pointer;font:inherit;font-size:15.5px;font-weight:700;padding:0}
 
-/* ── Cadres : du corps ────────────────────────────────────────────────────── */
 .carte{background:linear-gradient(180deg,var(--surface),var(--surface-2));
-  border:1px solid var(--trait);border-radius:20px;overflow:hidden;
-  box-shadow:var(--lumiere),var(--relief)}
-.carte-t{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:20px 24px 16px}
-.carte-t h2{font-size:18.5px}
-.carte-c{padding:0 24px 24px}
+  border:1px solid var(--trait);border-radius:20px;overflow:hidden;box-shadow:var(--lumiere),var(--relief)}
+.carte-t{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:20px 22px 15px}
+.carte-t h2{font-size:17.5px}
+.carte-c{padding:0 22px 22px}
 .rangs>div{display:flex;justify-content:space-between;gap:16px;align-items:center;
-  padding:15px 24px;border-top:1px solid var(--trait);transition:background .12s ease}
+  padding:14px 22px;border-top:1px solid var(--trait);transition:background .12s ease}
 .rangs>div:hover{background:#fbf8f3}
-.rangs small{display:block;color:var(--encre-3);font-size:14px;margin-top:2px}
-.rangs b{font-weight:500}
+.rangs small{display:block;color:var(--encre-3);font-size:13.5px;margin-top:2px;font-weight:500}
+.rangs b{font-weight:700;font-size:15.5px}
 
-.etiq{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:500;
-  padding:5px 12px;border-radius:99px;white-space:nowrap;border:1px solid transparent;
-  box-shadow:var(--lumiere)}
+.etiq{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;
+  padding:5px 11px;border-radius:99px;white-space:nowrap;border:1px solid transparent;box-shadow:var(--lumiere)}
 .etiq i{width:6px;height:6px;border-radius:50%;background:currentColor;display:block}
 .e-att{background:var(--argile-clair);color:var(--argile);border-color:#f0dcc2}
 .e-ale{background:var(--rouge-clair);color:var(--rouge);border-color:#f2d3cd}
@@ -113,90 +149,144 @@ h1{font-size:36px;letter-spacing:-.028em}
   background:#fff;color:var(--encre);box-shadow:inset 0 1px 2px rgba(26,24,21,.05)}
 .champ::placeholder{color:var(--encre-3)}
 .champ:focus{outline:0;border-color:var(--vert);box-shadow:inset 0 1px 2px rgba(26,24,21,.04),var(--anneau)}
+.muet{color:var(--encre-3);font-size:14.5px;font-weight:500}
+
+/* ── Accueil : le geste principal, puis ce qui attend ─────────────────────── */
+.haut-accueil{display:grid;grid-template-columns:1.15fr 1fr;gap:22px;margin-bottom:22px}
+/* Le cœur de l'application mérite la taille du cœur de l'application. */
+.demarrer{display:flex;align-items:center;gap:22px;padding:26px 28px;border-radius:22px;cursor:pointer;
+  border:1px solid var(--vert-fonce);color:#fff;text-align:left;font:inherit;
+  background:linear-gradient(145deg,var(--vert-vif),var(--vert) 55%,var(--vert-fonce));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 2px 4px rgba(14,58,41,.25),0 26px 44px -22px rgba(14,58,41,.9);
+  transition:transform .13s ease,box-shadow .18s ease}
+.demarrer:hover{transform:translateY(-2px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 4px 8px rgba(14,58,41,.25),0 36px 56px -24px rgba(14,58,41,.95)}
+.demarrer .disque{width:84px;height:84px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:rgba(255,255,255,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
+.demarrer .disque svg rect{transform-box:fill-box;transform-origin:center}
+.demarrer:hover .disque svg rect{animation:niveau 1.15s ease-in-out infinite}
+.demarrer:hover .disque svg rect:nth-child(2){animation-delay:.14s}
+.demarrer:hover .disque svg rect:nth-child(3){animation-delay:.28s}
+.demarrer:hover .disque svg rect:nth-child(4){animation-delay:.42s}
+.demarrer:hover .disque svg rect:nth-child(5){animation-delay:.56s}
+.demarrer .titre{font-family:Fraunces,Georgia,serif;font-size:29px;font-weight:600;letter-spacing:-.02em;line-height:1.15}
+.demarrer .sous{font-size:15px;color:#bfdccf;margin-top:6px;font-weight:500}
+
+.semaine{display:flex;align-items:flex-end;gap:11px;height:108px;padding:6px 2px 0}
+.semaine div{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+.semaine i{width:100%;border-radius:7px 7px 3px 3px;display:block;
+  background:linear-gradient(180deg,#bcd8c9,#8fbda6);box-shadow:inset 0 1px 0 rgba(255,255,255,.55)}
+.semaine .today i{background:linear-gradient(180deg,var(--vert-vif),var(--vert));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}
+.semaine span{font-size:12px;color:var(--encre-3);font-weight:700;letter-spacing:.02em}
+.semaine .today span{color:var(--vert)}
+.chiffre{font-size:38px;font-weight:800;letter-spacing:-.035em;line-height:1}
+.chiffre small{font-size:15px;font-weight:600;color:var(--encre-3);letter-spacing:0}
 .grille3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
 .grille2{display:grid;grid-template-columns:1.38fr 1fr;gap:24px;align-items:start}
-.muet{color:var(--encre-3);font-size:15px}
 
-/* ── Écoute : le logo devient le niveau sonore ────────────────────────────── */
+/* ── Écoute ──────────────────────────────────────────────────────────────── */
 .ecoute{max-width:620px;margin:6vh auto;text-align:center}
-.socle{width:186px;height:186px;margin:0 auto 32px;border-radius:50%;display:grid;place-items:center;
+.socle{width:186px;height:186px;margin:0 auto 30px;border-radius:50%;display:grid;place-items:center;
   background:radial-gradient(circle at 50% 38%,#eef5f1,var(--vert-clair) 72%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 1px 2px rgba(26,24,21,.05),
-             0 22px 44px -26px rgba(20,83,59,.7);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 1px 2px rgba(26,24,21,.05),0 22px 44px -26px rgba(20,83,59,.7);
   animation:respire 3.2s ease-in-out infinite}
 @keyframes respire{50%{transform:scale(1.028)}}
-/* Les cinq barres de la marque, animées : c'est le logo qui écoute. */
 .vu rect{transform-box:fill-box;transform-origin:center;animation:niveau 1.25s ease-in-out infinite}
-.vu rect:nth-child(1){animation-delay:0s}
-.vu rect:nth-child(2){animation-delay:.14s}
-.vu rect:nth-child(3){animation-delay:.28s}
-.vu rect:nth-child(4){animation-delay:.42s}
-.vu rect:nth-child(5){animation-delay:.56s}
+.vu rect:nth-child(2){animation-delay:.14s}.vu rect:nth-child(3){animation-delay:.28s}
+.vu rect:nth-child(4){animation-delay:.42s}.vu rect:nth-child(5){animation-delay:.56s}
 @keyframes niveau{50%{transform:scaleY(.46)}}
-.chrono{font-size:88px;font-weight:600;letter-spacing:-.045em;line-height:1;margin:10px 0 4px}
-.etat{font-size:19px;font-weight:600;color:var(--vert);letter-spacing:-.01em}
-.jauges{display:flex;gap:12px;justify-content:center;margin:32px 0 26px;flex-wrap:wrap}
+.chrono{font-size:88px;font-weight:800;letter-spacing:-.05em;line-height:1;margin:10px 0 4px}
+.etat{font-size:18px;font-weight:700;color:var(--vert)}
+.jauges{display:flex;gap:12px;justify-content:center;margin:30px 0 24px;flex-wrap:wrap}
 .jauges span{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(180deg,#fff,#faf7f2);
-  border:1px solid var(--trait);padding:11px 18px;border-radius:99px;font-size:15px;color:var(--encre-2);
-  box-shadow:var(--lumiere),0 1px 2px rgba(26,24,21,.05)}
+  border:1px solid var(--trait);padding:11px 18px;border-radius:99px;font-size:14.5px;font-weight:600;
+  color:var(--encre-2);box-shadow:var(--lumiere),0 1px 2px rgba(26,24,21,.05)}
 .jauges i{width:7px;height:7px;border-radius:50%;background:var(--vert);display:block}
 .actes{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.repli{margin-top:40px;border-top:1px solid var(--trait);padding-top:20px;text-align:left}
+.repli{margin-top:38px;border-top:1px solid var(--trait);padding-top:18px;text-align:left}
 
-/* ── Le document : une feuille, avec sa marge réglée ──────────────────────── */
-.feuille{position:relative;padding-left:26px}
+/* ── Document ────────────────────────────────────────────────────────────── */
+.feuille{position:relative;padding-left:24px}
 .feuille::before{content:"";position:absolute;left:0;top:4px;bottom:4px;width:2px;border-radius:2px;
   background:linear-gradient(180deg,var(--vert-clair),transparent)}
-.doc h3{font-size:13px;letter-spacing:.11em;text-transform:uppercase;color:var(--encre-3);
-  margin:26px 0 8px;font-weight:600}
+.doc h3{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--encre-3);margin:24px 0 8px;font-weight:800}
 .doc h3:first-child{margin-top:0}
-.doc p{margin-bottom:5px;font-size:17px;line-height:1.72}
+.doc p{margin-bottom:5px;font-size:16.5px;line-height:1.72}
 .doc .dit{color:var(--encre-3)}
-
 .onglets{display:flex;gap:5px;padding:5px;border-radius:15px;margin-bottom:20px;flex-wrap:wrap;
-  background:var(--sourd);box-shadow:inset 0 1px 2px rgba(26,24,21,.07)}
-.onglets button{font:inherit;font-size:15px;font-weight:500;background:none;border:0;padding:9px 14px;
+  background:var(--sourd);box-shadow:inset 0 1px 3px rgba(26,24,21,.09)}
+.onglets button{font:inherit;font-size:14.5px;font-weight:700;background:none;border:0;padding:9px 14px;
   border-radius:11px;color:var(--encre-2);cursor:pointer}
 .onglets button.on{background:linear-gradient(180deg,#fff,#fbf8f4);color:var(--encre);
-  box-shadow:var(--lumiere),0 1px 2px rgba(26,24,21,.1)}
-.verif{display:flex;gap:13px;padding:15px 0;border-bottom:1px solid var(--trait);align-items:flex-start}
+  box-shadow:var(--lumiere),0 1px 2px rgba(26,24,21,.12)}
+.verif{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--trait);align-items:flex-start}
 .verif:last-child{border-bottom:0}
-.pied{display:flex;gap:11px;flex-wrap:wrap;margin-top:26px;padding-top:20px;border-top:1px solid var(--trait)}
-.bandeau{display:flex;gap:10px;margin-bottom:26px;flex-wrap:wrap}
+.pied{display:flex;gap:11px;flex-wrap:wrap;margin-top:24px;padding-top:20px;border-top:1px solid var(--trait)}
+.bandeau{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap}
 .bandeau span{background:linear-gradient(180deg,#fff,#faf7f2);border:1px solid var(--trait);
-  padding:9px 16px;border-radius:99px;font-size:15px;color:var(--encre-2);
+  padding:9px 16px;border-radius:99px;font-size:14.5px;font-weight:600;color:var(--encre-2);
   box-shadow:var(--lumiere),0 1px 2px rgba(26,24,21,.04)}
+.reglage{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 0;border-top:1px solid var(--trait)}
+.reglage:first-child{border-top:0}
+.reglage b{display:block;font-size:15.5px;font-weight:700}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
   <g id="barres">
-    <rect x="13" y="38" width="10" height="34" rx="5"/>
-    <rect x="31" y="20" width="10" height="76" rx="5"/>
-    <rect x="49" y="30" width="10" height="48" rx="5"/>
-    <rect x="67" y="20" width="10" height="76" rx="5"/>
+    <rect x="13" y="38" width="10" height="34" rx="5"/><rect x="31" y="20" width="10" height="76" rx="5"/>
+    <rect x="49" y="30" width="10" height="48" rx="5"/><rect x="67" y="20" width="10" height="76" rx="5"/>
     <rect x="85" y="38" width="10" height="34" rx="5"/>
   </g>
+  <g id="i-accueil" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 9.5 10 3.5l7 6"/><path d="M4.8 11v5.5h10.4V11"/></g>
+  <g id="i-patients" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="10" cy="7" r="3.2"/><path d="M4 16.6c.9-2.7 3.2-4.1 6-4.1s5.1 1.4 6 4.1"/></g>
+  <g id="i-consultations" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <path d="M4 8v4M7.3 5.4v9.2M10.6 7v6M14 4.6v10.8M17.3 8.4v3.2"/></g>
+  <g id="i-documents" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 3.2h6.4L15.4 7v9.8H5z"/><path d="M11.2 3.4V7.2h3.9"/><path d="M7.6 11h5M7.6 13.7h3.4"/></g>
+  <g id="i-apprend" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 3.2 11.7 7.9 16.4 9.6 11.7 11.3 10 16 8.3 11.3 3.6 9.6 8.3 7.9z"/></g>
+  <g id="i-parametres" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <path d="M3.6 6.2h12.8M3.6 13.8h12.8"/><circle cx="12.4" cy="6.2" r="2.1"/><circle cx="7.6" cy="13.8" r="2.1"/></g>
+  <g id="i-chevron" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 10.5 8 6.5l4 4"/></g>
 </defs></svg>
 
 <div class="app">
   <aside class="menu">
-    <div class="marque">
-      <svg viewBox="0 0 120 120" width="30" height="30" fill="#f6f3ee"><use href="#barres"/></svg>
-      <span>Oris</span>
+    <!-- Le logo est un bouton : il ramène à l'accueil. -->
+    <div class="plaque" data-v="accueil" role="button" tabindex="0" aria-label="Oris — revenir à l'accueil">
+      <svg viewBox="0 0 120 120" width="36" height="36" fill="#0e3a29"><use href="#barres"/></svg>
+      <span class="nom">Oris</span>
+      <span class="retour">accueil</span>
     </div>
+
     <nav>
-      <a class="on" data-v="accueil"><i class="p"></i>Accueil</a>
-      <a data-v="patient"><i class="p"></i>Patients</a>
-      <a data-v="ecoute"><i class="p"></i>Consultations</a>
-      <a data-v="revision"><i class="p"></i>Documents</a>
-      <a><i class="p"></i>Oris apprend</a>
-      <a><i class="p"></i>Paramètres</a>
+      <a class="on" data-v="accueil"><svg viewBox="0 0 20 20" width="20" height="20"><use href="#i-accueil"/></svg>Accueil</a>
+      <a data-v="patient"><svg viewBox="0 0 20 20" width="20" height="20"><use href="#i-patients"/></svg>Patients</a>
+      <a data-v="ecoute"><svg viewBox="0 0 20 20" width="20" height="20"><use href="#i-consultations"/></svg>Consultations</a>
+      <a data-v="revision"><svg viewBox="0 0 20 20" width="20" height="20"><use href="#i-documents"/></svg>Documents</a>
+      <a><svg viewBox="0 0 20 20" width="20" height="20"><use href="#i-apprend"/></svg>Oris apprend</a>
+      <a data-v="parametres"><svg viewBox="0 0 20 20" width="20" height="20"><use href="#i-parametres"/></svg>Paramètres</a>
     </nav>
-    <div class="praticien">
-      <span class="jeton">FM</span>
-      <span><b>Dr Franck Moyal</b><small>Données fictives</small></span>
+
+    <div class="profil">
+      <div class="liste-profils" id="profils" hidden>
+        <button><span class="jeton">FM</span>Dr Franck Moyal</button>
+        <button><span class="jeton">CL</span>Dr Claire Lemoine</button>
+        <button><span class="jeton">AB</span>Dr Antoine Bret</button>
+        <hr>
+        <button class="ajout"><span class="jeton">+</span><span>Nouveau praticien<small>à venir</small></span></button>
+      </div>
+      <button class="profil-btn" id="bouton-profil">
+        <span class="jeton">FM</span>
+        <span><b>Dr Franck Moyal</b><small>Cabinet des Lilas</small></span>
+        <svg class="chevron" viewBox="0 0 16 16" width="16" height="16"><use href="#i-chevron"/></svg>
+      </button>
     </div>
   </aside>
 
@@ -204,10 +294,37 @@ h1{font-size:36px;letter-spacing:-.028em}
     <!-- ACCUEIL -->
     <section class="vue" data-vue="accueil">
       <div class="entete">
-        <div><p class="surtitre">Dimanche 20 septembre</p><h1>Bonsoir Dr Moyal</h1></div>
-        <button class="btn btn-1">Nouvelle consultation</button>
+        <div><p class="surtitre">Dimanche 20 septembre</p><h1>Votre journée</h1></div>
+        <input class="champ" type="search" placeholder="Retrouver un patient" style="max-width:320px">
       </div>
-      <div style="max-width:500px;margin-bottom:26px"><input class="champ" type="search" placeholder="Retrouver un patient"></div>
+
+      <div class="haut-accueil">
+        <button class="demarrer" data-v="ecoute">
+          <span class="disque">
+            <svg viewBox="0 0 120 120" width="48" height="48" fill="#f6f3ee"><use href="#barres"/></svg>
+          </span>
+          <span>
+            <span class="titre">Commencer une consultation</span>
+            <span class="sous">Oris écoute, vous soignez. Le compte rendu vous attendra.</span>
+          </span>
+        </button>
+
+        <div class="carte">
+          <div class="carte-t"><h2>Cette semaine</h2><span class="etiq e-neu">18 consultations</span></div>
+          <div class="carte-c">
+            <div class="semaine">
+              <div><i style="height:38%"></i><span>L</span></div>
+              <div><i style="height:62%"></i><span>M</span></div>
+              <div><i style="height:48%"></i><span>M</span></div>
+              <div><i style="height:80%"></i><span>J</span></div>
+              <div><i style="height:55%"></i><span>V</span></div>
+              <div><i style="height:22%"></i><span>S</span></div>
+              <div class="today"><i style="height:44%"></i><span>D</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="grille3">
         <div class="carte"><div class="carte-t"><h2>À relire</h2><span class="etiq e-att"><i></i>3</span></div>
           <div class="rangs">
@@ -215,16 +332,22 @@ h1{font-size:36px;letter-spacing:-.028em}
             <div><span><b>Emma Martin</b><small>20:36 · 2 documents</small></span><span class="etiq e-att"><i></i>à relire</span></div>
             <div><span><b>Claire Repère</b><small>21:48 · 1 document</small></span><span class="etiq e-att"><i></i>à relire</span></div>
           </div></div>
-        <div class="carte"><div class="carte-t"><h2>Aujourd'hui</h2><span class="muet">6</span></div>
-          <div class="rangs">
-            <div><span><b>Paul Durand</b><small>12:15</small></span><span class="etiq e-val"><i></i>validée</span></div>
-            <div><span><b>Léa Simon</b><small>11:30</small></span><span class="etiq e-val"><i></i>validée</span></div>
-            <div><span><b>Marie Dupont</b><small>10:14</small></span><span class="etiq e-ale"><i></i>transcription</span></div>
+
+        <div class="carte"><div class="carte-t"><h2>Saisie évitée</h2></div>
+          <div class="carte-c">
+            <p class="chiffre">3 h 20 <small>cette semaine</small></p>
+            <p class="muet" style="margin-top:10px">Estimation : 18 consultations, à 11 minutes de compte rendu
+              chacune. Elle vaut ce que vaut la moyenne.</p>
+            <div style="margin-top:16px;display:flex;gap:9px;flex-wrap:wrap">
+              <span class="etiq e-val"><i></i>14 validées</span><span class="etiq e-neu">4 en attente</span>
+            </div>
           </div></div>
-        <div class="carte"><div class="carte-t"><h2>Terminées</h2><span class="muet">2</span></div>
+
+        <div class="carte"><div class="carte-t"><h2>Oris apprend</h2><span class="etiq e-att"><i></i>2</span></div>
           <div class="rangs">
-            <div><span><b>Paul Durand</b><small>Exporté en PDF</small></span><span class="etiq e-neu">exportée</span></div>
-            <div><span><b>Léa Simon</b><small>Copié au dossier</small></span><span class="etiq e-neu">validée</span></div>
+            <div><span><b>« avulsion » plutôt qu'« extraction »</b><small>corrigé 3 fois</small></span><button class="btn" style="padding:7px 13px;font-size:13.5px">Adopter</button></div>
+            <div><span><b>G-ænial A'CHORD</b><small>corrigé 2 fois · matériau</small></span><button class="btn" style="padding:7px 13px;font-size:13.5px">Adopter</button></div>
+            <div><span class="muet">8 mots déjà retenus, 1 préférence active</span></div>
           </div></div>
       </div>
     </section>
@@ -232,10 +355,9 @@ h1{font-size:36px;letter-spacing:-.028em}
     <!-- ÉCOUTE -->
     <section class="vue" data-vue="ecoute" hidden>
       <div class="ecoute">
-        <p class="muet" style="margin-bottom:24px;font-size:18px">Marie Dupont</p>
+        <p class="muet" style="margin-bottom:22px;font-size:17px">Marie Dupont</p>
         <div class="socle">
-          <svg class="vu" viewBox="0 0 120 120" width="92" height="92" fill="#14533B"
-               role="img" aria-label="Oris écoute"><use href="#barres"/></svg>
+          <svg class="vu" viewBox="0 0 120 120" width="92" height="92" fill="#14533B"><use href="#barres"/></svg>
         </div>
         <p class="etat">Écoute en cours</p>
         <p class="chrono">12:47</p>
@@ -274,8 +396,6 @@ h1{font-size:36px;letter-spacing:-.028em}
               <p><span class="dit">Accepté par la patiente :</span> composites directs, en une séance.</p>
               <h3>Actes réalisés</h3>
               <p><span class="dit">Prévu :</span> photographies cliniques.</p>
-              <h3>Informations données à la patiente</h3>
-              <p><span class="dit">Rapporté par la patiente :</span> préférence pour la solution la plus conservatrice.</p>
             </div>
             <div class="pied">
               <button class="btn">Éditer</button><button class="btn">Raccourcir</button>
@@ -307,9 +427,7 @@ h1{font-size:36px;letter-spacing:-.028em}
         <div><p class="surtitre">Patient</p><h1>Marie Dupont</h1></div>
         <button class="btn btn-1">Nouvelle consultation</button>
       </div>
-      <div class="bandeau">
-        <span>Née le 14/03/1979</span><span>Dossier 4412</span><span>7 consultations</span><span>Dernière : 20/09/2026</span>
-      </div>
+      <div class="bandeau"><span>Née le 14/03/1979</span><span>Dossier 4412</span><span>7 consultations</span><span>Dernière : 20/09/2026</span></div>
       <div class="grille2">
         <div class="carte"><div class="carte-t"><h2>Historique</h2></div>
           <div class="rangs">
@@ -333,16 +451,53 @@ h1{font-size:36px;letter-spacing:-.028em}
         </div>
       </div>
     </section>
+
+    <!-- PARAMÈTRES -->
+    <section class="vue" data-vue="parametres" hidden>
+      <div class="entete"><div><p class="surtitre">Réglages</p><h1>Paramètres</h1></div></div>
+      <div class="grille2">
+        <div class="carte"><div class="carte-t"><h2>Praticiens du cabinet</h2><span class="etiq e-neu">3</span></div>
+          <div class="rangs">
+            <div><span><b>Dr Franck Moyal</b><small>Cabinet des Lilas · profil actif</small></span><span class="etiq e-val"><i></i>actif</span></div>
+            <div><span><b>Dr Claire Lemoine</b><small>Cabinet des Lilas</small></span><button class="btn" style="padding:7px 13px;font-size:13.5px">Modifier</button></div>
+            <div><span><b>Dr Antoine Bret</b><small>Cabinet des Lilas</small></span><button class="btn" style="padding:7px 13px;font-size:13.5px">Modifier</button></div>
+          </div>
+          <div class="carte-c" style="padding-top:18px;border-top:1px solid var(--trait)">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+              <div>
+                <b style="font-size:15.5px">Créer un nouveau praticien</b>
+                <p class="muet" style="margin-top:3px">Chacun garde son dictionnaire, ses préférences de
+                  rédaction et ses documents.</p>
+              </div>
+              <button class="btn btn-gris" disabled>En attente</button>
+            </div>
+          </div>
+        </div>
+        <div class="carte"><div class="carte-t"><h2>Cabinet</h2></div>
+          <div class="carte-c" style="padding-top:6px">
+            <div class="reglage"><span><b>Nom</b><span class="muet">Cabinet des Lilas</span></span><button class="btn" style="padding:7px 13px;font-size:13.5px">Modifier</button></div>
+            <div class="reglage"><span><b>Transcription</b><span class="muet">Deepgram Nova-3</span></span><span class="etiq e-val"><i></i>active</span></div>
+            <div class="reglage"><span><b>Hébergement agréé santé</b><span class="muet">aucun patient réel</span></span><span class="etiq e-ale"><i></i>absent</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 </div>
+
 <script>
-document.querySelectorAll('.menu a[data-v]').forEach(function(lien){
-  lien.addEventListener('click', function(){
-    document.querySelectorAll('.menu a').forEach(function(a){a.classList.remove('on')});
-    lien.classList.add('on');
-    document.querySelectorAll('[data-vue]').forEach(function(s){s.hidden = s.dataset.vue !== lien.dataset.v});
-  });
+function montrer(v){
+  document.querySelectorAll('section[data-vue]').forEach(function(s){s.hidden = s.dataset.vue !== v});
+  document.querySelectorAll('.menu nav a').forEach(function(a){a.classList.toggle('on', a.dataset.v === v)});
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('[data-v]').forEach(function(el){
+  el.addEventListener('click', function(){ montrer(el.dataset.v) });
 });
+var bouton = document.getElementById('bouton-profil'), liste = document.getElementById('profils');
+bouton.addEventListener('click', function(e){ e.stopPropagation(); liste.hidden = !liste.hidden });
+document.addEventListener('click', function(){ liste.hidden = true });
+liste.addEventListener('click', function(e){ e.stopPropagation() });
 </script>
 </body>
 </html>
