@@ -24,3 +24,7 @@
 | D020 | Choix fournisseur après benchmark Oris | Frozen |
 | D021 | Identité visuelle Deep Blue/Oris Blue/Misty Teal/Cloud | Frozen |
 | D022 | Icône = dent abstraite ouverte + onde vocale | Frozen |
+| D023 | Modèles de compte rendu du Dr Moyal (dossier Word du 20/09/2026) = référence de mise en page et de rubriques | Frozen (21/09/2026) |
+| D024 | « Proposition thérapeutique » sans statut imprimé ; l'acceptation fait foi par le devis signé. Les statuts restent dans le dossier clinique | Frozen (21/09/2026) — voir docs/MODELES_CR.md, point ouvert A |
+| D025 | Pas de type « compte rendu de suivi » : une consultation de suivi est une consultation, avec rubrique « Actes réalisés » | Frozen (21/09/2026) — à confirmer, point ouvert B |
+| D026 | Documents modifiables dans Oris, sortie en PDF ; pas de fichier Word | Frozen (21/09/2026) |
