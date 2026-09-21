@@ -5,23 +5,54 @@
   gap: var(--espace-6);
 }
 
+.entete {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espace-6);
+  flex-wrap: wrap;
+}
+
+/* Un petit cadre : le schéma situe, il ne doit pas occuper la page. */
 .schema {
+  flex: none;
+  width: 250px;
   margin: 0;
-  padding: var(--espace-3) var(--espace-4);
-  border: 1px solid var(--trait);
-  border-radius: 14px;
+  padding: var(--espace-2);
+  border: 1px solid var(--trait-fort);
+  border-radius: 12px;
   background: var(--surface-2);
 }
 
 .schema svg {
   display: block;
   width: 100%;
-  max-width: 520px;
-  margin: 0 auto;
 }
 
-.schema figcaption {
-  margin-top: var(--espace-2);
+.legende {
+  display: grid;
+  gap: 6px;
+  flex: 1;
+  min-width: 220px;
+  margin: 0;
+  padding: var(--espace-2) 0 0;
+  list-style: none;
+  font-size: var(--texte-sm);
+}
+
+.legende li {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.pastille {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.note {
   font-size: var(--texte-xs);
   font-style: italic;
   color: var(--encre-tres-douce);
@@ -31,12 +62,6 @@
   font-size: 2.2px;
   fill: var(--encre-tres-douce);
   font-family: var(--police);
-}
-
-.arcade {
-  font-size: 2.8px;
-  font-style: italic;
-  fill: var(--encre-tres-douce);
 }
 
 .etapes {
@@ -72,12 +97,13 @@
   color: var(--encre-tres-douce);
 }
 
+/* Chronologie, Écarté : de vrais titres, aérés et soulignés. */
 .sousTitre {
-  margin: 0 0 var(--espace-3);
-  font-size: 12.5px;
+  margin: var(--espace-4) 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--trait-fort);
+  font-size: var(--texte-xl);
   font-weight: var(--graisse-forte);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
   color: var(--accent);
 }
 
@@ -131,6 +157,9 @@
 }
 
 .ecarte {
-  margin: 0;
+  border-left-color: var(--trait-fort);
+}
+
+.ecarte h4 {
   color: var(--encre-douce);
 }

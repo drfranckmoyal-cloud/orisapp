@@ -278,6 +278,7 @@ def draw_letterhead(
 
     Tout est aligné à gauche, sous le nom : l'identité se lit d'un seul regard.
     """
+    # Le texte contre la marge de gauche, le monogramme à droite.
     x = MARGIN
     logo_height = 0.0
     if cabinet.logo is not None:
@@ -286,9 +287,13 @@ def draw_letterhead(
         logo_height = LOGO_ENTETE
         logo_width = logo_height * w / h
         canvas.drawImage(
-            image, MARGIN, top - logo_height, width=logo_width, height=logo_height, mask="auto"
+            image,
+            width - MARGIN - logo_width,
+            top - logo_height,
+            width=logo_width,
+            height=logo_height,
+            mask="auto",
         )
-        x = MARGIN + logo_width + 4 * mm
     y = top - 6 * mm
 
     canvas.setFillColor(color("title"))
@@ -569,12 +574,14 @@ def draw_odontogramme(canvas: Canvas, vue: Any, x0: float, top: float, largeur: 
             etapes_de.setdefault(dent, []).append(etape.couleur)
     absentes = set(vue.dents_absentes)
 
-    a = largeur * 0.25
+    # Petit format : les marges autour des arcades suivent la taille du schéma.
+    a = largeur * 0.36
     b = a * 0.62
+    k = largeur / (60 * mm)
     cx = x0 + largeur / 2
-    haut_cy = b + 13 * mm  # repère « écran » : l'axe descend
-    bas_cy = haut_cy + 7 * mm
-    hauteur = bas_cy + b + 12 * mm
+    haut_cy = b + 8 * mm * k  # repère « écran » : l'axe descend
+    bas_cy = haut_cy + 4 * mm * k
+    hauteur = bas_cy + b + 8 * mm * k
 
     def dessiner(dents: list[Any]) -> None:
         for dent in dents:
@@ -589,13 +596,13 @@ def draw_odontogramme(canvas: Canvas, vue: Any, x0: float, top: float, largeur: 
                 trait, fond = teinte(couleurs[-1])
                 canvas.setFillColor(_couleur(fond))
                 canvas.setStrokeColor(_couleur(trait))
-                canvas.setLineWidth(1.1)
+                canvas.setLineWidth(0.8)
             else:
                 canvas.setFillColor(_couleur("#FFFFFF"))
                 canvas.setStrokeColor(_couleur("#9AA3A0"))
-                canvas.setLineWidth(0.6)
+                canvas.setLineWidth(0.4)
             if dent.numero in absentes:
-                canvas.setDash(1.6, 1.4)
+                canvas.setDash(1.0, 0.9)
             # Une dent absente que rien ne remplace : un contour vide.
             vide = dent.numero in absentes and not couleurs
             canvas.roundRect(-w / 2, -d / 2, w, d, rayon, stroke=1, fill=0 if vide else 1)
@@ -605,7 +612,7 @@ def draw_odontogramme(canvas: Canvas, vue: Any, x0: float, top: float, largeur: 
                 canvas.setStrokeColor(
                     _couleur("#C3CAC7") if not couleurs else _couleur(teinte(couleurs[-1])[0])
                 )
-                canvas.setLineWidth(0.35)
+                canvas.setLineWidth(0.25)
                 canvas.line(-w * 0.28, 0, w * 0.28, 0)
                 if dent.rang >= 6:
                     canvas.line(0, -d * 0.25, 0, d * 0.25)
@@ -613,24 +620,33 @@ def draw_odontogramme(canvas: Canvas, vue: Any, x0: float, top: float, largeur: 
 
             # Numéro et pastilles à l'extérieur de l'arcade.
             ox, oy = dent.dehors[0], -dent.dehors[1]
-            portee = max(dent.largeur, dent.epaisseur) / 2 + 3.2 * mm
+            portee = max(dent.largeur, dent.epaisseur) / 2 + 2.2 * mm * k
             nx, ny = px + ox * portee, py + oy * portee
-            canvas.setFont("Helvetica", 5.6)
+            canvas.setFont("Helvetica", 4.4)
             canvas.setFillColor(_couleur("#6B7A76"))
-            canvas.drawCentredString(nx, ny - 2, dent.numero)
+            canvas.drawCentredString(nx, ny - 1.5, dent.numero)
             for rang_pastille, index in enumerate(couleurs):
-                distance = portee + 3.3 * mm + rang_pastille * 2.9 * mm
+                distance = portee + (2.3 + rang_pastille * 1.9) * mm * k
                 canvas.setFillColor(_couleur(teinte(index)[0]))
-                canvas.circle(px + ox * distance, py + oy * distance, 1.15 * mm, stroke=0, fill=1)
+                canvas.circle(
+                    px + ox * distance, py + oy * distance, 0.75 * mm * k, stroke=0, fill=1
+                )
 
     dessiner(placer("haut", cx, haut_cy, a, b))
     dessiner(placer("bas", cx, bas_cy, a, b))
-    canvas.setFont("Times-Italic", 7.5)
-    canvas.setFillColor(color("muted"))
-    canvas.drawString(x0, top - haut_cy + 2 * mm, "Maxillaire")
-    canvas.drawString(x0, top - bas_cy - 2 * mm, "Mandibule")
-    canvas.drawRightString(x0 + largeur, top - haut_cy + 2 * mm, "vue occlusale")
     return hauteur
+
+
+def titre_section(canvas: Canvas, texte: str, y: float, width: float) -> float:
+    """Un titre de section du plan : aéré, gras, vert, souligné d'un filet."""
+    y -= 6 * mm
+    canvas.setFont(SERIF_GRAS, 15)
+    canvas.setFillColor(color("heading"))
+    canvas.drawString(MARGIN, y, texte)
+    canvas.setStrokeColor(color("rule"))
+    canvas.setLineWidth(0.6)
+    canvas.line(MARGIN, y - 2 * mm, width - MARGIN, y - 2 * mm)
+    return y - 8 * mm
 
 
 def render_plan_pages(
@@ -659,16 +675,34 @@ def render_plan_pages(
             page += 1
             y = draw_running_header(canvas, context, layout, cabinet, height - MARGIN)
 
-    # Schéma
-    hauteur = draw_odontogramme(canvas, vue, MARGIN, y, usable)
-    y -= hauteur
+    # Schéma : un petit cadre à gauche, la légende des étapes à sa droite.
+    cadre = 62 * mm
+    marge_cadre = 2 * mm
+    y -= 2 * mm
+    hauteur = draw_odontogramme(canvas, vue, MARGIN + marge_cadre, y - marge_cadre, cadre)
+    hauteur_cadre = hauteur + 2 * marge_cadre
+    canvas.setStrokeColor(color("rule"))
+    canvas.setLineWidth(0.5)
+    canvas.roundRect(MARGIN, y - hauteur_cadre, cadre + 2 * marge_cadre, hauteur_cadre, 2.5 * mm)
+    lx = MARGIN + cadre + 2 * marge_cadre + 7 * mm
+    ly = y - 5 * mm
+    for etape in vue.etapes:
+        canvas.setFillColor(_couleur(teinte(etape.couleur)[0]))
+        canvas.circle(lx + 1.3 * mm, ly + 1.1 * mm, 1.3 * mm, stroke=0, fill=1)
+        morceaux = wrap(entete(etape), SERIF, 9, width - MARGIN - lx - 5 * mm)[:2]
+        canvas.setFont(SERIF, 9)
+        canvas.setFillColor(color("body"))
+        for morceau in morceaux:
+            canvas.drawString(lx + 4.5 * mm, ly, morceau)
+            ly -= 4 * mm
+        ly -= 1.2 * mm
+    canvas.setFont(SERIF_ITALIQUE, 8)
+    canvas.setFillColor(color("muted"))
     if vue.dents_absentes:
-        canvas.setFont(SERIF_ITALIQUE, 8)
-        canvas.setFillColor(color("muted"))
-        canvas.drawString(
-            MARGIN, y, "En pointillé : dents absentes. Pastilles : étapes qui concernent la dent."
-        )
-        y -= 7 * mm
+        canvas.drawString(lx, ly - 1 * mm, "En pointillé : dents absentes.")
+        ly -= 4 * mm
+    canvas.drawString(lx, ly - 1 * mm, "Vue occlusale ; maxillaire en haut.")
+    y -= max(hauteur_cadre, y - ly + 2 * mm) + 8 * mm
 
     # Étapes
     for etape in vue.etapes:
@@ -706,11 +740,9 @@ def render_plan_pages(
 
     # Chronologie : une frise seulement s'il y a plusieurs étapes et un délai dit.
     if len(vue.etapes) > 1 and any(e.delai for e in vue.etapes):
-        place(30 * mm)
-        canvas.setFont(SERIF, layout.heading_size + 3)
-        canvas.setFillColor(color("heading"))
-        canvas.drawString(MARGIN, y - 3 * mm, "Chronologie")
-        y -= 13 * mm
+        place(40 * mm)
+        y = titre_section(canvas, "Chronologie", y, width)
+        y -= 6 * mm
         n = len(vue.etapes)
         gauche, droite = MARGIN + 20 * mm, width - MARGIN - 20 * mm
         ecart = (droite - gauche) / max(n - 1, 1)
@@ -739,21 +771,33 @@ def render_plan_pages(
                 canvas.drawCentredString(x, y + 4 * mm, etape.delai)
         y -= (12 + 3.3 * lignes_max) * mm
 
-    # Écarté
+    # Écarté : même présentation qu'une étape, en gris — lisible, mais hors du plan.
     if vue.ecartes:
-        place(16 * mm)
-        canvas.setFont(SERIF, layout.heading_size + 3)
-        canvas.setFillColor(color("heading"))
-        canvas.drawString(MARGIN, y - 3 * mm, "Écarté")
-        y -= 10 * mm
+        place(30 * mm)
+        y = titre_section(canvas, "Écarté", y, width)
         for etape in vue.ecartes:
-            dents = f" ({', '.join(etape.dents)})" if etape.dents else ""
-            texte = f"{etape.titre}{dents} — {etape.statut}. " + " ".join(etape.details)
-            for ligne in wrap(texte, SERIF, 10.5, usable):
-                place(5 * mm)
-                canvas.setFont(SERIF, 10.5)
-                canvas.setFillColor(color("body"))
-                canvas.drawString(MARGIN, y, ligne)
+            dents = f" — {', '.join(etape.dents)}" if etape.dents else ""
+            texte_ecart: list[str] = []
+            for detail in etape.details:
+                texte_ecart += wrap(detail, SERIF, 10.5, usable - 8 * mm)
+            place((12 + len(texte_ecart) * 4.8) * mm)
+            haut_bloc = y + 1 * mm
+            canvas.setFont(SERIF_GRAS, 12)
+            canvas.setFillColor(color("muted"))
+            canvas.drawString(MARGIN + 5 * mm, y - 4 * mm, f"{etape.titre}{dents}")
+            y -= 8.5 * mm
+            canvas.setFont(SERIF_ITALIQUE, 9)
+            canvas.drawString(MARGIN + 5 * mm, y + 1 * mm, etape.statut)
+            y -= 5 * mm
+            canvas.setFont(SERIF, 10.5)
+            canvas.setFillColor(color("body"))
+            for ligne in texte_ecart:
+                canvas.drawString(MARGIN + 5 * mm, y, ligne)
                 y -= 4.8 * mm
+            canvas.setFillColor(color("rule"))
+            canvas.rect(
+                MARGIN, y + 2.5 * mm, 1.3 * mm, haut_bloc - (y + 2.5 * mm), stroke=0, fill=1
+            )
+            y -= 3 * mm
     draw_footer(canvas, layout, cabinet, width, page, page)
     canvas.showPage()

@@ -111,12 +111,6 @@ export function Odontogramme({ vue }: { vue: PlanVue }) {
         role="img"
         aria-label="Schéma dentaire"
       >
-        <text x={X0 + 1} y={0} className={styles.arcade}>
-          Maxillaire
-        </text>
-        <text x={X0 + 1} y={HAUTEUR - 1} className={styles.arcade}>
-          Mandibule
-        </text>
         {dents.map((dent) => (
           <Dent
             key={dent.numero}
@@ -126,10 +120,6 @@ export function Odontogramme({ vue }: { vue: PlanVue }) {
           />
         ))}
       </svg>
-      <figcaption>
-        {vue.dents_absentes.length > 0 && "En pointillé : dents absentes. "}
-        Pastilles : étapes qui concernent la dent.
-      </figcaption>
     </figure>
   );
 }
@@ -156,7 +146,25 @@ export function PlanVisuel({
 
   return (
     <div className={styles.plan}>
-      <Odontogramme vue={plan} />
+      {/* Le schéma dans un petit cadre, la légende des étapes à côté. */}
+      <div className={styles.entete}>
+        <Odontogramme vue={plan} />
+        <ul className={styles.legende}>
+          {plan.etapes.map((etape) => (
+            <li key={`${etape.couleur}-legende`}>
+              <span
+                className={styles.pastille}
+                style={{ background: trait(etape.couleur) }}
+              />
+              {titre(etape)}
+            </li>
+          ))}
+          {plan.dents_absentes.length > 0 && (
+            <li className={styles.note}>En pointillé : dents absentes.</li>
+          )}
+          <li className={styles.note}>Vue occlusale ; maxillaire en haut.</li>
+        </ul>
+      </div>
 
       <ol className={styles.etapes}>
         {plan.etapes.map((etape) => (
@@ -203,15 +211,23 @@ export function PlanVisuel({
       {plan.ecartes.length > 0 && (
         <section>
           <h4 className={styles.sousTitre}>Écarté</h4>
-          {plan.ecartes.map((etape) => (
-            <p key={etape.titre} className={styles.ecarte}>
-              <strong>
-                {etape.titre}
-                {etape.dents.length > 0 && ` (${etape.dents.join(", ")})`}
-              </strong>{" "}
-              — {etape.statut}. {etape.details.join(" ")}
-            </p>
-          ))}
+          <ol className={styles.etapes}>
+            {plan.ecartes.map((etape) => (
+              <li
+                key={etape.titre}
+                className={`${styles.etape} ${styles.ecarte}`}
+              >
+                <h4>
+                  {etape.titre}
+                  {etape.dents.length > 0 && ` — ${etape.dents.join(", ")}`}
+                </h4>
+                <p className={styles.meta}>{etape.statut}</p>
+                {etape.details.map((detail) => (
+                  <p key={detail}>{detail}</p>
+                ))}
+              </li>
+            ))}
+          </ol>
         </section>
       )}
     </div>
