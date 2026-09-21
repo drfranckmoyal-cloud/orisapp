@@ -17,9 +17,8 @@ from oris_api.services import audit
 from oris_api.services.attachments import Magasin, read_attachment
 from oris_api.services.errors import NotFound, Unprocessable
 from oris_api.services.identity import Actor
+from oris_api.services.images import IMPRIMABLES, affichable
 
-#: Ce qu'un PDF sait poser. Une photo HEIC de l'iPhone doit d'abord être convertie.
-IMPRIMABLES = frozenset({"image/jpeg", "image/png", "image/webp"})
 MAX_FIGURES = 12
 
 
@@ -95,7 +94,8 @@ def a_imprimer(session: Session, magasin: Magasin, document_id: UUID) -> tuple[F
     imprimees: list[Figure] = []
     for figure, piece in figures_de(session, document_id):
         try:
-            imprimees.append(Figure(read_attachment(magasin, piece), figure.caption))
+            contenu, _ = affichable(read_attachment(magasin, piece), piece.media_type)
+            imprimees.append(Figure(contenu, figure.caption))
         except NotFound:
             continue
     return tuple(imprimees)

@@ -443,6 +443,48 @@
         }
       }
     },
+    "/patients/attachments/{attachment_id}/apercu": {
+      "get": {
+        "tags": [
+          "patients"
+        ],
+        "summary": "Preview Attachment",
+        "description": "Une photo telle qu'un navigateur sait l'afficher : un HEIC d'iPhone sort en JPEG.\n\nL'original n'est pas touché ; seule cette lecture est convertie.",
+        "operationId": "preview_attachment_patients_attachments__attachment_id__apercu_get",
+        "parameters": [
+          {
+            "name": "attachment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Attachment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/patients/attachments/{attachment_id}": {
       "delete": {
         "tags": [

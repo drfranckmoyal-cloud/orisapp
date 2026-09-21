@@ -4,7 +4,12 @@ import { useRef, useState } from "react";
 
 import { Icone } from "@/components/Icones";
 import { Bouton, EtatVide, Pastille, Squelette } from "@/components/ui";
-import { API_BASE_URL, ApiError, type Attachment, type ClientConfig } from "@/lib/api";
+import {
+  API_BASE_URL,
+  ApiError,
+  type Attachment,
+  type ClientConfig,
+} from "@/lib/api";
 import { Apercu } from "./Apercu";
 import { errorMessage, formatDateTime } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
@@ -41,7 +46,9 @@ export function PiecesJointes({
   /** Version resserrée, pour le rail de révision. */
   compact?: boolean;
 }) {
-  const [pieces, recharger] = useApi<Attachment[]>(`/patients/${patientId}/attachments`);
+  const [pieces, recharger] = useApi<Attachment[]>(
+    `/patients/${patientId}/attachments`,
+  );
   const [config] = useApi<ClientConfig>("/config/client");
   const [survol, setSurvol] = useState(false);
   const [envoi, setEnvoi] = useState(false);
@@ -50,8 +57,10 @@ export function PiecesJointes({
   const champ = useRef<HTMLInputElement | null>(null);
 
   const liste = pieces.state === "ready" ? pieces.data : [];
-  const formats = config.state === "ready" ? config.data.attachment_formats : [];
-  const maxOctets = config.state === "ready" ? config.data.attachment_max_bytes : 0;
+  const formats =
+    config.state === "ready" ? config.data.attachment_formats : [];
+  const maxOctets =
+    config.state === "ready" ? config.data.attachment_max_bytes : 0;
 
   async function importer(fichiers: FileList | null) {
     if (!fichiers || fichiers.length === 0) return;
@@ -61,10 +70,13 @@ export function PiecesJointes({
     for (const fichier of Array.from(fichiers)) corps.append("files", fichier);
     if (encounterId) corps.append("encounter_id", encounterId);
     try {
-      const reponse = await fetch(`${API_BASE_URL}/patients/${patientId}/attachments`, {
-        method: "POST",
-        body: corps,
-      });
+      const reponse = await fetch(
+        `${API_BASE_URL}/patients/${patientId}/attachments`,
+        {
+          method: "POST",
+          body: corps,
+        },
+      );
       const donnees: unknown = await reponse.json().catch(() => null);
       if (!reponse.ok) {
         const code =
@@ -74,10 +86,14 @@ export function PiecesJointes({
         throw new ApiError(reponse.status, code);
       }
       const rangees = Array.isArray(donnees) ? donnees.length : 0;
-      setMessage(rangees === 1 ? "1 fichier importé." : `${rangees} fichiers importés.`);
+      setMessage(
+        rangees === 1 ? "1 fichier importé." : `${rangees} fichiers importés.`,
+      );
       recharger();
     } catch (error) {
-      setMessage(errorMessage(error instanceof ApiError ? error.code : "UNKNOWN"));
+      setMessage(
+        errorMessage(error instanceof ApiError ? error.code : "UNKNOWN"),
+      );
     } finally {
       setEnvoi(false);
       if (champ.current) champ.current.value = "";
@@ -87,13 +103,18 @@ export function PiecesJointes({
   async function retirer(piece: Attachment) {
     setMessage(null);
     try {
-      const reponse = await fetch(`${API_BASE_URL}/patients/attachments/${piece.id}`, {
-        method: "DELETE",
-      });
+      const reponse = await fetch(
+        `${API_BASE_URL}/patients/attachments/${piece.id}`,
+        {
+          method: "DELETE",
+        },
+      );
       if (!reponse.ok) throw new ApiError(reponse.status, "UNKNOWN");
       recharger();
     } catch (error) {
-      setMessage(errorMessage(error instanceof ApiError ? error.code : "UNKNOWN"));
+      setMessage(
+        errorMessage(error instanceof ApiError ? error.code : "UNKNOWN"),
+      );
     }
   }
 
@@ -112,18 +133,26 @@ export function PiecesJointes({
           void importer(event.dataTransfer.files);
         }}
       >
-        <Icone nom="import" taille={compact ? 18 : 24} className={styles.fleche} />
+        <Icone
+          nom="import"
+          taille={compact ? 18 : 24}
+          className={styles.fleche}
+        />
         <p className={styles.invite}>
           {compact ? (
             <strong>Déposez une photo, une radio, une empreinte</strong>
           ) : (
             <>
-              <strong>Déposez vos fichiers ici</strong> — photos, radios, empreintes,
-              documents.
+              <strong>Déposez vos fichiers ici</strong> — photos, radios,
+              empreintes, documents.
             </>
           )}
         </p>
-        <Bouton variante="secondaire" disabled={envoi} onClick={() => champ.current?.click()}>
+        <Bouton
+          variante="secondaire"
+          disabled={envoi}
+          onClick={() => champ.current?.click()}
+        >
           {envoi ? "Importation…" : "Choisir des fichiers"}
         </Bouton>
         <input
@@ -138,8 +167,11 @@ export function PiecesJointes({
           <p className={styles.formats}>
             {formats.length > 0 && (
               <>
-                {formats.map((f) => f.replace(".", "").toUpperCase()).join(" · ")}
-                {maxOctets > 0 && ` — ${Math.round(maxOctets / (1024 * 1024))} Mo par fichier`}
+                {formats
+                  .map((f) => f.replace(".", "").toUpperCase())
+                  .join(" · ")}
+                {maxOctets > 0 &&
+                  ` — ${Math.round(maxOctets / (1024 * 1024))} Mo par fichier`}
               </>
             )}
           </p>
@@ -155,8 +187,8 @@ export function PiecesJointes({
       {pieces.state === "loading" && <Squelette lignes={2} />}
       {pieces.state === "ready" && liste.length === 0 && !compact && (
         <EtatVide titre="Aucune pièce jointe">
-          Les fichiers importés ici accompagnent le dossier. Vous vous y référez en
-          rédigeant ; Oris ne les interprète pas.
+          Les fichiers importés ici accompagnent le dossier. Vous vous y référez
+          en rédigeant ; Oris ne les interprète pas.
         </EtatVide>
       )}
 
@@ -164,12 +196,16 @@ export function PiecesJointes({
         <ul className={styles.liste}>
           {liste.map((piece) => (
             <li key={piece.id} className={styles.piece}>
-              <button type="button" className={styles.lien} onClick={() => setApercu(piece)}>
+              <button
+                type="button"
+                className={styles.lien}
+                onClick={() => setApercu(piece)}
+              >
                 {piece.kind === "photo" ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     className={styles.vignette}
-                    src={`${API_BASE_URL}/patients/attachments/${piece.id}/contenu`}
+                    src={`${API_BASE_URL}/patients/attachments/${piece.id}/apercu`}
                     alt=""
                   />
                 ) : (
@@ -180,12 +216,15 @@ export function PiecesJointes({
                 <span className={styles.texte}>
                   <span className={styles.nom}>{piece.filename}</span>
                   <span className={styles.detail}>
-                    {poids(piece.byte_size)} · {formatDateTime(piece.created_at)}
+                    {poids(piece.byte_size)} ·{" "}
+                    {formatDateTime(piece.created_at)}
                   </span>
                 </span>
               </button>
               <span className={styles.fin}>
-                {!compact && <Pastille>{NATURE[piece.kind] ?? piece.kind}</Pastille>}
+                {!compact && (
+                  <Pastille>{NATURE[piece.kind] ?? piece.kind}</Pastille>
+                )}
                 <button
                   type="button"
                   className={styles.retirer}
@@ -203,7 +242,10 @@ export function PiecesJointes({
       {apercu && (
         <Apercu
           piece={apercu}
-          url={`${API_BASE_URL}/patients/attachments/${apercu.id}/contenu`}
+          // Une photo passe par l'aperçu converti (HEIC → JPEG) ; le reste, tel quel.
+          url={`${API_BASE_URL}/patients/attachments/${apercu.id}/${
+            apercu.media_type.startsWith("image/") ? "apercu" : "contenu"
+          }`}
           onFermer={() => setApercu(null)}
         />
       )}

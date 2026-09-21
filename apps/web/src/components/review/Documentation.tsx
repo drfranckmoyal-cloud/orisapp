@@ -16,11 +16,18 @@ import { useApi } from "@/lib/useApi";
 import { RetoucheImage } from "./RetoucheImage";
 import styles from "./consultation.module.css";
 
-/** Ce qu'un PDF sait poser. Une photo HEIC de l'iPhone doit d'abord être convertie. */
-const IMPRIMABLES = new Set(["image/jpeg", "image/png", "image/webp"]);
+/** Photos qu'Oris sait imprimer ; un HEIC d'iPhone est converti en JPEG au passage. */
+const IMPRIMABLES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+]);
 
+/** L'aperçu converti par le serveur : un HEIC s'affiche dans tous les navigateurs. */
 function vignette(id: string): string {
-  return `${API_BASE_URL}/patients/attachments/${id}/contenu`;
+  return `${API_BASE_URL}/patients/attachments/${id}/apercu`;
 }
 
 type Figure = { attachment_id: string; caption: string };
@@ -343,7 +350,7 @@ export function Documentation({
                 title={
                   imprimable
                     ? `Ajouter ${piece.filename}`
-                    : "Format HEIC : pas encore imprimable"
+                    : "Format non imprimable"
                 }
                 onClick={() => void ouvrirPiece(piece)}
               >

@@ -191,6 +191,23 @@ def read_attachment(
     )
 
 
+@router.get("/attachments/{attachment_id}/apercu")
+def preview_attachment(
+    attachment_id: UUID, session: SessionDep, actor: ActorDep, magasin: MagasinDep
+) -> Response:
+    """Une photo telle qu'un navigateur sait l'afficher : un HEIC d'iPhone sort en JPEG.
+
+    L'original n'est pas touché ; seule cette lecture est convertie.
+    """
+    from oris_api.services.images import affichable
+
+    piece = attachments.get_attachment(session, actor, attachment_id)
+    if not piece.media_type.startswith("image/"):
+        raise Unprocessable("NOT_AN_IMAGE", str(attachment_id))
+    contenu, media_type = affichable(attachments.read_attachment(magasin, piece), piece.media_type)
+    return Response(content=contenu, media_type=media_type)
+
+
 @router.delete("/attachments/{attachment_id}", status_code=status.HTTP_204_NO_CONTENT)
 def remove_attachment(
     attachment_id: UUID, session: SessionDep, actor: ActorDep, magasin: MagasinDep

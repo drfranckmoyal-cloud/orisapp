@@ -146,6 +146,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/patients/attachments/{attachment_id}/apercu": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview Attachment
+         * @description Une photo telle qu'un navigateur sait l'afficher : un HEIC d'iPhone sort en JPEG.
+         *
+         *     L'original n'est pas touché ; seule cette lecture est convertie.
+         */
+        get: operations["preview_attachment_patients_attachments__attachment_id__apercu_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/patients/attachments/{attachment_id}": {
         parameters: {
             query?: never;
@@ -3532,6 +3554,37 @@ export interface operations {
         };
     };
     read_attachment_patients_attachments__attachment_id__contenu_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attachment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_attachment_patients_attachments__attachment_id__apercu_get: {
         parameters: {
             query?: never;
             header?: never;
