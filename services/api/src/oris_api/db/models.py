@@ -863,3 +863,27 @@ class DocumentDelivery(Base):
     channel: Mapped[str] = mapped_column(String(20))
     created_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"))
     sent_at: Mapped[datetime] = created_at()
+
+
+class DocumentFigure(Base):
+    """Une photo placée dans la « Documentation clinique » d'un document.
+
+    La photo reste une pièce jointe du patient : le document la **cite**, avec sa
+    légende et sa place. Elle ne nourrit aucun fait — Oris ne lit pas les photos.
+    """
+
+    __tablename__ = "document_figures"
+    __table_args__ = (
+        UniqueConstraint("document_id", "attachment_id", name="uq_document_figure_pair"),
+    )
+
+    id: Mapped[UUID] = uuid_pk()
+    document_id: Mapped[UUID] = mapped_column(
+        ForeignKey("documents.id", ondelete="CASCADE"), index=True
+    )
+    attachment_id: Mapped[UUID] = mapped_column(
+        ForeignKey("attachments.id", ondelete="CASCADE"), index=True
+    )
+    caption: Mapped[str] = mapped_column(Text, default="", server_default="")
+    position: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = created_at()

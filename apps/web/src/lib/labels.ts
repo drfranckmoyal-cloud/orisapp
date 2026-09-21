@@ -140,6 +140,8 @@ export const LEARNING_EVENT: Record<string, string> = {
 };
 
 const ERRORS: Record<string, string> = {
+  FIGURE_NOT_PRINTABLE: "Ce format ne s’imprime pas encore (HEIC, radio, empreinte) : choisissez une photo JPEG ou PNG.",
+  TOO_MANY_FIGURES: "Douze photos au plus par document.",
   ENCOUNTER_IN_PROGRESS:
     "Cette consultation est en cours d’écoute ou de traitement : arrêtez-la avant de la supprimer.",
   DELIVERY_RECIPIENT_MISSING: "Indiquez à qui le document a été envoyé.",

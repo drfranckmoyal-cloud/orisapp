@@ -59,9 +59,14 @@ d'attention / précautions · Coordination / retour souhaité · « Bien confrat
 ## Avancement
 
 - **21/09 — Compte rendu de consultation** : rubriques et ordre du modèle, phrases avec
-  les mots dits, validateur `negation_unclear`. Reste : mise en page PDF du modèle
-  (en-tête, bloc patient, page photos), rédaction plus liée (phrases fusionnées par un
-  modèle de langue, sous contrôle du validateur), trois styles (point H).
+  les mots dits, validateur `negation_unclear`.
+- **21/09 — PDF au modèle** : en-tête, titres (Paramètres), bloc patient avec « Adressé(e)
+  par » / « Destinataire », rubriques vertes, paragraphes, page « Documentation clinique »
+  avec photos légendées.
+- **21/09 — Compte rendu opératoire** dans les rubriques du modèle 02 ; **courrier
+  d'adressage** (modèle 04) à la demande.
+- Reste : rédaction plus liée (phrases fusionnées par un modèle de langue, sous contrôle
+  du validateur), trois styles (point H), plan de traitement (point F), photos HEIC.
 
 ## Points ouverts
 

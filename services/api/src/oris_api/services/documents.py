@@ -30,7 +30,8 @@ from oris_api.documents.theme import Cabinet
 from oris_api.domain.preferences import PractitionerPreferences
 from oris_api.domain.types import GeneratedDocument, ValidationIssue
 from oris_api.providers import ProviderSet
-from oris_api.services import async_bridge, audit, learning
+from oris_api.services import async_bridge, audit, figures, learning
+from oris_api.services.attachments import Magasin
 from oris_api.services.clinical_store import load_current
 from oris_api.services.errors import Conflict, NotFound
 from oris_api.services.identity import Actor
@@ -321,7 +322,11 @@ class ExportedDocument:
 
 
 def export_document(
-    session: Session, actor: Actor, document_id: UUID, fmt: ExportFormat
+    session: Session,
+    actor: Actor,
+    document_id: UUID,
+    fmt: ExportFormat,
+    magasin: Magasin | None = None,
 ) -> ExportedDocument:
     """Sortie d'un document pour le dossier patient.
 
@@ -347,7 +352,9 @@ def export_document(
         organization.name if organization else "",
     )
     adresse_par, destinataire = _correspondants_du_document(session, encounter)
+    photos = figures.a_imprimer(session, magasin, document.id) if magasin and fmt == "pdf" else ()
     context = ExportContext(
+        figures=photos,
         referred_by=adresse_par,
         recipient=destinataire,
         document_type=document.document_type,

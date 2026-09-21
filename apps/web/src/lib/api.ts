@@ -80,7 +80,7 @@ export class ApiError extends Error {
 
 export async function apiRequest<T>(
   path: string,
-  init: { method?: "GET" | "POST" | "PATCH" | "DELETE"; body?: unknown } = {},
+  init: { method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE"; body?: unknown } = {},
   fetcher: typeof fetch = fetch,
   baseUrl: string = API_BASE_URL,
 ): Promise<T> {
@@ -213,3 +213,4 @@ export type Correspondant = Schemas["CorrespondentOut"];
 /** Le lien entre un patient et un correspondant, et ce qu'il veut dire. */
 export type Rattachement = Schemas["RattachementOut"];
 export type Envoi = Schemas["DeliveryOut"];
+export type FigureDocument = Schemas["FigureOut"];

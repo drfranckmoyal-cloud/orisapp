@@ -1,5 +1,16 @@
 # Changelog
 
+## Documentation clinique : les photos du document — 2026-09-21
+- En pied de chaque document, **« Documentation clinique »** : on choisit des photos
+  parmi les pièces jointes du patient, on les légende, on les ordonne. Le PDF gagne une
+  page à part, en dernier (règle des modèles) : la première photo en grand, les suivantes
+  deux par ligne, « Fig. n — légende ». Rien de clinique n'est ajouté après.
+- Le document **cite** la pièce jointe (table `document_figures`, migration 0018) :
+  supprimer la pièce la retire du document. Une pièce d'un autre patient est refusée.
+- Les photos HEIC de l'iPhone ne s'impriment pas encore (grisées, avec explication) ;
+  JPEG, PNG et WebP oui.
+- Pied de page : numéro de page seul.
+
 ## Compte rendu opératoire et courrier d'adressage au modèle — 2026-09-21
 - **Compte rendu opératoire** rangé dans les rubriques du modèle 02 (Indication ·
   Situation pré-opératoire · Intervention réalisée · Protocole / éléments techniques ·

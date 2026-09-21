@@ -893,6 +893,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/documents/{document_id}/figures": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Figures */
+        get: operations["list_figures_documents__document_id__figures_get"];
+        /**
+         * Set Figures
+         * @description Pose la liste entière : ajouter, retirer, réordonner et légender en un geste.
+         */
+        put: operations["set_figures_documents__document_id__figures_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/synthetic-cases": {
         parameters: {
             query?: never;
@@ -2077,6 +2098,43 @@ export interface components {
             teeth?: string[] | null;
             /** Value */
             value?: unknown;
+        };
+        /** FigureIn */
+        FigureIn: {
+            /**
+             * Attachment Id
+             * Format: uuid
+             */
+            attachment_id: string;
+            /**
+             * Caption
+             * @default
+             */
+            caption: string;
+        };
+        /** FigureOut */
+        FigureOut: {
+            /**
+             * Attachment Id
+             * Format: uuid
+             */
+            attachment_id: string;
+            /** Caption */
+            caption: string;
+            /** Position */
+            position: number;
+            /** Filename */
+            filename: string;
+            /** Media Type */
+            media_type: string;
+        };
+        /**
+         * FiguresIn
+         * @description La liste entière, dans l'ordre d'impression.
+         */
+        FiguresIn: {
+            /** Figures */
+            figures: components["schemas"]["FigureIn"][];
         };
         /** FrequentCorrectionOut */
         FrequentCorrectionOut: {
@@ -4868,6 +4926,72 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_figures_documents__document_id__figures_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FigureOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_figures_documents__document_id__figures_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FiguresIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FigureOut"][];
+                };
             };
             /** @description Validation Error */
             422: {

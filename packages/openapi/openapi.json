@@ -2798,6 +2798,109 @@
         }
       }
     },
+    "/documents/{document_id}/figures": {
+      "get": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "List Figures",
+        "operationId": "list_figures_documents__document_id__figures_get",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FigureOut"
+                  },
+                  "title": "Response List Figures Documents  Document Id  Figures Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Set Figures",
+        "description": "Pose la liste entière : ajouter, retirer, réordonner et légender en un geste.",
+        "operationId": "set_figures_documents__document_id__figures_put",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FiguresIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FigureOut"
+                  },
+                  "title": "Response Set Figures Documents  Document Id  Figures Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/synthetic-cases": {
       "get": {
         "tags": [
@@ -5772,6 +5875,80 @@
         "additionalProperties": false,
         "type": "object",
         "title": "FactChanges"
+      },
+      "FigureIn": {
+        "properties": {
+          "attachment_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Attachment Id"
+          },
+          "caption": {
+            "type": "string",
+            "maxLength": 300,
+            "title": "Caption",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "attachment_id"
+        ],
+        "title": "FigureIn"
+      },
+      "FigureOut": {
+        "properties": {
+          "attachment_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Attachment Id"
+          },
+          "caption": {
+            "type": "string",
+            "title": "Caption"
+          },
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "media_type": {
+            "type": "string",
+            "title": "Media Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "attachment_id",
+          "caption",
+          "position",
+          "filename",
+          "media_type"
+        ],
+        "title": "FigureOut"
+      },
+      "FiguresIn": {
+        "properties": {
+          "figures": {
+            "items": {
+              "$ref": "#/components/schemas/FigureIn"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "title": "Figures"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "figures"
+        ],
+        "title": "FiguresIn",
+        "description": "La liste entière, dans l'ordre d'impression."
       },
       "FrequentCorrectionOut": {
         "properties": {

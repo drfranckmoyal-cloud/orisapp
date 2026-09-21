@@ -12,6 +12,7 @@ from __future__ import annotations
 import io
 from dataclasses import dataclass, replace
 from datetime import datetime
+from typing import Any
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
@@ -42,7 +43,8 @@ SECTION_TITLES = frozenset(
 
 DRAFT_NOTICE = "Brouillon — non validé par le praticien."
 VALIDATED_NOTICE = "Validé par le praticien le {date}."
-FOOTER = "{page}/{total}"
+# Numéro seul : la page de photos, posée après coup, fausserait un « n/N ».
+FOOTER = "{page}"
 
 MARGIN = 20 * mm
 LOGO_HEIGHT = 9 * mm
@@ -108,6 +110,8 @@ class ExportContext:
     referred_by: str = ""
     #: Pour un courrier : le confrère à qui il est adressé.
     recipient: str = ""
+    #: Photos de la « Documentation clinique » (contenu, légende), dans l'ordre choisi.
+    figures: tuple[Any, ...] = ()
 
 
 def french_date(moment: datetime) -> str:
@@ -436,8 +440,85 @@ def render_pdf(context: ExportContext, cabinet: Cabinet | None = None) -> bytes:
             y -= layout.leading
         draw_footer(canvas, layout, cabinet, width, number, total)
         canvas.showPage()
+    if context.figures:
+        draw_figures(canvas, context, layout, cabinet, width, height, total)
     canvas.save()
     return buffer.getvalue()
+
+
+FIGURE_GAP = 6 * mm
+CAPTION_HEIGHT = 7 * mm
+
+
+def draw_figure(
+    canvas: Canvas, contenu: bytes, x: float, top: float, max_w: float, max_h: float
+) -> float:
+    """Pose une photo sans la déformer ; renvoie la hauteur réellement occupée."""
+    image = ImageReader(io.BytesIO(contenu))
+    w, h = image.getSize()
+    scale = min(max_w / w, max_h / h)
+    drawn_w, drawn_h = w * scale, h * scale
+    canvas.drawImage(image, x, top - drawn_h, width=drawn_w, height=drawn_h)
+    return drawn_h
+
+
+def draw_caption(canvas: Canvas, number: int, legende: str, x: float, y: float, w: float) -> None:
+    canvas.setFont(SERIF, 9)
+    canvas.setFillColor(color("muted"))
+    texte = f"Fig. {number}" + (f" — {legende}" if legende else "")
+    canvas.drawString(x, y, wrap(texte, SERIF, 9, w)[0])
+
+
+def draw_figures(
+    canvas: Canvas,
+    context: ExportContext,
+    layout: Layout,
+    cabinet: Cabinet,
+    width: float,
+    height: float,
+    pages_before: int,
+) -> None:
+    """« Documentation clinique » : toujours sur une nouvelle page, et en dernier.
+
+    La première photo en grand, les suivantes deux par ligne, chacune légendée. Rien de
+    clinique ne vient après (règle des modèles du praticien).
+    """
+    usable = width - 2 * MARGIN
+    bottom = MARGIN + 6 * mm
+    page = pages_before + 1
+
+    def nouvelle_page(titre: bool) -> float:
+        y = draw_running_header(canvas, context, layout, cabinet, height - MARGIN)
+        if titre:
+            canvas.setFillColor(color("title"))
+            canvas.setFont(SERIF_GRAS, 25)
+            canvas.drawString(MARGIN, y - 4 * mm, "Documentation clinique")
+            y -= 14 * mm
+        return y
+
+    y = nouvelle_page(titre=True)
+    for index, figure in enumerate(context.figures, start=1):
+        if index == 1:
+            max_h = min(115 * mm, y - bottom - CAPTION_HEIGHT)
+            drawn = draw_figure(canvas, figure.contenu, MARGIN, y, usable, max_h)
+            draw_caption(canvas, 1, figure.legende, MARGIN, y - drawn - 4.5 * mm, usable)
+            y -= drawn + CAPTION_HEIGHT + FIGURE_GAP
+            continue
+        colonne = (index - 2) % 2
+        demi = (usable - FIGURE_GAP) / 2
+        max_h = 72 * mm
+        if colonne == 0 and y - max_h - CAPTION_HEIGHT < bottom:
+            draw_footer(canvas, layout, cabinet, width, page, page)
+            canvas.showPage()
+            page += 1
+            y = nouvelle_page(titre=False)
+        x = MARGIN + colonne * (demi + FIGURE_GAP)
+        drawn = draw_figure(canvas, figure.contenu, x, y, demi, max_h)
+        draw_caption(canvas, index, figure.legende, x, y - drawn - 4.5 * mm, demi)
+        if colonne == 1 or index == len(context.figures):
+            y -= max_h + CAPTION_HEIGHT + FIGURE_GAP
+    draw_footer(canvas, layout, cabinet, width, page, page)
+    canvas.showPage()
 
 
 def step_for(style: str, layout: Layout) -> float:

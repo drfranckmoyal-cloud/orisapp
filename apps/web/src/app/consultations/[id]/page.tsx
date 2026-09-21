@@ -10,6 +10,7 @@ import { JetonPraticien } from "@/components/JetonPraticien";
 import { PiecesJointes } from "@/components/patients/PiecesJointes";
 import { CorrectionPanel } from "@/components/review/CorrectionPanel";
 import { DocumentBody } from "@/components/review/DocumentView";
+import { Documentation } from "@/components/review/Documentation";
 import { Envois } from "@/components/review/Envois";
 import { RailRevision } from "@/components/review/RailRevision";
 import type { Selection } from "@/components/review/SourcePanel";
@@ -715,6 +716,10 @@ export default function ConsultationPage() {
 
                 {!shadow && (
                   <footer className={styles.feuillePied}>
+                    <Documentation
+                      documentId={active.id}
+                      patientId={data.patient.id}
+                    />
                     <Envois
                       documentId={active.id}
                       patientId={data.patient.id}

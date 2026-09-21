@@ -12,6 +12,7 @@ from sqlalchemy import func, select
 from oris_api.api.dependencies import (
     ActorDep,
     LiveDep,
+    MagasinDep,
     ProvidersDep,
     SessionDep,
     SettingsDep,
@@ -524,10 +525,11 @@ def export_document(
     document_id: UUID,
     session: SessionDep,
     actor: ActorDep,
+    magasin: MagasinDep,
     format: ExportFormat = "pdf",
 ) -> Response:
     """Sortie d'un document : PDF à imprimer, ou texte à coller dans le logiciel métier."""
-    exported = documents.export_document(session, actor, document_id, format)
+    exported = documents.export_document(session, actor, document_id, format, magasin)
     return Response(
         content=exported.payload,
         media_type=exported.media_type,

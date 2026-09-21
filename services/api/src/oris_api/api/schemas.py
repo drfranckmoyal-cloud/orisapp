@@ -575,3 +575,24 @@ class DeliveryOut(BaseModel):
     recipient_label: str
     channel: DeliveryChannel
     sent_at: datetime
+
+
+class FigureIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    attachment_id: UUID
+    caption: Annotated[str, Field(max_length=300)] = ""
+
+
+class FiguresIn(BaseModel):
+    """La liste entière, dans l'ordre d'impression."""
+
+    model_config = ConfigDict(extra="forbid")
+    figures: Annotated[list[FigureIn], Field(max_length=12)]
+
+
+class FigureOut(BaseModel):
+    attachment_id: UUID
+    caption: str
+    position: int
+    filename: str
+    media_type: str

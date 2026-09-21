@@ -507,3 +507,129 @@
   font-size: var(--texte-xs);
   white-space: nowrap;
 }
+
+/* --- Documentation clinique -------------------------------------------------------- */
+
+.documentation {
+  display: grid;
+  gap: var(--espace-3);
+}
+
+.documentationTete {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espace-3);
+  flex-wrap: wrap;
+}
+
+.documentationTete span {
+  font-size: var(--texte-xs);
+  color: var(--encre-tres-douce);
+}
+
+.figures {
+  display: grid;
+  gap: var(--espace-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.figure {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--espace-3);
+  padding: 6px;
+  border: 1px solid var(--trait);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.figure img {
+  width: 84px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.figureTexte {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.figureNumero {
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-demi);
+  color: var(--encre-douce);
+}
+
+.figureOutils {
+  display: flex;
+  gap: 2px;
+}
+
+.figureOutils button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  color: var(--encre-douce);
+  cursor: pointer;
+}
+
+.figureOutils button:hover:not(:disabled) {
+  background: var(--surface-douce);
+  color: var(--encre);
+}
+
+.figureOutils button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.galerie {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espace-2);
+  padding: var(--espace-3);
+  border: 1px solid var(--trait);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.galeriePhoto {
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: none;
+  cursor: pointer;
+}
+
+.galeriePhoto img {
+  display: block;
+  width: 110px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.galeriePhoto:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.galeriePhoto:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.galerieFin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espace-3);
+  flex-basis: 100%;
+}
