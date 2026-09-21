@@ -64,6 +64,19 @@ class PatientOut(BaseModel):
     created_at: datetime
 
 
+class PatientListOut(PatientOut):
+    """Le patient **dans la liste** : de quoi le reconnaître sans ouvrir son dossier.
+
+    Une classe à part, et non trois champs de plus sur `PatientOut` : ailleurs ces
+    comptes ne sont pas calculés, et un champ à zéro se lirait comme « aucune
+    consultation » au lieu de « on n'a pas regardé ».
+    """
+
+    consultations: int = 0
+    derniere_consultation: datetime | None = None
+    a_relire: int = 0
+
+
 class EncounterCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     patient_id: UUID

@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from datetime import date
+from dataclasses import dataclass
+from datetime import date, datetime
 from uuid import UUID
 
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from oris_api.db.models import Patient
+from oris_api.db.models import Encounter, Patient
 from oris_api.services import audit
 from oris_api.services.errors import NotFound
 from oris_api.services.identity import Actor
@@ -22,6 +23,36 @@ def list_patients(session: Session, actor: Actor, query: str | None = None) -> l
             or_(Patient.last_name.ilike(pattern), Patient.first_name.ilike(pattern))
         )
     return list(session.scalars(statement.order_by(Patient.last_name, Patient.first_name)))
+
+
+@dataclass(frozen=True, slots=True)
+class Resume:
+    """Ce qu'on sait d'un patient sans ouvrir son dossier."""
+
+    consultations: int = 0
+    derniere: datetime | None = None
+    a_relire: int = 0
+
+
+def resumes(session: Session, actor: Actor) -> dict[UUID, Resume]:
+    """Combien de consultations par patient, la dernière, et ce qui attend une relecture.
+
+    Une seule requête groupée, pas une par ligne : la liste en affiche vingt à la fois.
+    """
+    lignes = session.execute(
+        select(
+            Encounter.patient_id,
+            func.count(Encounter.id),
+            func.max(func.coalesce(Encounter.started_at, Encounter.created_at)),
+            func.count(Encounter.id).filter(Encounter.status == "review"),
+        )
+        .where(Encounter.organization_id == actor.organization_id)
+        .group_by(Encounter.patient_id)
+    )
+    return {
+        patient_id: Resume(consultations=total, derniere=derniere, a_relire=a_relire)
+        for patient_id, total, derniere, a_relire in lignes
+    }
 
 
 def get_patient(session: Session, actor: Actor, patient_id: UUID) -> Patient:

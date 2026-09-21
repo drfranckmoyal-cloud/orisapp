@@ -977,3 +977,21 @@ des lignes. Le voyant SmileCloud de la fiche patient, lui, est indépendant et r
 - **Les onglets** (Historique / Pièces jointes, et partout ailleurs) étaient trop discrets
   pour qu'on sache qu'on pouvait changer de vue. Rail creusé et bordé, onglet choisi
   surélevé et écrit dans le vert de l'action, texte plus grand.
+
+## La liste des patients dit ce qu'elle sait (21 septembre 2026)
+
+Les lignes étaient vides : un nom et une date de naissance. Chacune porte maintenant le
+suivi — combien de comptes rendus, le dernier, et ce qui attend une relecture — et un
+dossier jamais vu le dit en toutes lettres plutôt que de laisser un blanc.
+
+- `patients.resumes()` : **une seule requête groupée** pour toute la liste, pas une par
+  ligne. La liste en affiche vingt d'un coup.
+- `PatientListOut` est une classe à part, et non trois champs de plus sur `PatientOut` :
+  ailleurs ces comptes ne sont pas calculés, et un champ à zéro se lirait « aucune
+  consultation » au lieu de « on n'a pas regardé ».
+- Le relief vient du **creux** : le fond de la liste est enfoncé, chaque dossier est posé
+  dessus avec sa propre bordure. Un filet entre deux lignes ne séparait rien.
+
+**Les correspondants n'ont pas été mis** : rien n'existe en base pour les porter
+(l'écran dédié est un chantier à venir). Une mention « aucun correspondant » sur chaque
+ligne aurait été du bruit, pas de l'information.

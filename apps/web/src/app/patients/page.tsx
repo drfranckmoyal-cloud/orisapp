@@ -6,13 +6,13 @@ import Link from "next/link";
 
 import { Bouton, Carte, Champ, EnTetePage, EtatVide, Pastille, Squelette } from "@/components/ui";
 import { Icone } from "@/components/Icones";
-import { ApiError, apiRequest, type Patient } from "@/lib/api";
+import { ApiError, apiRequest, type Patient, type PatientListe } from "@/lib/api";
 import { errorMessage, formatDate } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
 import styles from "./patients.module.css";
 
-function initiales(patient: Patient): string {
+function initiales(patient: { first_name: string; last_name: string }): string {
   return `${patient.first_name.trim()[0] ?? ""}${patient.last_name.trim()[0] ?? ""}`.toLocaleUpperCase(
     "fr-FR",
   );
@@ -28,14 +28,21 @@ function age(naissance: string): number | null {
   return ans;
 }
 
-/** Un dossier dans la liste : les initiales, le nom, et ce qui manque encore. */
-function Dossier({ patient }: { patient: Patient }) {
+/** Un dossier dans la liste.
+ *
+ * Assez pour reconnaître quelqu'un sans l'ouvrir : qui il est, depuis combien de temps
+ * on le suit, et s'il reste quelque chose à faire de son côté. Un dossier qu'on n'a
+ * jamais vu le dit ; on ne laisse pas un blanc là où il y a une information.
+ */
+function Dossier({ patient }: { patient: PatientListe }) {
   const ans = patient.birth_date ? age(patient.birth_date) : null;
+  const suivi = patient.consultations > 0;
   return (
     <Link href={`/patients/${patient.id}`} className={styles.dossier}>
       <span className={styles.jeton} aria-hidden="true">
         {initiales(patient)}
       </span>
+
       <span className={styles.qui}>
         <span className={styles.nom}>
           {patient.last_name.toLocaleUpperCase("fr-FR")}{" "}
@@ -48,11 +55,37 @@ function Dossier({ patient }: { patient: Patient }) {
           ) : (
             <span className={styles.manque}>date de naissance non renseignée</span>
           )}
+          {patient.email && <span className={styles.point}>{patient.email}</span>}
         </span>
       </span>
+
+      <span className={styles.suivi}>
+        <span className={styles.compte}>
+          {suivi ? (
+            <>
+              <strong>{patient.consultations}</strong> compte{patient.consultations > 1 ? "s" : ""}{" "}
+              rendu{patient.consultations > 1 ? "s" : ""}
+            </>
+          ) : (
+            <span className={styles.manque}>aucune consultation</span>
+          )}
+        </span>
+        {patient.derniere_consultation && (
+          <span className={styles.dessous}>
+            dernière le {formatDate(patient.derniere_consultation)}
+          </span>
+        )}
+      </span>
+
       <span className={styles.marques}>
+        {patient.a_relire > 0 && (
+          <Pastille ton="attention" point>
+            {patient.a_relire} à relire
+          </Pastille>
+        )}
         {patient.external_id && <Pastille>{patient.external_id}</Pastille>}
       </span>
+
       <span className={styles.chevron} aria-hidden="true">
         <Icone nom="suivant" taille={16} />
       </span>
@@ -69,7 +102,7 @@ function sansAccents(texte: string): string {
 
 /** Liste des patients : recherche d'abord, création ensuite (S02). */
 export default function PatientsPage() {
-  const [patients, reload] = useApi<Patient[]>("/patients");
+  const [patients, reload] = useApi<PatientListe[]>("/patients");
   const [recherche, setRecherche] = useState("");
   const [creation, setCreation] = useState(false);
   const [message, setMessage] = useState<string | null>(null);

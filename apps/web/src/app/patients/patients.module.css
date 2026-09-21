@@ -2,21 +2,30 @@
    carte posée, avec ses initiales, que le survol soulève. On y lit un nom, un âge et
    ce qui manque encore — de quoi reconnaître quelqu'un, pas seulement le trouver. */
 
+/* Le fond de la liste est creusé, les dossiers sont posés dessus : c'est le creux qui
+   sépare les lignes, bien mieux qu'un filet. */
 .liste {
   display: grid;
-  gap: var(--espace-2);
+  gap: var(--espace-3);
+  padding: var(--espace-3);
+  border-radius: 16px;
+  background: var(--surface-douce);
+  box-shadow: inset 0 2px 6px rgb(26 24 21 / 0.1);
 }
 
 .dossier {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) 170px auto auto;
   align-items: center;
   gap: var(--espace-4);
-  padding: 10px var(--espace-4);
-  border: 1px solid var(--trait);
-  border-radius: 14px;
+  padding: 11px var(--espace-4);
+  border: 1px solid var(--trait-fort);
+  border-radius: 13px;
   background: linear-gradient(180deg, var(--surface), var(--surface-2));
-  box-shadow: var(--relief), var(--lumiere);
+  box-shadow:
+    var(--lumiere),
+    0 1px 1px rgb(26 24 21 / 0.06),
+    0 4px 8px -3px rgb(26 24 21 / 0.11);
   text-decoration: none;
   color: inherit;
   transition: transform var(--transition), box-shadow var(--transition),
@@ -24,9 +33,12 @@
 }
 
 .dossier:hover {
-  transform: translateY(-1px);
-  border-color: var(--trait-fort);
-  box-shadow: var(--relief-haut), var(--lumiere);
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow:
+    var(--lumiere),
+    0 2px 3px rgb(26 24 21 / 0.08),
+    0 14px 24px -10px rgb(20 83 59 / 0.32);
 }
 
 .dossier:focus-visible {
@@ -78,6 +90,31 @@
   font-style: italic;
 }
 
+/* Ce qu'on a déjà fait de ce patient : une colonne à part, pour que l'œil la balaie
+   verticalement au lieu de la chercher au bout de chaque ligne. */
+.suivi {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  border-left: 1px solid var(--trait);
+  padding-left: var(--espace-4);
+}
+
+.compte {
+  font-size: var(--texte-sm);
+  color: var(--encre-douce);
+}
+
+.compte strong {
+  font-weight: var(--graisse-forte);
+  color: var(--encre);
+}
+
+/* Une deuxième information sur la même ligne, séparée d'un point médian. */
+.point::before {
+  content: " · ";
+}
+
 .marques {
   display: flex;
   align-items: center;
@@ -98,9 +135,15 @@
   transform: translateX(2px);
 }
 
-@media (max-width: 760px) {
+@media (max-width: 1020px) {
   .dossier {
     grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .suivi {
+    grid-column: 2;
+    border-left: 0;
+    padding-left: 0;
   }
 
   .chevron {

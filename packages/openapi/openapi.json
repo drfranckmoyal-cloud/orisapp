@@ -80,7 +80,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/PatientOut"
+                    "$ref": "#/components/schemas/PatientListOut"
                   },
                   "title": "Response List Patients Patients Get"
                 }
@@ -5157,6 +5157,94 @@
           "last_name"
         ],
         "title": "PatientCreate"
+      },
+      "PatientListOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "first_name": {
+            "type": "string",
+            "title": "First Name"
+          },
+          "last_name": {
+            "type": "string",
+            "title": "Last Name"
+          },
+          "birth_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Date"
+          },
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "consultations": {
+            "type": "integer",
+            "title": "Consultations",
+            "default": 0
+          },
+          "derniere_consultation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Derniere Consultation"
+          },
+          "a_relire": {
+            "type": "integer",
+            "title": "A Relire",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "first_name",
+          "last_name",
+          "birth_date",
+          "external_id",
+          "email",
+          "note",
+          "created_at"
+        ],
+        "title": "PatientListOut",
+        "description": "Le patient **dans la liste** : de quoi le reconnaître sans ouvrir son dossier.\n\nUne classe à part, et non trois champs de plus sur `PatientOut` : ailleurs ces\ncomptes ne sont pas calculés, et un champ à zéro se lirait comme « aucune\nconsultation » au lieu de « on n'a pas regardé »."
       },
       "PatientOut": {
         "properties": {

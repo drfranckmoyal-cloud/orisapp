@@ -55,6 +55,8 @@ export async function fetchHealth(
 
 type Schemas = components["schemas"];
 export type Patient = Schemas["PatientOut"];
+/** Le patient **dans la liste** : avec de quoi le reconnaître sans l'ouvrir. */
+export type PatientListe = Schemas["PatientListOut"];
 export type Encounter = Schemas["EncounterOut"];
 export type DocumentView = Schemas["DocumentOut"];
 export type Claim = Schemas["ClaimOut"];

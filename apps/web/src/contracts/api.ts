@@ -1926,6 +1926,50 @@ export interface components {
              */
             note: string;
         };
+        /**
+         * PatientListOut
+         * @description Le patient **dans la liste** : de quoi le reconnaître sans ouvrir son dossier.
+         *
+         *     Une classe à part, et non trois champs de plus sur `PatientOut` : ailleurs ces
+         *     comptes ne sont pas calculés, et un champ à zéro se lirait comme « aucune
+         *     consultation » au lieu de « on n'a pas regardé ».
+         */
+        PatientListOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** First Name */
+            first_name: string;
+            /** Last Name */
+            last_name: string;
+            /** Birth Date */
+            birth_date: string | null;
+            /** External Id */
+            external_id: string | null;
+            /** Email */
+            email: string;
+            /** Note */
+            note: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Consultations
+             * @default 0
+             */
+            consultations: number;
+            /** Derniere Consultation */
+            derniere_consultation?: string | null;
+            /**
+             * A Relire
+             * @default 0
+             */
+            a_relire: number;
+        };
         /** PatientOut */
         PatientOut: {
             /**
@@ -2516,7 +2560,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PatientOut"][];
+                    "application/json": components["schemas"]["PatientListOut"][];
                 };
             };
             /** @description Validation Error */

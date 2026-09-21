@@ -13,6 +13,7 @@ from oris_api.api.schemas import (
     AttachmentOut,
     DictationOut,
     PatientCreate,
+    PatientListOut,
     PatientOut,
     PatientUpdate,
 )
@@ -25,9 +26,24 @@ from oris_api.services.errors import Conflict, Unprocessable
 router = APIRouter(prefix="/patients", tags=["patients"])
 
 
-@router.get("", response_model=list[PatientOut])
-def list_patients(session: SessionDep, actor: ActorDep, q: str | None = None) -> list[PatientOut]:
-    return [PatientOut.model_validate(p) for p in patients.list_patients(session, actor, q)]
+@router.get("", response_model=list[PatientListOut])
+def list_patients(
+    session: SessionDep, actor: ActorDep, q: str | None = None
+) -> list[PatientListOut]:
+    resumes = patients.resumes(session, actor)
+    vide = patients.Resume()
+    liste = []
+    for patient in patients.list_patients(session, actor, q):
+        resume = resumes.get(patient.id, vide)
+        liste.append(
+            PatientListOut(
+                **PatientOut.model_validate(patient).model_dump(),
+                consultations=resume.consultations,
+                derniere_consultation=resume.derniere,
+                a_relire=resume.a_relire,
+            )
+        )
+    return liste
 
 
 @router.post("", response_model=PatientOut, status_code=status.HTTP_201_CREATED)
