@@ -1123,3 +1123,51 @@ L'extension demande à **Dental Lens** ce qu'il y a à lire ; elle ne connaît p
 `GET /journee/demandes` d'Oris. Tant que ces quelques lignes ne sont pas écrites dans le
 projet Dental Lens, le bouton pose une demande que personne ne sert — et l'écran finit
 par le dire, ce qui est déjà mieux que d'attendre en silence.
+
+## Le carnet d'adresses des correspondants (21 septembre 2026)
+
+Cadré avec Franck le matin même. L'écran n'est plus un « chantier à venir ».
+
+**Ce que porte une fiche** : nature, civilité, nom, prénom, spécialité, nom du cabinet,
+adresse électronique, téléphone, **adresse postale**, note libre.
+
+L'adresse postale n'est pas un ornement : le courrier d'adressage existe déjà dans Oris
+comme une **vraie lettre** (`export.py`, en-tête, « Chère Consœur, Cher Confrère, »,
+« Confraternellement, »). Sans adresse, elle ne peut ni s'imprimer ni se poster. La liste
+signale donc les fiches **sans adresse**, et rien sur celles qui en ont une : on marque
+ce qui manque, pas ce qui va.
+
+**Deux natures, et c'est ce qui structure la table.** Un praticien a une civilité, un
+prénom, une spécialité, un cabinet. Une structure (CHU, service hospitalier) n'a rien de
+tout cela — et la lettre ne lui dit pas « Chère Consœur ». Le serveur efface ces champs
+plutôt que de les accepter en silence ; l'écran les fait disparaître du formulaire.
+
+**Le filtre par spécialité** inclut « non renseignée », qui sert à retrouver les fiches à
+compléter — mais **écarte les structures** : elles n'ont pas de spécialité par nature, pas
+par oubli.
+
+**Les spécialités** : trois connues d'avance dans le code (Omnipraticien, ODF, CMF), les
+autres ajoutées depuis les Paramètres. Le correspondant range le **libellé**, pas un
+renvoi : retirer une spécialité de la liste ne vide pas les fiches qui la portaient, et
+un renommage n'a pas à réécrire la base.
+
+### Écarté à la demande de Franck
+
+Messagerie sécurisée de santé distincte de l'adresse mail, numéro RPPS, et
+archivage plutôt que suppression. J'avais insisté sur le premier — un courrier
+d'adressage porte des données de santé nommées, et une adresse mail ordinaire n'est pas
+le bon tuyau. La décision est prise, elle est notée ici pour ne pas être reperdue.
+
+### Reste à faire
+
+Le rattachement patient ↔ correspondant, avec son qualificatif (adressé par / adressé à /
+suit aussi ce patient). La fiche patient affiche toujours « aucun — à venir ».
+
+### Deux défauts attrapés en chemin
+
+- Une fiche est un `<button>` dans une grille : sans `width: 100%`, chaque ligne
+  s'arrêtait à son contenu et la liste faisait un escalier.
+- Le modèle déclarait un index que la migration ne créait pas. Le test de cohérence
+  entre modèles et migrations l'a vu — c'est exactement son travail. Au passage, la base
+  de test portait un second schéma (`learning`) qu'un `DROP SCHEMA public` laissait
+  intact : les migrations se rejouent maintenant sur une base réellement vide.

@@ -163,6 +163,81 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/correspondents/specialties": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Specialties
+         * @description Celles connues d'avance, puis celles que le cabinet a ajoutées.
+         */
+        get: operations["list_specialties_correspondents_specialties_get"];
+        put?: never;
+        /** Add Specialty */
+        post: operations["add_specialty_correspondents_specialties_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/correspondents/specialties/{label}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Specialty */
+        delete: operations["remove_specialty_correspondents_specialties__label__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/correspondents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Correspondents */
+        get: operations["list_correspondents_correspondents_get"];
+        put?: never;
+        /** Create Correspondent */
+        post: operations["create_correspondent_correspondents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/correspondents/{correspondent_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Correspondent */
+        get: operations["get_correspondent_correspondents__correspondent_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Correspondent */
+        delete: operations["delete_correspondent_correspondents__correspondent_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Correspondent */
+        patch: operations["update_correspondent_correspondents__correspondent_id__patch"];
+        trace?: never;
+    };
     "/journee": {
         parameters: {
             query?: never;
@@ -219,7 +294,11 @@ export interface paths {
          *     demande elle-même.
          */
         post: operations["demander_journee_journee_demande_post"];
-        delete?: never;
+        /**
+         * Annuler Demande
+         * @description Retirer une demande restée sans réponse : on ne reste pas coincé en attente.
+         */
+        delete: operations["annuler_demande_journee_demande_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1438,6 +1517,117 @@ export interface components {
              */
             regenerate: boolean;
         };
+        /** CorrespondentCreate */
+        CorrespondentCreate: {
+            /**
+             * Kind
+             * @default practitioner
+             * @enum {string}
+             */
+            kind: "practitioner" | "organisation";
+            /**
+             * Title
+             * @default
+             * @enum {string}
+             */
+            title: "" | "Dr" | "Pr" | "M." | "Mme";
+            /** Last Name */
+            last_name: string;
+            /**
+             * First Name
+             * @default
+             */
+            first_name: string;
+            /**
+             * Specialty
+             * @default
+             */
+            specialty: string;
+            /**
+             * Practice
+             * @default
+             */
+            practice: string;
+            /**
+             * Email
+             * @default
+             */
+            email: string;
+            /**
+             * Phone
+             * @default
+             */
+            phone: string;
+            /**
+             * Address
+             * @default
+             */
+            address: string;
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+        };
+        /** CorrespondentOut */
+        CorrespondentOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "practitioner" | "organisation";
+            /** Title */
+            title: string;
+            /** Last Name */
+            last_name: string;
+            /** First Name */
+            first_name: string;
+            /** Specialty */
+            specialty: string;
+            /** Practice */
+            practice: string;
+            /** Email */
+            email: string;
+            /** Phone */
+            phone: string;
+            /** Address */
+            address: string;
+            /** Note */
+            note: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** CorrespondentUpdate */
+        CorrespondentUpdate: {
+            /** Kind */
+            kind?: ("practitioner" | "organisation") | null;
+            /** Title */
+            title?: ("" | "Dr" | "Pr" | "M." | "Mme") | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Specialty */
+            specialty?: string | null;
+            /** Practice */
+            practice?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Address */
+            address?: string | null;
+            /** Note */
+            note?: string | null;
+        };
         /** DemandeIn */
         DemandeIn: {
             /** Jour */
@@ -2006,6 +2196,8 @@ export interface components {
             birth_date: string | null;
             /** External Id */
             external_id: string | null;
+            /** Smilecloud Case Id */
+            smilecloud_case_id: string | null;
             /** Email */
             email: string;
             /** Note */
@@ -2043,6 +2235,8 @@ export interface components {
             birth_date: string | null;
             /** External Id */
             external_id: string | null;
+            /** Smilecloud Case Id */
+            smilecloud_case_id: string | null;
             /** Email */
             email: string;
             /** Note */
@@ -2067,6 +2261,8 @@ export interface components {
             email?: string | null;
             /** Note */
             note?: string | null;
+            /** Smilecloud Case Id */
+            smilecloud_case_id?: string | null;
         };
         /** PractitionerLearningProfile */
         PractitionerLearningProfile: {
@@ -2357,6 +2553,11 @@ export interface components {
              * @enum {string}
              */
             status: "discussed" | "proposed" | "accepted" | "refused" | "deferred" | "planned" | "completed";
+        };
+        /** SpecialtyIn */
+        SpecialtyIn: {
+            /** Label */
+            label: string;
         };
         /** SpeechAlias */
         SpeechAlias: {
@@ -2894,6 +3095,250 @@ export interface operations {
             };
         };
     };
+    list_specialties_correspondents_specialties_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    add_specialty_correspondents_specialties_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SpecialtyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_specialty_correspondents_specialties__label__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                label: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_correspondents_correspondents_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                specialty?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorrespondentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_correspondent_correspondents_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorrespondentCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorrespondentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_correspondent_correspondents__correspondent_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                correspondent_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorrespondentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_correspondent_correspondents__correspondent_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                correspondent_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_correspondent_correspondents__correspondent_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                correspondent_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorrespondentUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorrespondentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     read_journee_journee_get: {
         parameters: {
             query?: {
@@ -2978,6 +3423,35 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["DemandeOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    annuler_demande_journee_demande_delete: {
+        parameters: {
+            query?: {
+                jour?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

@@ -483,3 +483,43 @@ h3 {
   border-top: 0;
   padding-top: var(--espace-2);
 }
+
+/* Les spécialités des correspondants, dans les Paramètres : une suite de jetons qu'on
+   ajoute et qu'on retire. Celles connues d'avance n'ont pas de croix. */
+.rangee-pastilles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espace-2);
+}
+
+.jeton-specialite {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--trait-fort);
+  border-radius: var(--rayon-pastille);
+  background: var(--surface);
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-moyenne);
+  box-shadow: var(--lumiere);
+}
+
+.jeton-specialite button {
+  border: 0;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--surface-douce);
+  color: var(--encre-douce);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.jeton-specialite button:hover {
+  background: var(--alerte-douce);
+  color: var(--alerte);
+}

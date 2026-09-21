@@ -479,6 +479,357 @@
         }
       }
     },
+    "/correspondents/specialties": {
+      "get": {
+        "tags": [
+          "correspondents"
+        ],
+        "summary": "List Specialties",
+        "description": "Celles connues d'avance, puis celles que le cabinet a ajoutées.",
+        "operationId": "list_specialties_correspondents_specialties_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array",
+                  "title": "Response List Specialties Correspondents Specialties Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "correspondents"
+        ],
+        "summary": "Add Specialty",
+        "operationId": "add_specialty_correspondents_specialties_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpecialtyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array",
+                  "title": "Response Add Specialty Correspondents Specialties Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/correspondents/specialties/{label}": {
+      "delete": {
+        "tags": [
+          "correspondents"
+        ],
+        "summary": "Remove Specialty",
+        "operationId": "remove_specialty_correspondents_specialties__label__delete",
+        "parameters": [
+          {
+            "name": "label",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Label"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Response Remove Specialty Correspondents Specialties  Label  Delete"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/correspondents": {
+      "get": {
+        "tags": [
+          "correspondents"
+        ],
+        "summary": "List Correspondents",
+        "operationId": "list_correspondents_correspondents_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "specialty",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Specialty"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CorrespondentOut"
+                  },
+                  "title": "Response List Correspondents Correspondents Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "correspondents"
+        ],
+        "summary": "Create Correspondent",
+        "operationId": "create_correspondent_correspondents_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorrespondentCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrespondentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/correspondents/{correspondent_id}": {
+      "get": {
+        "tags": [
+          "correspondents"
+        ],
+        "summary": "Get Correspondent",
+        "operationId": "get_correspondent_correspondents__correspondent_id__get",
+        "parameters": [
+          {
+            "name": "correspondent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Correspondent Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrespondentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "correspondents"
+        ],
+        "summary": "Update Correspondent",
+        "operationId": "update_correspondent_correspondents__correspondent_id__patch",
+        "parameters": [
+          {
+            "name": "correspondent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Correspondent Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorrespondentUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrespondentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "correspondents"
+        ],
+        "summary": "Delete Correspondent",
+        "operationId": "delete_correspondent_correspondents__correspondent_id__delete",
+        "parameters": [
+          {
+            "name": "correspondent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Correspondent Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/journee": {
       "get": {
         "tags": [
@@ -594,14 +945,14 @@
         "description": "Demander à l'extension de (re)lire cet agenda.\n\nOris ne va rien chercher : il pose une demande, que l'extension vient lire à son\nprochain passage et sert en déposant la journée. Rien n'est écrit d'autre que la\ndemande elle-même.",
         "operationId": "demander_journee_journee_demande_post",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/DemandeIn"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -613,6 +964,47 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "journee"
+        ],
+        "summary": "Annuler Demande",
+        "description": "Retirer une demande restée sans réponse : on ne reste pas coincé en attente.",
+        "operationId": "annuler_demande_journee_demande_delete",
+        "parameters": [
+          {
+            "name": "jour",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Jour"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",
@@ -3863,6 +4255,296 @@
         ],
         "title": "CorrectionRequest"
       },
+      "CorrespondentCreate": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "practitioner",
+              "organisation"
+            ],
+            "title": "Kind",
+            "default": "practitioner"
+          },
+          "title": {
+            "type": "string",
+            "enum": [
+              "",
+              "Dr",
+              "Pr",
+              "M.",
+              "Mme"
+            ],
+            "title": "Title",
+            "default": ""
+          },
+          "last_name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Last Name"
+          },
+          "first_name": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "First Name",
+            "default": ""
+          },
+          "specialty": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Specialty",
+            "default": ""
+          },
+          "practice": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Practice",
+            "default": ""
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Email",
+            "default": ""
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 40,
+            "title": "Phone",
+            "default": ""
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Address",
+            "default": ""
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "last_name"
+        ],
+        "title": "CorrespondentCreate"
+      },
+      "CorrespondentOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "practitioner",
+              "organisation"
+            ],
+            "title": "Kind"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "last_name": {
+            "type": "string",
+            "title": "Last Name"
+          },
+          "first_name": {
+            "type": "string",
+            "title": "First Name"
+          },
+          "specialty": {
+            "type": "string",
+            "title": "Specialty"
+          },
+          "practice": {
+            "type": "string",
+            "title": "Practice"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "last_name",
+          "first_name",
+          "specialty",
+          "practice",
+          "email",
+          "phone",
+          "address",
+          "note",
+          "created_at"
+        ],
+        "title": "CorrespondentOut"
+      },
+      "CorrespondentUpdate": {
+        "properties": {
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "practitioner",
+                  "organisation"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kind"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "",
+                  "Dr",
+                  "Pr",
+                  "M.",
+                  "Mme"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "specialty": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Specialty"
+          },
+          "practice": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Practice"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CorrespondentUpdate"
+      },
       "DemandeIn": {
         "properties": {
           "jour": {
@@ -6166,6 +6848,22 @@
           "status"
         ],
         "title": "SetPlanItemStatus"
+      },
+      "SpecialtyIn": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Label"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "label"
+        ],
+        "title": "SpecialtyIn"
       },
       "SpeechAlias": {
         "properties": {

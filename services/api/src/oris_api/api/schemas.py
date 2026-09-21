@@ -446,3 +446,59 @@ class JourOut(BaseModel):
     lu: bool
     patients: int
     a_creer: int
+
+
+CorrespondentKind = Literal["practitioner", "organisation"]
+#: La civilité n'a de sens que pour une personne, et sert à ouvrir la lettre.
+CorrespondentTitle = Literal["", "Dr", "Pr", "M.", "Mme"]
+ShortText = Annotated[str, StringConstraints(max_length=200)]
+
+
+class CorrespondentOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    kind: CorrespondentKind
+    title: str
+    last_name: str
+    first_name: str
+    specialty: str
+    practice: str
+    email: str
+    phone: str
+    address: str
+    note: str
+    created_at: datetime
+
+
+class CorrespondentCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    kind: CorrespondentKind = "practitioner"
+    title: CorrespondentTitle = ""
+    #: Le nom, ou la raison sociale quand c'est une structure.
+    last_name: Name
+    first_name: ShortText = ""
+    specialty: Annotated[str, StringConstraints(max_length=80)] = ""
+    practice: ShortText = ""
+    email: ShortText = ""
+    phone: Annotated[str, StringConstraints(max_length=40)] = ""
+    address: Annotated[str, StringConstraints(max_length=500)] = ""
+    note: Annotated[str, StringConstraints(max_length=500)] = ""
+
+
+class CorrespondentUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    kind: CorrespondentKind | None = None
+    title: CorrespondentTitle | None = None
+    last_name: Name | None = None
+    first_name: ShortText | None = None
+    specialty: Annotated[str, StringConstraints(max_length=80)] | None = None
+    practice: ShortText | None = None
+    email: ShortText | None = None
+    phone: Annotated[str, StringConstraints(max_length=40)] | None = None
+    address: Annotated[str, StringConstraints(max_length=500)] | None = None
+    note: Annotated[str, StringConstraints(max_length=500)] | None = None
+
+
+class SpecialtyIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    label: Annotated[str, StringConstraints(min_length=1, max_length=80)]

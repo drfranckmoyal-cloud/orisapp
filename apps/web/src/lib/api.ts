@@ -206,3 +206,6 @@ export type Cabinet = Schemas["CabinetOut"];
 export type Journee = Schemas["JourneeOut"];
 export type RendezVous = Schemas["RendezVousOut"];
 export type Jour = Schemas["JourOut"];
+
+/** Carnet d'adresses : confrères et structures à qui l'on adresse un patient. */
+export type Correspondant = Schemas["CorrespondentOut"];

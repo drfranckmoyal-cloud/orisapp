@@ -741,3 +741,51 @@ class Attachment(Base):
     storage_key: Mapped[str] = mapped_column(String(255))
     label: Mapped[str] = mapped_column(Text, default="", server_default="")
     created_at: Mapped[datetime] = created_at()
+
+
+class Correspondent(Base):
+    """Un confrère ou une structure à qui l'on adresse un patient (carnet d'adresses).
+
+    Ce n'est **pas** un utilisateur d'Oris : personne ne s'y connecte. C'est une fiche
+    d'adresse, dont la raison d'être est le courrier d'adressage — qui est une vraie
+    lettre, et a donc besoin d'une adresse postale autant que d'un nom.
+    """
+
+    __tablename__ = "correspondents"
+    __table_args__ = (
+        CheckConstraint("kind in ('practitioner', 'organisation')", name="correspondent_kind"),
+    )
+
+    id: Mapped[UUID] = uuid_pk()
+    organization_id: Mapped[UUID] = mapped_column(ForeignKey("organizations.id"), index=True)
+    #: `practitioner` ou `organisation`. Une structure n'a ni civilité, ni prénom, ni
+    #: spécialité — et la lettre ne lui dit pas « Chère Consœur ».
+    kind: Mapped[str] = mapped_column(String(20), default="practitioner")
+    title: Mapped[str] = mapped_column(String(10), default="", server_default="")
+    #: Le nom, ou la raison sociale quand c'est une structure.
+    last_name: Mapped[str] = mapped_column(String(200))
+    first_name: Mapped[str] = mapped_column(String(200), default="", server_default="")
+    #: Le libellé en toutes lettres, pas une clé : renommer une spécialité ne doit pas
+    #: réécrire les correspondants. Vide = non renseignée.
+    specialty: Mapped[str] = mapped_column(String(80), default="", server_default="")
+    practice: Mapped[str] = mapped_column(String(200), default="", server_default="")
+    email: Mapped[str] = mapped_column(String(200), default="", server_default="")
+    phone: Mapped[str] = mapped_column(String(40), default="", server_default="")
+    address: Mapped[str] = mapped_column(Text, default="", server_default="")
+    note: Mapped[str] = mapped_column(Text, default="", server_default="")
+    created_at: Mapped[datetime] = created_at()
+    updated_at: Mapped[datetime] = updated_at()
+
+
+class CorrespondentSpecialty(Base):
+    """Une spécialité ajoutée par le cabinet, à côté de celles connues d'avance."""
+
+    __tablename__ = "correspondent_specialties"
+    __table_args__ = (
+        UniqueConstraint("organization_id", "label", name="uq_correspondent_specialty_label"),
+    )
+
+    id: Mapped[UUID] = uuid_pk()
+    organization_id: Mapped[UUID] = mapped_column(ForeignKey("organizations.id"), index=True)
+    label: Mapped[str] = mapped_column(String(80))
+    created_at: Mapped[datetime] = created_at()

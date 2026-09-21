@@ -43,6 +43,9 @@ const MOTEURS: Record<string, string> = {
 };
 
 /** Paramètres : ce qui est réglé, et ce qui ne l'est pas encore. */
+/** Connues d'avance, les mêmes pour tous : elles ne se retirent pas. */
+const STANDARD = ["Omnipraticien", "ODF", "CMF"];
+
 export default function ParametresPage() {
   const [sante] = useApi<Sante>("/health");
   const [config] = useApi<ClientConfig>("/config/client");
@@ -51,6 +54,40 @@ export default function ParametresPage() {
   const moteurs = sante.state === "ready" ? sante.data.providers : {};
   const smilecloud = config.state === "ready" && config.data.smilecloud_connected;
   const [versions] = useApi<EngineVersion[]>("/system/versions");
+  const [specialites, rechargerSpecialites] = useApi<string[]>("/correspondents/specialties");
+
+  async function ajouterSpecialite(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const label = String(new FormData(form).get("label") ?? "").trim();
+    if (!label) return;
+    try {
+      await apiRequest("/correspondents/specialties", { method: "POST", body: { label } });
+      form.reset();
+      rechargerSpecialites();
+      setMessage({ tone: "ok", text: `Spécialité « ${label} » ajoutée.` });
+    } catch (error) {
+      setMessage({
+        tone: "error",
+        text: errorMessage(error instanceof ApiError ? error.code : "UNKNOWN"),
+      });
+    }
+  }
+
+  async function retirerSpecialite(label: string) {
+    try {
+      await apiRequest(`/correspondents/specialties/${encodeURIComponent(label)}`, {
+        method: "DELETE",
+      });
+      rechargerSpecialites();
+      setMessage({ tone: "ok", text: `Spécialité « ${label} » retirée.` });
+    } catch (error) {
+      setMessage({
+        tone: "error",
+        text: errorMessage(error instanceof ApiError ? error.code : "UNKNOWN"),
+      });
+    }
+  }
 
   async function enregistrerCabinet(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -120,6 +157,45 @@ export default function ParametresPage() {
           </div>
           <Bouton disabled>En attente</Bouton>
         </div>
+      </Carte>
+
+      <Carte titre="Spécialités des correspondants">
+        <p className="muted" style={{ marginTop: 0 }}>
+          Celles que propose le carnet d’adresses. Trois sont connues d’avance ; ajoutez
+          les vôtres. Retirer une spécialité ne touche pas les correspondants qui la
+          portent — leur fiche garde le mot.
+        </p>
+
+        {specialites.state === "loading" && <Squelette lignes={2} />}
+        {specialites.state === "error" && <EtatVide titre={errorMessage(specialites.code)} />}
+
+        {specialites.state === "ready" && (
+          <div className="rangee-pastilles">
+            {specialites.data.map((specialite) => (
+              <span key={specialite} className="jeton-specialite">
+                {specialite}
+                {!STANDARD.includes(specialite) && (
+                  <button
+                    type="button"
+                    aria-label={`Retirer ${specialite}`}
+                    title={`Retirer ${specialite}`}
+                    onClick={() => void retirerSpecialite(specialite)}
+                  >
+                    ×
+                  </button>
+                )}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <form className="form-row" onSubmit={ajouterSpecialite}>
+          <label className="field">
+            Nouvelle spécialité
+            <Champ name="label" placeholder="Parodontie, Implantologie…" required />
+          </label>
+          <Bouton type="submit">Ajouter</Bouton>
+        </form>
       </Carte>
 
       <Carte titre="Connecteurs">

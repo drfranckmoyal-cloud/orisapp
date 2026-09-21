@@ -1,0 +1,243 @@
+/* Le carnet d'adresses. Même langage que la liste des patients : un fond creusé, des
+   fiches posées dessus. Une fiche de correspondant porte plus de choses qu'une ligne de
+   patient — la spécialité, le cabinet, de quoi le joindre — mais se lit pareil. */
+
+.filtres {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-2);
+  flex-wrap: wrap;
+}
+
+.liste {
+  display: grid;
+  gap: var(--espace-3);
+  padding: var(--espace-3);
+  border-radius: 16px;
+  background: var(--surface-douce);
+  box-shadow: inset 0 2px 6px rgb(26 24 21 / 0.1);
+}
+
+.fiche {
+  /* Un bouton ne s'étire pas tout seul dans une grille : sans cette largeur, chaque
+     fiche s'arrête à son contenu et la liste ressemble à un escalier. */
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 200px auto auto;
+  align-items: center;
+  gap: var(--espace-4);
+  padding: 11px var(--espace-4);
+  border: 1px solid var(--trait-fort);
+  border-radius: 13px;
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  box-shadow:
+    var(--lumiere),
+    0 1px 1px rgb(26 24 21 / 0.06),
+    0 4px 8px -3px rgb(26 24 21 / 0.11);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition),
+    border-color var(--transition);
+}
+
+.fiche:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow:
+    var(--lumiere),
+    0 2px 3px rgb(26 24 21 / 0.08),
+    0 14px 24px -10px rgb(20 83 59 / 0.32);
+}
+
+.fiche:focus-visible {
+  outline: none;
+  box-shadow: var(--anneau-focus);
+}
+
+.ficheOuverte {
+  border-color: var(--accent);
+}
+
+/* Les initiales d'un praticien, un pictogramme pour une structure : on voit la nature
+   de la fiche avant d'avoir lu le nom. */
+.jeton {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent-douce);
+  border: 1px solid var(--trait);
+  color: var(--accent);
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-forte);
+}
+
+.jetonStructure {
+  border-radius: 11px;
+}
+
+.qui {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.nom {
+  font-weight: var(--graisse-demi);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dessous {
+  font-size: var(--texte-xs);
+  color: var(--encre-tres-douce);
+  font-weight: var(--graisse-moyenne);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.manque {
+  font-style: italic;
+}
+
+.joindre {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  border-left: 1px solid var(--trait);
+  padding-left: var(--espace-4);
+  font-size: var(--texte-xs);
+  color: var(--encre-douce);
+}
+
+/* Ce qui manque pour écrire la lettre, et rien d'autre : une fiche complète ne porte
+   aucune marque. */
+.marques {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+.chevron {
+  flex: none;
+  color: var(--trait-fort);
+  display: grid;
+  place-items: center;
+  transition: color var(--transition), transform var(--transition);
+}
+
+.fiche:hover .chevron {
+  color: var(--accent);
+}
+
+/* Le formulaire, ouvert sous la fiche qu'on modifie ou en haut pour une nouvelle. */
+.champs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: var(--espace-3) var(--espace-4);
+  align-items: start;
+}
+
+.pleineLargeur {
+  grid-column: 1 / -1;
+}
+
+.natures {
+  display: flex;
+  gap: var(--espace-2);
+}
+
+.nature {
+  flex: 1;
+  padding: 8px var(--espace-3);
+  border: 1px solid var(--trait-fort);
+  border-radius: var(--rayon-bouton);
+  background: var(--surface);
+  font: inherit;
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-demi);
+  color: var(--encre-douce);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition),
+    border-color var(--transition);
+}
+
+.natureChoisie {
+  background: var(--accent);
+  border-color: var(--accent-fonce);
+  color: var(--encre-inverse);
+  box-shadow: var(--relief);
+}
+
+.aire {
+  font: inherit;
+  width: 100%;
+  min-height: 62px;
+  resize: vertical;
+  padding: 9px 13px;
+  border: 1px solid var(--trait-fort);
+  border-radius: var(--rayon-bouton);
+  background: var(--surface);
+  color: var(--encre);
+}
+
+.aire:focus-visible,
+.choix:focus-visible {
+  outline: none;
+  box-shadow: var(--anneau-focus);
+  border-color: var(--accent);
+}
+
+.choix {
+  font: inherit;
+  width: 100%;
+  padding: 9px 13px;
+  border: 1px solid var(--trait-fort);
+  border-radius: var(--rayon-bouton);
+  background: var(--surface);
+  color: var(--encre);
+}
+
+.boutons {
+  display: flex;
+  gap: var(--espace-3);
+  align-items: center;
+  grid-column: 1 / -1;
+}
+
+.supprimer {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: var(--alerte);
+  font: inherit;
+  font-size: var(--texte-sm);
+  cursor: pointer;
+}
+
+.supprimer:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .fiche {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .joindre,
+  .marques {
+    grid-column: 2;
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  .chevron {
+    display: none;
+  }
+}
