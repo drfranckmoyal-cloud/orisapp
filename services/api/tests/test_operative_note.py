@@ -134,12 +134,14 @@ def test_sections_follow_the_template_order() -> None:
         }
     )
     sections = [claim.section for claim in procedure_claims(full, [])]
+    # Rubriques du modèle opératoire du Dr Moyal : l'intervention après l'indication,
+    # l'isolation et les matériaux dans le protocole, les complications au résultat.
     assert sections == [
-        "Acte réalisé",
         "Indication",
-        "Isolation",
-        "Matériaux utilisés",
-        "Complications",
+        "Intervention réalisée",
+        "Protocole / éléments techniques",
+        "Protocole / éléments techniques",
+        "Résultat immédiat",
     ]
 
 

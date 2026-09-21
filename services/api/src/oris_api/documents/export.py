@@ -20,7 +20,12 @@ from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen.canvas import Canvas
 
 from oris_api.documents.operative_templates import SECTIONS as OPERATIVE_SECTIONS
-from oris_api.documents.renderer import LIMITS_SECTION, RUBRIQUES_CONSULTATION, SECTION_ORDER
+from oris_api.documents.renderer import (
+    LIMITS_SECTION,
+    RUBRIQUES_CONSULTATION,
+    RUBRIQUES_OPERATOIRE,
+    SECTION_ORDER,
+)
 from oris_api.documents.theme import Cabinet, color
 
 # Les intitulés de section ne sont pas devinés à la mise en page : ils viennent des
@@ -28,6 +33,7 @@ from oris_api.documents.theme import Cabinet, color
 SECTION_TITLES = frozenset(
     {section for section, _ in SECTION_ORDER}
     | set(RUBRIQUES_CONSULTATION)
+    | set(RUBRIQUES_OPERATOIRE)
     | set(OPERATIVE_SECTIONS)
     | {LIMITS_SECTION, "Plan de traitement", "Acte réalisé", "Acte prévu"}
 )

@@ -512,27 +512,61 @@ def slot_value(
     return (value, (fact.fact_id,)) if value else None
 
 
+#: Rubriques du compte rendu opératoire du Dr Moyal (modèle 02, 21/09/2026).
+RUBRIQUES_OPERATOIRE = (
+    "Indication",
+    "Situation pré-opératoire",
+    "Intervention réalisée",
+    "Protocole / éléments techniques",
+    "Résultat immédiat",
+    "Suites et consignes",
+    "Coordination / prochaine étape",
+)
+#: Où va chaque section des emplacements d'acte (docs/MODELES_CR.md).
+RUBRIQUE_DE_SECTION = {
+    "Indication": "Indication",
+    "Site opératoire": "Situation pré-opératoire",
+    "Anesthésie": "Protocole / éléments techniques",
+    "Isolation": "Protocole / éléments techniques",
+    "Préparation": "Protocole / éléments techniques",
+    "Étapes réalisées": "Intervention réalisée",
+    "Matériaux utilisés": "Protocole / éléments techniques",
+    "Contrôle et finition": "Résultat immédiat",
+    "Complications": "Résultat immédiat",
+    "Consignes et suite": "Suites et consignes",
+}
+
+
 def procedure_claims(procedure: Procedure, facts: list[ClinicalFact] | None = None) -> list[Claim]:
-    """Les phrases d'un acte, dans l'ordre des sections du modèle."""
+    """Les phrases d'un acte, rangées dans les rubriques du modèle opératoire."""
     facts = facts or []
     evidence = tuple(procedure.evidence_fact_ids)
     label = procedure_label(procedure.procedure_type)
     teeth = teeth_suffix(procedure.teeth)
-    claims = [
-        Claim("Acte réalisé", f"{capitalize(label)}{teeth}.", fact_ids=evidence)
-        if procedure.status == "performed"
-        else Claim("Acte prévu", f"{capitalize(label)}{teeth} — prévu.", fact_ids=evidence)
-    ]
+    par_rubrique: dict[str, list[Claim]] = {rubrique: [] for rubrique in RUBRIQUES_OPERATOIRE}
+    if procedure.status == "performed":
+        par_rubrique["Intervention réalisée"].append(
+            Claim("Intervention réalisée", f"{capitalize(label)}{teeth}.", fact_ids=evidence)
+        )
+    else:
+        par_rubrique["Coordination / prochaine étape"].append(
+            Claim(
+                "Coordination / prochaine étape",
+                f"{capitalize(label)}{teeth} — prévu.",
+                fact_ids=evidence,
+            )
+        )
     slots = template_for(procedure.procedure_type)
     for section in SECTIONS:
+        rubrique = RUBRIQUE_DE_SECTION[section]
         for slot in (s for s in slots if s.section == section):
             found = slot_value(slot, procedure, facts)
             if found is None:
                 continue
             sentence = slot_sentence(slot, found[0])
             if sentence is not None:
-                claims.append(Claim(section, sentence, fact_ids=found[1]))
-    return claims
+                par_rubrique[rubrique].append(Claim(rubrique, sentence, fact_ids=found[1]))
+    return [claim for rubrique in RUBRIQUES_OPERATOIRE for claim in par_rubrique[rubrique]]
 
 
 def render_operative_note(encounter: ClinicalEncounter) -> GeneratedDocument:
@@ -542,4 +576,14 @@ def render_operative_note(encounter: ClinicalEncounter) -> GeneratedDocument:
         if procedure.status == "cancelled":
             continue
         claims += procedure_claims(procedure, list(encounter.facts))
+    # La suite dite pendant la séance (contrôle, prochain rendez-vous) ferme le document.
+    for fact in encounter.facts:
+        if fact.category == "follow_up":
+            claims.append(
+                Claim(
+                    "Coordination / prochaine étape",
+                    phrase_redigee(fact),
+                    fact_ids=(fact.fact_id,),
+                )
+            )
     return GeneratedDocument("operative_note", render_content(claims), tuple(claims))
