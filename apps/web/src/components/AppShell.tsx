@@ -6,7 +6,7 @@ import { type ReactNode, useEffect, useState } from "react";
 
 import { Icone, type NomIcone } from "@/components/Icones";
 import { Symbole } from "@/components/Marque";
-import type { Cabinet } from "@/lib/api";
+import { apiRequest, type Cabinet } from "@/lib/api";
 import { useApi } from "@/lib/useApi";
 
 import styles from "./AppShell.module.css";
@@ -30,6 +30,66 @@ function estActif(pathname: string, href: string): boolean {
 function initiales(nom: string): string {
   const mots = nom.replace(/^Dr\.?\s+/i, "").split(/\s+/).filter(Boolean);
   return mots.slice(0, 2).map((mot) => mot[0]?.toUpperCase() ?? "").join("") || "—";
+}
+
+type Voyant = {
+  etat: string;
+  ton: "actif" | "alerte" | "travail" | "neutre";
+  detail: string;
+  ouvrir: "doctolib" | "smilecloud" | null;
+};
+type Connecteurs = { doctolib: Voyant; smilecloud: Voyant; peut_ouvrir: boolean };
+
+/** Doctolib et SmileCloud en deux voyants, comme dans Dental Lens : un point de couleur,
+ *  l'état en toutes lettres, et « reconnecter » seulement quand un geste le règle. */
+function VoyantsConnecteurs() {
+  const [connecteurs, recharger] = useApi<Connecteurs>("/connecteurs");
+  const [envoi, setEnvoi] = useState<string | null>(null);
+
+  // L'état bouge sans nous (Chrome fermé, session expirée) : on relit toutes les 30 s.
+  useEffect(() => {
+    const minuterie = window.setInterval(recharger, 30_000);
+    return () => window.clearInterval(minuterie);
+  }, [recharger]);
+
+  if (connecteurs.state !== "ready") return null;
+  const lignes: [string, Voyant][] = [
+    ["Doctolib", connecteurs.data.doctolib],
+    ["SmileCloud", connecteurs.data.smilecloud],
+  ];
+  return (
+    <div className={styles.voyants} aria-label="État des connecteurs">
+      <p className={styles.voyantsTitre}>État</p>
+      {lignes.map(([nom, v]) => (
+        <div key={nom} className={styles.voyant} data-ton={v.ton} title={v.detail}>
+          <span className={styles.point} aria-hidden="true" />
+          <span className={styles.voyantNom}>{nom}</span>
+          <span className={styles.voyantEtat}>{v.etat}</span>
+          {v.ouvrir && connecteurs.data.peut_ouvrir && v.ton !== "actif" && (
+            <button
+              type="button"
+              className={styles.reconnecter}
+              disabled={envoi === v.ouvrir}
+              onClick={async () => {
+                setEnvoi(v.ouvrir);
+                try {
+                  await apiRequest("/connecteurs/ouvrir", { method: "POST", body: { site: v.ouvrir } });
+                } catch {
+                  /* Dental Lens ne répond pas : le voyant le dira à la relecture. */
+                }
+                window.setTimeout(() => {
+                  setEnvoi(null);
+                  recharger();
+                }, 3000);
+              }}
+            >
+              {envoi === v.ouvrir ? "…" : v.ton === "alerte" ? "reconnecter" : "ouvrir"}
+            </button>
+          )}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -79,6 +139,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             </li>
           ))}
         </ul>
+
+        <VoyantsConnecteurs />
 
         <div className={styles.profil}>
           {ouvert && (

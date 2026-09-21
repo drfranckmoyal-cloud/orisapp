@@ -1296,6 +1296,62 @@
         }
       }
     },
+    "/connecteurs": {
+      "get": {
+        "tags": [
+          "connecteurs"
+        ],
+        "summary": "Etat",
+        "operationId": "etat_connecteurs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnecteursOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/connecteurs/ouvrir": {
+      "post": {
+        "tags": [
+          "connecteurs"
+        ],
+        "summary": "Ouvrir",
+        "description": "Ouvre Doctolib (ou SmileCloud) dans Chrome, sur le Mac : c'est ainsi qu'on se\nreconnecte. Réservé à ce Mac — un iPhone n'ouvre pas Chrome à distance.",
+        "operationId": "ouvrir_connecteurs_ouvrir_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OuvrirIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters": {
       "get": {
         "tags": [
@@ -5345,6 +5401,27 @@
         ],
         "title": "ClinicalObjectOut"
       },
+      "ConnecteursOut": {
+        "properties": {
+          "doctolib": {
+            "$ref": "#/components/schemas/VoyantOut"
+          },
+          "smilecloud": {
+            "$ref": "#/components/schemas/VoyantOut"
+          },
+          "peut_ouvrir": {
+            "type": "boolean",
+            "title": "Peut Ouvrir"
+          }
+        },
+        "type": "object",
+        "required": [
+          "doctolib",
+          "smilecloud",
+          "peut_ouvrir"
+        ],
+        "title": "ConnecteursOut"
+      },
       "CorrectionRequest": {
         "properties": {
           "expected_object_version": {
@@ -7606,6 +7683,23 @@
         ],
         "title": "ObjectVersionOut"
       },
+      "OuvrirIn": {
+        "properties": {
+          "site": {
+            "type": "string",
+            "enum": [
+              "doctolib",
+              "smilecloud"
+            ],
+            "title": "Site"
+          }
+        },
+        "type": "object",
+        "required": [
+          "site"
+        ],
+        "title": "OuvrirIn"
+      },
       "PatientCreate": {
         "properties": {
           "first_name": {
@@ -9231,6 +9325,51 @@
           "claim_index"
         ],
         "title": "ValidationIssueOut"
+      },
+      "VoyantOut": {
+        "properties": {
+          "etat": {
+            "type": "string",
+            "title": "Etat"
+          },
+          "ton": {
+            "type": "string",
+            "enum": [
+              "actif",
+              "alerte",
+              "travail",
+              "neutre"
+            ],
+            "title": "Ton"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "ouvrir": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "doctolib",
+                  "smilecloud"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ouvrir"
+          }
+        },
+        "type": "object",
+        "required": [
+          "etat",
+          "ton",
+          "detail",
+          "ouvrir"
+        ],
+        "title": "VoyantOut"
       }
     }
   }

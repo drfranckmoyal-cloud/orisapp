@@ -163,8 +163,102 @@
 }
 
 /* Le praticien : discret, en bas, et on en change. */
-.profil {
+/* Voyants Doctolib / SmileCloud, au-dessus du profil (repris de Dental Lens). */
+.voyants {
   margin-top: auto;
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgb(255 255 255 / 0.06);
+  border: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.voyantsTitre {
+  margin: 0 0 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(246 243 238 / 0.5);
+}
+
+.voyant {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  font-size: 12.5px;
+  color: rgb(246 243 238 / 0.85);
+  cursor: default;
+}
+
+.point {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  background: rgb(246 243 238 / 0.35);
+}
+
+.voyant[data-ton="actif"] .point {
+  background: #6fd3a4;
+  box-shadow: 0 0 8px rgb(111 211 164 / 0.7);
+}
+
+.voyant[data-ton="alerte"] .point {
+  background: #f0a35e;
+  box-shadow: 0 0 8px rgb(240 163 94 / 0.6);
+}
+
+.voyant[data-ton="travail"] .point {
+  background: #7dd3c7;
+  animation: battement 1.3s ease-in-out infinite;
+}
+
+@keyframes battement {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.voyantNom {
+  flex: 1;
+}
+
+.voyantEtat {
+  font-weight: 600;
+  color: rgb(246 243 238 / 0.95);
+}
+
+.voyant[data-ton="actif"] .voyantEtat {
+  color: #9fe3c2;
+}
+
+.voyant[data-ton="alerte"] .voyantEtat {
+  color: #f6c08e;
+}
+
+.reconnecter {
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgb(246 243 238 / 0.35);
+  background: transparent;
+  color: #f6f3ee;
+  cursor: pointer;
+}
+
+.reconnecter:hover {
+  background: rgb(255 255 255 / 0.1);
+}
+
+.profil {
+  margin-top: 10px;
   position: relative;
 }
 

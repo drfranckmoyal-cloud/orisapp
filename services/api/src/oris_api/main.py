@@ -16,6 +16,7 @@ from fastapi.responses import JSONResponse
 from oris_api import __version__
 from oris_api.api import (
     audio,
+    connecteurs,
     correspondents,
     deliveries,
     encounters,
@@ -75,6 +76,7 @@ def create_app() -> FastAPI:
     app.include_router(patients.router)
     app.include_router(correspondents.router)
     app.include_router(journee.router)
+    app.include_router(connecteurs.router)
     app.include_router(encounters.router)
     app.include_router(deliveries.router)
     app.include_router(envoi.router)

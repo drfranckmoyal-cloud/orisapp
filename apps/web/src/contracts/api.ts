@@ -408,6 +408,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/connecteurs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Etat */
+        get: operations["etat_connecteurs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connecteurs/ouvrir": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ouvrir
+         * @description Ouvre Doctolib (ou SmileCloud) dans Chrome, sur le Mac : c'est ainsi qu'on se
+         *     reconnecte. Réservé à ce Mac — un iPhone n'ouvre pas Chrome à distance.
+         */
+        post: operations["ouvrir_connecteurs_ouvrir_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters": {
         parameters: {
             query?: never;
@@ -1894,6 +1932,13 @@ export interface components {
             /** Versions */
             versions: components["schemas"]["ObjectVersionOut"][];
         };
+        /** ConnecteursOut */
+        ConnecteursOut: {
+            doctolib: components["schemas"]["VoyantOut"];
+            smilecloud: components["schemas"]["VoyantOut"];
+            /** Peut Ouvrir */
+            peut_ouvrir: boolean;
+        };
         /** CorrectionRequest */
         CorrectionRequest: {
             /** Expected Object Version */
@@ -2769,6 +2814,14 @@ export interface components {
             /** Created By */
             created_by: string | null;
         };
+        /** OuvrirIn */
+        OuvrirIn: {
+            /**
+             * Site
+             * @enum {string}
+             */
+            site: "doctolib" | "smilecloud";
+        };
         /** PatientCreate */
         PatientCreate: {
             /** First Name */
@@ -3421,6 +3474,20 @@ export interface components {
             fact_id: string | null;
             /** Claim Index */
             claim_index: number | null;
+        };
+        /** VoyantOut */
+        VoyantOut: {
+            /** Etat */
+            etat: string;
+            /**
+             * Ton
+             * @enum {string}
+             */
+            ton: "actif" | "alerte" | "travail" | "neutre";
+            /** Detail */
+            detail: string;
+            /** Ouvrir */
+            ouvrir: ("doctolib" | "smilecloud") | null;
         };
     };
     responses: never;
@@ -4303,6 +4370,57 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["DepotOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    etat_connecteurs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnecteursOut"];
+                };
+            };
+        };
+    };
+    ouvrir_connecteurs_ouvrir_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OuvrirIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
