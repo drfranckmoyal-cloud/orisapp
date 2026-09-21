@@ -141,3 +141,19 @@ def test_an_exported_document_counts_as_validated_for_the_consultation(api: Any)
     api.get(f"/documents/{note['id']}/export", params={"format": "pdf"})
     valide = api.post(f"/encounters/{encounter['id']}/validate")
     assert valide.status_code == 200, valide.text
+
+
+def test_one_validated_document_validates_the_consultation_the_others_stay_independent(
+    api: Any,
+) -> None:
+    encounter = consultation_traitee(api)
+    docs = documents_by_type(api, encounter["id"])
+    assert len(docs) >= 2
+    note = docs["consultation_note"]
+    api.post(f"/documents/{note['id']}/validate", json={"acknowledged_warning_codes": []})
+    assert api.get(f"/encounters/{encounter['id']}").json()["status"] == "validated"
+    # Le plan reste un brouillon, qu'on valide plus tard, sans rien débloquer.
+    plan = documents_by_type(api, encounter["id"])["treatment_plan_text"]
+    assert plan["status"] in {"draft_ai", "needs_review"}
+    valide = api.post(f"/documents/{plan['id']}/validate", json={"acknowledged_warning_codes": []})
+    assert valide.status_code == 200, valide.text

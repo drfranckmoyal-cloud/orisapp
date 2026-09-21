@@ -128,6 +128,7 @@ export default function ConsultationPage() {
     "fermee" | "confirmer" | "en_cours"
   >("fermee");
   const motDe = useConcepts();
+  const [toast, setToast] = useState<string | null>(null);
 
   function erreur(caught: unknown) {
     const code = caught instanceof ApiError ? caught.code : "UNKNOWN";
@@ -244,6 +245,26 @@ export default function ConsultationPage() {
     }
   }
 
+  /** Valide le document ouvert, et le dit dans une petite fenêtre qui s'efface. */
+  async function valider(document: DocumentView) {
+    setFeedback(null);
+    try {
+      await apiRequest(`/documents/${document.id}/validate`, {
+        method: "POST",
+        body: {
+          acknowledged_warning_codes: acknowledged
+            ? criticalWarnings.map((w) => w.code)
+            : [],
+        },
+      });
+      setToast(`${DOCUMENT_TYPE[document.document_type]} validé.`);
+      window.setTimeout(() => setToast(null), 3500);
+      reloadAll();
+    } catch (caught) {
+      erreur(caught);
+    }
+  }
+
   async function supprimer() {
     setSuppression("en_cours");
     try {
@@ -280,7 +301,6 @@ export default function ConsultationPage() {
     (object?.procedures ?? []).some(
       (procedure) => procedure.status !== "cancelled",
     ) && !docs.some((doc) => doc.document_type === "operative_note");
-  const allValidated = docs.length > 0 && docs.every(estValide);
   const envoisDe = (documentId: string) =>
     envois.state === "ready"
       ? envois.data.filter((e) => e.document_id === documentId)
@@ -326,25 +346,6 @@ export default function ConsultationPage() {
               {ENCOUNTER_STATUS[data.status]}
             </Pastille>
             {shadow && <Pastille ton="attention">mode ombre</Pastille>}
-            {!shadow && data.status === "review" && (
-              <Bouton
-                disabled={!allValidated}
-                title={
-                  allValidated
-                    ? undefined
-                    : "Validez d’abord chaque document, un par un."
-                }
-                onClick={() =>
-                  act(
-                    `/encounters/${id}/validate`,
-                    undefined,
-                    "Consultation validée.",
-                  )
-                }
-              >
-                Valider la consultation
-              </Bouton>
-            )}
             {!EN_COURS.has(data.status) && (
               <button
                 type="button"
@@ -359,41 +360,6 @@ export default function ConsultationPage() {
           </div>
         </div>
       </header>
-
-      {/* Valider la consultation, c'est valider chacun de ses documents : on dit
-          lesquels restent, et on y mène d'un clic. */}
-      {!shadow && data.status === "review" && docs.length > 0 && (
-        <div
-          className={`banner ${allValidated ? "banner-info" : "banner-review"} ${styles.resteAValider}`}
-        >
-          {allValidated ? (
-            <span>
-              Tous les documents sont validés : vous pouvez{" "}
-              <strong>valider la consultation</strong> (bouton en haut à
-              droite).
-            </span>
-          ) : (
-            <>
-              <span>
-                Pour valider la consultation, validez chacun de ses documents
-                (bouton « Valider » en bas de l’étape 1). Il reste :
-              </span>
-              {docs
-                .filter((doc) => !estValide(doc))
-                .map((doc) => (
-                  <button
-                    key={doc.id}
-                    type="button"
-                    className={styles.resteBouton}
-                    onClick={() => choisir(doc)}
-                  >
-                    {DOCUMENT_TYPE[doc.document_type]}
-                  </button>
-                ))}
-            </>
-          )}
-        </div>
-      )}
 
       {suppression !== "fermee" && (
         <div
@@ -647,6 +613,53 @@ export default function ConsultationPage() {
                     )}
                   </header>
 
+                  {/* Valider se fait ici, en tête du document : on sait ce qu'on valide. */}
+                  {!shadow && (
+                    <div
+                      className={styles.barreValidation}
+                      data-valide={estValide(active)}
+                    >
+                      {estValide(active) ? (
+                        <span className={styles.valideLe}>
+                          <Icone nom="valide" taille={16} /> Document validé
+                        </span>
+                      ) : (
+                        <>
+                          {criticalWarnings.length > 0 && (
+                            <label className={styles.prisConnaissance}>
+                              <input
+                                type="checkbox"
+                                checked={acknowledged}
+                                onChange={(event) =>
+                                  setAcknowledged(event.target.checked)
+                                }
+                              />
+                              J’ai pris connaissance de l’alerte critique : ce
+                              document n’est pas exhaustif.
+                            </label>
+                          )}
+                          <Bouton
+                            disabled={
+                              !active.is_current ||
+                              enEdition !== null ||
+                              (criticalWarnings.length > 0 && !acknowledged)
+                            }
+                            onClick={() => void valider(active)}
+                          >
+                            <Icone nom="valide" taille={16} /> Valider ce{" "}
+                            {DOCUMENT_TYPE[
+                              active.document_type
+                            ].toLocaleLowerCase("fr-FR")}
+                          </Bouton>
+                          <span className={styles.noteValidation}>
+                            Relisez, puis validez : tant qu’il n’est pas validé,
+                            le PDF porte la mention « brouillon ».
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  )}
+
                   {feedback && (
                     <div
                       className={`banner ${feedback.tone === "ok" ? "banner-info" : "banner-critical"}`}
@@ -767,54 +780,6 @@ export default function ConsultationPage() {
                         }}
                       />
                     </label>
-                  )}
-
-                  {!shadow && (
-                    <>
-                      {!estValide(active) && (
-                        <div className={styles.validation}>
-                          {criticalWarnings.length > 0 && (
-                            <label className={styles.prisConnaissance}>
-                              <input
-                                type="checkbox"
-                                checked={acknowledged}
-                                onChange={(event) =>
-                                  setAcknowledged(event.target.checked)
-                                }
-                              />
-                              J’ai pris connaissance de l’alerte critique : ce
-                              document n’est pas exhaustif.
-                            </label>
-                          )}
-                          <Bouton
-                            disabled={
-                              !active.is_current ||
-                              enEdition !== null ||
-                              (criticalWarnings.length > 0 && !acknowledged)
-                            }
-                            onClick={() =>
-                              act(
-                                `/documents/${active.id}/validate`,
-                                {
-                                  acknowledged_warning_codes: acknowledged
-                                    ? criticalWarnings.map((w) => w.code)
-                                    : [],
-                                },
-                                `${DOCUMENT_TYPE[active.document_type]} validé.`,
-                              )
-                            }
-                          >
-                            Valider :{" "}
-                            {DOCUMENT_TYPE[
-                              active.document_type
-                            ].toLocaleLowerCase("fr-FR")}
-                          </Bouton>
-                          <span className={styles.noteValidation}>
-                            Non validé, le PDF porte la mention « brouillon ».
-                          </span>
-                        </div>
-                      )}
-                    </>
                   )}
                 </EtapeParcours>
 
@@ -958,6 +923,11 @@ export default function ConsultationPage() {
           )}
         </aside>
       </div>
+      {toast && (
+        <div className={styles.toast} role="status">
+          <Icone nom="valide" taille={18} /> {toast}
+        </div>
+      )}
     </div>
   );
 }

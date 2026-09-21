@@ -924,3 +924,54 @@
   background: var(--attention);
   color: #fff;
 }
+
+/* --- Validation, en tête du document --------------------------------------------------- */
+
+.barreValidation {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-2) var(--espace-4);
+  flex-wrap: wrap;
+  padding: var(--espace-3) var(--espace-4);
+  border: 1.5px solid var(--attention);
+  border-radius: 12px;
+  background: var(--attention-douce);
+}
+
+.barreValidation[data-valide="true"] {
+  border-color: var(--valide);
+  background: var(--valide-douce);
+}
+
+.valideLe {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: var(--graisse-demi);
+  color: var(--valide);
+}
+
+/* La petite fenêtre qui confirme la validation, puis s'efface. */
+.toast {
+  position: fixed;
+  right: var(--espace-8);
+  bottom: var(--espace-8);
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: var(--valide);
+  color: #fff;
+  font-weight: var(--graisse-demi);
+  box-shadow: var(--relief-haut);
+  animation: apparition 180ms ease-out;
+}
+
+@keyframes apparition {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}

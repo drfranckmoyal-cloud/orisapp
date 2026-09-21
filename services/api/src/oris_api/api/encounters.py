@@ -545,6 +545,10 @@ def validate_document(
     document = documents.validate(session, actor, document_id, body.acknowledged_warning_codes)
     version = documents.current_version(session, document)
     encounter = encounters.get_encounter(session, actor, document.encounter_id)
+    # Un document validé suffit à valider la consultation : les documents sont
+    # indépendants, les autres se valident quand le praticien le décide.
+    if encounter.status == "review":
+        encounters.validate_encounter(session, actor, encounter)
     assert version is not None  # noqa: S101 - vérifié par la validation
     return document_out(document, version, encounter.object_version)
 

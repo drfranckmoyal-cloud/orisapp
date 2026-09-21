@@ -438,11 +438,16 @@ def list_marks(session: Session, encounter: Encounter) -> list[EncounterMarkRow]
 
 
 def validate_encounter(session: Session, actor: Actor, encounter: Encounter) -> Encounter:
+    """La consultation est validée dès qu'un de ses documents l'est (décision du
+    21/09/2026) : les documents sont indépendants, un plan encore en brouillon ne retient
+    pas un compte rendu validé hors du dossier. Sans aucun document validé, refus."""
+    if encounter.status in {"validated", "exported"}:
+        return encounter
     active = [
         d for d in documents.list_documents(session, encounter.id) if d.status != "superseded"
     ]
     # Un document exporté (téléchargé, envoyé) l'a été après sa validation : il compte.
-    if not active or any(d.status not in {"validated", "exported"} for d in active):
+    if not any(d.status in {"validated", "exported"} for d in active):
         raise Conflict("DOCUMENTS_NOT_VALIDATED", str(encounter.id))
     transition(session, actor, encounter, "validated")
     return encounter
