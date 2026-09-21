@@ -6,6 +6,9 @@ struct OrisApp: App {
 
     init() {
         Connexion.reglerDepuisLeMac()
+        if !["localhost", "127.0.0.1", "::1"].contains(Connexion.serveur.host() ?? "") {
+            ReseauLocal.demanderLAutorisation()
+        }
         _client = State(initialValue: Connexion.client())
     }
     /// Change à chaque reconnexion : toute l'interface repart avec le nouveau client.

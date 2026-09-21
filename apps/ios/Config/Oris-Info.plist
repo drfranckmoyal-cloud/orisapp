@@ -14,6 +14,10 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_oris._tcp</string>
+	</array>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Oris envoie l’écoute au serveur Oris du Mac du cabinet, sur le Wi-Fi local.</string>
 </dict>
