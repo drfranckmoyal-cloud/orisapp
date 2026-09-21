@@ -162,26 +162,37 @@
   color: var(--alerte);
 }
 
-/* « + Créer un correspondant » : en bout de liste, discret mais toujours là. */
+/* Chercher ou créer : sur la même ligne, dès l'ouverture du volet. */
+.chercherOuCreer {
+  display: flex;
+  gap: var(--espace-2);
+  align-items: stretch;
+}
+
+.chercherOuCreer > input {
+  flex: 1;
+  min-width: 0;
+}
+
 .creer {
-  justify-self: start;
-  margin-top: 2px;
-  border: 1px dashed var(--trait-fort);
-  border-radius: 9px;
-  padding: 6px 10px;
-  background: transparent;
+  flex: none;
+  border: 1px solid var(--accent);
+  border-radius: var(--rayon-bouton);
+  padding: 0 12px;
+  background: var(--surface);
   color: var(--accent);
   font: inherit;
   font-size: var(--texte-xs);
   font-weight: var(--graisse-demi);
-  text-align: left;
+  white-space: nowrap;
   cursor: pointer;
-  transition: background var(--transition), border-color var(--transition);
+  transition: background var(--transition), color var(--transition);
 }
 
-.creer:hover {
-  background: var(--accent-douce);
-  border-color: var(--accent);
+.creer:hover,
+.creerActif {
+  background: var(--accent);
+  color: var(--encre-inverse);
 }
 
 /* Le formulaire complet du carnet, à l'étroit dans le cadre d'informations : on le

@@ -162,13 +162,25 @@ export function Correspondants({ patientId }: { patientId: string }) {
             ))}
           </div>
 
-          <Champ
-            type="search"
-            value={recherche}
-            placeholder="Chercher dans le carnet…"
-            aria-label="Chercher un correspondant"
-            onChange={(event) => setRecherche(event.target.value)}
-          />
+          {/* Chercher ou créer, côte à côte et dès l'ouverture : la création n'est pas un
+              recours quand la recherche échoue, c'est l'autre moitié du même geste. */}
+          <div className={styles.chercherOuCreer}>
+            <Champ
+              type="search"
+              value={recherche}
+              placeholder="Chercher dans le carnet…"
+              aria-label="Chercher un correspondant"
+              onChange={(event) => setRecherche(event.target.value)}
+            />
+            <button
+              type="button"
+              className={`${styles.creer} ${creation ? styles.creerActif : ""}`}
+              aria-pressed={creation}
+              onClick={() => setCreation((c) => !c)}
+            >
+              + Nouveau correspondant
+            </button>
+          </div>
 
           {creation ? (
             <div className={styles.creation}>
@@ -185,7 +197,9 @@ export function Correspondants({ patientId }: { patientId: string }) {
             {carnet.state === "loading" && <span className={styles.aucun}>chargement…</span>}
             {carnet.state === "ready" && proposes.length === 0 && (
               <span className={styles.aucun}>
-                {recherche ? "aucun correspondant à ce nom" : "tout le carnet est déjà rattaché"}
+                {recherche
+                  ? "aucun correspondant à ce nom — créez-le avec « + Nouveau correspondant »"
+                  : "tout le carnet est déjà rattaché"}
               </span>
             )}
             {proposes.map((c) => (
@@ -203,11 +217,6 @@ export function Correspondants({ patientId }: { patientId: string }) {
                 </span>
               </button>
             ))}
-            {/* Toujours proposé, et pas seulement quand la recherche est vide : un homonyme
-                dans le carnet n'est pas forcément le bon confrère. */}
-            <button type="button" className={styles.creer} onClick={() => setCreation(true)}>
-              + Créer un correspondant{recherche.trim() ? ` « ${recherche.trim()} »` : ""}
-            </button>
           </div>
           )}
 
