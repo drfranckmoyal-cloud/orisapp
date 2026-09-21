@@ -34,6 +34,8 @@ class Cabinet:
     legal: str = ""  # RPPS, ADELI, SIRET… ce que le praticien veut y voir
     city: str = ""
     practitioner_title: str = ""
+    #: Une ligne par titre : « Chirurgien-dentiste », « Praticien hospitalier… ».
+    qualifications: str = ""
     logo_path: str = ""
     logo: Path | None = field(default=None, compare=False)
 
@@ -49,6 +51,7 @@ class Cabinet:
             "legal": identity.get("legal", base.legal),
             "city": identity.get("city", base.city),
             "practitioner_title": identity.get("practitioner_title", base.practitioner_title),
+            "qualifications": identity.get("qualifications", base.qualifications),
             "logo_path": base.logo_path,
         }
         return cls(**connus, logo=base.logo)
@@ -70,6 +73,7 @@ class Cabinet:
                 "legal",
                 "city",
                 "practitioner_title",
+                "qualifications",
                 "logo_path",
             )
         }
@@ -77,18 +81,27 @@ class Cabinet:
         logo = (path.parent / known["logo_path"]).resolve() if known["logo_path"] else None
         return cls(**known, logo=logo if logo and logo.is_file() else None)
 
+    def qualification_lines(self) -> list[str]:
+        return [ligne.strip() for ligne in self.qualifications.splitlines() if ligne.strip()]
+
     def contact_lines(self) -> list[str]:
         """Les lignes de contact effectivement renseignées."""
         return [line for line in (self.address, self.phone, self.email, self.legal) if line]
 
 
+# Modèles Word du Dr Moyal (20/09/2026) : vert sombre, gris doux, fond de bloc patient.
+VERT_MODELE = HexColor("#16403A")
+TRAIT_MODELE = HexColor("#9DB0AA")
+FOND_BLOC = HexColor("#EEF1F0")
+
 COLORS = {
-    "title": DEEP_BLUE,
-    "heading": DEEP_BLUE,
+    "title": VERT_MODELE,
+    "heading": VERT_MODELE,
     "body": GRAPHITE,
     "muted": MUTED,
-    "rule": RULE,
+    "rule": TRAIT_MODELE,
     "accent": ORIS_BLUE,
+    "block": FOND_BLOC,
 }
 
 

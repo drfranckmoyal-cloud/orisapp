@@ -1,5 +1,20 @@
 # Changelog
 
+## PDF au modèle du praticien — 2026-09-21
+- **Mise en page des modèles Word du Dr Moyal** : nom en grand, titres dessous, RPPS et
+  coordonnées à droite ; grand titre du document ; bloc patient sur fond gris (patient,
+  date, « Adressé(e) par » — ou « Destinataire » pour un courrier) ; rubriques en vert
+  soulignées d'un filet ; police à empattements. Plus de logo Oris ni de mention
+  « Établi avec Oris » : le document est celui du praticien.
+- « Adressé(e) par » vient des correspondants rattachés à la fiche du patient ; sans
+  correspondant, la ligne disparaît.
+- Compte rendu de consultation en paragraphes ; pages suivantes avec rappel praticien /
+  patient / type · date ; un intitulé ne reste jamais seul en bas de page ; la place
+  sous l'en-tête est mesurée, plus estimée.
+- Courrier d'adressage : « Cher confrère, » … « Bien confraternellement, » (décision C).
+  Compte rendu de soins renommé « Compte rendu opératoire ».
+- Paramètres : nouveau champ **Titres** (une ligne par titre, sous le nom).
+
 ## Compte rendu rédigé avec les mots dits — 2026-09-21
 - **Le compte rendu de consultation suit le modèle du Dr Moyal** : Motif · Examen
   clinique · Diagnostic / analyse · Proposition thérapeutique · Informations données au

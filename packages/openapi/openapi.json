@@ -3982,6 +3982,11 @@
             "title": "Practitioner Title",
             "default": ""
           },
+          "qualifications": {
+            "type": "string",
+            "title": "Qualifications",
+            "default": ""
+          },
           "practitioner_name": {
             "type": "string",
             "title": "Practitioner Name",
@@ -4080,6 +4085,18 @@
               }
             ],
             "title": "Practitioner Title"
+          },
+          "qualifications": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 400
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qualifications"
           }
         },
         "additionalProperties": false,

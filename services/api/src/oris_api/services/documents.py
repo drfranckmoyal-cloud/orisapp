@@ -15,11 +15,13 @@ from sqlalchemy.orm import Session
 from oris_api.contracts import ClinicalEncounter
 from oris_api.contracts.generated import DocumentDocumentType
 from oris_api.db.models import (
+    Correspondent,
     DocumentRow,
     DocumentVersion,
     Encounter,
     Organization,
     Patient,
+    PatientCorrespondent,
     User,
 )
 from oris_api.documents.export import ExportContext, render_pdf, render_text
@@ -340,7 +342,10 @@ def export_document(
         dict(organization.identity or {}) if organization else {},
         organization.name if organization else "",
     )
+    adresse_par, destinataire = _correspondants_du_document(session, encounter)
     context = ExportContext(
+        referred_by=adresse_par,
+        recipient=destinataire,
         document_type=document.document_type,
         content=version.content,
         practitioner=practitioner.name if practitioner else "Praticien",
@@ -384,3 +389,27 @@ def mark_encounter_exported(session: Session, actor: Actor, encounter: Encounter
     active = [d for d in list_documents(session, encounter.id) if d.status != "superseded"]
     if encounter.status == "validated" and active and all(d.status == "exported" for d in active):
         transition(session, actor, encounter, "exported")
+
+
+def _nom_correspondant(fiche: Correspondent) -> str:
+    """« Dr Claire Martin · ODF » ; une structure garde son seul nom."""
+    if fiche.kind == "organisation":
+        return fiche.last_name
+    nom = " ".join(part for part in (fiche.title, fiche.first_name, fiche.last_name) if part)
+    return f"{nom} · {fiche.specialty}" if fiche.specialty else nom
+
+
+def _correspondants_du_document(session: Session, encounter: Encounter) -> tuple[str, str]:
+    """Qui a adressé ce patient, et à qui on l'adresse — depuis sa fiche.
+
+    Rien n'est deviné : sans correspondant rattaché, la ligne disparaît du document.
+    """
+    liens = session.execute(
+        select(PatientCorrespondent.role, Correspondent)
+        .join(Correspondent, Correspondent.id == PatientCorrespondent.correspondent_id)
+        .where(PatientCorrespondent.patient_id == encounter.patient_id)
+        .order_by(PatientCorrespondent.created_at)
+    ).all()
+    par = next((_nom_correspondant(c) for role, c in liens if role == "referred_by"), "")
+    vers = next((_nom_correspondant(c) for role, c in liens if role == "referred_to"), "")
+    return par, vers

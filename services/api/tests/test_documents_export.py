@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Any
 
@@ -108,8 +109,8 @@ def test_each_document_type_has_its_own_layout() -> None:
         )
     }
     assert titles["consultation_note"] == "Compte rendu de consultation"
-    assert titles["operative_note"] == "Compte rendu de soins"
-    assert titles["referral_letter"] == "Courrier d'adressage"
+    assert titles["operative_note"] == "Compte rendu opératoire"
+    assert titles["referral_letter"] == "Courrier d’adressage"
     assert len(set(titles.values())) == len(titles)
     assert layout_for("inconnu").title == "Document"
 
@@ -119,8 +120,8 @@ def test_a_letter_to_a_colleague_opens_and_closes_like_a_letter() -> None:
 
     layout = layout_for("referral_letter")
     lines = [line for _, line in body_blocks(context(document_type="referral_letter"), layout, 400)]
-    assert lines[0] == "Chère Consœur, Cher Confrère,"
-    assert "Confraternellement," in lines
+    assert lines[0] == "Cher confrère,"
+    assert "Bien confraternellement," in lines
     assert lines[-1] == "Dr Praticien Démo"  # la signature est le praticien
 
 
@@ -181,3 +182,25 @@ def test_configured_cabinet_details_are_printed(tmp_path: Any) -> None:
         "01 23 45 67 89",
         "RPPS 10101010101",
     ]
+
+
+def test_the_patient_block_says_who_referred_the_patient_only_when_known() -> None:
+    from oris_api.documents.export import layout_for, patient_rows
+
+    layout = layout_for("consultation_note")
+    sans = patient_rows(context(), layout)
+    assert [label for label, _ in sans] == ["Patient(e)", "Date de consultation"]
+
+    avec = patient_rows(replace(context(), referred_by="Dr Claire Martin · ODF"), layout)
+    assert ("Adressé(e) par", "Dr Claire Martin · ODF") in avec
+
+
+def test_a_letter_names_its_recipient_instead_of_the_referrer() -> None:
+    from oris_api.documents.export import layout_for, patient_rows
+
+    lettre = replace(
+        context(), document_type="referral_letter", referred_by="Dr A", recipient="Dr B"
+    )
+    rows = patient_rows(lettre, layout_for("referral_letter"))
+    assert ("Destinataire", "Dr B") in rows
+    assert all(label != "Adressé(e) par" for label, _ in rows)

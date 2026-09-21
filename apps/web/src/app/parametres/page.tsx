@@ -12,6 +12,7 @@ import {
   Lignes,
   Pastille,
   Squelette,
+  Zone,
 } from "@/components/ui";
 import {
   ApiError,
@@ -104,6 +105,7 @@ export default function ParametresPage() {
           legal: String(donnees.get("legal") ?? ""),
           city: String(donnees.get("city") ?? ""),
           practitioner_title: String(donnees.get("practitioner_title") ?? ""),
+          qualifications: String(donnees.get("qualifications") ?? ""),
         },
       });
       setMessage({
@@ -286,6 +288,16 @@ export default function ParametresPage() {
                   <Champ value={cabinet.data.practitioner_name} disabled readOnly />
                 </label>
               </div>
+              <label className="field">
+                Titres, une ligne chacun (imprimés sous votre nom)
+                <Zone
+                  compacte
+                  name="qualifications"
+                  rows={3}
+                  placeholder={"Chirurgien-dentiste\nExercice privé"}
+                  defaultValue={cabinet.data.qualifications}
+                />
+              </label>
               <div>
                 <Bouton type="submit">Enregistrer</Bouton>
               </div>

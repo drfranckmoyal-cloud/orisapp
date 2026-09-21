@@ -110,6 +110,8 @@ class CabinetOut(BaseModel):
     legal: str = ""
     city: str = ""
     practitioner_title: str = ""
+    #: Une ligne par titre, imprimées sous le nom (« Chirurgien-dentiste »…).
+    qualifications: str = ""
     practitioner_name: str = ""
 
 
@@ -122,6 +124,7 @@ class CabinetPatch(BaseModel):
     legal: Annotated[str, Field(max_length=200)] | None = None
     city: Annotated[str, Field(max_length=120)] | None = None
     practitioner_title: Annotated[str, Field(max_length=80)] | None = None
+    qualifications: Annotated[str, Field(max_length=400)] | None = None
 
 
 def cabinet_out(organisation: Organization, praticien: User | None) -> CabinetOut:
@@ -134,6 +137,7 @@ def cabinet_out(organisation: Organization, praticien: User | None) -> CabinetOu
         legal=identite.get("legal", ""),
         city=identite.get("city", ""),
         practitioner_title=identite.get("practitioner_title", ""),
+        qualifications=identite.get("qualifications", ""),
         practitioner_name=praticien.name if praticien else "",
     )
 

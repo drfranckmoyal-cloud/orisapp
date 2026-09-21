@@ -1438,6 +1438,11 @@ export interface components {
              */
             practitioner_title: string;
             /**
+             * Qualifications
+             * @default
+             */
+            qualifications: string;
+            /**
              * Practitioner Name
              * @default
              */
@@ -1459,6 +1464,8 @@ export interface components {
             city?: string | null;
             /** Practitioner Title */
             practitioner_title?: string | null;
+            /** Qualifications */
+            qualifications?: string | null;
         };
         /** ChunkReceiptOut */
         ChunkReceiptOut: {
