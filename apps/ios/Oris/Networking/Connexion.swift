@@ -129,6 +129,18 @@ enum Connexion {
         }
     }
 
+    /// Réglage posé depuis le Mac par le câble (Xcode / devicectl), sans rien taper sur
+    /// l'iPhone : ORIS_REGLER_SERVEUR et ORIS_REGLER_JETON, lus une fois au lancement et
+    /// rangés comme si on les avait saisis dans Paramètres.
+    static func reglerDepuisLeMac(_ environnement: [String: String] = ProcessInfo.processInfo.environment) {
+        if let serveur = environnement["ORIS_REGLER_SERVEUR"], adresse(serveur) != nil {
+            enregistrer(serveur: serveur)
+        }
+        if let jeton = environnement["ORIS_REGLER_JETON"], jeton.hasPrefix("oris_") {
+            enregistrer(jeton: jeton)
+        }
+    }
+
     /// Le client de toute l'app, avec le jeton s'il y en a un.
     static func client() -> APIClient {
         let base = URLSessionTransport(session: .shared)

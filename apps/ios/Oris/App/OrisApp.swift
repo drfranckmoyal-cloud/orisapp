@@ -2,7 +2,12 @@ import SwiftUI
 
 @main
 struct OrisApp: App {
-    @State private var client = Connexion.client()
+    @State private var client: APIClient
+
+    init() {
+        Connexion.reglerDepuisLeMac()
+        _client = State(initialValue: Connexion.client())
+    }
     /// Change à chaque reconnexion : toute l'interface repart avec le nouveau client.
     @State private var generation = 0
 
