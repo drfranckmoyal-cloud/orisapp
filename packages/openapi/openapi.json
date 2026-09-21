@@ -585,6 +585,66 @@
         }
       }
     },
+    "/journee/depot": {
+      "post": {
+        "tags": [
+          "journee"
+        ],
+        "summary": "Deposer Journee",
+        "description": "Recevoir une journée relevée dans Doctolib par l'extension Chrome.\n\nPas de praticien connecté ici : c'est une livraison de machine à machine, sur cette\nmachine seulement. Et surtout, **aucun patient n'est créé** — la journée est rangée,\nle praticien décide ensuite, ligne par ligne, laquelle mérite un dossier.",
+        "operationId": "deposer_journee_journee_depot_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JourneeDepot"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepotOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters": {
       "get": {
         "tags": [
@@ -3735,6 +3795,41 @@
         ],
         "title": "CorrectionRequest"
       },
+      "DepotOut": {
+        "properties": {
+          "jour": {
+            "type": "string",
+            "title": "Jour"
+          },
+          "rendezvous": {
+            "type": "integer",
+            "title": "Rendezvous"
+          },
+          "remplace": {
+            "type": "boolean",
+            "title": "Remplace"
+          },
+          "raison": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raison"
+          }
+        },
+        "type": "object",
+        "required": [
+          "jour",
+          "rendezvous",
+          "remplace"
+        ],
+        "title": "DepotOut",
+        "description": "Ce qu'on répond à l'extension : ce qui a été gardé, et sinon pourquoi."
+      },
       "DictationOut": {
         "properties": {
           "text": {
@@ -4500,6 +4595,38 @@
         "title": "JourOut",
         "description": "Un jour dans la colonne de gauche : assez pour le colorer, pas plus."
       },
+      "JourneeDepot": {
+        "properties": {
+          "jour": {
+            "type": "string",
+            "title": "Jour"
+          },
+          "agenda": {
+            "type": "string",
+            "title": "Agenda",
+            "default": ""
+          },
+          "rendezvous": {
+            "items": {
+              "$ref": "#/components/schemas/RendezVousDepot"
+            },
+            "type": "array",
+            "title": "Rendezvous",
+            "default": []
+          },
+          "diagnostic": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Diagnostic",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "required": [
+          "jour"
+        ],
+        "title": "JourneeDepot"
+      },
       "JourneeOut": {
         "properties": {
           "jour": {
@@ -4510,20 +4637,11 @@
             "type": "string",
             "title": "Agenda"
           },
-          "source": {
-            "type": "string",
-            "enum": [
-              "serveur",
-              "fichier",
-              "absent"
-            ],
-            "title": "Source"
-          },
           "disponible": {
             "type": "boolean",
             "title": "Disponible"
           },
-          "lu_le": {
+          "recu_le": {
             "anyOf": [
               {
                 "type": "string"
@@ -4532,7 +4650,7 @@
                 "type": "null"
               }
             ],
-            "title": "Lu Le"
+            "title": "Recu Le"
           },
           "rendezvous": {
             "items": {
@@ -4547,7 +4665,6 @@
         "required": [
           "jour",
           "agenda",
-          "source",
           "disponible"
         ],
         "title": "JourneeOut"
@@ -5612,6 +5729,43 @@
           "item_id"
         ],
         "title": "RemovePlanItem"
+      },
+      "RendezVousDepot": {
+        "properties": {
+          "heure": {
+            "type": "string",
+            "title": "Heure",
+            "default": ""
+          },
+          "prenom": {
+            "type": "string",
+            "title": "Prenom",
+            "default": ""
+          },
+          "nom": {
+            "type": "string",
+            "title": "Nom",
+            "default": ""
+          },
+          "motif": {
+            "type": "string",
+            "title": "Motif",
+            "default": ""
+          },
+          "statut": {
+            "type": "string",
+            "title": "Statut",
+            "default": ""
+          },
+          "recherche": {
+            "type": "string",
+            "title": "Recherche",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "RendezVousDepot",
+        "description": "Une ligne telle que l'extension la livre (docs/JOURNEE_DOCTOLIB.md).\n\nTolérante : l'extension évolue de son côté, et un champ inconnu de plus ne doit pas\nfaire perdre la journée. Seuls `prenom`/`nom` comptent vraiment — une ligne sans nom\nn'est pas un patient (pause, réunion) et sera écartée au rangement."
       },
       "RendezVousOut": {
         "properties": {

@@ -1,24 +1,33 @@
-"""Écran « Votre journée » : l'agenda du jour, lu chez Dental Lens.
+"""Écran « Votre journée » : l'agenda du jour, déposé par l'extension Chrome.
 
-Deux lectures seulement : la journée choisie, et l'aperçu de la semaine qui tient dans
-la colonne de gauche. Ni l'une ni l'autre n'écrit : créer un dossier passe par
-`POST /patients`, sur un geste du praticien.
+Trois routes. Deux lectures pour l'écran — la journée choisie, et l'aperçu de la semaine
+qui tient dans la colonne de gauche. Et un dépôt, par lequel l'extension livre la journée
+qu'elle vient de relever dans Doctolib.
+
+Le dépôt **n'écrit aucun patient en base**. Il range la journée, rien de plus : faire
+entrer un patient dans Oris reste un geste du praticien (spec §58).
 """
 
 from __future__ import annotations
 
+import hmac
 import unicodedata
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Header, Request
 from sqlalchemy.orm import Session
 
 from oris_api.api.dependencies import ActorDep, SessionDep, SettingsDep
-from oris_api.api.schemas import JourneeOut, JourOut, RendezVousOut
+from oris_api.api.schemas import DepotOut, JourneeDepot, JourneeOut, JourOut, RendezVousOut
 from oris_api.services import agenda, patients
+from oris_api.services.errors import Forbidden, Unprocessable
 from oris_api.services.identity import Actor
 
 router = APIRouter(prefix="/journee", tags=["journee"])
+
+#: Le dépôt n'est ouvert qu'à cette machine. L'extension tourne sur le Mac du praticien,
+#: dans sa session Chrome ; rien d'autre n'a de raison de déposer un agenda.
+LOCALES = frozenset({"127.0.0.1", "::1", "::ffff:127.0.0.1", "localhost"})
 
 
 def _cle(prenom: str, nom: str) -> tuple[str, str]:
@@ -48,9 +57,8 @@ def read_journee(
     return JourneeOut(
         jour=journee.jour,
         agenda=journee.agenda,
-        source=journee.source,
         disponible=journee.disponible,
-        lu_le=journee.lu_le,
+        recu_le=journee.recu_le,
         rendezvous=[
             RendezVousOut(
                 heure=rdv.heure,
@@ -82,3 +90,36 @@ def read_semaine(
         )
         for journee in agenda.lire_semaine(settings, depuis, jours)
     ]
+
+
+@router.post("/depot", response_model=DepotOut)
+def deposer_journee(
+    request: Request,
+    body: JourneeDepot,
+    settings: SettingsDep,
+    authorization: str | None = Header(default=None),
+) -> DepotOut:
+    """Recevoir une journée relevée dans Doctolib par l'extension Chrome.
+
+    Pas de praticien connecté ici : c'est une livraison de machine à machine, sur cette
+    machine seulement. Et surtout, **aucun patient n'est créé** — la journée est rangée,
+    le praticien décide ensuite, ligne par ligne, laquelle mérite un dossier.
+    """
+    client = request.client.host if request.client else ""
+    if client not in LOCALES:
+        raise Forbidden("DEPOT_NON_LOCAL")
+
+    attendu = settings.journee_depot_token
+    if attendu is not None:
+        entete = authorization or ""
+        presente = entete[7:].strip() if entete.lower().startswith("bearer ") else ""
+        if not hmac.compare_digest(presente, attendu.get_secret_value()):
+            raise Forbidden("DEPOT_JETON_INVALIDE")
+
+    try:
+        depot = agenda.deposer(settings, body.model_dump())
+    except agenda.JourneeInvalide as erreur:
+        raise Unprocessable("JOURNEE_INVALIDE", details=[str(erreur)]) from erreur
+    return DepotOut(
+        jour=depot.jour, rendezvous=depot.rendezvous, remplace=depot.remplace, raison=depot.raison
+    )

@@ -201,6 +201,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/journee/depot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deposer Journee
+         * @description Recevoir une journée relevée dans Doctolib par l'extension Chrome.
+         *
+         *     Pas de praticien connecté ici : c'est une livraison de machine à machine, sur cette
+         *     machine seulement. Et surtout, **aucun patient n'est créé** — la journée est rangée,
+         *     le praticien décide ensuite, ligne par ligne, laquelle mérite un dossier.
+         */
+        post: operations["deposer_journee_journee_depot_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters": {
         parameters: {
             query?: never;
@@ -1371,6 +1395,20 @@ export interface components {
             regenerate: boolean;
         };
         /**
+         * DepotOut
+         * @description Ce qu'on répond à l'extension : ce qui a été gardé, et sinon pourquoi.
+         */
+        DepotOut: {
+            /** Jour */
+            jour: string;
+            /** Rendezvous */
+            rendezvous: number;
+            /** Remplace */
+            remplace: boolean;
+            /** Raison */
+            raison?: string | null;
+        };
+        /**
          * DictationOut
          * @description Texte dicté, rendu au praticien. Le son n'est jamais conservé.
          */
@@ -1653,21 +1691,38 @@ export interface components {
             /** A Creer */
             a_creer: number;
         };
+        /** JourneeDepot */
+        JourneeDepot: {
+            /** Jour */
+            jour: string;
+            /**
+             * Agenda
+             * @default
+             */
+            agenda: string;
+            /**
+             * Rendezvous
+             * @default []
+             */
+            rendezvous: components["schemas"]["RendezVousDepot"][];
+            /**
+             * Diagnostic
+             * @default {}
+             */
+            diagnostic: {
+                [key: string]: unknown;
+            };
+        };
         /** JourneeOut */
         JourneeOut: {
             /** Jour */
             jour: string;
             /** Agenda */
             agenda: string;
-            /**
-             * Source
-             * @enum {string}
-             */
-            source: "serveur" | "fichier" | "absent";
             /** Disponible */
             disponible: boolean;
-            /** Lu Le */
-            lu_le?: string | null;
+            /** Recu Le */
+            recu_le?: string | null;
             /**
              * Rendezvous
              * @default []
@@ -2092,6 +2147,46 @@ export interface components {
             operation: "remove_plan_item";
             /** Item Id */
             item_id: string;
+        };
+        /**
+         * RendezVousDepot
+         * @description Une ligne telle que l'extension la livre (docs/JOURNEE_DOCTOLIB.md).
+         *
+         *     Tolérante : l'extension évolue de son côté, et un champ inconnu de plus ne doit pas
+         *     faire perdre la journée. Seuls `prenom`/`nom` comptent vraiment — une ligne sans nom
+         *     n'est pas un patient (pause, réunion) et sera écartée au rangement.
+         */
+        RendezVousDepot: {
+            /**
+             * Heure
+             * @default
+             */
+            heure: string;
+            /**
+             * Prenom
+             * @default
+             */
+            prenom: string;
+            /**
+             * Nom
+             * @default
+             */
+            nom: string;
+            /**
+             * Motif
+             * @default
+             */
+            motif: string;
+            /**
+             * Statut
+             * @default
+             */
+            statut: string;
+            /**
+             * Recherche
+             * @default
+             */
+            recherche: string;
         };
         /**
          * RendezVousOut
@@ -2747,6 +2842,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["JourOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deposer_journee_journee_depot_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JourneeDepot"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepotOut"];
                 };
             };
             /** @description Validation Error */

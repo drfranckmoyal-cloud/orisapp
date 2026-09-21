@@ -46,12 +46,37 @@ rester muette.
 
 ## Ce qu'il y a à construire dans Oris
 
-### 1. Recevoir — `POST /api/journee`
+### 1. Recevoir — **fait le 21/09/2026**
 
-Accepte la livraison, garde la journée (un enregistrement par date). Refuser ce qui ne
-vient pas de la machine. Rejouer une livraison pour la même date remplace la précédente,
-sauf si la nouvelle est vide alors que l'ancienne ne l'était pas (le diagnostic dit si le
-tableau a été compris : `diagnostic.entetes === false` = ne pas écraser).
+Adresse à déclarer comme destinataire dans Dental Lens :
+
+```
+http://127.0.0.1:8000/journee/depot
+```
+
+Le point d'entrée n'accepte que les appels venus de cette machine (403 `DEPOT_NON_LOCAL`
+sinon) et **n'écrit aucun patient en base** : il range la journée, rien de plus.
+
+La journée est rangée **hors de la base clinique**, un fichier par date dans
+`~/Library/Application Support/Oris/journees/` (hors iCloud, lisible du seul compte de
+Franck). Ce sont de vrais noms : ils n'entrent dans le dossier clinique que le jour où le
+praticien crée le dossier lui-même. Une journée s'efface d'un geste et se redemande à
+l'extension. Écriture en deux temps : un fichier complet, ou l'ancien intact.
+
+Rejouer une livraison pour la même date remplace la précédente — c'est le cas courant,
+l'agenda bouge dans la journée. Une exception : **une livraison vide ne remplace jamais
+une journée qui ne l'était pas**. Une lecture ratée (Doctolib lent, `diagnostic.entetes
+=== false`) renvoie zéro ligne, et elle effacerait la seule liste dont le praticien
+dispose. La réponse le dit :
+
+```json
+{"jour": "2026-09-22", "rendezvous": 11, "remplace": false,
+ "raison": "tableau non compris : la journée déjà déposée est conservée"}
+```
+
+Un secret partagé est possible mais désactivé par défaut : renseigner
+`JOURNEE_DEPOT_TOKEN` dans `services/api/.env` le rend obligatoire en
+`Authorization: Bearer …`.
 
 ### 2. Rapprocher — sans créer de doublon
 
@@ -73,9 +98,16 @@ Python, il se copie presque tel quel** :
 Quatre états par rendez-vous : `trouve`, `a_confirmer` (avec les candidats et leur
 pourcentage), `ambigu` (plusieurs fiches au même nom), `absent`.
 
-### 3. L'écran `/journee`
+### 3. L'écran `/journee` — **fait le 21/09/2026**
 
-Remplacer la page « chantier à venir » par :
+Mise en page reprise de « Préparer la journée » de Dental Lens : semaine navigable à
+gauche, patients à droite, et seule l'action qui attend un geste est un bouton. Deux
+lectures : `GET /journee?jour=` et `GET /journee/semaine?depuis=&jours=`.
+
+Ce qui reste à faire de cette liste : le rapprochement fin (point 2 ci-dessus). Pour
+l'instant Oris ne rapproche que les noms **identiques**, accents et casse mis à part.
+
+Ce que l'écran fait déjà :
 
 - la liste du jour, une ligne par rendez-vous : heure, patient, motif ;
 - à droite de chaque ligne, **une seule action à la fois** — « ✓ fiche existante »,
@@ -107,7 +139,7 @@ la référence. Voir `interface/journee.html` du dépôt `smilecloud-photos`.
 Une livraison se rejoue à la main :
 
 ```bash
-curl -s -X POST http://127.0.0.1:8000/api/journee \
+curl -s -X POST http://127.0.0.1:8000/journee/depot \
   -H 'Content-Type: application/json' \
   -d '{"jour":"2026-09-22","rendezvous":[
         {"heure":"09:30","patient":"Justine ESSAI","prenom":"Justine","nom":"ESSAI",

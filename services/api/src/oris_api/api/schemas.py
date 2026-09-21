@@ -361,10 +361,46 @@ class RendezVousOut(BaseModel):
 class JourneeOut(BaseModel):
     jour: str
     agenda: str
-    source: Literal["serveur", "fichier", "absent"]
     disponible: bool
-    lu_le: str | None = None
+    #: Quand l'extension a déposé cette journée. Absent = jamais relevée.
+    recu_le: str | None = None
     rendezvous: list[RendezVousOut] = []
+
+
+class RendezVousDepot(BaseModel):
+    """Une ligne telle que l'extension la livre (docs/JOURNEE_DOCTOLIB.md).
+
+    Tolérante : l'extension évolue de son côté, et un champ inconnu de plus ne doit pas
+    faire perdre la journée. Seuls `prenom`/`nom` comptent vraiment — une ligne sans nom
+    n'est pas un patient (pause, réunion) et sera écartée au rangement.
+    """
+
+    model_config = ConfigDict(extra="ignore")
+    heure: str = ""
+    prenom: str = ""
+    nom: str = ""
+    motif: str = ""
+    statut: str = ""
+    recherche: str = ""
+
+
+class JourneeDepot(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    jour: str
+    agenda: str = ""
+    rendezvous: list[RendezVousDepot] = []
+    #: Ce que l'extension a vu à l'écran. `entetes: false` = tableau non compris ;
+    #: une telle livraison ne remplace jamais une journée déjà déposée.
+    diagnostic: dict[str, Any] = {}
+
+
+class DepotOut(BaseModel):
+    """Ce qu'on répond à l'extension : ce qui a été gardé, et sinon pourquoi."""
+
+    jour: str
+    rendezvous: int
+    remplace: bool
+    raison: str | None = None
 
 
 class JourOut(BaseModel):

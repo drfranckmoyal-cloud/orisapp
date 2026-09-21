@@ -1,19 +1,16 @@
-"""Agenda du jour, lu depuis Dental Lens (écran « Votre journée »).
+"""Agenda du jour, **déposé** par l'extension Chrome (écran « Votre journée »).
 
-Oris ne parle pas à Doctolib et n'a pas à le faire. C'est **Dental Lens**, l'autre
-outil du cabinet, qui lit l'agenda dans le navigateur et dépose la journée sur le
-poste : un fichier par jour dans son registre, et un petit serveur local qui, en
-prime, rapproche chaque patient de son dossier SmileCloud.
+Oris ne lit pas Doctolib et ne va rien chercher chez personne. L'extension de Dental
+Lens lit l'agenda dans la session ouverte du praticien, puis livre la journée à chaque
+destinataire qu'elle connaît ; Oris en est un. Il reçoit, il range, il affiche.
 
-Oris vient se servir, et rien d'autre. Deux chemins, dans cet ordre :
+Conséquence voulue : Oris n'a besoin de rien d'autre que lui-même pour montrer la
+journée. Dental Lens peut être éteint, désinstallé, remplacé.
 
-1. le **serveur** Dental Lens s'il répond — on récupère alors l'état SmileCloud de
-   chaque rendez-vous ;
-2. sinon le **fichier** du jour, qui reste lisible même serveur éteint.
-
-Cette lecture n'écrit rien. Faire entrer un patient de l'agenda dans Oris reste un
-geste explicite du praticien (§58) : tant qu'il ne clique pas, aucun nom venu de
-Doctolib n'atteint la base.
+Une journée déposée est rangée **hors de la base clinique**, dans un fichier par date.
+Ce sont de vrais noms de patients, et ils n'ont rien à faire dans le dossier clinique
+tant que le praticien n'a pas créé le dossier lui-même (spec §58) : un fichier se relit,
+se remplace et s'efface d'un geste, et une journée perdue se redemande à l'extension.
 
 Invariant de journalisation (CLAUDE.md) : aucun nom de patient, aucun motif de
 rendez-vous ne sort d'ici dans un log. On ne compte que des lignes.
@@ -23,27 +20,23 @@ from __future__ import annotations
 
 import json
 import logging
+import os
+import tempfile
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Literal
-
-import httpx
+from typing import Any, Literal
 
 from oris_api.config import Settings
 
 log = logging.getLogger(__name__)
 
-Source = Literal["serveur", "fichier", "absent"]
 EtatSmileCloud = Literal["trouve", "absent", "a_verifier", "ambigu", "demande", "inconnu"]
 
-#: États que Dental Lens sait produire. Tout autre mot devient « inconnu » plutôt
-#: que d'être affiché tel quel : un écran ne montre pas un mot qu'il ne comprend pas.
+#: États que Dental Lens sait produire, si jamais il enrichit la livraison avant de la
+#: relayer. L'extension seule n'en envoie pas : tout autre mot devient « inconnu »
+#: plutôt que d'être affiché tel quel — un écran ne montre pas un mot qu'il ne comprend pas.
 ETATS: frozenset[str] = frozenset({"trouve", "absent", "a_verifier", "ambigu", "demande"})
-
-#: Court exprès. Si Dental Lens ne tourne pas, on ne fait pas attendre l'écran :
-#: on bascule sur le fichier du jour.
-DELAI_SERVEUR = 1.5
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,19 +53,31 @@ class RendezVous:
 class Journee:
     jour: str
     agenda: str
-    source: Source
-    lu_le: str | None
+    recu_le: str | None
     rendezvous: tuple[RendezVous, ...]
 
     @property
     def disponible(self) -> bool:
-        """Lue veut dire **relevée dans Doctolib**, pas « le serveur a répondu ».
+        """Déposée veut dire **relevée dans Doctolib**, pas « la date existe ».
 
-        Dental Lens répond pour n'importe quelle date, avec une liste vide si personne
-        n'a encore ouvert cet agenda. Sans l'heure de lecture, un jeudi jamais relevé
-        s'afficherait comme un jeudi sans patient : deux choses très différentes.
+        Sans dépôt, un jeudi jamais relevé s'afficherait comme un jeudi sans patient :
+        deux choses très différentes.
         """
-        return self.source != "absent" and self.lu_le is not None
+        return self.recu_le is not None
+
+
+@dataclass(frozen=True, slots=True)
+class Depot:
+    """Ce qu'on répond à l'extension : ce qui a été gardé, et sinon pourquoi."""
+
+    jour: str
+    rendezvous: int
+    remplace: bool
+    raison: str | None = None
+
+
+class JourneeInvalide(ValueError):
+    """Une livraison qu'on ne sait pas ranger : date absente ou illisible."""
 
 
 def _texte(valeur: object) -> str:
@@ -84,12 +89,25 @@ def _etat(valeur: object) -> EtatSmileCloud:
     return mot if mot in ETATS else "inconnu"  # type: ignore[return-value]
 
 
+def _jour_sur(valeur: object) -> str:
+    """La date, telle qu'elle servira de **nom de fichier**.
+
+    Elle est refabriquée à partir d'une vraie date : une chaîne venue du dehors ne
+    compose jamais un chemin telle quelle, sinon « ../../quelque-chose » écrirait où il
+    veut sur le disque.
+    """
+    try:
+        return date.fromisoformat(_texte(valeur)).isoformat()
+    except ValueError as erreur:
+        raise JourneeInvalide("date du jour absente ou illisible") from erreur
+
+
 def _rendez_vous(brut: object) -> RendezVous | None:
     """Une ligne d'agenda, ou rien si elle n'a même pas de nom.
 
-    Dental Lens sépare déjà « M. URBAN Eric » en prénom/nom ; on ne refait pas ce
-    travail ici. Mais un agenda peut contenir des lignes qui ne sont pas des
-    patients (pause, blocage) : sans nom exploitable, la ligne est écartée.
+    L'extension sépare déjà « M. DROIT Justine » en prénom/nom ; on ne refait pas ce
+    travail ici. Mais un agenda contient des lignes qui ne sont pas des patients (pause,
+    réunion, blocage) : sans nom exploitable, la ligne est écartée.
     """
     if not isinstance(brut, dict):
         return None
@@ -106,88 +124,120 @@ def _rendez_vous(brut: object) -> RendezVous | None:
     )
 
 
-def _journee(brut: object, jour: str, source: Source) -> Journee | None:
-    if not isinstance(brut, dict):
-        return None
-    lignes = brut.get("rendezvous")
-    if not isinstance(lignes, list):
-        return None
-    rdv = tuple(filter(None, (_rendez_vous(ligne) for ligne in lignes)))
-    return Journee(
-        jour=_texte(brut.get("jour")) or jour,
-        agenda=_texte(brut.get("agenda")),
-        source=source,
-        lu_le=_texte(brut.get("lu_le")) or None,
-        rendezvous=rdv,
-    )
-
-
-def _par_le_serveur(base_url: str, jour: str) -> Journee | None:
-    """La journée telle que Dental Lens la voit, rapprochement SmileCloud compris."""
-    try:
-        reponse = httpx.get(
-            f"{base_url.rstrip('/')}/api/journee", params={"jour": jour}, timeout=DELAI_SERVEUR
-        )
-        reponse.raise_for_status()
-        return _journee(reponse.json(), jour, "serveur")
-    except (httpx.HTTPError, json.JSONDecodeError):
-        # Serveur éteint : ce n'est pas une panne, c'est le cas courant. On se rabat.
-        log.info("Dental Lens ne répond pas ; lecture du fichier du jour")
-        return None
-
-
-def _par_le_fichier(registre: Path, jour: str) -> Journee | None:
-    fichier = registre / "journees" / f"{jour}.json"
-    try:
-        return _journee(json.loads(fichier.read_text(encoding="utf-8")), jour, "fichier")
-    except (OSError, json.JSONDecodeError):
-        return None
+def _fichier(settings: Settings, jour: str) -> Path:
+    return settings.journee_dir / f"{jour}.json"
 
 
 def _vide(jour: str) -> Journee:
-    return Journee(jour=jour, agenda="", source="absent", lu_le=None, rendezvous=())
+    return Journee(jour=jour, agenda="", recu_le=None, rendezvous=())
+
+
+def _relire(fichier: Path, jour: str) -> Journee | None:
+    try:
+        brut = json.loads(fichier.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(brut, dict) or not isinstance(brut.get("rendezvous"), list):
+        return None
+    return Journee(
+        jour=_texte(brut.get("jour")) or jour,
+        agenda=_texte(brut.get("agenda")),
+        recu_le=_texte(brut.get("recu_le")) or None,
+        rendezvous=tuple(filter(None, (_rendez_vous(ligne) for ligne in brut["rendezvous"]))),
+    )
+
+
+def _ecrire(fichier: Path, contenu: dict[str, Any]) -> None:
+    """Écriture en deux temps : un fichier complet, ou l'ancien intact.
+
+    Écrire directement dans le fichier final laisserait une journée tronquée si la
+    machine s'arrête au milieu — et une journée tronquée est illisible au moment où on
+    en a besoin, c'est-à-dire le matin.
+    """
+    fichier.parent.mkdir(parents=True, exist_ok=True)
+    descripteur, provisoire = tempfile.mkstemp(dir=fichier.parent, suffix=".part")
+    try:
+        with os.fdopen(descripteur, "w", encoding="utf-8") as sortie:
+            json.dump(contenu, sortie, ensure_ascii=False, indent=1)
+        os.replace(provisoire, fichier)
+    except BaseException:
+        Path(provisoire).unlink(missing_ok=True)
+        raise
+
+
+def deposer(settings: Settings, livraison: dict[str, Any]) -> Depot:
+    """Ranger une journée livrée par l'extension. **N'écrit aucun patient en base.**
+
+    Rejouer une livraison pour la même date remplace la précédente — c'est le cas
+    courant : l'agenda bouge dans la journée. Une exception : une livraison vide ne
+    remplace jamais une journée qui ne l'était pas. Une lecture ratée (Doctolib lent,
+    tableau non compris) renvoie zéro ligne, et elle effacerait la seule liste dont le
+    praticien dispose.
+    """
+    jour = _jour_sur(livraison.get("jour"))
+    livrees = livraison.get("rendezvous")
+    lignes: tuple[RendezVous, ...] = (
+        tuple(filter(None, (_rendez_vous(ligne) for ligne in livrees)))
+        if isinstance(livrees, list)
+        else ()
+    )
+    diagnostic = livraison.get("diagnostic")
+    comprise = not (isinstance(diagnostic, dict) and diagnostic.get("entetes") is False)
+
+    fichier = _fichier(settings, jour)
+    ancienne = _relire(fichier, jour)
+    if not lignes and ancienne and ancienne.rendezvous:
+        raison = (
+            "tableau non compris" if not comprise else "livraison vide"
+        ) + " : la journée déjà déposée est conservée"
+        log.info(
+            "Dépôt %s ignoré (%s) ; %d rendez-vous gardés", jour, raison, len(ancienne.rendezvous)
+        )
+        return Depot(jour=jour, rendezvous=len(ancienne.rendezvous), remplace=False, raison=raison)
+
+    _ecrire(
+        fichier,
+        {
+            "jour": jour,
+            "recu_le": datetime.now().astimezone().isoformat(timespec="seconds"),
+            "agenda": _texte(livraison.get("agenda")),
+            "rendezvous": [
+                {
+                    "heure": rdv.heure,
+                    "prenom": rdv.prenom,
+                    "nom": rdv.nom,
+                    "motif": rdv.motif,
+                    "statut": rdv.statut,
+                    "recherche": rdv.smilecloud,
+                }
+                for rdv in lignes
+            ],
+        },
+    )
+    log.info("Journée %s déposée : %d rendez-vous", jour, len(lignes))
+    return Depot(jour=jour, rendezvous=len(lignes), remplace=True)
 
 
 def lire(settings: Settings, jour: str | None = None) -> Journee:
     """La journée demandée, ou une journée vide si personne ne l'a déposée.
 
-    Une journée absente n'est pas une erreur : elle veut dire « Dental Lens n'a pas
-    encore lu cet agenda ». L'écran le dit, il n'invente pas de rendez-vous.
+    Une journée absente n'est pas une erreur : elle veut dire « l'extension n'a pas
+    encore relevé cet agenda ». L'écran le dit, il n'invente pas de rendez-vous.
     """
-    jour = jour or date.today().isoformat()
-    if settings.agenda_provider != "dental_lens":
-        return _vide(jour)
-    lue = _par_le_serveur(settings.dental_lens_url, jour) or _par_le_fichier(
-        settings.dental_lens_registre, jour
-    )
-    if lue is None:
-        return _vide(jour)
-    log.info("Journée %s lue via %s : %d rendez-vous", jour, lue.source, len(lue.rendezvous))
-    return lue
+    try:
+        demande = _jour_sur(jour) if jour else date.today().isoformat()
+    except JourneeInvalide:
+        demande = date.today().isoformat()
+    return _relire(_fichier(settings, demande), demande) or _vide(demande)
 
 
 def lire_semaine(settings: Settings, depuis: str, jours: int = 7) -> list[Journee]:
-    """Plusieurs jours d'affilée, pour la colonne de gauche.
-
-    Le serveur n'est interrogé qu'une fois : s'il ne répond pas au premier jour, il ne
-    répondra pas davantage aux six suivants, et sept attentes de suite feraient un écran
-    figé pendant dix secondes. Dès le premier échec, on lit les fichiers.
-    """
+    """Plusieurs jours d'affilée, pour la colonne de gauche."""
     try:
         premier = date.fromisoformat(depuis)
     except ValueError:
         premier = date.today()
-    jours = max(1, min(jours, 31))
-    if settings.agenda_provider != "dental_lens":
-        return [_vide((premier + timedelta(days=i)).isoformat()) for i in range(jours)]
-
-    semaine: list[Journee] = []
-    serveur_repond = True
-    for i in range(jours):
-        jour = (premier + timedelta(days=i)).isoformat()
-        lue = _par_le_serveur(settings.dental_lens_url, jour) if serveur_repond else None
-        if lue is None:
-            serveur_repond = False
-            lue = _par_le_fichier(settings.dental_lens_registre, jour)
-        semaine.append(lue or _vide(jour))
-    return semaine
+    return [
+        lire(settings, (premier + timedelta(days=i)).isoformat())
+        for i in range(max(1, min(jours, 31)))
+    ]

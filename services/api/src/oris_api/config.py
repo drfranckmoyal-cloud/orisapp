@@ -18,7 +18,6 @@ AppEnv = Literal["local", "test", "staging", "production"]
 ProviderName = Literal["mock"]
 SttProviderName = Literal["mock", "azure_speech", "deepgram"]
 ExtractionProviderName = Literal["mock", "anthropic"]
-AgendaProviderName = Literal["none", "dental_lens"]
 
 
 class Settings(BaseSettings):
@@ -54,14 +53,14 @@ class Settings(BaseSettings):
     # Connecteur SmileCloud : éteint tant qu'il n'est pas construit.
     smilecloud_enabled: bool = False
 
-    # Agenda du jour (écran « Votre journée »). Oris ne lit pas Doctolib : il lit ce
-    # que Dental Lens, l'autre outil du cabinet, a déposé sur le poste. `none` tant
-    # qu'aucun connecteur n'est configuré — l'écran le dit alors franchement.
-    agenda_provider: AgendaProviderName = "none"
-    dental_lens_url: str = "http://127.0.0.1:8765"
-    dental_lens_registre: Path = (
-        Path.home() / "Library" / "Application Support" / "SmileCloudPhotos"
-    )
+    # Agenda du jour (écran « Votre journée »). Oris ne va rien chercher : l'extension
+    # Chrome lui **dépose** la journée. Rangée hors de la base clinique, un fichier par
+    # date : ce sont de vrais noms, ils n'entrent dans le dossier clinique que le jour
+    # où le praticien crée le dossier lui-même.
+    journee_dir: Path = Path.home() / "Library" / "Application Support" / "Oris" / "journees"
+    # Secret partagé, facultatif : renseigné, le dépôt l'exige en `Authorization: Bearer`.
+    # Le dépôt n'accepte de toute façon que les appels venus de cette machine.
+    journee_depot_token: SecretStr | None = None
     max_session_minutes: int = 90
     warn_session_minutes: int = 80
 
@@ -82,6 +81,7 @@ class Settings(BaseSettings):
         "azure_speech_endpoint",
         "deepgram_api_key",
         "anthropic_api_key",
+        "journee_depot_token",
         mode="before",
     )
     @classmethod

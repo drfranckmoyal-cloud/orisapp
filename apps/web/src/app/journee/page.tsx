@@ -27,15 +27,6 @@ function passe(statut: string): boolean {
   return mot.includes("absent") || mot.includes("annul");
 }
 
-const SMILECLOUD: Record<RendezVous["smilecloud"], string> = {
-  trouve: "Dossier SmileCloud trouvé",
-  absent: "Pas de dossier SmileCloud",
-  demande: "Dossier SmileCloud demandé",
-  a_verifier: "SmileCloud pas encore interrogé",
-  ambigu: "Plusieurs dossiers SmileCloud à ce nom",
-  inconnu: "SmileCloud pas encore interrogé",
-};
-
 export default function JourneePage() {
   const [jour, setJour] = useState(aujourdhuiISO);
   const [debutSemaine, setDebutSemaine] = useState(() => lundiDe(aujourdhuiISO()));
@@ -196,10 +187,10 @@ export default function JourneePage() {
 
           {donnees && !donnees.disponible && (
             <div className={styles.creux}>
-              <EtatVide titre="Cette journée n’a pas encore été lue">
-                L’agenda est lu par <strong>Dental Lens</strong>, pas par Oris. Ouvrez
-                Doctolib avec Dental Lens actif pour ce jour : la journée arrivera ici
-                toute seule.
+              <EtatVide titre="Cette journée n’a pas encore été relevée">
+                L’agenda est relevé par l’<strong>extension Chrome</strong>, qui dépose
+                ensuite la journée dans Oris. Ouvrez Doctolib sur ce jour avec
+                l’extension active : la journée arrivera ici toute seule.
               </EtatVide>
             </div>
           )}
@@ -229,13 +220,6 @@ export default function JourneePage() {
                 <span className={styles.motif}>
                   {rdv.motif || "motif non précisé"}
                   {annule && <span className={styles.statut}> · {rdv.statut}</span>}
-                  <span
-                    className={`${styles.voyant} ${
-                      rdv.smilecloud === "trouve" ? styles.voyantOk : ""
-                    } ${rdv.smilecloud === "absent" ? styles.voyantManque : ""}`}
-                    title={SMILECLOUD[rdv.smilecloud]}
-                    aria-label={SMILECLOUD[rdv.smilecloud]}
-                  />
                 </span>
                 <span className={styles.agir}>
                   {rdv.patient_id ? (
@@ -269,9 +253,8 @@ export default function JourneePage() {
 
           {donnees?.disponible && (
             <p className={styles.provenance}>
-              Lu par Dental Lens
-              {donnees.lu_le ? ` le ${new Date(donnees.lu_le).toLocaleString("fr-FR")}` : ""}
-              {donnees.source === "fichier" ? " — Dental Lens n’est pas lancé" : ""}.
+              Journée déposée par l’extension Chrome
+              {donnees.recu_le ? ` le ${new Date(donnees.recu_le).toLocaleString("fr-FR")}` : ""}.
             </p>
           )}
         </section>

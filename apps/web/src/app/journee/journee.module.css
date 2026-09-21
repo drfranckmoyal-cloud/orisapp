@@ -285,18 +285,6 @@
   opacity: 0.55;
 }
 
-/* Voyant SmileCloud : l'information vient de Dental Lens, elle reste en retrait. */
-.voyant {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--trait-fort);
-  flex: none;
-}
-
-.voyantOk { background: var(--valide); }
-.voyantManque { background: var(--attention); }
-
 .agir {
   display: flex;
   align-items: center;

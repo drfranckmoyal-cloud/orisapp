@@ -931,3 +931,31 @@ Oris**, là où Dental Lens créait le dossier SmileCloud.
 Dental Lens répond pour n'importe quelle date, avec une liste vide si personne n'a encore
 ouvert cet agenda. Se fier à sa réponse faisait passer un jeudi jamais relevé pour un
 jeudi sans patient. `Journee.disponible` exige maintenant l'heure de lecture.
+
+## La journée est maintenant **déposée**, plus jamais cherchée (21 septembre 2026)
+
+Décision de Franck, le même jour : Oris ne va plus interroger Dental Lens. C'est
+l'extension Chrome qui livre la journée à Oris comme elle la livre déjà à Dental Lens.
+Oris n'a plus besoin que personne d'autre tourne.
+
+- `POST /journee/depot`, ouvert **à cette machine seulement** (403 `DEPOT_NON_LOCAL`).
+  Aucun praticien connecté : c'est une livraison de machine à machine. Et surtout,
+  **aucun patient n'est créé** — la création reste le geste du praticien (§58).
+- Rangement hors de la base clinique : un fichier par date dans
+  `~/Library/Application Support/Oris/journees/`, écrit en deux temps (fichier
+  provisoire puis renommage) pour qu'une coupure ne laisse pas une journée tronquée,
+  illisible le matin où on en a besoin.
+- La date venue du dehors est refabriquée à partir d'une vraie date avant de composer
+  un nom de fichier : sans cela, un `jour` valant `../../ailleurs` écrirait où il veut.
+- Une livraison vide ne remplace jamais une journée qui ne l'était pas. Une lecture
+  ratée renvoie zéro ligne, et elle effacerait la seule liste du praticien.
+- Secret partagé facultatif (`JOURNEE_DEPOT_TOKEN`), comparé en temps constant.
+
+Disparaissent : `agenda_provider`, `dental_lens_url`, `dental_lens_registre`,
+`_par_le_serveur`, `_par_le_fichier`, et la dépendance à `httpx` pour cet écran.
+
+### Ce que l'écran y perd
+
+Le voyant SmileCloud des lignes venait du rapprochement fait par Dental Lens. L'extension
+ne livre que ce qu'elle lit dans Doctolib : le voyant n'a plus de source et a été retiré
+des lignes. Le voyant SmileCloud de la fiche patient, lui, est indépendant et reste.
