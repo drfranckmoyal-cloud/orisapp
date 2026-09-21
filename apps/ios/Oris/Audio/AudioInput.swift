@@ -36,6 +36,13 @@ final class MicrophoneInput: AudioInput {
     private var continuation: AsyncStream<AudioInputEvent>.Continuation?
     private var observers: [NSObjectProtocol] = []
 
+    /// Le micro en service et son rythme, pour le diagnostic (jamais le son).
+    static var entreeActuelle: (nom: String, taux: Int) {
+        let session = AVAudioSession.sharedInstance()
+        let port = session.currentRoute.inputs.first?.portType.rawValue ?? "aucune"
+        return (port, Int(session.sampleRate))
+    }
+
     static var permission: MicrophonePermission {
         switch AVAudioApplication.shared.recordPermission {
         case .granted: .granted
@@ -52,11 +59,15 @@ final class MicrophoneInput: AudioInput {
         }
         let session = AVAudioSession.sharedInstance()
         do {
-            // Micro des AirPods autorisé ; capture poursuivie écran verrouillé (mode audio).
-            // Mode « enregistrement » standard : `.spokenAudio` est fait pour *lire* de la
-            // parole (livres audio), pas pour la capter.
-            try session.setCategory(.playAndRecord, mode: .default, options: [.allowBluetoothHFP, .defaultToSpeaker])
+            // Toujours le micro de l'iPhone (21/09/2026) : le micro Bluetooth des écouteurs
+            // enregistre en qualité téléphone, à un autre rythme — le son arrivait déformé et
+            // la transcription n'y reconnaissait rien. Mode d'enregistrement standard ;
+            // capture poursuivie écran verrouillé (mode audio d'arrière-plan).
+            try session.setCategory(.record, mode: .default, options: [])
             try session.setActive(true)
+            if let interne = session.availableInputs?.first(where: { $0.portType == .builtInMic }) {
+                try? session.setPreferredInput(interne)
+            }
         } catch {
             throw CaptureFailure.captureFailed
         }

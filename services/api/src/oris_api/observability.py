@@ -42,6 +42,14 @@ ALLOWED_FIELDS = frozenset(
         "provider",
         "component",
         "error_code",
+        # Diagnostic audio et rédaction : des nombres et des codes, jamais de contenu.
+        "octets",
+        "crete",
+        "moyen",
+        "taux_entree",
+        "entree",
+        "document_type",
+        "motif",
     }
 )
 

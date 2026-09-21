@@ -2,12 +2,22 @@
 
 from __future__ import annotations
 
+import hashlib
+import logging
 from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Body, Header, Response, status
+from pydantic import BaseModel
 
-from oris_api.api.dependencies import ActorDep, LiveDep, SessionDep, SettingsDep, SinkDep
+from oris_api.api.dependencies import (
+    ActorDep,
+    LiveDep,
+    ProvidersDep,
+    SessionDep,
+    SettingsDep,
+    SinkDep,
+)
 from oris_api.api.schemas import (
     AudioGapOut,
     AudioGapReport,
@@ -16,9 +26,68 @@ from oris_api.api.schemas import (
     ClientConfigOut,
 )
 from oris_api.domain.types import AudioChunk
-from oris_api.services import attachments, audio, encounters
+from oris_api.providers.base import TranscriptionUnavailable
+from oris_api.services import async_bridge, attachments, audio, encounters
+from oris_api.services.errors import Unprocessable
+from oris_api.stt.audio import SEUIL_SILENCE, niveau
 
 router = APIRouter(tags=["audio"])
+logger = logging.getLogger("oris.audio")
+
+#: Essai du micro : quelques secondes, pas une consultation (16 kHz × 2 octets × 15 s).
+ESSAI_MAX_OCTETS = 16_000 * 2 * 15
+
+
+class EssaiMicroOut(BaseModel):
+    """Ce qu'Oris a entendu pendant l'essai du micro — rien n'est gardé."""
+
+    texte: str
+    crete: float
+    moyen: float
+    muet: bool
+
+
+@router.post("/diagnostic/micro", response_model=EssaiMicroOut)
+def essai_micro(
+    payload: Annotated[bytes, Body(media_type=audio.AUDIO_FORMAT)],
+    actor: ActorDep,
+    providers: ProvidersDep,
+    x_taux_entree: Annotated[int | None, Header()] = None,
+    x_entree: Annotated[str | None, Header(max_length=64)] = None,
+) -> EssaiMicroOut:
+    """Quelques secondes captées par un appareil, transcrites aussitôt et oubliées : le
+    praticien voit si Oris l'entend. Le journal ne garde que des nombres et le type de micro."""
+    if not payload or len(payload) > ESSAI_MAX_OCTETS:
+        raise Unprocessable("ESSAI_MICRO_TAILLE", details=[str(len(payload))])
+    volume = niveau(payload)
+    logger.info(
+        "audio.essai_micro",
+        extra={
+            "octets": len(payload),
+            "crete": volume["crete"],
+            "moyen": volume["moyen"],
+            "taux_entree": x_taux_entree,
+            "entree": x_entree,
+        },
+    )
+    muet = volume["crete"] < SEUIL_SILENCE
+    if muet:
+        return EssaiMicroOut(texte="", muet=True, **volume)
+    morceau = AudioChunk(
+        session_id="essai-micro",
+        sequence=0,
+        timestamp_ms=0,
+        checksum=hashlib.sha256(payload).hexdigest(),
+        payload=payload,
+    )
+    try:
+        resultat = async_bridge.run(
+            lambda: providers.speech_to_text.transcribe([morceau], "fr-FR", [])
+        )
+    except TranscriptionUnavailable as erreur:
+        raise Unprocessable("STT_UNAVAILABLE", details=[erreur.code]) from erreur
+    texte = " ".join(s.text for s in resultat.segments).strip()
+    return EssaiMicroOut(texte=texte, muet=False, **volume)
 
 
 @router.put(

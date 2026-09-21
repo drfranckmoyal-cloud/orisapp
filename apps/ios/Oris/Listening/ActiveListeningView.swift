@@ -52,9 +52,15 @@ struct ActiveListeningView: View {
                     .frame(width: 140, height: 140)
                     .scaleEffect(pulse && controller.phase == .recording && !reduceMotion ? 1.06 : 1)
                     .animation(reduceMotion ? nil : .easeInOut(duration: 0.9).repeatForever(autoreverses: true), value: pulse)
-                Image(systemName: symbol)
-                    .font(.system(size: 52, weight: .semibold))
-                    .foregroundStyle(controller.phase == .recording ? Color.white : Teinte.accent)
+                if controller.phase == .recording {
+                    // Les barres suivent la voix : on voit, au premier mot, que le micro entend.
+                    SymboleOris(couleur: .white, niveauVoix: controller.level)
+                        .frame(width: 78, height: 78)
+                } else {
+                    Image(systemName: symbol)
+                        .font(.system(size: 52, weight: .semibold))
+                        .foregroundStyle(Teinte.accent)
+                }
             }
             .accessibilityHidden(true)
             .onAppear { pulse = true }

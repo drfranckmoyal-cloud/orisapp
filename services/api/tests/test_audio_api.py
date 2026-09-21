@@ -373,3 +373,29 @@ def test_a_silent_recording_says_the_microphone_heard_nothing(api: Any) -> None:
     ).json()
     assert finished["status"] == "transcription_failed"
     assert finished["processing_errors"][0]["rule"] == "AUDIO_SILENT"
+
+
+def test_the_microphone_test_says_what_it_heard_and_keeps_nothing(api: Any) -> None:
+    muet = api.post(
+        "/diagnostic/micro",
+        content=bytes(32000),
+        headers={"Content-Type": "audio/pcm;rate=16000;channels=1;encoding=s16le"},
+    ).json()
+    assert muet["muet"] is True and muet["texte"] == ""
+    son = api.post(
+        "/diagnostic/micro",
+        content=pcm(1.0),
+        headers={
+            "Content-Type": "audio/pcm;rate=16000;channels=1;encoding=s16le",
+            "X-Taux-Entree": "48000",
+            "X-Entree": "MicrophoneBuiltIn",
+        },
+    ).json()
+    assert son["muet"] is False and son["crete"] > 0
+    trop_long = api.post(
+        "/diagnostic/micro",
+        content=bytes(16_000 * 2 * 16),
+        headers={"Content-Type": "audio/pcm;rate=16000;channels=1;encoding=s16le"},
+    )
+    assert trop_long.status_code == 422
+    assert api.get("/encounters").json() == []

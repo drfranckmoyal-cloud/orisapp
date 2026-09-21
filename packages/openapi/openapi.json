@@ -3258,6 +3258,85 @@
         }
       }
     },
+    "/diagnostic/micro": {
+      "post": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Essai Micro",
+        "description": "Quelques secondes captées par un appareil, transcrites aussitôt et oubliées : le\npraticien voit si Oris l'entend. Le journal ne garde que des nombres et le type de micro.",
+        "operationId": "essai_micro_diagnostic_micro_post",
+        "parameters": [
+          {
+            "name": "x-taux-entree",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Taux-Entree"
+            }
+          },
+          {
+            "name": "x-entree",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 64
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Entree"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "audio/pcm;rate=16000;channels=1;encoding=s16le": {
+              "schema": {
+                "type": "string",
+                "contentMediaType": "application/octet-stream",
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EssaiMicroOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters/{encounter_id}/audio/chunks/{sequence}": {
       "put": {
         "tags": [
@@ -6261,6 +6340,35 @@
         ],
         "title": "EnvoiPrepareOut",
         "description": "Ce qu'il faut pour envoyer un document : qui, depuis quelle adresse, quel texte."
+      },
+      "EssaiMicroOut": {
+        "properties": {
+          "texte": {
+            "type": "string",
+            "title": "Texte"
+          },
+          "crete": {
+            "type": "number",
+            "title": "Crete"
+          },
+          "moyen": {
+            "type": "number",
+            "title": "Moyen"
+          },
+          "muet": {
+            "type": "boolean",
+            "title": "Muet"
+          }
+        },
+        "type": "object",
+        "required": [
+          "texte",
+          "crete",
+          "moyen",
+          "muet"
+        ],
+        "title": "EssaiMicroOut",
+        "description": "Ce qu'Oris a entendu pendant l'essai du micro — rien n'est gardé."
       },
       "EtapeOut": {
         "properties": {

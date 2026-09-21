@@ -5,6 +5,9 @@ import SwiftUI
 struct SymboleOris: View {
     var couleur: Color = Teinte.accent
     var anime = false
+    /// Pendant l'écoute : le niveau de la voix (0…1). Les barres suivent alors ce qu'on
+    /// dit — on voit que le micro entend.
+    var niveauVoix: Double? = nil
 
     /// Choix de Franck (21/09/2026) : le symbole reste animé même avec « Réduire les
     /// animations » — le mouvement est lent et reste sur place, sans défilement.
@@ -26,15 +29,29 @@ struct SymboleOris: View {
         return CGFloat(0.675 + 0.325 * onde)
     }
 
+    /// Les barres suivent la voix : au repos elles sont basses, elles montent avec le
+    /// volume ; un léger frémissement propre à chaque barre évite l'effet bloc.
+    static func voix(barre i: Int, niveau: Double, temps t: Double) -> CGFloat {
+        let n = min(1, max(0, niveau))
+        let fremissement = 0.75 + 0.25 * sin(t * 9 + Double(i) * 1.9)
+        return CGFloat(0.22 + 0.78 * n * fremissement)
+    }
+
     var body: some View {
         GeometryReader { geo in
             let k = min(geo.size.width, geo.size.height) / 120
-            TimelineView(.animation(paused: !anime || sansMouvement)) { contexte in
+            TimelineView(.animation(paused: (!anime && niveauVoix == nil) || sansMouvement)) { contexte in
                 let t = contexte.date.timeIntervalSinceReferenceDate
                 ZStack(alignment: .topLeading) {
                     ForEach(Self.barres.indices, id: \.self) { i in
                         let barre = Self.barres[i]
-                        let echelle = anime && !sansMouvement ? Self.niveau(barre: i, temps: t) : 1
+                        let echelle: CGFloat = if let voix = niveauVoix {
+                            Self.voix(barre: i, niveau: voix, temps: t)
+                        } else if anime && !sansMouvement {
+                            Self.niveau(barre: i, temps: t)
+                        } else {
+                            1
+                        }
                         RoundedRectangle(cornerRadius: 5 * k)
                             .fill(couleur)
                             .frame(width: 10 * k, height: barre.h * k)

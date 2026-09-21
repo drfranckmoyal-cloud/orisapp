@@ -21,7 +21,7 @@ struct RootView: View {
                 CarnetView(client: client)
             }
             Tab("Paramètres", systemImage: "gearshape") {
-                SettingsView(model: HomeViewModel(client: client), apiURL: client.baseURL, reconnect: reconnect)
+                SettingsView(model: HomeViewModel(client: client), client: client, reconnect: reconnect)
             }
         }
         .tint(Teinte.accent)

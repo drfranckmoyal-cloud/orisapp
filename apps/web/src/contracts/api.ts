@@ -1057,6 +1057,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/diagnostic/micro": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Essai Micro
+         * @description Quelques secondes captées par un appareil, transcrites aussitôt et oubliées : le
+         *     praticien voit si Oris l'entend. Le journal ne garde que des nombres et le type de micro.
+         */
+        post: operations["essai_micro_diagnostic_micro_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters/{encounter_id}/audio/chunks/{sequence}": {
         parameters: {
             query?: never;
@@ -2266,6 +2287,20 @@ export interface components {
             brouillon: boolean;
             /** Nom Fichier */
             nom_fichier: string;
+        };
+        /**
+         * EssaiMicroOut
+         * @description Ce qu'Oris a entendu pendant l'essai du micro — rien n'est gardé.
+         */
+        EssaiMicroOut: {
+            /** Texte */
+            texte: string;
+            /** Crete */
+            crete: number;
+            /** Moyen */
+            moyen: number;
+            /** Muet */
+            muet: boolean;
         };
         /** EtapeOut */
         EtapeOut: {
@@ -5482,6 +5517,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EncounterOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    essai_micro_diagnostic_micro_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-taux-entree"?: number | null;
+                "x-entree"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "audio/pcm;rate=16000;channels=1;encoding=s16le": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EssaiMicroOut"];
                 };
             };
             /** @description Validation Error */

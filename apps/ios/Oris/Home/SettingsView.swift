@@ -4,7 +4,8 @@ import SwiftUI
 /// Le reste des réglages (cabinet, titres, vocabulaire) se fait sur l'ordinateur.
 struct SettingsView: View {
     @State var model: HomeViewModel
-    let apiURL: URL
+    let client: APIClient
+    var apiURL: URL { client.baseURL }
     var reconnect: () -> Void = {}
 
     @State private var serveur = Connexion.serveurSaisi
@@ -23,6 +24,10 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    CarteEssaiMicro(essai: EssaiMicro(client: client))
+                }
+
                 Section {
                     ServerStatusCard(state: model.serverState, diagnostic: model.diagnostic)
                         .listRowInsets(EdgeInsets())
