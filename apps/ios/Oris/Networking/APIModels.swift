@@ -28,11 +28,14 @@ struct DocumentSummary: Codable, Equatable, Sendable, Identifiable {
     let id: String
     let documentType: DocumentDocumentType
     let status: DocumentStatus
+    /// À qui le document est déjà parti (libellés), le cas échéant.
+    var sentTo: [String]? = nil
 
     enum CodingKeys: String, CodingKey {
         case id
         case documentType = "document_type"
         case status
+        case sentTo = "sent_to"
     }
 }
 

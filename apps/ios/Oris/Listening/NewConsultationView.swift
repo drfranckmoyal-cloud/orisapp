@@ -53,12 +53,21 @@ struct NewConsultationView: View {
                             ProgressView().tint(Teinte.accent)
                         }
                         ForEach(filtered) { patient in
-                            Button {
-                                Task { await prepare(patientId: patient.id) }
-                            } label: {
-                                LignePatient(patient: patient)
+                            if embedded {
+                                // Onglet Patients : on ouvre le dossier.
+                                NavigationLink(value: RoutePatients.patient(patient)) {
+                                    LignePatient(patient: patient)
+                                }
+                                .buttonStyle(.plain)
+                            } else {
+                                // Depuis « Commencer une consultation » : on part écouter.
+                                Button {
+                                    Task { await prepare(patientId: patient.id) }
+                                } label: {
+                                    LignePatient(patient: patient)
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                     .carte(rembourrage: 12, fond: Teinte.surface2)
@@ -76,6 +85,14 @@ struct NewConsultationView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .navigationDestination(for: RoutePatients.self) { route in
+                switch route {
+                case .patient(let patient):
+                    PatientDossierView(client: client, patient: patient)
+                case .consultation(let id):
+                    ConsultationDetailView(model: ConsultationDetailViewModel(encounterId: id, client: client))
+                }
+            }
             .navigationDestination(item: $encounter) { encounter in
                 ListeningView(client: client, encounter: encounter) {
                     if embedded { self.encounter = nil } else { onClose() }

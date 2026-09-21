@@ -1,5 +1,20 @@
 # Changelog
 
+## App iPhone : dossier patient et traitement des documents — 2026-09-21
+- Onglet Patients : toucher un patient ouvre son **dossier** (et non plus une
+  consultation vide) : consultations, **documents validés** (PDF), **photos**, et le
+  bouton « Commencer une consultation ».
+- PDF : aperçu iOS, avec Imprimer et Partager (AirDrop, Mail, Fichiers). Le fichier
+  n'existe que le temps de l'aperçu.
+- Dans une consultation, pour chaque document : **Valider** (avec la case « j'ai pris
+  connaissance » s'il y a une alerte critique), **PDF**, **Envoyer** (correspondants à
+  cocher, autres adresses, objet, message — la même boîte d'envoi que le site),
+  **Modifier** le texte ; « Rédiger un courrier d'adressage » s'il n'y en a pas.
+- **Documentation clinique** : photo prise à l'iPhone ou choisie dans la photothèque,
+  légende, pleine largeur ou demi-largeur, retrait. Enregistrée dans le dossier du
+  patient et imprimée dans le PDF.
+- Messages d'erreur du serveur en français, les mêmes que sur le site.
+
 ## App iPhone aux couleurs du site — 2026-09-21
 - Même langue visuelle que le site : fond crème, vert profond, Manrope pour
   l'interface et Fraunces pour le nom « Oris » (polices embarquées dans l'app).

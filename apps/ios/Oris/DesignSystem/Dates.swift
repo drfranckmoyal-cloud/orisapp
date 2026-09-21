@@ -11,6 +11,14 @@ enum DateOris {
         return complet.date(from: texte) ?? ISO8601DateFormatter().date(from: texte)
     }
 
+    /// « 1990-03-08 » (date de naissance).
+    static func lireJour(_ texte: String) -> Date? {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd"
+        return f.date(from: texte)
+    }
+
     private static func format(_ date: Date, _ modele: String) -> String {
         let f = DateFormatter()
         f.locale = francais

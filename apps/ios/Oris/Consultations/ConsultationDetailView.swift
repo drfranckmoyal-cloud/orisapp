@@ -9,6 +9,9 @@ struct ConsultationDetailView: View {
 
     @State var model: ConsultationDetailViewModel
     @State private var tab: Tab = .document(.consultationNote)
+    @State private var toast: String?
+    @State private var redaction = false
+    @State private var erreur: String?
 
     var body: some View {
         Group {
@@ -26,6 +29,7 @@ struct ConsultationDetailView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .pageOris()
         .navigationBarTitleDisplayMode(.inline)
+        .toast($toast)
         .refreshable { await model.refresh() }
         .task { await model.refresh() }
     }
@@ -53,10 +57,29 @@ struct ConsultationDetailView: View {
 
                 Intercalaires(tab: $tab, documents: content.documents, aVerifier: content.reviewItemCount)
 
+                if !content.documents.isEmpty,
+                   !content.documents.contains(where: { $0.documentType == .referralLetter }) {
+                    Button {
+                        Task { await redigerCourrier(content) }
+                    } label: {
+                        Label(redaction ? "Rédaction du courrier…" : "Rédiger un courrier d’adressage", systemImage: "plus")
+                            .font(Police.interface(14, .bold))
+                            .foregroundStyle(Teinte.document(.referralLetter).encre)
+                    }
+                    .disabled(redaction)
+                }
+                if let erreur {
+                    Text(erreur).font(Police.note).foregroundStyle(Teinte.alerte)
+                }
+
                 switch tab {
                 case .document(let type):
                     if let document = content.documents.first(where: { $0.documentType == type }) {
+                        TraitementDocument(client: model.client, content: content, document: document,
+                                           recharger: { await model.refresh() }, toast: $toast)
                         DocumentCard(document: document)
+                        DocumentationClinique(client: model.client, patientId: content.encounter.patient.id,
+                                              encounterId: content.encounter.id, document: document, toast: $toast)
                     }
                 case .review:
                     ReviewCard(content: content)
@@ -64,6 +87,22 @@ struct ConsultationDetailView: View {
             }
             .padding(.horizontal, OrisSpacing.s16)
             .padding(.bottom, OrisSpacing.s32)
+        }
+    }
+}
+
+extension ConsultationDetailView {
+    fileprivate func redigerCourrier(_ content: ConsultationDetailViewModel.Content) async {
+        redaction = true
+        erreur = nil
+        defer { redaction = false }
+        do {
+            _ = try await model.client.rediger(encounterId: content.encounter.id, courrier: true)
+            await model.refresh()
+            tab = .document(.referralLetter)
+            toast = "Courrier d’adressage rédigé."
+        } catch {
+            erreur = Labels.erreur(error)
         }
     }
 }

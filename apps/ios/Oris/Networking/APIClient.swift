@@ -129,7 +129,7 @@ struct APIClient: Sendable {
         try await get("config/client")
     }
 
-    private func get<Response: Decodable>(_ path: String, query: [URLQueryItem] = []) async throws -> Response {
+    func get<Response: Decodable>(_ path: String, query: [URLQueryItem] = []) async throws -> Response {
         var url = baseURL.appending(path: path)
         if !query.isEmpty {
             url.append(queryItems: query)
@@ -140,7 +140,7 @@ struct APIClient: Sendable {
         return try await perform(request)
     }
 
-    private func send<Response: Decodable>(_ path: String, method: String, body: [String: Any]) async throws -> Response {
+    func send<Response: Decodable>(_ path: String, method: String, body: [String: Any]) async throws -> Response {
         var request = URLRequest(url: baseURL.appending(path: path))
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -149,7 +149,7 @@ struct APIClient: Sendable {
         return try await perform(request)
     }
 
-    private func perform<Response: Decodable>(_ request: URLRequest) async throws -> Response {
+    func perform<Response: Decodable>(_ request: URLRequest) async throws -> Response {
         let (data, response) = try await transport.send(request)
         guard let http = response as? HTTPURLResponse else { throw APIError.invalidResponse }
         guard (200..<300).contains(http.statusCode) else {

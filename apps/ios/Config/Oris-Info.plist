@@ -23,6 +23,8 @@
 	<array>
 		<string>_oris._tcp</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Oris photographie la situation clinique pour la joindre au compte rendu.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Oris envoie l’écoute au serveur Oris du Mac du cabinet, sur le Wi-Fi local.</string>
 </dict>

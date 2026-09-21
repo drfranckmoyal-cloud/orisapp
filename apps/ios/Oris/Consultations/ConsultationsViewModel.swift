@@ -57,7 +57,7 @@ final class ConsultationDetailViewModel {
 
     private(set) var state: State = .loading
     let encounterId: String
-    private let client: APIClient
+    let client: APIClient
 
     init(encounterId: String, client: APIClient) {
         self.encounterId = encounterId
