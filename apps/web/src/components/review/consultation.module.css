@@ -1,0 +1,459 @@
+/* La page d'une consultation : un document à la fois, dans son intercalaire.
+   Chaque type garde sa teinte, de l'intercalaire jusqu'au filet en haut de la feuille :
+   on sait sur quel document on travaille sans lire son titre. */
+
+/* --- En-tête -------------------------------------------------------------------- */
+
+.entete {
+  display: grid;
+  gap: var(--espace-2);
+}
+
+.retour {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-moyenne);
+  color: var(--encre-douce);
+  text-decoration: none;
+}
+
+.retour:hover {
+  color: var(--accent);
+}
+
+.enteteLigne {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espace-4);
+  flex-wrap: wrap;
+}
+
+.identite {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.patient {
+  margin: 0;
+  font-size: var(--texte-2xl);
+  line-height: var(--interligne-serre);
+}
+
+.patient a {
+  color: var(--encre);
+  text-decoration: none;
+}
+
+.patient a:hover {
+  color: var(--accent);
+}
+
+.prenom {
+  font-weight: var(--graisse-moyenne);
+  color: var(--encre-douce);
+}
+
+.quand {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-2);
+  margin: 0;
+  font-size: var(--texte-sm);
+  color: var(--encre-douce);
+}
+
+.actionsConsultation {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-3);
+  flex-wrap: wrap;
+}
+
+/* Supprimer : discret tant qu'on n'y touche pas, rouge au survol. */
+.supprimer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--rayon-bouton);
+  background: transparent;
+  font: inherit;
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-moyenne);
+  color: var(--encre-tres-douce);
+  cursor: pointer;
+  transition: color var(--transition), background var(--transition),
+    border-color var(--transition);
+}
+
+.supprimer:hover {
+  color: var(--alerte);
+  background: var(--alerte-douce);
+  border-color: var(--alerte);
+}
+
+.confirmation {
+  display: grid;
+  gap: var(--espace-3);
+}
+
+.supprimerFort {
+  padding: 9px 16px;
+  border: 1px solid var(--alerte);
+  border-radius: var(--rayon-bouton);
+  background: var(--alerte);
+  color: #fff;
+  font: inherit;
+  font-weight: var(--graisse-demi);
+  cursor: pointer;
+}
+
+.supprimerFort:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* --- Disposition ------------------------------------------------------------------ */
+
+.disposition {
+  display: grid;
+  grid-template-columns: minmax(0, 64fr) minmax(0, 36fr);
+  gap: var(--espace-6);
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .disposition {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rail {
+  display: grid;
+  gap: var(--espace-4);
+}
+
+.audio {
+  margin: 0;
+  padding: 0 var(--espace-2);
+  font-size: var(--texte-xs);
+  color: var(--encre-tres-douce);
+}
+
+/* --- Intercalaires ---------------------------------------------------------------- */
+
+.classeur {
+  display: grid;
+  min-width: 0;
+}
+
+.intercalaires {
+  display: flex;
+  gap: 6px;
+  padding: 0 var(--espace-3);
+  overflow-x: auto;
+}
+
+.intercalaire,
+.intercalaireAjout {
+  --teinte: var(--doc-compte-rendu);
+  --teinte-douce: var(--doc-compte-rendu-douce);
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: 5px;
+  min-width: 170px;
+  padding: 10px 14px 9px;
+  border: 1px solid var(--trait-fort);
+  border-bottom: 0;
+  border-radius: 12px 12px 0 0;
+  background: var(--surface-douce);
+  font: inherit;
+  text-align: left;
+  color: var(--encre-douce);
+  cursor: pointer;
+  opacity: 0.78;
+  transition: opacity var(--transition), background var(--transition);
+}
+
+.intercalaire:hover {
+  opacity: 1;
+}
+
+.intercalaire[data-type="treatment_plan_text"] {
+  --teinte: var(--doc-plan);
+  --teinte-douce: var(--doc-plan-douce);
+}
+
+.intercalaire[data-type="operative_note"] {
+  --teinte: var(--doc-operatoire);
+  --teinte-douce: var(--doc-operatoire-douce);
+}
+
+.intercalaire[data-type="patient_summary"] {
+  --teinte: var(--doc-resume);
+  --teinte-douce: var(--doc-resume-douce);
+}
+
+.intercalaire[data-type="referral_letter"] {
+  --teinte: var(--doc-courrier);
+  --teinte-douce: var(--doc-courrier-douce);
+}
+
+/* L'intercalaire ouvert se soude à la feuille : même fond, le filet de sa teinte en
+   haut, et il recouvre le bord de la feuille pour ne faire qu'un avec elle. */
+.intercalaire[aria-selected="true"] {
+  opacity: 1;
+  z-index: 1;
+  margin-bottom: -1px;
+  padding-bottom: 10px;
+  background: var(--surface);
+  border-color: var(--trait-fort);
+  box-shadow: inset 0 4px 0 var(--teinte);
+  color: var(--encre);
+}
+
+.intercalaire:focus-visible {
+  outline: none;
+  box-shadow: var(--anneau-focus);
+}
+
+.intercalaireAjout {
+  border-style: dashed;
+  background: transparent;
+  font-weight: var(--graisse-demi);
+  color: var(--doc-operatoire);
+  opacity: 1;
+}
+
+.intercalaireAjout:hover {
+  background: var(--doc-operatoire-douce);
+}
+
+.intercalaireEtat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-moyenne);
+  color: var(--encre-tres-douce);
+}
+
+.etatValide,
+.etatEnvoye {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--valide);
+  font-weight: var(--graisse-demi);
+}
+
+.etatARelire {
+  color: var(--attention);
+  font-weight: var(--graisse-demi);
+}
+
+.etatEdition {
+  font-style: italic;
+  color: var(--attention);
+}
+
+/* --- La feuille ------------------------------------------------------------------- */
+
+.feuille {
+  --teinte: var(--doc-compte-rendu);
+  display: grid;
+  gap: var(--espace-4);
+  padding: var(--espace-6);
+  border: 1px solid var(--trait-fort);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--lumiere), var(--relief);
+}
+
+.feuille[data-type="treatment_plan_text"] {
+  --teinte: var(--doc-plan);
+}
+
+.feuille[data-type="operative_note"] {
+  --teinte: var(--doc-operatoire);
+}
+
+.feuille[data-type="patient_summary"] {
+  --teinte: var(--doc-resume);
+}
+
+.feuille[data-type="referral_letter"] {
+  --teinte: var(--doc-courrier);
+}
+
+.feuilleEntete {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espace-4);
+  flex-wrap: wrap;
+  padding-bottom: var(--espace-3);
+  border-bottom: 1px solid var(--trait);
+}
+
+.feuilleTitre {
+  margin: 0;
+  font-size: var(--texte-xl);
+  color: var(--teinte);
+}
+
+.feuilleVersion {
+  margin: 2px 0 0;
+  font-size: var(--texte-xs);
+  color: var(--encre-tres-douce);
+}
+
+.outils {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.texte {
+  font-size: var(--texte-md);
+}
+
+.feuillePied {
+  display: grid;
+  gap: var(--espace-4);
+  padding-top: var(--espace-4);
+  border-top: 1px solid var(--trait);
+}
+
+.validation {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-3);
+  flex-wrap: wrap;
+}
+
+.prisConnaissance {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  flex-basis: 100%;
+}
+
+.prisConnaissance input {
+  width: 18px;
+  height: 18px;
+}
+
+.noteValidation {
+  font-size: var(--texte-xs);
+  color: var(--encre-tres-douce);
+}
+
+/* --- Envois ------------------------------------------------------------------------ */
+
+.envois {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-2) var(--espace-3);
+  flex-wrap: wrap;
+}
+
+.envoiRien {
+  font-size: var(--texte-sm);
+  color: var(--encre-tres-douce);
+}
+
+.envoi {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 10px;
+  border: 1px solid var(--trait);
+  border-radius: var(--rayon-pastille);
+  background: var(--valide-douce);
+  font-size: var(--texte-sm);
+  color: var(--encre);
+}
+
+.envoi svg {
+  color: var(--accent);
+  flex: none;
+}
+
+.envoiDate {
+  color: var(--encre-tres-douce);
+}
+
+.retirer {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--encre-tres-douce);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.retirer:hover {
+  background: var(--alerte-douce);
+  color: var(--alerte);
+}
+
+.formEnvoi {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--espace-3);
+  flex-wrap: wrap;
+  flex-basis: 100%;
+  padding: var(--espace-3);
+  border: 1px solid var(--trait);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.champEnvoi {
+  display: grid;
+  gap: 4px;
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-demi);
+  color: var(--encre-douce);
+}
+
+.choix {
+  font: inherit;
+  font-size: var(--texte-sm);
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 1px solid var(--trait-fort);
+  border-radius: var(--rayon-bouton);
+  background: var(--surface);
+  color: var(--encre);
+}
+
+.choix:focus-visible {
+  outline: none;
+  box-shadow: var(--anneau-focus);
+  border-color: var(--accent);
+}
+
+.boutonsEnvoi {
+  display: flex;
+  gap: var(--espace-2);
+}
+
+.erreur {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--texte-sm);
+  color: var(--alerte);
+}

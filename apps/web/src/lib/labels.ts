@@ -140,6 +140,10 @@ export const LEARNING_EVENT: Record<string, string> = {
 };
 
 const ERRORS: Record<string, string> = {
+  ENCOUNTER_IN_PROGRESS:
+    "Cette consultation est en cours d’écoute ou de traitement : arrêtez-la avant de la supprimer.",
+  DELIVERY_RECIPIENT_MISSING: "Indiquez à qui le document a été envoyé.",
+  DELIVERY_NOT_FOUND: "Cet envoi a déjà été retiré.",
   NETWORK_UNREACHABLE: "Serveur Oris injoignable.",
   MICROPHONE_UNAVAILABLE: "Micro indisponible : autorisez-le dans le navigateur.",
   OBJECT_VERSION_REQUIRED: "Rechargez la page avant d’appliquer cette correction.",

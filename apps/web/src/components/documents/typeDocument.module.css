@@ -1,0 +1,46 @@
+.type {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  padding: 3px 10px;
+  border: 1px solid currentColor;
+  border-radius: var(--rayon-pastille);
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-demi);
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.type svg {
+  stroke-width: 2.4;
+}
+
+.petit {
+  padding: 2px 8px;
+}
+
+.compteRendu {
+  color: var(--doc-compte-rendu);
+  background: var(--doc-compte-rendu-douce);
+}
+
+.plan {
+  color: var(--doc-plan);
+  background: var(--doc-plan-douce);
+}
+
+.operatoire {
+  color: var(--doc-operatoire);
+  background: var(--doc-operatoire-douce);
+}
+
+.resume {
+  color: var(--doc-resume);
+  background: var(--doc-resume-douce);
+}
+
+.courrier {
+  color: var(--doc-courrier);
+  background: var(--doc-courrier-douce);
+}

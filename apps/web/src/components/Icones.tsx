@@ -46,6 +46,9 @@ const TRACES = {
     </>
   ),
   retour: <path d="M16 10H4.6M9 4.8 4 10l5 5.2" />,
+  envoi: <path d="M16.8 3.2 3.2 9l5.6 2.2L11 16.8zM8.8 11.2l8-8" />,
+  corbeille: <path d="M4 5.6h12M8 5.6V3.8h4v1.8M5.6 5.6l.8 11h7.2l.8-11M8.6 8.6v5.2M11.4 8.6v5.2" />,
+  valide: <path d="m4.6 10.4 3.6 3.6 7.2-8" />,
   journee: (
     <>
       <path d="M3.2 5.4h13.6v11.4H3.2zM3.2 8.8h13.6" />

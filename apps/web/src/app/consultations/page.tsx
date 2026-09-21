@@ -1,27 +1,32 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { TypeDocument } from "@/components/documents/TypeDocument";
+import { Icone } from "@/components/Icones";
+import { JetonPraticien } from "@/components/JetonPraticien";
 import {
   Carte,
   Champ,
   EnTetePage,
   EtatVide,
-  Ligne,
-  Lignes,
   LienBouton,
   Onglets,
   Pastille,
   Squelette,
 } from "@/components/ui";
+import { aujourdhuiISO, enISO, jourDecale } from "@/app/journee/dates";
 import type { Encounter } from "@/lib/api";
-import { DOCUMENT_TYPE, ENCOUNTER_STATUS, errorMessage, nomPatient } from "@/lib/labels";
-import { JetonPraticien } from "@/components/JetonPraticien";
+import { ENCOUNTER_STATUS, errorMessage } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
+
+import styles from "./consultations.module.css";
 
 type Filtre = "toutes" | "a_relire" | "terminees" | "a_reprendre";
 
 const EN_ECOUTE = new Set(["draft", "recording", "paused"]);
+const EN_COURS = new Set(["recording", "paused", "finalizing", "processing"]);
 const TERMINEES = new Set(["validated", "exported", "archived"]);
 const EN_ECHEC = new Set([
   "transcription_failed",
@@ -37,30 +42,127 @@ function ton(statut: string): "neutre" | "attention" | "valide" | "alerte" {
   return "neutre";
 }
 
-function jour(encounter: Encounter): string {
-  return (encounter.started_at ?? encounter.created_at).slice(0, 10);
+function moment(encounter: Encounter): Date {
+  return new Date(encounter.started_at ?? encounter.created_at);
 }
 
-function titreDuJour(iso: string): string {
-  const aujourdhui = new Date().toISOString().slice(0, 10);
-  const hier = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
-  if (iso === aujourdhui) return "Aujourd’hui";
-  if (iso === hier) return "Hier";
-  return new Date(iso).toLocaleDateString("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
+/** Le jour en heure locale : `toISOString` renverrait la veille après minuit. */
+function jour(encounter: Encounter): string {
+  return enISO(moment(encounter));
 }
 
 function heure(encounter: Encounter): string {
-  return new Date(encounter.started_at ?? encounter.created_at).toLocaleTimeString("fr-FR", {
+  return moment(encounter).toLocaleTimeString("fr-FR", {
     hour: "2-digit",
     minute: "2-digit",
   });
 }
 
-/** Toutes les consultations, groupées par jour : on retrouve sa journée d'un coup d'œil. */
+/** « Aujourd'hui » en gros, la date exacte à côté : on cherche d'abord un jour relatif. */
+function Bandeau({ iso, nombre }: { iso: string; nombre: number }) {
+  const aujourdhui = aujourdhuiISO();
+  const relatif =
+    iso === aujourdhui
+      ? "Aujourd’hui"
+      : iso === jourDecale(aujourdhui, -1)
+        ? "Hier"
+        : null;
+  const date = new Date(`${iso}T12:00:00`).toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: iso.slice(0, 4) === aujourdhui.slice(0, 4) ? undefined : "numeric",
+  });
+  return (
+    <h2 className={styles.bandeau}>
+      <span className={styles.relatif}>{relatif ?? date}</span>
+      {relatif && <span className={styles.dateExacte}>{date}</span>}
+      <span className={styles.filet} aria-hidden="true" />
+      <span className={styles.nombre}>
+        {nombre} consultation{nombre > 1 ? "s" : ""}
+      </span>
+    </h2>
+  );
+}
+
+/** À qui les documents sont partis, d'après ce que le praticien a noté. */
+function Envoi({ encounter }: { encounter: Encounter }) {
+  const destinataires = [
+    ...new Set(encounter.documents.flatMap((d) => d.sent_to ?? [])),
+  ];
+  if (destinataires.length > 0) {
+    return (
+      <span
+        className={styles.envoye}
+        title={`Envoyé à ${destinataires.join(", ")}`}
+      >
+        <Icone nom="envoi" taille={14} />
+        <span className={styles.coupe}>
+          Envoyé à {destinataires.join(", ")}
+        </span>
+      </span>
+    );
+  }
+  if (encounter.documents.length === 0 || EN_COURS.has(encounter.status)) {
+    return <span className={styles.rien}>—</span>;
+  }
+  return <span className={styles.rien}>Pas encore envoyé</span>;
+}
+
+function Rangee({ encounter }: { encounter: Encounter }) {
+  const documents = encounter.documents.filter(
+    (d) => d.status !== "superseded",
+  );
+  return (
+    <Link
+      href={
+        EN_ECOUTE.has(encounter.status)
+          ? `/consultations/${encounter.id}/ecoute`
+          : `/consultations/${encounter.id}`
+      }
+      className={styles.rangee}
+    >
+      <time className={styles.heure}>{heure(encounter)}</time>
+      {/* Le praticien juste après l'heure : à gauche, rien ne le pousse, et les
+          vignettes restent alignées quelle que soit la longueur du statut. */}
+      <span className={styles.praticien}>
+        <JetonPraticien
+          nom={encounter.practitioner.name}
+          titre={encounter.practitioner.title}
+          taille="petit"
+        />
+      </span>
+      <span className={styles.qui}>
+        <span className={styles.nom}>
+          {encounter.patient.last_name.toLocaleUpperCase("fr-FR")}{" "}
+          <span className={styles.prenom}>{encounter.patient.first_name}</span>
+        </span>
+        <span className={styles.documents}>
+          {documents.map((d) => (
+            <TypeDocument
+              key={d.id}
+              type={d.document_type}
+              valide={d.status === "validated" || d.status === "exported"}
+              taille="petit"
+            />
+          ))}
+          {encounter.mode === "shadow" && (
+            <span className={styles.ombre}>mode ombre</span>
+          )}
+        </span>
+      </span>
+      <Envoi encounter={encounter} />
+      <span className={styles.statut}>
+        <Pastille ton={ton(encounter.status)}>
+          {ENCOUNTER_STATUS[encounter.status]}
+        </Pastille>
+      </span>
+      <Icone nom="suivant" taille={14} className={styles.chevron} />
+    </Link>
+  );
+}
+
+/** Toutes les consultations, jour par jour : on retrouve sa journée d'un coup d'œil. */
 export default function ConsultationsPage() {
   const [encounters] = useApi<Encounter[]>("/encounters");
   const [filtre, setFiltre] = useState<Filtre>("toutes");
@@ -68,6 +170,7 @@ export default function ConsultationsPage() {
 
   const groupes = useMemo(() => {
     const toutes = encounters.state === "ready" ? encounters.data : [];
+    const cherche = recherche.trim().toLowerCase();
     const retenues = toutes
       .filter((encounter) => {
         if (filtre === "a_relire") return encounter.status === "review";
@@ -76,9 +179,11 @@ export default function ConsultationsPage() {
         return true;
       })
       .filter((encounter) => {
-        const nom = `${encounter.patient.first_name} ${encounter.patient.last_name}`.toLowerCase();
-        return recherche.trim() ? nom.includes(recherche.trim().toLowerCase()) : true;
-      });
+        const nom =
+          `${encounter.patient.first_name} ${encounter.patient.last_name}`.toLowerCase();
+        return cherche ? nom.includes(cherche) : true;
+      })
+      .sort((a, b) => moment(b).getTime() - moment(a).getTime());
 
     const parJour = new Map<string, Encounter[]>();
     for (const encounter of retenues) {
@@ -95,7 +200,11 @@ export default function ConsultationsPage() {
       <EnTetePage
         surTitre="Historique"
         titre="Consultations"
-        action={<LienBouton href="/consultations/nouvelle">Nouvelle consultation</LienBouton>}
+        action={
+          <LienBouton href="/consultations/nouvelle">
+            Nouvelle consultation
+          </LienBouton>
+        }
       />
 
       <div className="barre-filtres">
@@ -139,54 +248,23 @@ export default function ConsultationsPage() {
         </Carte>
       )}
 
-      {groupes.map(([date, liste]) => (
-        <Carte key={date} titre={titreDuJour(date)} action={<span className="muted">{liste.length}</span>}>
-          <Lignes>
-            {liste.map((encounter) => (
-              <Ligne
-                key={encounter.id}
-                href={
-                  EN_ECOUTE.has(encounter.status)
-                    ? `/consultations/${encounter.id}/ecoute`
-                    : `/consultations/${encounter.id}`
-                }
-                titre={nomPatient(encounter.patient)}
-                detail={
-                  <>
-                    <time>{heure(encounter)}</time>
-                    {encounter.documents.length > 0 && (
-                      <>
-                        {" · "}
-                        {encounter.documents
-                          .map((document) => DOCUMENT_TYPE[document.document_type])
-                          .join(", ")}
-                      </>
-                    )}
-                    {encounter.mode === "shadow" && " · mode ombre"}
-                  </>
-                }
-                fin={
-                  <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <JetonPraticien
-                      nom={encounter.practitioner.name}
-                      titre={encounter.practitioner.title}
-                      taille="petit"
-                    />
-                    <Pastille ton={ton(encounter.status)}>
-                      {ENCOUNTER_STATUS[encounter.status]}
-                    </Pastille>
-                  </span>
-                }
-              />
-            ))}
-          </Lignes>
-        </Carte>
-      ))}
+      <div className={styles.jours}>
+        {groupes.map(([date, liste]) => (
+          <section key={date} className={styles.jour}>
+            <Bandeau iso={date} nombre={liste.length} />
+            <div className={styles.liste}>
+              {liste.map((encounter) => (
+                <Rangee key={encounter.id} encounter={encounter} />
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
 
       {total > 0 && (
         <p className="muted" style={{ margin: 0 }}>
-          {total} consultation{total > 1 ? "s" : ""} · les dates sont celles du début de
-          l’écoute.
+          {total} consultation{total > 1 ? "s" : ""} · l’heure est celle du
+          début de l’écoute.
         </p>
       )}
     </div>

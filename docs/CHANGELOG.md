@@ -1,5 +1,24 @@
 # Changelog
 
+## Consultations refondues — 2026-09-21
+- **Liste resserrée** : une ligne fine par consultation, un jour par carte. Le jour se lit
+  dans un bandeau vert en petites capitales (« AUJOURD'HUI · lundi 21 septembre »), qui
+  reste en haut pendant qu'on défile — rien à voir avec le style des noms de patient.
+- **Le type de document se voit à côté du nom**, dans sa couleur, coché s'il est validé.
+- **« Envoyé à … »** sur chaque ligne, d'après les envois notés (table
+  `document_deliveries`, migration 0017). Le nom du destinataire est recopié au moment du
+  geste : supprimer le correspondant plus tard n'efface pas la trace.
+- **La vignette du praticien passe juste après l'heure** : un statut long (« Transcription
+  impossible ») ne la décale plus, les vignettes restent alignées.
+- **Page d'une consultation** : un intercalaire par document, dans sa teinte, soudé à la
+  feuille ; une réécriture en cours reste attachée à son document. Outils du document
+  (Éditer, Raccourcir, Copier, PDF) en tête de feuille, envois et validation en pied. Le
+  compte rendu de soins proposé devient un intercalaire en pointillé.
+- **Supprimer une consultation** (`DELETE /encounters/{id}`) : refusé pendant l'écoute ou
+  le traitement ; emporte le son restant, la transcription, le dossier clinique, les
+  documents, leurs envois et les corrections apprises de cette consultation. Le journal
+  d'audit garde une ligne sans contenu.
+
 ## Pièces jointes et connecteurs — 2026-09-21
 - **Le dossier SmileCloud d'un patient se retient.** Un champ à lui sur la fiche — pas le numéro de dossier du cabinet, qui reste où il est. Posé une fois, il évite d'avoir à redemander à chaque fois quel dossier est le bon, et il se détache si ce n'était pas le bon.
 - **Les noms se reconnaissent enfin d'une application à l'autre.** « MOREAU Chloé » dans Doctolib et « Moreau Chloe » dans Oris sont le même patient, ordre des mots, accents et casse compris ; la mesure vient de Dental Lens, où elle tourne sur 772 dossiers réels. Mais « Paul » et « Paule » se ressemblent à 95 % et sont deux personnes : dans la zone de doute, Oris demande au lieu de décider. L'écran « Votre journée » s'en sert déjà.

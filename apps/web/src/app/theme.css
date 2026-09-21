@@ -44,6 +44,18 @@
   --alerte: #9c2a1c;
   --alerte-douce: #fbeae7;
 
+  /* Types de document : une teinte chacun, pour les reconnaître sans lire. */
+  --doc-compte-rendu: #14533b;
+  --doc-compte-rendu-douce: #e3efe8;
+  --doc-plan: #1f5a8c;
+  --doc-plan-douce: #e4eef8;
+  --doc-operatoire: #9a4a0b;
+  --doc-operatoire-douce: #fbecdc;
+  --doc-resume: #6b3f8f;
+  --doc-resume-douce: #f0e8f7;
+  --doc-courrier: #4a5561;
+  --doc-courrier-douce: #eceef1;
+
   /* Relief : trois couches, plus un filet de lumière. Jamais une ombre seule. */
   --lumiere: inset 0 1px 0 rgb(255 255 255 / 0.9);
   --relief: 0 1px 1px rgb(26 24 21 / 0.05), 0 3px 6px -2px rgb(26 24 21 / 0.06),

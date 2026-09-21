@@ -1,0 +1,206 @@
+/* La liste des consultations : serrée, pour voir une journée entière sans défiler.
+   Le jour se lit dans un bandeau qui ne ressemble à rien d'autre ; les noms des
+   patients, eux, restent en encre sombre. */
+
+.jours {
+  display: grid;
+  gap: var(--espace-4);
+}
+
+.jour {
+  display: grid;
+  gap: var(--espace-2);
+}
+
+/* Le bandeau du jour : petites capitales vertes, un filet jusqu'au bout. Il reste
+   collé en haut quand on défile, pour savoir de quel jour on lit les lignes. */
+.bandeau {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: var(--espace-3);
+  margin: 0;
+  padding: 6px 2px;
+  background: var(--fond);
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-forte);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.relatif {
+  white-space: nowrap;
+}
+
+.dateExacte {
+  font-weight: var(--graisse-moyenne);
+  letter-spacing: 0.04em;
+  color: var(--encre-tres-douce);
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.filet {
+  flex: 1;
+  align-self: center;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  opacity: 0.35;
+}
+
+.nombre {
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-moyenne);
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--encre-tres-douce);
+  white-space: nowrap;
+}
+
+/* Un jour = une carte posée ; les consultations y sont séparées d'un filet, pas
+   d'un creux : c'est ce qui les rend serrées. */
+.liste {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--trait-fort);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--lumiere), var(--relief);
+}
+
+.rangee {
+  display: grid;
+  /* Largeurs figées : chaque ligne est sa propre grille, une colonne `auto` décalerait
+     l'envoi et le statut d'une ligne à l'autre. */
+  grid-template-columns: 44px 26px minmax(0, 1fr) 230px 180px 14px;
+  align-items: center;
+  gap: var(--espace-3);
+  padding: 7px var(--espace-4);
+  border-top: 1px solid var(--trait);
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--transition);
+}
+
+.rangee:first-child {
+  border-top: 0;
+}
+
+.rangee:hover {
+  background: var(--accent-douce);
+}
+
+.rangee:focus-visible {
+  outline: none;
+  box-shadow: inset var(--anneau-focus);
+}
+
+.heure {
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-demi);
+  font-variant-numeric: tabular-nums;
+  color: var(--encre-douce);
+}
+
+/* Le nom, puis aussitôt ce qu'Oris a écrit : le type de document est ce qu'on cherche. */
+.qui {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-3);
+  min-width: 0;
+}
+
+.nom {
+  flex: none;
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--graisse-demi);
+  color: var(--encre);
+}
+
+.prenom {
+  font-weight: var(--graisse-moyenne);
+  color: var(--encre-douce);
+}
+
+.documents {
+  display: flex;
+  gap: 5px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ombre {
+  font-size: var(--texte-xs);
+  font-style: italic;
+  color: var(--encre-tres-douce);
+  white-space: nowrap;
+}
+
+.envoye {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-demi);
+  color: var(--accent);
+}
+
+.envoye svg {
+  flex: none;
+}
+
+.coupe {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rien {
+  font-size: var(--texte-xs);
+  color: var(--encre-tres-douce);
+}
+
+.praticien {
+  display: flex;
+}
+
+.statut {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.chevron {
+  color: var(--trait-fort);
+  transition: color var(--transition), transform var(--transition);
+}
+
+.rangee:hover .chevron {
+  color: var(--accent);
+  transform: translateX(2px);
+}
+
+@media (max-width: 1020px) {
+  .rangee {
+    grid-template-columns: 44px 26px minmax(0, 1fr) auto;
+  }
+
+  .envoye,
+  .rien {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .chevron {
+    display: none;
+  }
+}

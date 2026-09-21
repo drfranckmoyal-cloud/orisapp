@@ -68,6 +68,14 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
   statut, pourquoi il est proposé, les alternatives évoquées et ce qui doit être fait
   avant. Le statut se change là, sur la carte.
 - Valider document par document, puis la consultation.
+- **Une consultation, un document à la fois** (refonte du 21 sept.) : chaque document
+  rédigé a son intercalaire, dans sa couleur (compte rendu vert, plan bleu, opératoire
+  orange). Réécrire, valider, noter un envoi ne touche que le document ouvert.
+- **Noter à qui un document est parti** : le patient, un correspondant ou quelqu'un
+  d'autre, par mail, courrier ou en main propre. Oris n'envoie rien lui-même ; la liste
+  des consultations affiche « Envoyé à Dr Martin ».
+- **Supprimer une consultation**, après confirmation : son, transcription, dossier
+  clinique et documents partent ; le patient et ses pièces jointes restent.
 - **Exporter en PDF** (A4, avec cabinet, praticien, patient, date et mention de
   validation) et **copier pour le dossier** pour coller dans votre logiciel métier. Un
   document non validé part avec la mention « brouillon » écrite dessus.
