@@ -1,5 +1,16 @@
 # Changelog
 
+## « Documents » devient « Envois » ; « Oris apprend » passe dans les Paramètres — 2026-09-22
+- Choix de Franck. **Envois** (site) : trois compteurs colorés et trois volets — à
+  envoyer (validés, jamais partis, bouton Envoyer qui ouvre le formulaire sur place),
+  envoyés (à qui), à valider (lien vers la consultation). L'ancienne adresse
+  `/documents` mène à `/envois`.
+- **Dictionnaire et apprentissage** : rubrique des Paramètres (site et iPhone) — nombre
+  de mots, suggestions d'Oris, corrections retenues ; la page complète s'ouvre depuis là.
+  L'onglet quitte la colonne de gauche.
+- iPhone : filtre **À envoyer** dans Consultations ; page « Dictionnaire et
+  apprentissage » dans Paramètres (lecture).
+
 ## Site : accueil en tableau de bord — 2026-09-22
 - « Bonjour, Dr Moyal » et la date ; recherche de patient à droite.
 - Au centre, le grand bouton rond d'écoute, comme sur l'iPhone : il respire, ses barres

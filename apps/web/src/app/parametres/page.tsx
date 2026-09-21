@@ -69,6 +69,11 @@ const RUBRIQUES: {
         titre: "Rédaction",
         icone: <Icone nom="documents" taille={16} />,
       },
+      {
+        id: "apprentissage",
+        titre: "Dictionnaire et apprentissage",
+        icone: <Icone nom="apprend" taille={16} />,
+      },
     ],
   },
   {
@@ -312,6 +317,7 @@ export default function ParametresPage() {
             <>
               <Profil cabinet={cabinet.data} recharger={rechargerCabinet} />
               <Redaction />
+              <Apprentissage />
               <CabinetEtEnTete
                 cabinet={cabinet.data}
                 recharger={rechargerCabinet}
@@ -553,7 +559,7 @@ function Redaction() {
           </p>
         </div>
         <span className={styles.boutons}>
-          <Link href="/apprend" className={styles.lienDiscret}>
+          <Link href="/apprentissage" className={styles.lienDiscret}>
             Dictionnaire et suggestions
           </Link>
           {mots > 0 && (
@@ -564,6 +570,46 @@ function Redaction() {
         </span>
       </div>
       <RetourLigne retour={retour} />
+    </Rubrique>
+  );
+}
+
+/** Ce qu'Oris retient de vos corrections : dictionnaire, suggestions, corrections
+ *  fréquentes. L'ancien onglet « Oris apprend », rangé ici (22/09/2026). */
+function Apprentissage() {
+  const [glossaire] = useApi<unknown[]>("/glossary");
+  const [suggestions] = useApi<unknown[]>("/me/learning/suggestions");
+  const [corrections] = useApi<unknown[]>("/me/learning/corrections");
+  const n = (x: { state: string; data?: unknown[] }) =>
+    x.state === "ready" && Array.isArray(x.data) ? x.data.length : 0;
+  const mots = n(glossaire as { state: string; data?: unknown[] });
+  const idees = n(suggestions as { state: string; data?: unknown[] });
+  const corrige = n(corrections as { state: string; data?: unknown[] });
+  return (
+    <Rubrique
+      id="apprentissage"
+      icone={<Icone nom="apprend" taille={18} />}
+      titre="Dictionnaire et apprentissage"
+      resume="Ce qu’Oris retient de vos corrections pour mieux vous entendre et mieux écrire — sans jamais ajouter un fait."
+    >
+      <div className={styles.compteursApprentissage}>
+        <span>
+          <strong>{mots}</strong> mot{mots > 1 ? "s" : ""} dans votre
+          dictionnaire
+        </span>
+        <span data-alerte={idees > 0 || undefined}>
+          <strong>{idees}</strong> suggestion{idees > 1 ? "s" : ""} d’Oris
+        </span>
+        <span>
+          <strong>{corrige}</strong> correction{corrige > 1 ? "s" : ""} retenue
+          {corrige > 1 ? "s" : ""}
+        </span>
+      </div>
+      <div className={styles.actions}>
+        <Link href="/apprentissage" className={styles.lienBouton}>
+          Ouvrir le dictionnaire et les suggestions
+        </Link>
+      </div>
     </Rubrique>
   );
 }

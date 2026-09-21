@@ -11,7 +11,7 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
 - Compte rendu de soins à la demande quand un acte a été dit ; suppression d'un
   courrier d'adressage ou d'un compte rendu de soins demandé par erreur.
 - Pièces jointes non photo du dossier patient (PDF, radios) : liste et ouverture.
-- Votre journée (Doctolib), Oris apprend (vocabulaire, préférences).
+- Votre journée (Doctolib) ; ajouter un mot au dictionnaire (l'iPhone le lit seulement).
 - Paramètres : spécialités des correspondants, praticiens du cabinet, export des
   apprentissages (le reste est sur les deux).
 
@@ -22,6 +22,9 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
   la liste Consultations et depuis la consultation).
 
 ## Écarts voulus (imposés par l'appareil)
+
+- Envois : page « Envois » sur le site (envoyer depuis la liste) ; sur l'iPhone, le
+  filtre « À envoyer » des Consultations, l'envoi se faisant depuis la consultation.
 
 - Reconnecter Doctolib / SmileCloud : bouton dans la colonne de gauche du site (il ouvre
   Chrome sur le Mac) ; l'iPhone montre l'état seulement. Autoriser un nouvel appareil :

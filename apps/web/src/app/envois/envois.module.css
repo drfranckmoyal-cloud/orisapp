@@ -1,0 +1,175 @@
+/* Envois : trois compteurs colorés, puis la liste du volet choisi. */
+.compteurs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espace-4);
+  margin-bottom: var(--espace-6);
+}
+
+.compteur {
+  --c-encre: var(--accent);
+  --c-douce: var(--accent-douce);
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  padding: 16px 20px;
+  border-radius: var(--rayon-carte);
+  border: 1px solid var(--trait);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--c-douce), transparent 60%),
+    var(--surface);
+  box-shadow: var(--relief), var(--lumiere);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.compteur:hover {
+  transform: translateY(-2px);
+}
+
+.compteur[aria-pressed="true"] {
+  border-color: var(--c-encre);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-encre) 18%, transparent), var(--relief);
+}
+
+.compteur[data-teinte="orange"] { --c-encre: #b85e10; --c-douce: #fde6cf; }
+.compteur[data-teinte="vert"] { --c-encre: #1d7a52; --c-douce: #dcf0e4; }
+.compteur[data-teinte="ardoise"] { --c-encre: #4a5561; --c-douce: #e6e9ed; }
+
+.compteurChiffre {
+  font-family: var(--police-marque), Georgia, serif;
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--c-encre);
+}
+
+.compteurTitre {
+  margin-top: 6px;
+  font-weight: var(--graisse-forte);
+  color: var(--encre);
+}
+
+.compteurDetail {
+  font-size: var(--texte-sm);
+  color: var(--encre-douce);
+}
+
+.barre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espace-4);
+  margin-bottom: var(--espace-4);
+  flex-wrap: wrap;
+}
+
+.parti {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 var(--espace-4);
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--accent-douce);
+  color: var(--accent);
+  font-weight: var(--graisse-demi);
+}
+
+.liste {
+  display: grid;
+  border-radius: var(--rayon-carte);
+  background: var(--surface);
+  border: 1px solid var(--trait);
+  box-shadow: var(--relief), var(--lumiere);
+  overflow: hidden;
+}
+
+.ligne {
+  border-top: 1px solid var(--trait);
+}
+
+.ligne:first-child {
+  border-top: 0;
+}
+
+.ligne[data-ouvert] {
+  background: var(--surface-2);
+}
+
+.ligneHaut {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+}
+
+.quand {
+  width: 64px;
+  flex: none;
+  white-space: nowrap;
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-demi);
+  color: var(--encre-douce);
+}
+
+.patient {
+  font-weight: var(--graisse-demi);
+  color: var(--encre);
+  text-decoration: none;
+}
+
+.patient:hover {
+  text-decoration: underline;
+}
+
+.fin {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.destinataires {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--texte-sm);
+  color: var(--accent);
+}
+
+.action {
+  font: inherit;
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-demi);
+  color: var(--accent);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.actionForte {
+  font: inherit;
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-forte);
+  color: #fff;
+  padding: 7px 16px;
+  border-radius: 10px;
+  border: 0;
+  cursor: pointer;
+  background: linear-gradient(145deg, var(--accent-vif), var(--accent));
+  box-shadow: 0 4px 10px -4px rgb(14 58 41 / 0.6);
+}
+
+.envoi {
+  padding: 4px 18px 18px;
+}
+
+@media (max-width: 860px) {
+  .compteurs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

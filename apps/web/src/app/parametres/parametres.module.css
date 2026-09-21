@@ -474,3 +474,49 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.compteursApprentissage {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.compteursApprentissage span {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--trait);
+  font-size: var(--texte-sm);
+  color: var(--encre-douce);
+}
+
+.compteursApprentissage strong {
+  font-family: var(--police-marque), Georgia, serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.compteursApprentissage span[data-alerte] strong {
+  color: var(--attention);
+}
+
+.lienBouton {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: var(--rayon-bouton);
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-demi);
+  color: var(--accent);
+  text-decoration: none;
+  background: var(--surface);
+  border: 1px solid var(--trait-fort);
+  box-shadow: 0 1px 2px rgb(26 24 21 / 0.08);
+}
+
+.lienBouton:hover {
+  background: var(--accent-douce);
+}

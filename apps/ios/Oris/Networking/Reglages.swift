@@ -105,3 +105,34 @@ extension APIClient {
 
     func connecteurs() async throws -> EtatConnecteurs { try await get("connecteurs") }
 }
+
+
+struct MotDuDictionnaire: Codable, Equatable, Sendable, Identifiable {
+    let id: String
+    let canonical: String
+    let aliases: [String]
+    let frequency: Int
+}
+
+struct SuggestionOris: Codable, Equatable, Sendable, Identifiable {
+    let key: String
+    let message: String
+    var id: String { key }
+}
+
+struct CorrectionFrequente: Codable, Equatable, Sendable {
+    let eventType: String
+    let detail: String
+    let occurrences: Int
+
+    enum CodingKeys: String, CodingKey {
+        case detail, occurrences
+        case eventType = "event_type"
+    }
+}
+
+extension APIClient {
+    func dictionnaire() async throws -> [MotDuDictionnaire] { try await get("glossary") }
+    func suggestionsOris() async throws -> [SuggestionOris] { try await get("me/learning/suggestions") }
+    func correctionsFrequentes() async throws -> [CorrectionFrequente] { try await get("me/learning/corrections") }
+}

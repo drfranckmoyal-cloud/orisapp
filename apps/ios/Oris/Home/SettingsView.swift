@@ -30,6 +30,9 @@ struct SettingsView: View {
                     ligne("Rédaction", "text.alignleft", Teinte.document(.consultationNote).encre) {
                         RedactionView(client: client)
                     }
+                    ligne("Dictionnaire et apprentissage", "sparkles", Color(hex: 0x403A75)) {
+                        ApprentissageView(client: client)
+                    }
                 }
 
                 Section("Cabinet") {
@@ -562,6 +565,79 @@ private struct ConnecteursView: View {
             Text(v.detail).font(Police.note).foregroundStyle(Teinte.encreDouce)
         }
         .padding(.vertical, 4)
+    }
+}
+
+/// Ce qu'Oris retient de vos corrections — l'ancien onglet « Oris apprend » du site.
+private struct ApprentissageView: View {
+    let client: APIClient
+    @State private var mots: [MotDuDictionnaire] = []
+    @State private var suggestions: [SuggestionOris] = []
+    @State private var corrections: [CorrectionFrequente] = []
+    @State private var message: String?
+
+    private static let libelles = [
+        "tooth_number_correction": "Numéro de dent corrigé",
+        "clinical_fact_added": "Fait ajouté",
+        "clinical_fact_removed": "Fait retiré",
+        "clinical_fact_modified": "Fait modifié",
+        "document_text_edited": "Texte réécrit",
+    ]
+
+    var body: some View {
+        PageReglage(titre: "Dictionnaire et apprentissage", message: $message) {
+            Section {
+                if suggestions.isEmpty {
+                    Text("Rien à proposer : Oris attend plusieurs corrections dans le même sens avant de suggérer une règle.")
+                        .font(Police.note).foregroundStyle(Teinte.encreDouce)
+                }
+                ForEach(suggestions) { s in
+                    Label(s.message, systemImage: "lightbulb").font(Police.interface(14.5, .medium))
+                }
+            } header: {
+                Text("Suggestions d’Oris")
+            }
+            Section {
+                if mots.isEmpty {
+                    Text("Aucun mot pour l’instant.").font(Police.note).foregroundStyle(Teinte.encreDouce)
+                }
+                ForEach(mots) { m in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(m.canonical).font(Police.interface(15, .bold))
+                        if !m.aliases.isEmpty {
+                            Text("entendu : " + m.aliases.joined(separator: ", "))
+                                .font(Police.interface(12.5, .medium)).foregroundStyle(Teinte.encreTresDouce)
+                        }
+                    }
+                }
+            } header: {
+                Text("Votre dictionnaire (\(mots.count))")
+            } footer: {
+                Text("Ces mots aident Oris à vous entendre. Ils n’ajoutent jamais un fait au dossier. On les ajoute sur l’ordinateur.")
+            }
+            Section("Ce que vous corrigez le plus") {
+                if corrections.isEmpty {
+                    Text("Aucune correction enregistrée.").font(Police.note).foregroundStyle(Teinte.encreDouce)
+                }
+                ForEach(Array(corrections.prefix(8).enumerated()), id: \.offset) { _, c in
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(Self.libelles[c.eventType] ?? "Correction").font(Police.interface(14.5, .semibold))
+                            if !c.detail.isEmpty {
+                                Text(c.detail).font(Police.interface(12.5, .medium)).foregroundStyle(Teinte.encreTresDouce)
+                            }
+                        }
+                        Spacer()
+                        Text("× \(c.occurrences)").font(Police.interface(14, .heavy)).foregroundStyle(Teinte.accent)
+                    }
+                }
+            }
+        }
+        .task {
+            mots = (try? await client.dictionnaire()) ?? []
+            suggestions = (try? await client.suggestionsOris()) ?? []
+            corrections = (try? await client.correctionsFrequentes()) ?? []
+        }
     }
 }
 

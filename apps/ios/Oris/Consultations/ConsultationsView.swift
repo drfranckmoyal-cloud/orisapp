@@ -6,6 +6,7 @@ struct ConsultationsView: View {
     enum Filtre: String, CaseIterable, Identifiable {
         case toutes = "Toutes"
         case aRelire = "À relire"
+        case aEnvoyer = "À envoyer"
         case terminees = "Terminées"
         case aReprendre = "À reprendre"
 
@@ -15,6 +16,8 @@ struct ConsultationsView: View {
             switch self {
             case .toutes: true
             case .aRelire: e.status == .review
+            // Un document validé qui n'est jamais parti — la page « Envois » du site.
+            case .aEnvoyer: e.documents.contains { [.validated, .exported].contains($0.status) && ($0.sentTo ?? []).isEmpty }
             case .terminees: [.validated, .exported, .archived].contains(e.status)
             case .aReprendre: [.draft, .recording, .paused, .audioError, .uploadInterrupted,
                                .transcriptionFailed, .generationFailed].contains(e.status)

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useState } from "react";
 
 import {
@@ -162,7 +164,12 @@ export default function ApprentissagePage() {
 
   return (
     <div className="page">
-      <EnTetePage surTitre="Personnalisation" titre="Oris apprend de vous" />
+      <p style={{ margin: "0 0 8px" }}>
+        <Link href="/parametres#apprentissage" className="link-button">
+          ← Paramètres
+        </Link>
+      </p>
+      <EnTetePage surTitre="Paramètres" titre="Dictionnaire et apprentissage" />
 
       <p className="muted" style={{ margin: 0, maxWidth: 720 }}>
         Ce qu’Oris retient change sa façon d’entendre et d’écrire — <strong>jamais</strong> le

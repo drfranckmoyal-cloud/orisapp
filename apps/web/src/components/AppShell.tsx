@@ -29,19 +29,20 @@ const GROUPES: { titre: string; entrees: Entree[] }[] = [
     titre: "Dossiers",
     entrees: [
       { href: "/correspondants", label: "Correspondants", icone: "correspondants", teinte: "prune" },
-      { href: "/documents", label: "Documents", icone: "documents", teinte: "terre" },
+      { href: "/envois", label: "Envois", icone: "envoi", teinte: "terre" },
     ],
   },
   {
     titre: "Oris",
     entrees: [
-      { href: "/apprentissage", label: "Oris apprend", icone: "apprend", teinte: "indigo" },
       { href: "/parametres", label: "Paramètres", icone: "parametres", teinte: "ardoise" },
     ],
   },
 ];
 
 function estActif(pathname: string, href: string): boolean {
+  // « Dictionnaire et apprentissage » est une rubrique des Paramètres.
+  if (href === "/parametres" && pathname.startsWith("/apprentissage")) return true;
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
