@@ -18,6 +18,8 @@ from email.message import EmailMessage
 from typing import Protocol
 from uuid import UUID
 
+import certifi
+
 from oris_api.config import Settings
 
 
@@ -40,7 +42,9 @@ class SmtpMessagerie:
     delai_s: float = 30
 
     def envoyer(self, message: EmailMessage) -> None:
-        contexte = ssl.create_default_context()
+        # Liste de certificats fournie avec Oris : le Python de python.org n'utilise pas
+        # celle du Mac, et la vérification du serveur ne doit jamais être désactivée.
+        contexte = ssl.create_default_context(cafile=certifi.where())
         try:
             with smtplib.SMTP(self.hote, self.port, timeout=self.delai_s) as serveur:
                 serveur.starttls(context=contexte)
