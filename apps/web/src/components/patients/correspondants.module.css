@@ -161,3 +161,31 @@
   font-size: var(--texte-xs);
   color: var(--alerte);
 }
+
+/* « + Créer un correspondant » : en bout de liste, discret mais toujours là. */
+.creer {
+  justify-self: start;
+  margin-top: 2px;
+  border: 1px dashed var(--trait-fort);
+  border-radius: 9px;
+  padding: 6px 10px;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-demi);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.creer:hover {
+  background: var(--accent-douce);
+  border-color: var(--accent);
+}
+
+/* Le formulaire complet du carnet, à l'étroit dans le cadre d'informations : on le
+   laisse respirer. */
+.creation {
+  padding: var(--espace-2) 0;
+}

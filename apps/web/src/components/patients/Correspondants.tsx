@@ -6,6 +6,7 @@ import { Champ } from "@/components/ui";
 import { ApiError, apiRequest, type Correspondant, type Rattachement } from "@/lib/api";
 import { ROLE_CORRESPONDANT, errorMessage } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
+import { Fiche, VIDE, type Brouillon } from "@/app/correspondants/Fiche";
 
 import styles from "./correspondants.module.css";
 
@@ -41,6 +42,9 @@ export function Correspondants({ patientId }: { patientId: string }) {
   const [role, setRole] = useState<Rattachement["role"]>("referred_by");
   const [occupe, setOccupe] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
+  /** Le confrère n'est pas encore dans le carnet : on le crée sans quitter la fiche. */
+  const [creation, setCreation] = useState(false);
+  const [specialites] = useApi<string[]>(creation ? "/correspondents/specialties" : null);
 
   const rattaches = useMemo(() => (liens.state === "ready" ? liens.data : []), [liens]);
   const dejaLa = useMemo(
@@ -66,6 +70,33 @@ export function Correspondants({ patientId }: { patientId: string }) {
         method: "POST",
         body: { correspondent_id: correspondentId, role },
       });
+      setRecherche("");
+      recharger();
+    } catch (error) {
+      setErreur(errorMessage(error instanceof ApiError ? error.code : "UNKNOWN"));
+    } finally {
+      setOccupe(false);
+    }
+  }
+
+  /** Créer la fiche dans le carnet, puis la rattacher avec le rôle choisi.
+   *
+   * Un seul geste : on crée un correspondant depuis une fiche patient précisément parce
+   * qu'il est lié à ce patient. Le renvoyer ensuite chercher dans la liste serait un
+   * aller-retour inutile. */
+  async function creerEtRattacher(brouillon: Brouillon) {
+    setOccupe(true);
+    setErreur(null);
+    try {
+      const fiche = await apiRequest<Correspondant>("/correspondents", {
+        method: "POST",
+        body: brouillon,
+      });
+      await apiRequest(`/patients/${patientId}/correspondents`, {
+        method: "POST",
+        body: { correspondent_id: fiche.id, role },
+      });
+      setCreation(false);
       setRecherche("");
       recharger();
     } catch (error) {
@@ -139,6 +170,17 @@ export function Correspondants({ patientId }: { patientId: string }) {
             onChange={(event) => setRecherche(event.target.value)}
           />
 
+          {creation ? (
+            <div className={styles.creation}>
+              <Fiche
+                depart={{ ...VIDE, last_name: recherche.trim() }}
+                specialites={specialites.state === "ready" ? specialites.data : []}
+                occupe={occupe}
+                onValider={(brouillon) => void creerEtRattacher(brouillon)}
+                onAnnuler={() => setCreation(false)}
+              />
+            </div>
+          ) : (
           <div className={styles.propositions}>
             {carnet.state === "loading" && <span className={styles.aucun}>chargement…</span>}
             {carnet.state === "ready" && proposes.length === 0 && (
@@ -161,12 +203,20 @@ export function Correspondants({ patientId }: { patientId: string }) {
                 </span>
               </button>
             ))}
+            {/* Toujours proposé, et pas seulement quand la recherche est vide : un homonyme
+                dans le carnet n'est pas forcément le bon confrère. */}
+            <button type="button" className={styles.creer} onClick={() => setCreation(true)}>
+              + Créer un correspondant{recherche.trim() ? ` « ${recherche.trim()} »` : ""}
+            </button>
           </div>
+          )}
 
-          <p className={styles.aide}>
-            Le carnet se tient dans <strong>Correspondants</strong>, à gauche. Choisissez d’abord
-            ce que le lien veut dire, puis le confrère.
-          </p>
+          {!creation && (
+            <p className={styles.aide}>
+              Choisissez d’abord ce que le lien veut dire, puis le confrère — ou créez-le s’il
+              n’est pas encore dans le carnet : il y sera ajouté et rattaché d’un seul geste.
+            </p>
+          )}
         </div>
       )}
 
