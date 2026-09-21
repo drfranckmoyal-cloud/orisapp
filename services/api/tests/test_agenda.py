@@ -150,3 +150,62 @@ def test_the_screen_matches_a_patient_oris_already_knows(api: Any, tmp_path: Pat
 def test_without_a_connector_the_screen_says_so_plainly(api: Any) -> None:
     corps = api.get("/journee", params={"jour": JOUR}).json()
     assert (corps["disponible"], corps["source"], corps["rendezvous"]) == (False, "absent", [])
+
+
+def test_the_week_column_counts_the_files_still_missing(api: Any, tmp_path: Path) -> None:
+    """Chaque jour de la colonne dit ce qu'il reste à faire, sans l'ouvrir."""
+    from oris_api.config import get_settings
+    from oris_api.main import app
+
+    api.post("/patients", json={"first_name": "Chloe", "last_name": "Moreau"})
+    deposer(tmp_path, [RDV, {**RDV, "prenom": "Karim", "nom": "Benali"}], jour="2026-09-22")
+    deposer(tmp_path, [], jour="2026-09-23")
+
+    app.dependency_overrides[get_settings] = lambda: reglages(tmp_path)
+    try:
+        semaine = api.get("/journee/semaine", params={"depuis": "2026-09-21", "jours": 3}).json()
+    finally:
+        app.dependency_overrides.pop(get_settings, None)
+
+    lundi, mardi, mercredi = semaine
+    assert (lundi["jour"], lundi["lu"], lundi["patients"]) == ("2026-09-21", False, 0)
+    # Deux patients, dont un seul a déjà son dossier dans Oris.
+    assert (mardi["lu"], mardi["patients"], mardi["a_creer"]) == (True, 2, 1)
+    # Une journée lue et vide n'est pas une journée non lue : la nuance colore la colonne.
+    assert (mercredi["lu"], mercredi["patients"]) == (True, 0)
+
+
+def test_seven_silent_days_do_not_freeze_the_column(tmp_path: Path) -> None:
+    """Le serveur muet n'est interrogé qu'une fois : sinon sept attentes s'enchaînent."""
+    appels = 0
+
+    def compter(*_: Any, **__: Any) -> httpx.Response:
+        nonlocal appels
+        appels += 1
+        raise httpx.ConnectError("serveur éteint")
+
+    semaine = []
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(httpx, "get", compter)
+        semaine = agenda.lire_semaine(reglages(tmp_path), "2026-09-21", 7)
+
+    assert appels == 1
+    assert len(semaine) == 7
+
+
+def test_a_day_the_server_answers_for_but_nobody_read_is_not_an_empty_day(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """« Jeudi n'a pas été relevé » et « jeudi n'a aucun patient » ne sont pas pareils."""
+
+    def jamais_lue(url: str, **_: Any) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={"jour": "2026-09-24", "agenda": "", "lu_le": None, "rendezvous": []},
+            request=httpx.Request("GET", url),
+        )
+
+    monkeypatch.setattr(httpx, "get", jamais_lue)
+    journee = agenda.lire(reglages(tmp_path), "2026-09-24")
+    assert journee.source == "serveur"
+    assert journee.disponible is False

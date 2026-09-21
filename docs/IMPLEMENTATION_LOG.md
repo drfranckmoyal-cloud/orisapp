@@ -906,3 +906,28 @@ l'hébergement de santé n'est pas en place — l'écran le dit en toutes lettre
 - `useApi` gardait les données de la ressource précédente pendant le chargement de la
   suivante : les rendez-vous de la veille s'affichaient une seconde sous la date du
   lendemain. Le résultat retient désormais de quelle ressource il vient.
+
+## L'écran reprend la mise en page de Dental Lens (21 septembre 2026)
+
+Demande de Franck : la même mise en page que « Préparer la journée » de Dental Lens —
+semaine navigable à gauche, patients à droite, et seule l'action qui attend un geste est
+un bouton. C'est la mise en page que `docs/JOURNEE_DOCTOLIB.md` désignait déjà comme
+référence. Une seule différence de fond : « Créer le dossier » crée le dossier **dans
+Oris**, là où Dental Lens créait le dossier SmileCloud.
+
+- `agenda.lire_semaine()` et `GET /journee/semaine?depuis=&jours=` — l'état de chaque
+  jour : lu ou non, combien de patients, combien de dossiers manquants dans Oris. Le
+  serveur Dental Lens n'est interrogé qu'une fois : muet au premier jour, il le serait
+  aux six suivants, et sept attentes de 1,5 s figeraient la colonne dix secondes.
+- `app/journee/dates.ts` — lundi de la semaine, décalage de jours, « Aujourd'hui /
+  Demain / Hier », libellé « 28 sept. – 4 oct. ». Tout en heure locale, jamais
+  `toISOString`. Cinq tests.
+- `app/journee/Semaine.tsx` — la colonne, avec sa pastille de couleur doublée d'un mot.
+- « Créer N dossiers » en haut, qui saute les rendez-vous annulés, et reprend ligne par
+  ligne ce qui a échoué sans abandonner le reste.
+
+### Une journée « lue » est une journée relevée
+
+Dental Lens répond pour n'importe quelle date, avec une liste vide si personne n'a encore
+ouvert cet agenda. Se fier à sa réponse faisait passer un jeudi jamais relevé pour un
+jeudi sans patient. `Journee.disponible` exige maintenant l'heure de lecture.

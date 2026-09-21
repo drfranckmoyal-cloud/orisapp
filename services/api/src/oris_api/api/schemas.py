@@ -365,3 +365,12 @@ class JourneeOut(BaseModel):
     disponible: bool
     lu_le: str | None = None
     rendezvous: list[RendezVousOut] = []
+
+
+class JourOut(BaseModel):
+    """Un jour dans la colonne de gauche : assez pour le colorer, pas plus."""
+
+    jour: str
+    lu: bool
+    patients: int
+    a_creer: int

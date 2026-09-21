@@ -24,7 +24,7 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Literal
 
@@ -66,7 +66,13 @@ class Journee:
 
     @property
     def disponible(self) -> bool:
-        return self.source != "absent"
+        """Lue veut dire **relevée dans Doctolib**, pas « le serveur a répondu ».
+
+        Dental Lens répond pour n'importe quelle date, avec une liste vide si personne
+        n'a encore ouvert cet agenda. Sans l'heure de lecture, un jeudi jamais relevé
+        s'afficherait comme un jeudi sans patient : deux choses très différentes.
+        """
+        return self.source != "absent" and self.lu_le is not None
 
 
 def _texte(valeur: object) -> str:
@@ -138,6 +144,10 @@ def _par_le_fichier(registre: Path, jour: str) -> Journee | None:
         return None
 
 
+def _vide(jour: str) -> Journee:
+    return Journee(jour=jour, agenda="", source="absent", lu_le=None, rendezvous=())
+
+
 def lire(settings: Settings, jour: str | None = None) -> Journee:
     """La journée demandée, ou une journée vide si personne ne l'a déposée.
 
@@ -145,13 +155,39 @@ def lire(settings: Settings, jour: str | None = None) -> Journee:
     encore lu cet agenda ». L'écran le dit, il n'invente pas de rendez-vous.
     """
     jour = jour or date.today().isoformat()
-    vide = Journee(jour=jour, agenda="", source="absent", lu_le=None, rendezvous=())
     if settings.agenda_provider != "dental_lens":
-        return vide
+        return _vide(jour)
     lue = _par_le_serveur(settings.dental_lens_url, jour) or _par_le_fichier(
         settings.dental_lens_registre, jour
     )
     if lue is None:
-        return vide
+        return _vide(jour)
     log.info("Journée %s lue via %s : %d rendez-vous", jour, lue.source, len(lue.rendezvous))
     return lue
+
+
+def lire_semaine(settings: Settings, depuis: str, jours: int = 7) -> list[Journee]:
+    """Plusieurs jours d'affilée, pour la colonne de gauche.
+
+    Le serveur n'est interrogé qu'une fois : s'il ne répond pas au premier jour, il ne
+    répondra pas davantage aux six suivants, et sept attentes de suite feraient un écran
+    figé pendant dix secondes. Dès le premier échec, on lit les fichiers.
+    """
+    try:
+        premier = date.fromisoformat(depuis)
+    except ValueError:
+        premier = date.today()
+    jours = max(1, min(jours, 31))
+    if settings.agenda_provider != "dental_lens":
+        return [_vide((premier + timedelta(days=i)).isoformat()) for i in range(jours)]
+
+    semaine: list[Journee] = []
+    serveur_repond = True
+    for i in range(jours):
+        jour = (premier + timedelta(days=i)).isoformat()
+        lue = _par_le_serveur(settings.dental_lens_url, jour) if serveur_repond else None
+        if lue is None:
+            serveur_repond = False
+            lue = _par_le_fichier(settings.dental_lens_registre, jour)
+        semaine.append(lue or _vide(jour))
+    return semaine

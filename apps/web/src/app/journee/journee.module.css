@@ -1,140 +1,401 @@
-/* Votre journée : une ligne par rendez-vous, lisible d'un coup d'œil entre deux
-   patients. L'heure ancre la ligne à gauche, le geste attend à droite. */
+/* Votre journée — même mise en page que « Préparer la journée » de Dental Lens :
+   la semaine navigable à gauche, les patients à droite. Seule l'action qui attend
+   un geste est un bouton ; le reste est une mention discrète, pour que l'œil aille
+   droit aux patients dont il faut s'occuper. */
 
-.rdvs {
+.plan {
   display: grid;
+  grid-template-columns: 252px minmax(0, 1fr);
+  gap: var(--espace-4);
+  align-items: start;
 }
 
-.rdv {
-  display: grid;
-  grid-template-columns: 62px minmax(0, 1fr) auto auto;
+/* ---- La semaine, à gauche ---------------------------------------------------- */
+
+.semaine {
+  border: 1px solid var(--trait);
+  border-radius: var(--rayon-carte);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--relief);
+}
+
+.navigation {
+  display: flex;
   align-items: center;
-  gap: var(--espace-4);
-  padding: 9px var(--espace-3);
-  border-top: 1px solid var(--trait);
+  gap: var(--espace-1);
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--trait);
+}
+
+.navigation button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--encre-tres-douce);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.navigation button:hover {
+  background: var(--surface-2);
+  color: var(--encre);
+}
+
+.periode {
+  flex: 1;
+  text-align: center;
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-demi);
+}
+
+.retour {
+  display: flex;
+  justify-content: center;
+  padding: var(--espace-2) var(--espace-3) 0;
+}
+
+.retour button {
+  border: 1px solid var(--trait-fort);
+  border-radius: 8px;
+  padding: 4px 11px;
+  background: transparent;
+  color: var(--accent);
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-demi);
+  cursor: pointer;
   transition: background var(--transition);
 }
 
-.rdv:first-child {
-  border-top: 0;
+.retour button:hover {
+  background: var(--surface-2);
 }
 
-.rdv:hover {
+.jour {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espace-2);
+  width: 100%;
+  text-align: left;
+  padding: 9px 13px;
+  border: 0;
+  border-left: 3px solid transparent;
+  background: transparent;
+  color: var(--encre);
+  font: inherit;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.jour:hover {
+  background: var(--surface-2);
+}
+
+.jourChoisi {
+  background: var(--accent-douce);
+  border-left-color: var(--accent);
+}
+
+.jourChoisi:hover {
+  background: var(--accent-douce);
+}
+
+.quand {
+  flex: 1;
+  min-width: 0;
+}
+
+.titreJour {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-demi);
+}
+
+.num {
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-moyenne);
+  color: var(--encre-tres-douce);
+  font-variant-numeric: tabular-nums;
+}
+
+.etatJour {
+  display: block;
+  margin-top: 1px;
+  font-size: 11px;
+  color: var(--encre-tres-douce);
+}
+
+.compteJour {
+  flex: none;
+  min-width: 16px;
+  text-align: right;
+  font-size: var(--texte-md);
+  font-weight: var(--graisse-demi);
+  color: var(--encre-tres-douce);
+  font-variant-numeric: tabular-nums;
+}
+
+/* La pastille ne parle jamais seule : elle double le mot posé juste à côté. */
+.pastilleJour {
+  width: 7px;
+  height: 7px;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: var(--trait-fort);
+  flex: none;
+}
+
+.jourPret .pastilleJour { background: var(--valide); }
+.jourPret .etatJour,
+.jourPret .compteJour { color: var(--valide); }
+
+.jourACreer .pastilleJour { background: var(--attention); }
+.jourACreer .etatJour,
+.jourACreer .compteJour { color: var(--attention-vif); }
+
+.jourNonLu { opacity: 0.6; }
+.jourVide .compteJour { opacity: 0.45; }
+
+.jourCeJour .titreJour { color: var(--accent); }
+.jourWeekend .titreJour > span:first-child { color: var(--encre-tres-douce); }
+
+.autre {
+  padding: var(--espace-2) 13px var(--espace-3);
+  border-top: 1px solid var(--trait);
+}
+
+.autre input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--trait-fort);
+  border-radius: 9px;
+  background: var(--fond);
+  color: var(--encre);
+  font: inherit;
+  font-size: var(--texte-xs);
+}
+
+/* ---- Le jour choisi, à droite ------------------------------------------------- */
+
+.journee {
+  border: 1px solid var(--trait);
+  border-radius: var(--rayon-carte);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--relief);
+}
+
+.haut {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-3);
+  flex-wrap: wrap;
+  padding: var(--espace-4) var(--espace-6);
+  border-bottom: 1px solid var(--trait);
+}
+
+.haut h2 {
+  margin: 0;
+  font-size: var(--texte-xl);
+  font-weight: var(--graisse-forte);
+  letter-spacing: -0.01em;
+}
+
+.compte {
+  font-size: var(--texte-sm);
+  color: var(--encre-tres-douce);
+}
+
+.actions {
+  margin-left: auto;
+  display: flex;
+  gap: var(--espace-2);
+  flex-wrap: wrap;
+}
+
+.rang {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr) minmax(0, 1fr) 212px;
+  gap: var(--espace-3);
+  align-items: center;
+  padding: 10px var(--espace-6);
+  border-bottom: 1px solid var(--trait);
+  transition: background var(--transition);
+}
+
+.rang:last-of-type {
+  border-bottom: 0;
+}
+
+.rang:hover {
   background: #fbf8f3;
-}
-
-/* Un rendez-vous annulé ou manqué reste visible — la journée doit être fidèle —
-   mais il ne réclame plus rien : il s'efface. */
-.rdvPasse {
-  opacity: 0.55;
 }
 
 .heure {
   font-variant-numeric: tabular-nums;
   font-weight: var(--graisse-forte);
-  font-size: var(--texte-md);
   color: var(--accent);
-}
-
-.qui {
-  display: grid;
-  gap: 1px;
-  min-width: 0;
 }
 
 .nom {
   font-weight: var(--graisse-forte);
-  letter-spacing: -0.005em;
-}
-
-.prenom {
-  font-weight: var(--graisse-moyenne);
-  color: var(--encre-douce);
-}
-
-.motif {
-  font-size: var(--texte-xs);
-  color: var(--encre-tres-douce);
-  font-weight: var(--graisse-moyenne);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.etats {
+.motif {
   display: flex;
   align-items: center;
-  gap: var(--espace-2);
-  flex: none;
-}
-
-.gestes {
-  display: flex;
-  align-items: center;
-  gap: var(--espace-3);
-  justify-content: flex-end;
-  flex: none;
-  min-width: 190px;
-}
-
-/* Le dossier se consulte, l'écoute se commence : le second geste est le plus gros. */
-.lienFiche {
-  font-size: var(--texte-xs);
+  gap: 7px;
+  min-width: 0;
+  font-size: var(--texte-sm);
   color: var(--encre-tres-douce);
+}
+
+.motif > :first-child,
+.motif {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statut {
+  font-style: italic;
+}
+
+/* Le dossier est déjà là : la ligne ne réclame plus rien, elle s'efface. */
+.rangFait .nom {
+  font-weight: var(--graisse-demi);
+  color: var(--encre-douce);
+}
+
+.rangFait .heure {
+  opacity: 0.7;
+}
+
+.rangAnnule {
+  opacity: 0.55;
+}
+
+/* Voyant SmileCloud : l'information vient de Dental Lens, elle reste en retrait. */
+.voyant {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--trait-fort);
+  flex: none;
+}
+
+.voyantOk { background: var(--valide); }
+.voyantManque { background: var(--attention); }
+
+.agir {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--espace-3);
+}
+
+.creerLigne {
+  width: 100%;
+  padding: 7px 13px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--encre-inverse);
+  font: inherit;
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-demi);
+  cursor: pointer;
+  box-shadow: var(--relief);
+  transition: background var(--transition), transform var(--transition);
+}
+
+.creerLigne:hover:not(:disabled) {
+  background: var(--accent-fonce);
+  transform: translateY(-1px);
+}
+
+.creerLigne:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.marqueOk {
+  font-size: var(--texte-sm);
+  color: var(--valide);
   text-decoration: none;
   white-space: nowrap;
-  transition: color var(--transition);
 }
 
-.lienFiche:hover {
-  color: var(--encre-douce);
+.marqueOk:hover {
   text-decoration: underline;
 }
 
 .commencer {
   display: inline-flex;
   align-items: center;
-  padding: 7px 15px;
-  border-radius: var(--rayon-bouton);
-  background: var(--accent);
-  color: var(--encre-inverse);
+  padding: 6px 13px;
+  border: 1px solid var(--trait-fort);
+  border-radius: 9px;
+  color: var(--accent);
   font-size: var(--texte-sm);
   font-weight: var(--graisse-demi);
   text-decoration: none;
   white-space: nowrap;
-  box-shadow: var(--relief);
-  transition: background var(--transition), transform var(--transition);
+  transition: background var(--transition), color var(--transition);
 }
 
 .commencer:hover {
-  background: var(--accent-fonce);
-  transform: translateY(-1px);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--encre-inverse);
 }
 
-.compte {
-  font-size: var(--texte-xs);
-  color: var(--encre-tres-douce);
-  font-weight: var(--graisse-moyenne);
+.creux {
+  padding: var(--espace-8) var(--espace-6);
+}
+
+.chargement {
+  padding: var(--espace-4) var(--espace-6);
 }
 
 /* D'où vient cette journée : jamais caché, jamais au milieu du chemin. */
 .provenance {
   margin: 0;
+  padding: var(--espace-3) var(--espace-6);
+  border-top: 1px solid var(--trait);
   font-size: 10.5px;
   font-style: italic;
   color: var(--trait-fort);
 }
 
-@media (max-width: 900px) {
-  .rdv {
-    grid-template-columns: 54px minmax(0, 1fr);
-    row-gap: var(--espace-2);
+@media (max-width: 1080px) {
+  .plan {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .etats,
-  .gestes {
+  .rang {
+    grid-template-columns: 56px minmax(0, 1fr);
+    row-gap: var(--espace-2);
+    padding: 10px var(--espace-4);
+  }
+
+  .motif,
+  .agir {
     grid-column: 2;
     justify-content: flex-start;
-    min-width: 0;
+  }
+
+  .creerLigne {
+    width: auto;
   }
 }

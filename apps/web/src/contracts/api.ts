@@ -180,6 +180,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/journee/semaine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Semaine
+         * @description L'état de chaque jour de la semaine : combien de patients, combien de dossiers
+         *     manquants. De quoi passer d'un jour à l'autre sans les ouvrir un par un.
+         */
+        get: operations["read_semaine_journee_semaine_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters": {
         parameters: {
             query?: never;
@@ -1618,6 +1639,20 @@ export interface components {
             environment: "local" | "test" | "staging" | "production";
             providers: components["schemas"]["ProviderStatus"];
         };
+        /**
+         * JourOut
+         * @description Un jour dans la colonne de gauche : assez pour le colorer, pas plus.
+         */
+        JourOut: {
+            /** Jour */
+            jour: string;
+            /** Lu */
+            lu: boolean;
+            /** Patients */
+            patients: number;
+            /** A Creer */
+            a_creer: number;
+        };
         /** JourneeOut */
         JourneeOut: {
             /** Jour */
@@ -2680,6 +2715,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["JourneeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_semaine_journee_semaine_get: {
+        parameters: {
+            query: {
+                depuis: string;
+                jours?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JourOut"][];
                 };
             };
             /** @description Validation Error */

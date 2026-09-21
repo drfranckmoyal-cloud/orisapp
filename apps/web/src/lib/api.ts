@@ -203,3 +203,4 @@ export type Cabinet = Schemas["CabinetOut"];
 /** L'agenda du jour, repris de Dental Lens (écran « Votre journée »). */
 export type Journee = Schemas["JourneeOut"];
 export type RendezVous = Schemas["RendezVousOut"];
+export type Jour = Schemas["JourOut"];

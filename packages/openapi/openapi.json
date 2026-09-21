@@ -528,6 +528,63 @@
         }
       }
     },
+    "/journee/semaine": {
+      "get": {
+        "tags": [
+          "journee"
+        ],
+        "summary": "Read Semaine",
+        "description": "L'état de chaque jour de la semaine : combien de patients, combien de dossiers\nmanquants. De quoi passer d'un jour à l'autre sans les ouvrir un par un.",
+        "operationId": "read_semaine_journee_semaine_get",
+        "parameters": [
+          {
+            "name": "depuis",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Depuis"
+            }
+          },
+          {
+            "name": "jours",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 7,
+              "title": "Jours"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/JourOut"
+                  },
+                  "title": "Response Read Semaine Journee Semaine Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters": {
       "get": {
         "tags": [
@@ -4413,6 +4470,35 @@
           "providers"
         ],
         "title": "HealthResponse"
+      },
+      "JourOut": {
+        "properties": {
+          "jour": {
+            "type": "string",
+            "title": "Jour"
+          },
+          "lu": {
+            "type": "boolean",
+            "title": "Lu"
+          },
+          "patients": {
+            "type": "integer",
+            "title": "Patients"
+          },
+          "a_creer": {
+            "type": "integer",
+            "title": "A Creer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "jour",
+          "lu",
+          "patients",
+          "a_creer"
+        ],
+        "title": "JourOut",
+        "description": "Un jour dans la colonne de gauche : assez pour le colorer, pas plus."
       },
       "JourneeOut": {
         "properties": {
