@@ -29,6 +29,8 @@ const TRACES = {
     </>
   ),
   chevron: <path d="M4 10.5 8 6.5l4 4" />,
+  /** Chevron couché : « entrer dans », au bout d'une ligne cliquable. */
+  suivant: <path d="m7.6 4.8 5.2 5.2-5.2 5.2" />,
   import: (
     <>
       <path d="M10 13V3M6.2 6.8 10 3l3.8 3.8" />

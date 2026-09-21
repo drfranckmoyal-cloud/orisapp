@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 
 import { Bouton, EnTetePage, EtatVide, Squelette } from "@/components/ui";
+import { CommencerConsultation } from "@/components/patients/CommencerConsultation";
 import { ApiError, apiRequest, type Journee, type Jour, type RendezVous } from "@/lib/api";
 import { errorMessage } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
@@ -228,12 +229,11 @@ export default function JourneePage() {
                         ✓ dossier existant
                       </Link>
                       {!annule && (
-                        <Link
-                          href={`/consultations/nouvelle?patient=${rdv.patient_id}`}
-                          className={styles.commencer}
-                        >
-                          Commencer
-                        </Link>
+                        <CommencerConsultation
+                          patientId={rdv.patient_id}
+                          variante="ligne"
+                          libelle="Commencer"
+                        />
                       )}
                     </>
                   ) : (

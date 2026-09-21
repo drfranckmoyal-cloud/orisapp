@@ -959,3 +959,21 @@ Disparaissent : `agenda_provider`, `dental_lens_url`, `dental_lens_registre`,
 Le voyant SmileCloud des lignes venait du rapprochement fait par Dental Lens. L'extension
 ne livre que ce qu'elle lit dans Doctolib : le voyant n'a plus de source et a été retiré
 des lignes. Le voyant SmileCloud de la fiche patient, lui, est indépendant et reste.
+
+## Patients : une liste vivante, et un bouton qui écoute (21 septembre 2026)
+
+- **La liste des patients** n'est plus un tableau à filets. Chaque dossier est une carte
+  posée que le survol soulève, avec les initiales du patient, son nom, son âge et sa date
+  de naissance. Les initiales servent de repère : on reconnaît quelqu'un, on ne fait pas
+  que le trouver. Ce qui manque est dit en italique plutôt que tu.
+- **« Nouvelle consultation »** porte le symbole d'Oris, dont les barres deviennent un
+  niveau sonore au survol : le bouton dit ce qu'il va faire. Surtout, il **démarre la
+  consultation** au lieu d'ouvrir l'écran de création, où il fallait rechoisir le patient
+  qu'on venait justement d'ouvrir. La consultation se crée à la volée et l'écoute s'ouvre.
+  L'information du patient (§65) reste demandée sur l'écran d'écoute : le raccourci porte
+  sur la navigation, jamais sur le consentement.
+- Le bouton « Commencer » de « Votre journée » est **le même composant** : même geste,
+  même vert, posé et non surélevé pour que onze boutons côte à côte ne fassent pas un mur.
+- **Les onglets** (Historique / Pièces jointes, et partout ailleurs) étaient trop discrets
+  pour qu'on sache qu'on pouvait changer de vue. Rail creusé et bordé, onglet choisi
+  surélevé et écrit dans le vert de l'action, texte plus grand.

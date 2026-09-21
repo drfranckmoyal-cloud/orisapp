@@ -2,20 +2,63 @@
 
 import { useMemo, useState } from "react";
 
-import {
-  Bouton,
-  Carte,
-  Champ,
-  EnTetePage,
-  EtatVide,
-  Ligne,
-  Lignes,
-  Pastille,
-  Squelette,
-} from "@/components/ui";
+import Link from "next/link";
+
+import { Bouton, Carte, Champ, EnTetePage, EtatVide, Pastille, Squelette } from "@/components/ui";
+import { Icone } from "@/components/Icones";
 import { ApiError, apiRequest, type Patient } from "@/lib/api";
-import { errorMessage, formatDate, nomPatient } from "@/lib/labels";
+import { errorMessage, formatDate } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
+
+import styles from "./patients.module.css";
+
+function initiales(patient: Patient): string {
+  return `${patient.first_name.trim()[0] ?? ""}${patient.last_name.trim()[0] ?? ""}`.toLocaleUpperCase(
+    "fr-FR",
+  );
+}
+
+function age(naissance: string): number | null {
+  const jour = new Date(naissance);
+  if (Number.isNaN(jour.getTime())) return null;
+  const maintenant = new Date();
+  let ans = maintenant.getFullYear() - jour.getFullYear();
+  const mois = maintenant.getMonth() - jour.getMonth();
+  if (mois < 0 || (mois === 0 && maintenant.getDate() < jour.getDate())) ans -= 1;
+  return ans;
+}
+
+/** Un dossier dans la liste : les initiales, le nom, et ce qui manque encore. */
+function Dossier({ patient }: { patient: Patient }) {
+  const ans = patient.birth_date ? age(patient.birth_date) : null;
+  return (
+    <Link href={`/patients/${patient.id}`} className={styles.dossier}>
+      <span className={styles.jeton} aria-hidden="true">
+        {initiales(patient)}
+      </span>
+      <span className={styles.qui}>
+        <span className={styles.nom}>
+          {patient.last_name.toLocaleUpperCase("fr-FR")}{" "}
+          <span className={styles.prenom}>{patient.first_name}</span>
+          {ans !== null && <span className={styles.prenom}> ({ans} ans)</span>}
+        </span>
+        <span className={styles.dessous}>
+          {patient.birth_date ? (
+            `né(e) le ${formatDate(patient.birth_date)}`
+          ) : (
+            <span className={styles.manque}>date de naissance non renseignée</span>
+          )}
+        </span>
+      </span>
+      <span className={styles.marques}>
+        {patient.external_id && <Pastille>{patient.external_id}</Pastille>}
+      </span>
+      <span className={styles.chevron} aria-hidden="true">
+        <Icone nom="suivant" taille={16} />
+      </span>
+    </Link>
+  );
+}
 
 function sansAccents(texte: string): string {
   return texte
@@ -136,21 +179,11 @@ export default function PatientsPage() {
           </EtatVide>
         )}
         {trouves.length > 0 && (
-          <Lignes>
+          <div className={styles.liste}>
             {trouves.map((patient) => (
-              <Ligne
-                key={patient.id}
-                href={`/patients/${patient.id}`}
-                titre={nomPatient(patient)}
-                detail={
-                  patient.birth_date
-                    ? `né(e) le ${formatDate(patient.birth_date)}`
-                    : "date de naissance non renseignée"
-                }
-                fin={patient.external_id ? <Pastille>{patient.external_id}</Pastille> : undefined}
-              />
+              <Dossier key={patient.id} patient={patient} />
             ))}
-          </Lignes>
+          </div>
         )}
       </Carte>
     </div>

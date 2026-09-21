@@ -303,40 +303,52 @@
 }
 
 /* --- Onglets ------------------------------------------------------------------- */
+/* Des onglets se voient, sinon on ne sait pas qu'on peut changer de vue. Le rail est
+   creusé, l'onglet choisi est une surface posée dessus : le relief fait le travail que
+   la couleur seule ne faisait pas. */
 .onglets {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
   padding: 5px;
   background: var(--surface-douce);
+  border: 1px solid var(--trait-fort);
   border-radius: 15px;
   width: fit-content;
   max-width: 100%;
-  box-shadow: inset 0 1px 3px rgb(26 24 21 / 0.09);
+  box-shadow: inset 0 2px 5px rgb(26 24 21 / 0.11);
 }
 
 .onglet {
   font: inherit;
-  font-weight: var(--graisse-moyenne);
-  font-size: var(--texte-sm);
-  border: none;
+  font-weight: var(--graisse-demi);
+  font-size: var(--texte-md);
+  border: 1px solid transparent;
   background: transparent;
   color: var(--encre-douce);
-  padding: 7px 14px;
-  border-radius: 9px;
+  padding: 8px 20px;
+  border-radius: 10px;
   cursor: pointer;
   white-space: nowrap;
-  transition: background var(--transition), color var(--transition);
+  transition: background var(--transition), color var(--transition),
+    box-shadow var(--transition);
 }
 
 .onglet:hover {
   color: var(--encre);
+  background: rgb(255 255 255 / 0.55);
 }
 
+/* L'onglet choisi porte la couleur de l'action : on voit où l'on est d'un coup d'œil. */
 .onglet[aria-selected="true"] {
   background: var(--surface);
-  color: var(--encre);
-  box-shadow: var(--ombre-posee);
+  border-color: var(--trait);
+  color: var(--accent);
+  box-shadow: var(--relief), var(--lumiere);
+}
+
+.onglet[aria-selected="true"]:hover {
+  background: var(--surface);
 }
 
 .onglet:focus-visible {

@@ -8,13 +8,13 @@ import {
   Carte,
   EnTetePage,
   EtatVide,
-  LienBouton,
   Onglets,
   Pastille,
   Squelette,
 } from "@/components/ui";
 import { Icone } from "@/components/Icones";
 import { JetonPraticien } from "@/components/JetonPraticien";
+import { CommencerConsultation } from "@/components/patients/CommencerConsultation";
 import { NoteDictee } from "@/components/patients/NoteDictee";
 import { PiecesJointes } from "@/components/patients/PiecesJointes";
 import { apiRequest, type ClientConfig, type Encounter, type Patient } from "@/lib/api";
@@ -104,11 +104,7 @@ export default function PatientPage() {
             "Chargement…"
           )
         }
-        action={
-          <LienBouton href={`/consultations/nouvelle?patient=${id}`}>
-            Nouvelle consultation
-          </LienBouton>
-        }
+        action={<CommencerConsultation patientId={id} />}
       />
 
       <Carte titre="Informations" bords className={styles.carteInfos}>

@@ -1,0 +1,109 @@
+/* La liste des patients. Un dossier n'est pas une ligne de tableau : chacun est une
+   carte posée, avec ses initiales, que le survol soulève. On y lit un nom, un âge et
+   ce qui manque encore — de quoi reconnaître quelqu'un, pas seulement le trouver. */
+
+.liste {
+  display: grid;
+  gap: var(--espace-2);
+}
+
+.dossier {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--espace-4);
+  padding: 10px var(--espace-4);
+  border: 1px solid var(--trait);
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  box-shadow: var(--relief), var(--lumiere);
+  text-decoration: none;
+  color: inherit;
+  transition: transform var(--transition), box-shadow var(--transition),
+    border-color var(--transition);
+}
+
+.dossier:hover {
+  transform: translateY(-1px);
+  border-color: var(--trait-fort);
+  box-shadow: var(--relief-haut), var(--lumiere);
+}
+
+.dossier:focus-visible {
+  outline: none;
+  box-shadow: var(--anneau-focus), var(--relief);
+}
+
+/* Les initiales : un repère qui se retient mieux qu'une ligne de texte de plus. */
+.jeton {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent-douce);
+  border: 1px solid var(--trait);
+  color: var(--accent);
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-forte);
+  letter-spacing: 0.02em;
+}
+
+.qui {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.nom {
+  font-weight: var(--graisse-demi);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prenom {
+  font-weight: var(--graisse-moyenne);
+  color: var(--encre-douce);
+}
+
+.dessous {
+  font-size: var(--texte-xs);
+  color: var(--encre-tres-douce);
+  font-weight: var(--graisse-moyenne);
+}
+
+.manque {
+  font-style: italic;
+}
+
+.marques {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-2);
+  flex: none;
+}
+
+.chevron {
+  flex: none;
+  color: var(--trait-fort);
+  display: grid;
+  place-items: center;
+  transition: color var(--transition), transform var(--transition);
+}
+
+.dossier:hover .chevron {
+  color: var(--accent);
+  transform: translateX(2px);
+}
+
+@media (max-width: 760px) {
+  .dossier {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .chevron {
+    display: none;
+  }
+}
