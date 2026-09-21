@@ -865,3 +865,38 @@
   background: var(--etape-1);
   color: #fff;
 }
+
+.supprimerPhoto:hover {
+  background: var(--alerte-douce) !important;
+  color: var(--alerte) !important;
+}
+
+.confirmerSuppression {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--alerte-douce);
+  font-size: var(--texte-xs);
+  color: var(--alerte);
+}
+
+.confirmerSuppression div {
+  display: flex;
+  gap: 6px;
+}
+
+.confirmerSuppression button {
+  padding: 4px 10px;
+  border: 1px solid var(--trait-fort);
+  border-radius: 7px;
+  background: var(--surface);
+  font: inherit;
+  cursor: pointer;
+}
+
+.confirmerSuppression .supprimerFort {
+  border-color: var(--alerte);
+  background: var(--alerte);
+  color: #fff;
+}

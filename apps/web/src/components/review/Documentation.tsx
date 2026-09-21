@@ -2,6 +2,7 @@
 
 import { type DragEvent, useRef, useState } from "react";
 
+import { Icone } from "@/components/Icones";
 import { Bouton } from "@/components/ui";
 import {
   API_BASE_URL,
@@ -68,6 +69,8 @@ export function Documentation({
   const [retouche, setRetouche] = useState<Retouche | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [travail, setTravail] = useState(false);
+  // La photo dont on confirme la suppression (déposée par erreur).
+  const [aSupprimer, setASupprimer] = useState<string | null>(null);
   const [survol, setSurvol] = useState(false);
   const [brouillons, setBrouillons] = useState<Record<string, string>>({});
   const champ = useRef<HTMLInputElement>(null);
@@ -208,6 +211,28 @@ export function Documentation({
     }
   }
 
+  /** Retire la photo du document, puis la supprime des pièces jointes du patient. */
+  async function supprimer(id: string) {
+    setASupprimer(null);
+    setErreur(null);
+    try {
+      await poser(actuelles().filter((f) => f.attachment_id !== id));
+      const reponse = await fetch(
+        `${API_BASE_URL}/patients/attachments/${id}`,
+        {
+          method: "DELETE",
+        },
+      );
+      if (!reponse.ok)
+        throw new ApiError(reponse.status, `HTTP_${reponse.status}`);
+      rechargerPieces();
+    } catch (caught) {
+      setErreur(
+        errorMessage(caught instanceof ApiError ? caught.code : "UNKNOWN"),
+      );
+    }
+  }
+
   function deplacer(index: number, pas: number) {
     const liste = actuelles();
     const cible = index + pas;
@@ -322,6 +347,7 @@ export function Documentation({
                 </button>
                 <button
                   type="button"
+                  title="Retirer du document (la photo reste dans les pièces jointes)"
                   aria-label="Retirer du document"
                   onClick={() =>
                     void poser(
@@ -333,7 +359,36 @@ export function Documentation({
                 >
                   ×
                 </button>
+                <button
+                  type="button"
+                  className={styles.supprimerPhoto}
+                  title="Supprimer la photo (déposée par erreur)"
+                  aria-label="Supprimer la photo"
+                  onClick={() => setASupprimer(figure.attachment_id)}
+                >
+                  <Icone nom="corbeille" taille={14} />
+                </button>
               </div>
+              {aSupprimer === figure.attachment_id && (
+                <div className={styles.confirmerSuppression} role="alertdialog">
+                  <span>
+                    Supprimer définitivement cette photo ? Elle disparaît aussi
+                    des pièces jointes du patient.
+                  </span>
+                  <div>
+                    <button
+                      type="button"
+                      className={styles.supprimerFort}
+                      onClick={() => void supprimer(figure.attachment_id)}
+                    >
+                      Supprimer
+                    </button>
+                    <button type="button" onClick={() => setASupprimer(null)}>
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              )}
             </li>
           ))}
         </ol>
