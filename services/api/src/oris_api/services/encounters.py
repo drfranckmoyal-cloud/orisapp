@@ -241,7 +241,9 @@ def process(
         )
         return encounter
     # Le volume, mesuré avant la purge : un nombre, jamais le son.
-    niveau_audio = niveau(concatenate(chunks)) if not is_synthetic(encounter) else {"crete": 1.0, "moyen": 1.0}
+    niveau_audio = (
+        {"crete": 1.0, "moyen": 1.0} if is_synthetic(encounter) else niveau(concatenate(chunks))
+    )
     encounter.metadata_json = {**encounter.metadata_json, "niveau_audio": niveau_audio}
     # D010 : l'audio est éphémère ; purgé dès que la transcription a abouti.
     audio.purge(session, sink, encounter)
