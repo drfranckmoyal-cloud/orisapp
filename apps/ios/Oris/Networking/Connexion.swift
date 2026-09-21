@@ -97,6 +97,38 @@ enum Connexion {
         SecItemDelete(query as CFDictionary)
     }
 
+    /// Explique en français pourquoi le serveur n'a pas répondu.
+    static func pourquoi(_ error: Error, adresse: URL) -> String {
+        let hote = adresse.host() ?? ""
+        let essai = "Adresse essayée : \(adresse.absoluteString)."
+        if ["localhost", "127.0.0.1", "::1"].contains(hote) {
+            return essai + " « localhost » désigne l’iPhone lui-même : saisissez l’adresse du Mac (par exemple 10.0.0.7:8000), puis « Enregistrer et se reconnecter »."
+        }
+        if case .httpStatus(let code)? = error as? APIError {
+            return essai + " Le serveur a répondu, mais refuse (code \(code)) : vérifiez le jeton."
+        }
+        if case .server(let code, _, _)? = error as? APIError {
+            return essai + " Le serveur a répondu, mais refuse (code \(code)) : vérifiez le jeton."
+        }
+        let ns = error as NSError
+        let chemin = String(describing: ns.userInfo["_NSURLErrorNWPathKey"] ?? "")
+        if chemin.localizedCaseInsensitiveContains("local network prohibited") {
+            return essai + " iOS bloque le réseau local : Réglages › Confidentialité et sécurité › Réseau local › activer Oris."
+        }
+        switch ns.code {
+        case NSURLErrorTimedOut:
+            return essai + " Pas de réponse : le Mac est-il allumé, Oris lancé, et l’iPhone sur le même Wi-Fi ?"
+        case NSURLErrorCannotConnectToHost:
+            return essai + " Le Mac répond mais Oris n’écoute pas : relancez Oris sur le Mac."
+        case NSURLErrorCannotFindHost, NSURLErrorDNSLookupFailed:
+            return essai + " Ce nom d’ordinateur est introuvable : utilisez plutôt l’adresse chiffrée du Mac (10.0.0.7:8000)."
+        case NSURLErrorNotConnectedToInternet:
+            return essai + " L’iPhone n’a pas accès au réseau local : Wi-Fi activé, même réseau que le Mac, et Oris autorisé dans Réglages › Confidentialité et sécurité › Réseau local."
+        default:
+            return essai + " Erreur \(ns.code)."
+        }
+    }
+
     /// Le client de toute l'app, avec le jeton s'il y en a un.
     static func client() -> APIClient {
         let base = URLSessionTransport(session: .shared)

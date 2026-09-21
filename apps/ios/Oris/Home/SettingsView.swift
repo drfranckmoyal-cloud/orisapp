@@ -23,7 +23,7 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section {
-                    ServerStatusCard(state: model.serverState)
+                    ServerStatusCard(state: model.serverState, diagnostic: model.diagnostic)
                         .listRowInsets(EdgeInsets())
                         .listRowBackground(Color.clear)
                 }

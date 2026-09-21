@@ -36,7 +36,7 @@ struct HomeView: View {
                             .foregroundStyle(OrisColor.ink)
                     }
 
-                    ServerStatusCard(state: model.serverState)
+                    ServerStatusCard(state: model.serverState, diagnostic: model.diagnostic)
                 }
                 .padding(OrisSpacing.s16)
             }
@@ -52,6 +52,7 @@ struct HomeView: View {
 
 struct ServerStatusCard: View {
     let state: HomeViewModel.ServerState
+    var diagnostic: String? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: OrisSpacing.s12) {
@@ -66,6 +67,12 @@ struct ServerStatusCard: View {
             case .unreachable:
                 Label("Serveur Oris injoignable", systemImage: "exclamationmark.triangle")
                     .foregroundStyle(OrisColor.danger)
+                if let diagnostic {
+                    Text(diagnostic)
+                        .font(.footnote)
+                        .foregroundStyle(OrisColor.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             case .reachable(let health):
                 Label("Serveur Oris connecté · version \(health.version)", systemImage: "checkmark.circle")
                     .foregroundStyle(OrisColor.success)

@@ -27,4 +27,15 @@ final class ConnexionTests: XCTestCase {
         _ = try await transport.send(URLRequest(url: URL(string: "http://api.test/patients")!))
         XCTAssertEqual(recorder.last?.value(forHTTPHeaderField: "Authorization"), "Bearer oris_secret")
     }
+
+    func testTheDiagnosticNamesTheAddressAndTheCause() {
+        let local = Connexion.pourquoi(URLError(.cannotConnectToHost), adresse: URL(string: "http://localhost:8000")!)
+        XCTAssertTrue(local.contains("localhost"))
+        XCTAssertTrue(local.contains("iPhone lui-même"))
+        let muet = Connexion.pourquoi(URLError(.timedOut), adresse: URL(string: "http://10.0.0.7:8000")!)
+        XCTAssertTrue(muet.contains("10.0.0.7:8000"))
+        XCTAssertTrue(muet.contains("même Wi-Fi"))
+        let refus = Connexion.pourquoi(APIError.httpStatus(401), adresse: URL(string: "http://10.0.0.7:8000")!)
+        XCTAssertTrue(refus.contains("jeton"))
+    }
 }
