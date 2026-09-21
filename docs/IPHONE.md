@@ -47,3 +47,25 @@ entrantes : répondre « Autoriser ».
    Apple — puis le fichier est supprimé.
 3. Données réelles : même règle qu'ailleurs, développement local seulement jusqu'à
    l'hébergement agréé HDS.
+
+## Installée et connectée — 21/09/2026
+
+Oris tourne sur « iPhone de Franck New » et joint le serveur du Mac par le Wi-Fi
+(adresse `10.0.0.7:8000`, jeton « iPhone de Franck »).
+
+Ce qui a bloqué, pour la prochaine fois :
+
+- **iOS refusait le réseau local sans poser la question** (erreur « pas d'accès au
+  réseau local »). Une simple requête ne déclenche pas toujours la question ; l'app
+  lance donc au démarrage une courte recherche Bonjour (`ReseauLocal.swift`,
+  `NSBonjourServices` = `_oris._tcp`), qui la fait apparaître à coup sûr.
+- **Rien à recopier sur l'iPhone** : l'adresse et le jeton se posent depuis le Mac,
+  câble branché, au lancement de l'app :
+
+  ```
+  xcrun devicectl device process launch --device <id> --terminate-existing \
+    --environment-variables '{"ORIS_REGLER_SERVEUR":"10.0.0.7:8000","ORIS_REGLER_JETON":"oris_…"}' fr.oris.app
+  ```
+
+- En cas d'échec, l'écran Paramètres dit l'adresse essayée et la cause en clair.
+- Si l'adresse du Mac change (autre Wi-Fi), relancer la commande avec la nouvelle.
