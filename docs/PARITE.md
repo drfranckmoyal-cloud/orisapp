@@ -31,9 +31,10 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
 - iPhone : appareil photo, écoute écran verrouillé et pendant un appel, son gardé chiffré
   hors connexion ; **écran d'ouverture** (logo et slogan, 1,5 s) et **Face ID** à
   l'ouverture et au retour après deux minutes — un navigateur a sa propre session.
-- Accueil : sur l'iPhone, le symbole Oris en grand rond central ; sur le site, le même
-  symbole animé en permanence dans le bandeau « Commencer une consultation » (la page
-  d'un ordinateur a la place de montrer la semaine à côté).
+- Accueil : le même grand bouton rond qui respire, au centre, sur les deux. Le site
+  l'entoure de quatre tuiles (À relire, Votre journée, Cette semaine, Saisie évitée) ;
+  l'iPhone garde un écran dépouillé avec « À relire » en tiroir — un téléphone n'a pas
+  la place d'un tableau de bord.
 - Supprimer une ligne : glisser vers la gauche sur l'iPhone, corbeille en bout de ligne
   sur le site.
 - Site : téléversement par glisser-déposer, copie du texte pour le logiciel du cabinet.

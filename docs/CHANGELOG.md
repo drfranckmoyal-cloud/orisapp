@@ -1,5 +1,15 @@
 # Changelog
 
+## Site : accueil en tableau de bord — 2026-09-22
+- « Bonjour, Dr Moyal » et la date ; recherche de patient à droite.
+- Au centre, le grand bouton rond d'écoute, comme sur l'iPhone : il respire, ses barres
+  bougent comme une voix.
+- Autour, quatre tuiles colorées et cliquables : **À relire** (orange), **Votre
+  journée** (ocre : nombre de rendez-vous Doctolib du jour et le prochain), **Cette
+  semaine** (vert, avec les barres des jours), **Saisie évitée** (bleu-vert, estimation
+  dite en toutes lettres).
+- En bas, deux cartes légères : À relire (4 lignes) et Oris apprend.
+
 ## Site : colonne de gauche plus présente — 2026-09-22
 - Trois groupes titrés (Au fauteuil · Dossiers · Oris), plus d'air entre eux.
 - Une pastille de couleur par rubrique (vert, ocre, bleu, lagune, prune, terre,

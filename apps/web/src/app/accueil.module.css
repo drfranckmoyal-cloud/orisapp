@@ -1,61 +1,126 @@
-.haut {
-  display: grid;
-  grid-template-columns: 1.15fr 1fr;
+/* Accueil : un tableau de bord léger et coloré autour d'un seul geste, au centre. */
+
+.salut {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   gap: var(--espace-6);
   margin-bottom: var(--espace-6);
 }
 
-/* Le cœur de l'application mérite la taille du cœur de l'application. */
-.demarrer {
-  display: flex;
-  align-items: center;
-  gap: var(--espace-6);
-  padding: 26px 28px;
-  border-radius: 22px;
-  border: 1px solid var(--accent-fonce);
-  color: #fff;
-  text-decoration: none;
-  background: linear-gradient(145deg, var(--accent-vif), var(--accent) 55%, var(--accent-fonce));
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.2),
-    0 2px 4px rgb(14 58 41 / 0.25),
-    0 26px 44px -22px rgb(14 58 41 / 0.9);
-  transition: transform var(--transition), box-shadow var(--transition);
+.date {
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--graisse-forte);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--encre-tres-douce);
 }
 
-.demarrer:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.24),
-    0 4px 8px rgb(14 58 41 / 0.25),
-    0 36px 56px -24px rgb(14 58 41 / 0.95);
+.bonjour {
+  margin: 2px 0 0;
+  font-family: var(--police-marque), Georgia, serif;
+  font-size: 38px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--accent-fonce);
+}
+
+.recherche {
+  min-width: 300px;
+}
+
+/* --- Le cœur : deux tuiles, le bouton, deux tuiles ---------------------------------- */
+.coeur {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espace-8);
+  margin: var(--espace-4) 0 var(--espace-8);
+}
+
+.colonne {
+  display: grid;
+  gap: var(--espace-4);
+}
+
+/* Le bouton rond, comme sur l'iPhone : il respire, ses barres bougent comme une voix. */
+.bouton {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 20px 10px 0;
+  width: 400px;
+  text-align: center;
+  text-decoration: none;
+  color: var(--accent-fonce);
+}
+
+.halo,
+.halo2 {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.halo {
+  width: 280px;
+  height: 280px;
+  top: -12px;
+  background: radial-gradient(circle, rgb(20 83 59 / 0.1) 55%, transparent 72%);
+  animation: souffleHalo 4.5s ease-in-out infinite;
+}
+
+.halo2 {
+  width: 244px;
+  height: 244px;
+  top: 6px;
+  background: var(--accent-douce);
+  animation: souffleHalo 4.5s ease-in-out -0.6s infinite;
 }
 
 .disque {
-  width: 104px;
-  height: 104px;
-  border-radius: 50%;
-  flex: none;
+  position: relative;
   display: grid;
   place-items: center;
-  background: rgb(255 255 255 / 0.13);
+  width: 208px;
+  height: 208px;
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(145deg, var(--accent-vif), var(--accent) 55%, var(--accent-fonce));
+  border: 1px solid rgb(255 255 255 / 0.14);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.28),
-    0 0 0 0 rgb(255 255 255 / 0.1);
-  /* Une respiration lente, comme sur l'iPhone : le disque gonfle et dégonfle. */
+    inset 0 1px 0 rgb(255 255 255 / 0.22),
+    0 3px 6px rgb(14 58 41 / 0.25),
+    0 30px 50px -22px rgb(14 58 41 / 0.9);
   animation: souffle 4.5s ease-in-out infinite;
+  transition: transform var(--transition);
+}
+
+.bouton:hover .disque {
+  transform: scale(1.03);
+}
+
+.bouton:active .disque {
+  transform: scale(0.97);
 }
 
 @keyframes souffle {
   50% {
-    transform: scale(1.06);
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.28),
-      0 0 0 10px rgb(255 255 255 / 0.07);
+    transform: scale(1.045);
   }
 }
 
-/* Les barres bougent chacune à son rythme, lentement : une voix, pas un métronome. */
+@keyframes souffleHalo {
+  50% {
+    transform: translateX(-50%) scale(1.08);
+  }
+}
+
 .disque svg rect {
   transform-box: fill-box;
   transform-origin: center;
@@ -76,107 +141,172 @@
   82% { transform: scaleY(0.75); }
 }
 
+.boutonTitre {
+  position: relative;
+  margin-top: 26px;
+  white-space: nowrap;
+  font-family: var(--police-marque), Georgia, serif;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.boutonSous {
+  position: relative;
+  max-width: 300px;
+  text-align: center;
+  font-size: var(--texte-sm);
+  color: var(--encre-douce);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .disque,
+  .halo,
+  .halo2,
   .disque svg rect {
     animation: none;
   }
 }
 
-.titreDemarrer {
-  display: block;
-  font-family: var(--police-marque), Georgia, serif;
-  font-size: 29px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-}
-
-.sousDemarrer {
-  display: block;
-  margin-top: 6px;
-  font-size: var(--texte-md);
-  font-weight: var(--graisse-moyenne);
-  color: #bfdccf;
-}
-
-/* La semaine en barres : combien de consultations chaque jour. */
-.semaine {
-  display: flex;
-  align-items: flex-end;
-  gap: 11px;
-  height: 108px;
-  padding: 6px 2px 0;
-}
-
-.jour {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--espace-2);
-  height: 100%;
-}
-
-.barre {
-  width: 100%;
-  border-radius: 7px 7px 3px 3px;
-  display: block;
-  background: linear-gradient(180deg, #bcd8c9, #8fbda6);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.55);
-}
-
-.aujourdhui .barre {
-  background: linear-gradient(180deg, var(--accent-vif), var(--accent));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
-}
-
-.lettre {
-  font-size: var(--texte-xs);
-  font-weight: var(--graisse-demi);
-  color: var(--encre-tres-douce);
-  letter-spacing: 0.02em;
-}
-
-.aujourdhui .lettre {
-  color: var(--accent);
-}
-
-.chiffre {
-  font-size: 38px;
-  font-weight: var(--graisse-forte);
-  letter-spacing: -0.035em;
-  line-height: 1;
-  margin: 0;
-}
-
-.chiffre small {
-  font-size: var(--texte-md);
-  font-weight: var(--graisse-moyenne);
-  color: var(--encre-tres-douce);
-  letter-spacing: 0;
-}
-
-.grille {
+/* --- Tuiles --------------------------------------------------------------------------- */
+.tuile {
+  --t-fond: var(--surface);
+  --t-encre: var(--accent);
+  --t-douce: var(--accent-douce);
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--espace-6);
+  gap: 4px;
+  min-height: 150px;
+  padding: 18px 20px;
+  border-radius: var(--rayon-carte);
+  text-decoration: none;
+  color: var(--encre);
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--t-douce), transparent 60%),
+    var(--surface);
+  border: 1px solid var(--trait);
+  box-shadow: var(--relief), var(--lumiere);
+  overflow: hidden;
+  transition: transform var(--transition), box-shadow var(--transition);
 }
 
-@media (max-width: 1080px) {
-  .haut,
-  .grille {
-    grid-template-columns: 1fr;
-  }
+.tuile:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--relief-haut), var(--lumiere);
 }
 
-/* À relire : la date et le praticien en bout de ligne, en petit — la liste reste serrée. */
-.finRelire {
+.tuile[data-teinte="orange"] { --t-encre: #b85e10; --t-douce: #fde6cf; --t-grad: linear-gradient(145deg, #eea055, #c86a18); }
+.tuile[data-teinte="ocre"] { --t-encre: #8a5a10; --t-douce: #f7e9c8; --t-grad: linear-gradient(145deg, #e6a93c, #b7791f); }
+.tuile[data-teinte="vert"] { --t-encre: #1d7a52; --t-douce: #dcf0e4; --t-grad: linear-gradient(145deg, #3fb07e, #1d7a52); }
+.tuile[data-teinte="lagune"] { --t-encre: #0f6f7c; --t-douce: #d6eff1; --t-grad: linear-gradient(145deg, #2fb3b0, #0f7c8c); }
+
+.tuileHaut {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.tuileIcone {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  color: #fff;
+  background: var(--t-grad);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 4px 10px -4px rgb(0 0 0 / 0.4);
+}
+
+.tuileTitre {
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-forte);
+  color: var(--encre-douce);
+}
+
+.tuileChiffre {
+  margin-top: 6px;
+  font-family: var(--police-marque), Georgia, serif;
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--t-encre);
+}
+
+.tuileDetail {
+  font-size: var(--texte-sm);
+  color: var(--encre-douce);
+  line-height: 1.35;
+}
+
+.barres {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 46px;
+}
+
+.barre {
+  width: 7px;
+  border-radius: 4px 4px 2px 2px;
+  background: #bfe0cd;
+}
+
+.barreAujourdhui {
+  background: linear-gradient(180deg, #3fb07e, #1d7a52);
+}
+
+/* --- Bas de page ---------------------------------------------------------------------- */
+.bas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espace-6);
+}
+
+.finRelire {
   font-size: var(--texte-xs);
   color: var(--encre-tres-douce);
   white-space: nowrap;
+}
+
+.doux {
+  margin: 0;
+  font-size: var(--texte-sm);
+  color: var(--encre-douce);
+  line-height: 1.5;
+}
+
+@media (max-width: 1180px) {
+  .coeur {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+  }
+
+  .colonne {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .coeur > .colonne:first-child {
+    order: 2;
+  }
+
+  .coeur > .colonne:last-child {
+    order: 3;
+  }
+}
+
+@media (max-width: 760px) {
+  .bas,
+  .colonne {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .salut {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
