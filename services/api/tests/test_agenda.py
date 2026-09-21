@@ -420,3 +420,17 @@ def test_the_extensions_shape_goes_through_the_endpoint(api: Any, tmp_path: Path
         {"jour": JOUR, "rendezvous": [{"heure": "09:30", "patient": "M. DROIT Justine"}]},
     )
     assert reponse.json()["rendezvous"] == 1
+
+
+def test_asking_again_resets_the_time_of_the_request(tmp_path: Path) -> None:
+    """L'extension ne relit un jour déjà lu que si la demande est plus récente que sa
+    lecture. Si Oris gardait l'heure de la première demande, un « Mettre à jour » serait
+    pris pour un oubli et attendrait une demi-heure."""
+    import time
+
+    reglage = reglages(tmp_path)
+    premiere = agenda.demander(reglage, JOUR)
+    time.sleep(1.1)
+    seconde = agenda.demander(reglage, JOUR)
+    assert seconde > premiere
+    assert agenda.demandes(reglage) == {JOUR: seconde}
