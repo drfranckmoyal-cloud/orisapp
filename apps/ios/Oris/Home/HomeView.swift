@@ -9,33 +9,43 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: OrisSpacing.s24) {
-                    // La marque, bien visible, et la date du jour.
-                    VStack(spacing: 4) {
-                        HStack(spacing: 10) {
-                            SymboleOris(couleur: Teinte.accent)
-                                .frame(width: 40, height: 40)
-                            Text("Oris")
-                                .font(Police.marque(40))
-                                .foregroundStyle(Teinte.accentFonce)
+            GeometryReader { ecran in
+                ScrollView {
+                    VStack(spacing: OrisSpacing.s24) {
+                        // Premier écran : la marque en haut, le bouton au centre. « À relire »
+                        // commence plus bas, on le trouve en faisant défiler.
+                        VStack(spacing: 0) {
+                            VStack(spacing: 4) {
+                                HStack(spacing: 10) {
+                                    SymboleOris(couleur: Teinte.accent)
+                                        .frame(width: 40, height: 40)
+                                    Text("Oris")
+                                        .font(Police.marque(40))
+                                        .foregroundStyle(Teinte.accentFonce)
+                                }
+                                Text(DateOris.jour(Date()).capitalizedPremiere)
+                                    .font(Police.interface(14, .semibold))
+                                    .foregroundStyle(Teinte.encreTresDouce)
+                            }
+                            .padding(.top, OrisSpacing.s8)
+                            Spacer(minLength: OrisSpacing.s24)
+                            BoutonEcoute { showNewConsultation = true }
+                            Spacer(minLength: OrisSpacing.s24)
+                            ServerStatusCard(state: model.serverState, diagnostic: model.diagnostic, compact: true)
+                            Image(systemName: "chevron.compact.down")
+                                .font(.system(size: 22, weight: .semibold))
+                                .foregroundStyle(Teinte.traitFort)
+                                .padding(.top, 6)
+                                .accessibilityHidden(true)
                         }
-                        Text(DateOris.jour(Date()).capitalizedPremiere)
-                            .font(Police.interface(14, .semibold))
-                            .foregroundStyle(Teinte.encreTresDouce)
+                        .frame(minHeight: ecran.size.height - 12)
+
+                        CarteARelire(consultations: model.aRelire)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.top, OrisSpacing.s8)
-
-                    BoutonEcoute { showNewConsultation = true }
-                        .frame(maxWidth: .infinity)
-
-                    CarteARelire(consultations: model.aRelire)
-
-                    ServerStatusCard(state: model.serverState, diagnostic: model.diagnostic, compact: true)
+                    .padding(.horizontal, OrisSpacing.s16)
+                    .padding(.bottom, OrisSpacing.s32)
                 }
-                .padding(.horizontal, OrisSpacing.s16)
-                .padding(.bottom, OrisSpacing.s32)
             }
             .pageOris()
             .toolbar(.hidden, for: .navigationBar)
@@ -56,31 +66,45 @@ struct HomeView: View {
 struct BoutonEcoute: View {
     let action: () -> Void
     @State private var appuye = false
+    @Environment(\.accessibilityReduceMotion) private var sansMouvement
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 14) {
-                ZStack {
-                    Circle()
-                        .fill(Teinte.accentDouce)
-                        .frame(width: 214, height: 214)
-                    Circle()
-                        .fill(LinearGradient(colors: [Teinte.accentVif, Teinte.accent, Teinte.accentFonce],
-                                             startPoint: .topLeading, endPoint: .bottomTrailing))
-                        .frame(width: 176, height: 176)
-                        .overlay(Circle().strokeBorder(.white.opacity(0.16), lineWidth: 1))
-                        .shadow(color: Teinte.accentFonce.opacity(0.28), radius: 3, y: 2)
-                        .shadow(color: Teinte.accentFonce.opacity(0.45), radius: 24, y: 16)
-                    SymboleOris(couleur: .white, anime: true)
-                        .frame(width: 92, height: 92)
+            VStack(spacing: 18) {
+                TimelineView(.animation(paused: sansMouvement)) { contexte in
+                    let t = contexte.date.timeIntervalSinceReferenceDate
+                    // Une respiration : 4,5 s pour inspirer et expirer, le halo en léger décalage.
+                    let souffle = sansMouvement ? 0 : sin(t * 2 * .pi / 4.5)
+                    let halo = sansMouvement ? 0 : sin(t * 2 * .pi / 4.5 - 0.6)
+                    ZStack {
+                        Circle()
+                            .fill(Teinte.accentDouce.opacity(0.55))
+                            .frame(width: 250, height: 250)
+                            .scaleEffect(1 + 0.07 * halo)
+                        Circle()
+                            .fill(Teinte.accentDouce)
+                            .frame(width: 214, height: 214)
+                            .scaleEffect(1 + 0.05 * halo)
+                        Circle()
+                            .fill(LinearGradient(colors: [Teinte.accentVif, Teinte.accent, Teinte.accentFonce],
+                                                 startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .frame(width: 180, height: 180)
+                            .overlay(Circle().strokeBorder(.white.opacity(0.16), lineWidth: 1))
+                            .shadow(color: Teinte.accentFonce.opacity(0.28), radius: 3, y: 2)
+                            .shadow(color: Teinte.accentFonce.opacity(0.4 + 0.1 * souffle), radius: 24 + 6 * souffle, y: 16)
+                            .scaleEffect(1 + 0.045 * souffle)
+                        SymboleOris(couleur: .white, anime: true)
+                            .frame(width: 96, height: 96)
+                    }
+                    .frame(width: 270, height: 270)
                 }
-                .scaleEffect(appuye ? 0.96 : 1)
-                VStack(spacing: 3) {
+                .scaleEffect(appuye ? 0.95 : 1)
+                VStack(spacing: 4) {
                     Text("Commencer une consultation")
-                        .font(Police.marque(22))
+                        .font(Police.marque(24))
                         .foregroundStyle(Teinte.accentFonce)
                     Text("Oris écoute. Le dossier sera prêt avant la fin du rendez-vous.")
-                        .font(Police.interface(13.5, .medium))
+                        .font(Police.interface(14, .medium))
                         .foregroundStyle(Teinte.encreDouce)
                         .multilineTextAlignment(.center)
                 }
@@ -100,17 +124,26 @@ struct CarteARelire: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text("À relire")
-                    .font(Police.titreCarte)
-                    .foregroundStyle(Teinte.encre)
-                Spacer()
-                Text("\(consultations.count)")
-                    .font(Police.interface(13, .heavy))
+            // Un vrai titre de carte : plus grand, une icône, un filet dessous.
+            HStack(spacing: 10) {
+                Image(systemName: "doc.text.magnifyingglass")
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(Teinte.attention)
-                    .frame(minWidth: 26, minHeight: 26)
-                    .background(Teinte.attentionDouce, in: Circle())
+                    .frame(width: 34, height: 34)
+                    .background(Teinte.attentionDouce, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("À relire")
+                        .font(Police.interface(20, .heavy, relativeTo: .title3))
+                        .foregroundStyle(Teinte.encre)
+                    Text(consultations.isEmpty ? "rien en attente"
+                         : "\(consultations.count) compte\(consultations.count > 1 ? "s" : "") rendu\(consultations.count > 1 ? "s" : "") à valider")
+                        .font(Police.interface(12.5, .semibold))
+                        .foregroundStyle(Teinte.encreTresDouce)
+                }
+                Spacer()
             }
+            .padding(.bottom, 6)
+            Divider().overlay(Teinte.trait)
             if consultations.isEmpty {
                 Text("Rien n’attend votre relecture.")
                     .font(Police.note)

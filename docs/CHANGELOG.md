@@ -1,5 +1,13 @@
 # Changelog
 
+## Accueil : bouton qui respire — 2026-09-21
+- iPhone : le grand rond gonfle et dégonfle lentement (4,5 s), son halo en léger
+  décalage ; les barres du symbole bougent chacune à son rythme, comme une voix. Le
+  bouton occupe le centre du premier écran ; « À relire » commence plus bas, avec un vrai
+  titre de carte (icône, nombre à valider, filet).
+- Site : même respiration du disque et même mouvement des barres dans le bandeau
+  « Commencer une consultation ».
+
 ## Micro, suppressions, étiquettes légères, accueil, Face ID — 2026-09-21
 - **Micro muet repéré** : le serveur mesure le volume de chaque enregistrement avant la
   transcription (un nombre, jamais le son). Un enregistrement muet dit « le micro n'a

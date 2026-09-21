@@ -13,6 +13,17 @@ struct SymboleOris: View {
         (13, 38, 34), (31, 20, 76), (49, 30, 48), (67, 20, 76), (85, 38, 34),
     ]
 
+    /// Hauteur d'une barre (0,35…1) à l'instant t : trois ondes lentes de périodes
+    /// différentes par barre, qui ne se répètent jamais à l'identique — une voix, pas
+    /// un métronome.
+    static func niveau(barre i: Int, temps t: Double) -> CGFloat {
+        let d = Double(i)
+        let onde = sin(t * 1.3 + d * 1.7) * 0.45
+            + sin(t * 2.1 + d * 2.9) * 0.35
+            + sin(t * 0.7 + d * 0.8) * 0.20
+        return CGFloat(0.675 + 0.325 * onde)
+    }
+
     var body: some View {
         GeometryReader { geo in
             let k = min(geo.size.width, geo.size.height) / 120
@@ -21,9 +32,7 @@ struct SymboleOris: View {
                 ZStack(alignment: .topLeading) {
                     ForEach(Self.barres.indices, id: \.self) { i in
                         let barre = Self.barres[i]
-                        let echelle = anime && !sansMouvement
-                            ? 0.73 + 0.27 * cos((t / 1.15 + Double(i) * 0.14) * 2 * .pi)
-                            : 1
+                        let echelle = anime && !sansMouvement ? Self.niveau(barre: i, temps: t) : 1
                         RoundedRectangle(cornerRadius: 5 * k)
                             .fill(couleur)
                             .frame(width: 10 * k, height: barre.h * k)
