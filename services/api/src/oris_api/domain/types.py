@@ -67,6 +67,9 @@ class GeneratedDocument:
     document_type: DocumentDocumentType
     content: str
     claims: tuple[Claim, ...]
+    #: Qui a réellement écrit ce texte, quand ce n'est pas le fournisseur configuré
+    #: (un rédacteur qui s'est replié sur les gabarits le dit ici).
+    generator: str = ""
 
     @property
     def supported_fact_ids(self) -> list[str]:

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from oris_api.config import Settings
 from oris_api.providers.base import (
@@ -35,6 +35,10 @@ class ProviderSet:
     clinical_extraction: ClinicalExtractionProvider
     document_generation: DocumentGenerationProvider
     clinical_validation: ClinicalValidationProvider
+    # Une consultation fictive ne sort jamais d'Oris : ses documents restent aux gabarits.
+    synthetic_document_generation: DocumentGenerationProvider = field(
+        default_factory=MockDocumentGenerationProvider
+    )
     # Écoute en direct (§14.1) : confort d'écran, jamais source du dossier.
     # `None` quand le direct est éteint : la consultation se déroule sans lui.
     live_speech_to_text: StreamingSpeechToTextProvider | None = None
@@ -42,7 +46,6 @@ class ProviderSet:
 
 def build_providers(settings: Settings, corpus: SyntheticCorpus | None = None) -> ProviderSet:
     configured = {
-        "DOCUMENT_GENERATION_PROVIDER": settings.document_generation_provider,
         "CLINICAL_VALIDATION_PROVIDER": settings.clinical_validation_provider,
     }
     for variable, name in configured.items():
@@ -55,7 +58,8 @@ def build_providers(settings: Settings, corpus: SyntheticCorpus | None = None) -
         speech_to_text=build_speech_to_text(settings, corpus),
         synthetic_speech_to_text=MockSpeechToTextProvider(corpus),
         clinical_extraction=build_clinical_extraction(settings, corpus),
-        document_generation=MockDocumentGenerationProvider(),
+        document_generation=build_document_generation(settings),
+        synthetic_document_generation=MockDocumentGenerationProvider(),
         clinical_validation=MockClinicalValidationProvider(),
         live_speech_to_text=build_live_speech_to_text(settings, corpus),
     )
@@ -138,4 +142,24 @@ def build_clinical_extraction(
         raise ProviderConfigurationError("ANTHROPIC_API_KEY manquante")
     return AnthropicExtractionProvider(
         settings.anthropic_api_key.get_secret_value(), settings.anthropic_model
+    )
+
+
+def build_document_generation(settings: Settings) -> DocumentGenerationProvider:
+    """Rédaction : gabarits d'Oris par défaut ; Claude exige le même accord que l'extraction."""
+    from oris_api.llm.redaction import AnthropicDocumentWriter
+
+    if settings.document_generation_provider == "mock":
+        return MockDocumentGenerationProvider()
+    if not settings.allow_external_llm:
+        raise ProviderConfigurationError(
+            "DOCUMENT_GENERATION_PROVIDER externe refusé : ALLOW_EXTERNAL_LLM=true requis "
+            "(envoi des faits cliniques hors Oris)"
+        )
+    if settings.anthropic_api_key is None:
+        raise ProviderConfigurationError("ANTHROPIC_API_KEY manquante")
+    return AnthropicDocumentWriter(
+        settings.anthropic_api_key.get_secret_value(),
+        settings.anthropic_model,
+        repli=MockDocumentGenerationProvider(),
     )

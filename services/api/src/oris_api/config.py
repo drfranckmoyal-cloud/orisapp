@@ -16,6 +16,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 AppEnv = Literal["local", "test", "staging", "production"]
 ProviderName = Literal["mock"]
+DocumentProviderName = Literal["mock", "anthropic"]
 SttProviderName = Literal["mock", "azure_speech", "deepgram"]
 ExtractionProviderName = Literal["mock", "anthropic"]
 
@@ -40,7 +41,7 @@ class Settings(BaseSettings):
     allow_external_llm: bool = False
     anthropic_api_key: SecretStr | None = None
     anthropic_model: str = "claude-sonnet-5"
-    document_generation_provider: ProviderName = "mock"
+    document_generation_provider: DocumentProviderName = "mock"
     clinical_validation_provider: ProviderName = "mock"
 
     audio_retention_mode: Literal["ephemeral"] = "ephemeral"

@@ -1,5 +1,20 @@
 # Changelog
 
+## Rédaction par Claude, sous le contrôle d'Oris — 2026-09-21
+- **Le compte rendu de consultation et le courrier d'adressage sont rédigés** en
+  paragraphes liés, sans redite (`llm/redaction.py`, `DOCUMENT_GENERATION_PROVIDER=anthropic`).
+- Partage des rôles : Oris range les faits dans les rubriques (gabarits, version de repli) ;
+  Claude réécrit chaque rubrique en citant pour chaque phrase ses faits ; Oris refuse toute
+  copie qui change les rubriques, omet un fait, cite un fait hors de sa rubrique, écrit une
+  dent ou un chiffre absent des faits cités, perd une négation, une incertitude ou un
+  refus. Un nouvel essai expliqué, puis repli sur les gabarits — le générateur l'indique
+  « (repli) ».
+- Claude ne voit que les faits : ni transcript, ni nom du patient. Une consultation fictive
+  reste aux gabarits (elle ne sort jamais d'Oris). Même accord que l'extraction
+  (`ALLOW_EXTERNAL_LLM`).
+- Plan de traitement et compte rendu opératoire : inchangés (forme élément par élément).
+- Coût : quelques centimes par document ; durée : 15 à 20 s par document rédigé.
+
 ## Documentation clinique : les photos du document — 2026-09-21
 - En pied de chaque document, **« Documentation clinique »** : on choisit des photos
   parmi les pièces jointes du patient, on les légende, on les ordonne. Le PDF gagne une

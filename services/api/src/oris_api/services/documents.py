@@ -69,8 +69,10 @@ async def generate_and_check(
     obj: ClinicalEncounter,
     document_type: DocumentDocumentType,
     style: Style | None = None,
+    synthetic: bool = False,
 ) -> tuple[GeneratedDocument, list[ValidationIssue]]:
-    generated = await providers.document_generation.generate(obj, document_type, style)
+    writer = providers.synthetic_document_generation if synthetic else providers.document_generation
+    generated = await writer.generate(obj, document_type, style)
     return generated, await providers.clinical_validation.validate(generated, obj)
 
 
@@ -111,9 +113,11 @@ def generate(
     wanted = document_types_for(obj, {*existing, *include})
     produced: list[DocumentRow] = []
 
+    # Une consultation fictive ne sort jamais d'Oris, pas même ses faits.
+    synthetic = isinstance(encounter.metadata_json.get("synthetic_case_id"), str)
     for document_type in wanted:
         generated, issues = async_bridge.run(
-            partial(generate_and_check, providers, obj, document_type, style)
+            partial(generate_and_check, providers, obj, document_type, style, synthetic)
         )
         document = existing.get(document_type)
         if document is None:
@@ -139,7 +143,7 @@ def generate(
             supported_fact_ids=generated.supported_fact_ids,
             validation_issues=[asdict(issue) for issue in issues],
             generated_from_object_version=obj.object_version,
-            generator=f"{info.name}:{info.version}",
+            generator=generated.generator or f"{info.name}:{info.version}",
         )
         session.add(version)
         session.flush()
