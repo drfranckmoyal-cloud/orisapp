@@ -888,4 +888,6 @@ class DocumentFigure(Base):
     )
     caption: Mapped[str] = mapped_column(Text, default="", server_default="")
     position: Mapped[int] = mapped_column(Integer)
+    #: « large » : toute la largeur de la page ; « demi » : deux photos côte à côte.
+    format: Mapped[str] = mapped_column(String(10), default="demi", server_default="demi")
     created_at: Mapped[datetime] = created_at()

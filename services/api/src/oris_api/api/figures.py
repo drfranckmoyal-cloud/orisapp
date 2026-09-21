@@ -20,6 +20,7 @@ def _out(lignes: list[tuple[DocumentFigure, Attachment]]) -> list[FigureOut]:
             attachment_id=piece.id,
             caption=figure.caption,
             position=figure.position,
+            format=figure.format,
             filename=piece.filename,
             media_type=piece.media_type,
         )
@@ -37,5 +38,5 @@ def set_figures(
     document_id: UUID, body: FiguresIn, session: SessionDep, actor: ActorDep
 ) -> list[FigureOut]:
     """Pose la liste entière : ajouter, retirer, réordonner et légender en un geste."""
-    choix = [(f.attachment_id, f.caption) for f in body.figures]
+    choix = [(f.attachment_id, f.caption, f.format) for f in body.figures]
     return _out(figures.remplacer(session, actor, document_id, choix))

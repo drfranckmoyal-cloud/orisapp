@@ -6,6 +6,7 @@ Oris ne regarde pas les photos : il les place, dans l'ordre choisi.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -28,6 +29,7 @@ class Figure:
 
     contenu: bytes
     legende: str
+    format: str = "demi"
 
 
 def _document(session: Session, actor: Actor, document_id: UUID) -> tuple[DocumentRow, Encounter]:
@@ -56,14 +58,17 @@ def lister(
 
 
 def remplacer(
-    session: Session, actor: Actor, document_id: UUID, choix: list[tuple[UUID, str]]
+    session: Session,
+    actor: Actor,
+    document_id: UUID,
+    choix: Sequence[tuple[UUID, str, str | None]],
 ) -> list[tuple[DocumentFigure, Attachment]]:
     """Pose la liste entière, dans l'ordre donné : ajouter, retirer, réordonner, légender."""
     document, encounter = _document(session, actor, document_id)
     if len(choix) > MAX_FIGURES:
         raise Unprocessable("TOO_MANY_FIGURES", str(document_id), [str(MAX_FIGURES)])
     vus: set[UUID] = set()
-    for attachment_id, _ in choix:
+    for attachment_id, _, _ in choix:
         piece = session.get(Attachment, attachment_id)
         if piece is None or piece.patient_id != encounter.patient_id:
             raise NotFound("ATTACHMENT_NOT_FOUND", str(attachment_id))
@@ -74,13 +79,14 @@ def remplacer(
         vus.add(attachment_id)
 
     session.execute(delete(DocumentFigure).where(DocumentFigure.document_id == document.id))
-    for position, (attachment_id, legende) in enumerate(choix):
+    for position, (attachment_id, legende, format_) in enumerate(choix):
         session.add(
             DocumentFigure(
                 document_id=document.id,
                 attachment_id=attachment_id,
                 caption=legende.strip()[:300],
                 position=position,
+                format=format_ or ("large" if position == 0 else "demi"),
             )
         )
     session.flush()
@@ -95,7 +101,7 @@ def a_imprimer(session: Session, magasin: Magasin, document_id: UUID) -> tuple[F
     for figure, piece in figures_de(session, document_id):
         try:
             contenu, _ = affichable(read_attachment(magasin, piece), piece.media_type)
-            imprimees.append(Figure(contenu, figure.caption))
+            imprimees.append(Figure(contenu, figure.caption, figure.format))
         except NotFound:
             continue
     return tuple(imprimees)

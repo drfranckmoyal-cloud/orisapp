@@ -67,6 +67,8 @@ def create_app() -> FastAPI:
         allow_origins=settings.cors_origins,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
         allow_headers=["Authorization", "Content-Type", "X-Chunk-Timestamp-Ms", "X-Chunk-Checksum"],
+        # Sans cela, le site ne peut pas lire le nom du PDF et le télécharge « document ».
+        expose_headers=["Content-Disposition"],
     )
     app.add_exception_handler(ServiceError, service_error_handler)
     app.include_router(health.router)

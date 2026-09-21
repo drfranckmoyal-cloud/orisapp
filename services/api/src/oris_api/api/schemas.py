@@ -579,10 +579,15 @@ class DeliveryOut(BaseModel):
     sent_at: datetime
 
 
+FigureFormat = Literal["large", "demi"]
+
+
 class FigureIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     attachment_id: UUID
     caption: Annotated[str, Field(max_length=300)] = ""
+    #: Absent : la première photo en grand, les suivantes par deux.
+    format: FigureFormat | None = None
 
 
 class FiguresIn(BaseModel):
@@ -596,6 +601,7 @@ class FigureOut(BaseModel):
     attachment_id: UUID
     caption: str
     position: int
+    format: FigureFormat
     filename: str
     media_type: str
 

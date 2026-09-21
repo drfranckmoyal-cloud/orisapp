@@ -120,3 +120,14 @@ def test_a_recipient_outside_the_patient_file_must_be_typed(
     )
     assert refus.status_code == 422
     assert boite.envoyes == []
+
+
+def test_the_website_may_read_the_pdf_name(api: Any) -> None:
+    encounter = consultation_traitee(api)
+    note = documents_by_type(api, encounter["id"])["consultation_note"]
+    reponse = api.get(
+        f"/documents/{note['id']}/export",
+        params={"format": "pdf"},
+        headers={"Origin": "http://localhost:3000"},
+    )
+    assert "content-disposition" in reponse.headers["access-control-expose-headers"].lower()

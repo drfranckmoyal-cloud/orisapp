@@ -573,6 +573,11 @@ def draw_figure(
     return drawn_h
 
 
+def _hauteur_posee(contenu: bytes, max_w: float, max_h: float) -> float:
+    w, h = ImageReader(io.BytesIO(contenu)).getSize()
+    return float(h * min(max_w / w, max_h / h))
+
+
 def draw_caption(canvas: Canvas, number: int, legende: str, x: float, y: float, w: float) -> None:
     canvas.setFont(SERIF, 9)
     canvas.setFillColor(color("muted"))
@@ -591,7 +596,7 @@ def draw_figures(
 ) -> None:
     """« Documentation clinique » : toujours sur une nouvelle page, et en dernier.
 
-    La première photo en grand, les suivantes deux par ligne, chacune légendée. Rien de
+    Chaque photo à la taille choisie (pleine largeur ou moitié), légendée. Rien de
     clinique ne vient après (règle des modèles du praticien).
     """
     usable = width - 2 * MARGIN
@@ -607,27 +612,39 @@ def draw_figures(
             y -= 14 * mm
         return y
 
-    y = nouvelle_page(titre=True)
+    # Des rangées : une photo « large » seule sur toute la largeur, deux photos « demi »
+    # côte à côte (une « demi » isolée garde sa demi-largeur). C'est le praticien qui
+    # choisit la taille de chaque photo.
+    rangees: list[list[tuple[int, Any]]] = []
     for index, figure in enumerate(context.figures, start=1):
-        if index == 1:
-            max_h = min(115 * mm, y - bottom - CAPTION_HEIGHT)
-            drawn = draw_figure(canvas, figure.contenu, MARGIN, y, usable, max_h)
-            draw_caption(canvas, 1, figure.legende, MARGIN, y - drawn - 4.5 * mm, usable)
-            y -= drawn + CAPTION_HEIGHT + FIGURE_GAP
-            continue
-        colonne = (index - 2) % 2
-        demi = (usable - FIGURE_GAP) / 2
-        max_h = 72 * mm
-        if colonne == 0 and y - max_h - CAPTION_HEIGHT < bottom:
+        precedente = rangees[-1] if rangees else None
+        if (
+            getattr(figure, "format", "demi") == "demi"
+            and precedente is not None
+            and len(precedente) == 1
+            and getattr(precedente[0][1], "format", "demi") == "demi"
+        ):
+            precedente.append((index, figure))
+        else:
+            rangees.append([(index, figure)])
+
+    demi = (usable - FIGURE_GAP) / 2
+    y = nouvelle_page(titre=True)
+    for rangee in rangees:
+        large = getattr(rangee[0][1], "format", "demi") == "large"
+        largeur = usable if large else demi
+        max_h = 115 * mm if large else 72 * mm
+        hauteur = max(_hauteur_posee(f.contenu, largeur, max_h) for _, f in rangee)
+        if y - hauteur - CAPTION_HEIGHT < bottom:
             draw_footer(canvas, layout, cabinet, width, page, page)
             canvas.showPage()
             page += 1
             y = nouvelle_page(titre=False)
-        x = MARGIN + colonne * (demi + FIGURE_GAP)
-        drawn = draw_figure(canvas, figure.contenu, x, y, demi, max_h)
-        draw_caption(canvas, index, figure.legende, x, y - drawn - 4.5 * mm, demi)
-        if colonne == 1 or index == len(context.figures):
-            y -= max_h + CAPTION_HEIGHT + FIGURE_GAP
+        for colonne, (index, figure) in enumerate(rangee):
+            x = MARGIN + colonne * (demi + FIGURE_GAP)
+            drawn = draw_figure(canvas, figure.contenu, x, y, largeur, max_h)
+            draw_caption(canvas, index, figure.legende, x, y - drawn - 4.5 * mm, largeur)
+        y -= hauteur + CAPTION_HEIGHT + FIGURE_GAP
     draw_footer(canvas, layout, cabinet, width, page, page)
     canvas.showPage()
 

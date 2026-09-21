@@ -87,3 +87,27 @@ def test_removing_the_attachment_removes_the_figure(api: Any) -> None:
     api.put(f"/documents/{note['id']}/figures", json={"figures": [{"attachment_id": a}]})
     api.delete(f"/patients/attachments/{a}")
     assert api.get(f"/documents/{note['id']}/figures").json() == []
+
+
+def test_the_practitioner_chooses_each_photo_size(api: Any) -> None:
+    encounter = consultation_traitee(api)
+    note = documents_by_type(api, encounter["id"])["consultation_note"]
+    a = deposer(api, encounter["patient"]["id"], "a.jpg", photo(10))
+    b = deposer(api, encounter["patient"]["id"], "b.jpg", photo(20))
+    sans_choix = api.put(
+        f"/documents/{note['id']}/figures",
+        json={"figures": [{"attachment_id": a}, {"attachment_id": b}]},
+    ).json()
+    assert [f["format"] for f in sans_choix] == ["large", "demi"]
+    choisi = api.put(
+        f"/documents/{note['id']}/figures",
+        json={
+            "figures": [
+                {"attachment_id": a, "format": "demi"},
+                {"attachment_id": b, "format": "large"},
+            ]
+        },
+    ).json()
+    assert [f["format"] for f in choisi] == ["demi", "large"]
+    pdf = api.get(f"/documents/{note['id']}/export", params={"format": "pdf"})
+    assert pdf.content.startswith(b"%PDF")
