@@ -1035,3 +1035,61 @@ rafraîchir une journée. Il pose maintenant une **demande**, que l'extension vi
 ligne toute seule, et l'écran vide de la journée ressemblait à un poème. Les enfants sont
 maintenant enveloppés dans un seul élément — même défaut, même correction que pour les
 bandeaux plus tôt dans la journée.
+
+---
+
+## Le dossier SmileCloud du patient, et une reconnaissance de noms commune (21 septembre 2026)
+
+Deuxième pas du cadrage `docs/PIECES_JOINTES_SMILECLOUD.md` : avant de pouvoir
+rapatrier les photos d'un patient, il faut savoir **quel dossier SmileCloud** est le
+sien, et savoir le reconnaître quand son nom n'est pas écrit pareil des deux côtés.
+
+### Le champ
+
+`Patient.smilecloud_case_id` (migration `0012`, `String(64)`, nullable). Un champ à lui,
+**pas** `external_id` : celui-ci porte le numéro de dossier du cabinet, saisi à la main
+et affiché dans la liste des patients. Les confondre ferait perdre l'un des deux.
+
+Il se pose et se retire par `PATCH /patients/{id}`, `None` valant « ce n'était pas le
+bon dossier ». Le contrat n'accepte qu'une forme d'identifiant (`^[0-9a-fA-F-]{8,64}$`) :
+assez souple pour survivre à un changement de format chez SmileCloud, assez stricte pour
+refuser un nom de patient collé par erreur dans le champ.
+
+### La reconnaissance de noms
+
+`services/rapprochement.py`, transposé de `attribution.py` de Dental Lens, où il tourne
+depuis septembre 2026 sur 772 dossiers réels. Deux seuils plutôt qu'une comparaison
+binaire : `SUR = 0.995` (c'est le même patient, on l'affirme) et `DOUTE = 0.72` (ça
+ressemble, **on demande**).
+
+`proposer(nom, connus)` rend quatre états : `trouve`, `a_confirmer`, `ambigu`
+(plusieurs correspondants certains — on ne tire pas au sort) et `absent`. Il ne sait pas
+ce que désignent les clés qu'on lui donne, et c'est voulu : il sert au rapprochement des
+patients d'Oris comme à celui des dossiers SmileCloud.
+
+Le fond de l'affaire tient en un test : « Paul MARTIN » et « Paule MARTIN » se
+ressemblent à 95 % et **ne doivent jamais** être rapprochés automatiquement. Rattacher
+des photos ou une consultation au mauvais patient est pire qu'un doublon.
+
+### Ce que ça change dans l'écran « Votre journée »
+
+`api/journee.py` rapprochait les noms par égalité stricte après mise à plat des accents
+et de la casse, prénom contre prénom. Il passe au rapprochement commun, avec la même
+exigence de certitude : « MOREAU Chloé » reconnaît désormais « Moreau Chloe » **et**
+« Chloe Moreau », ordre inversé compris. En dessous de la certitude, `patient_id` reste
+`None` : la ligne s'affiche comme un patient à créer, et c'est au praticien de dire que
+c'est le même.
+
+### Fichiers
+
+`db/models.py` · `alembic/versions/0012_patient_smilecloud_case.py` · `api/schemas.py` ·
+`api/journee.py` · `services/rapprochement.py` (nouveau) ·
+`tests/test_rapprochement.py` (nouveau, 19 cas) · `tests/test_pipeline_api.py` ·
+contrats et gabarits iOS régénérés.
+
+### Ce qui n'est pas fait, volontairement
+
+**Rien de visible dans l'application.** Le champ s'écrit par l'API, mais aucun écran ne
+permet encore de choisir un dossier SmileCloud — parce que la seule façon sensée de le
+choisir est la liste des dossiers que l'extension Chrome livrera, et qu'elle n'existe
+pas encore. C'est le troisième pas du cadrage.

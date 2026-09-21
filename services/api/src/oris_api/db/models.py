@@ -118,6 +118,10 @@ class Patient(Base):
     last_name: Mapped[str] = mapped_column(String(200))
     birth_date: Mapped[date | None] = mapped_column(Date)
     external_id: Mapped[str | None] = mapped_column(String(200))
+    # Dossier du patient dans SmileCloud, posé une fois puis retenu. **Distinct
+    # d'`external_id`**, qui porte le numéro de dossier du cabinet : confondre les deux
+    # ferait perdre l'un des deux. Donnée personnelle indirecte : jamais journalisée.
+    smilecloud_case_id: Mapped[str | None] = mapped_column(String(64))
     # Adresse pour lui envoyer son résumé ou un courrier. Donnée personnelle :
     # jamais journalisée, jamais reprise dans un compte rendu.
     email: Mapped[str] = mapped_column(String(200), default="", server_default="")

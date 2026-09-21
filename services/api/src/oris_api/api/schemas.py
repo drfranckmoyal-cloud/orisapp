@@ -42,6 +42,13 @@ class PatientCreate(BaseModel):
     note: AdminNote = ""
 
 
+#: Identifiant de dossier SmileCloud : un UUID tel qu'il se lit dans l'adresse du
+#: dossier. Contrainte volontairement souple — le jour où SmileCloud change la forme de
+#: ses identifiants, mieux vaut un rapprochement qui échoue franchement qu'un champ qui
+#: refuse une valeur valable. Mais assez stricte pour écarter un nom collé par erreur.
+CaseSmileCloud = Annotated[str, StringConstraints(pattern=r"^[0-9a-fA-F-]{8,64}$")]
+
+
 class PatientUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     first_name: Name | None = None
@@ -50,6 +57,8 @@ class PatientUpdate(BaseModel):
     external_id: str | None = None
     email: Annotated[str, StringConstraints(max_length=200)] | None = None
     note: AdminNote | None = None
+    # `None` explicite détache le dossier : « ce n'était pas le bon » doit pouvoir se dire.
+    smilecloud_case_id: CaseSmileCloud | None = None
 
 
 class PatientOut(BaseModel):
@@ -59,6 +68,7 @@ class PatientOut(BaseModel):
     last_name: str
     birth_date: date | None
     external_id: str | None
+    smilecloud_case_id: str | None
     email: str
     note: str
     created_at: datetime

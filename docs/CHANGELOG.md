@@ -1,6 +1,8 @@
 # Changelog
 
 ## Pièces jointes et connecteurs — 2026-09-21
+- **Le dossier SmileCloud d'un patient se retient.** Un champ à lui sur la fiche — pas le numéro de dossier du cabinet, qui reste où il est. Posé une fois, il évite d'avoir à redemander à chaque fois quel dossier est le bon, et il se détache si ce n'était pas le bon.
+- **Les noms se reconnaissent enfin d'une application à l'autre.** « MOREAU Chloé » dans Doctolib et « Moreau Chloe » dans Oris sont le même patient, ordre des mots, accents et casse compris ; la mesure vient de Dental Lens, où elle tourne sur 772 dossiers réels. Mais « Paul » et « Paule » se ressemblent à 95 % et sont deux personnes : dans la zone de doute, Oris demande au lieu de décider. L'écran « Votre journée » s'en sert déjà.
 - **Les pièces jointes quittent `Caches`.** Elles vivaient dans `~/Library/Caches/Oris/attachments`, que macOS s'autorise à vider quand il manque de place et qui n'est pas sauvegardé comme le reste : une radio de patient pouvait disparaître sans que personne ne soit prévenu. Elles rejoignent `~/Library/Application Support/Oris/attachments`, auprès des journées. L'audio reste dans `Caches`, où il est à sa place : il est éphémère par décision (D010). Les fichiers déjà rangés ont été déplacés, chacun revérifié par son empreinte avant que l'original ne soit retiré.
 - **Aperçu des pièces jointes**, à la manière d'un coup d'œil rapide : un clic ne
   déclenche plus un téléchargement sans prévenir. Les images et les PDF s'affichent ;

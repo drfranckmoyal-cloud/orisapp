@@ -285,6 +285,11 @@ def demander(settings: Settings, jour: str | None = None) -> str:
     return quand
 
 
+def annuler(settings: Settings, jour: str | None = None) -> None:
+    """Retirer une demande restée sans réponse. Le praticien ne reste pas coincé."""
+    _retirer_demande(settings, _jour_sur(jour) if jour else date.today().isoformat())
+
+
 def demandes(settings: Settings) -> dict[str, str]:
     """Les jours qu'on attend, du plus ancien au plus récent. Pour l'extension."""
     vivantes = _vivantes(_lire_demandes(settings))

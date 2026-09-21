@@ -330,3 +330,20 @@ def test_asking_for_a_day_creates_no_patient_and_no_journee(api: Any, tmp_path: 
     # Demander n'est pas recevoir : la journée reste non relevée.
     assert journee["disponible"] is False
     assert api.get("/patients").json() == []
+
+
+def test_a_request_can_be_taken_back(api: Any, tmp_path: Path) -> None:
+    """Une demande qui reste sans réponse ne doit pas coincer l'écran."""
+    from oris_api.config import get_settings
+    from oris_api.main import app
+
+    app.dependency_overrides[get_settings] = lambda: reglages(tmp_path)
+    try:
+        api.post("/journee/demande", json={"jour": JOUR})
+        retrait = api.delete("/journee/demande", params={"jour": JOUR})
+        restantes = depuis("127.0.0.1").get("/journee/demandes").json()
+    finally:
+        app.dependency_overrides.pop(get_settings, None)
+
+    assert retrait.status_code == 204
+    assert restantes == []

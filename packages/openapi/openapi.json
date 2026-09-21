@@ -5311,6 +5311,17 @@
             ],
             "title": "External Id"
           },
+          "smilecloud_case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Smilecloud Case Id"
+          },
           "email": {
             "type": "string",
             "title": "Email"
@@ -5354,6 +5365,7 @@
           "last_name",
           "birth_date",
           "external_id",
+          "smilecloud_case_id",
           "email",
           "note",
           "created_at"
@@ -5399,6 +5411,17 @@
             ],
             "title": "External Id"
           },
+          "smilecloud_case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Smilecloud Case Id"
+          },
           "email": {
             "type": "string",
             "title": "Email"
@@ -5420,6 +5443,7 @@
           "last_name",
           "birth_date",
           "external_id",
+          "smilecloud_case_id",
           "email",
           "note",
           "created_at"
@@ -5500,6 +5524,18 @@
               }
             ],
             "title": "Note"
+          },
+          "smilecloud_case_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-fA-F-]{8,64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Smilecloud Case Id"
           }
         },
         "additionalProperties": false,

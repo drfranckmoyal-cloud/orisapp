@@ -32,9 +32,9 @@ est celui de ce patient.
 saisi à la main, affiché en pastille, cherchable depuis la liste des patients. S'en
 servir pour SmileCloud ferait perdre l'un des deux.
 
-Il faut donc un champ à lui, portant l'identifiant de dossier SmileCloud (un UUID, celui
-qu'on lit dans l'adresse `…/case/<uuid>/documentation/…`). Migration Alembic, nullable,
-jamais journalisé.
+**Fait le 21/09/2026** : `Patient.smilecloud_case_id` (migration `0012`), nullable,
+jamais journalisé, posé et retiré par `PATCH /patients/{id}`. Il porte l'identifiant lu
+dans l'adresse `…/case/<uuid>/documentation/…`.
 
 ### Comment il se pose
 
@@ -135,14 +135,15 @@ chacun revérifié par son empreinte avant que l'original ne soit retiré.
 Au passage : `audio_temp_dir` est dans `Caches` aussi — et là c'est justifié, l'audio
 est éphémère par décision (D010). On n'y touche pas.
 
-### b) Partager la reconnaissance de noms
+### b) Partager la reconnaissance de noms — **fait le 21/09/2026**
 
 Le même problème est résolu deux fois : une version à pourcentages dans Dental Lens,
 une version simple dans Oris (`_cle()` de `api/journee.py`, qui met à plat casse et
 accents mais ne sait pas rapprocher « Paul » de « Paule »). Les deux sont en Python.
 
-La version de Dental Lens est la bonne. La transposer ici, avec ses seuils, et s'en
-servir pour la journée **et** pour le lien SmileCloud.
+La version de Dental Lens est la bonne. Elle est transposée dans
+`services/rapprochement.py`, avec ses deux seuils, et l'écran « Votre journée » s'en
+sert déjà. Le lien SmileCloud s'en servira au troisième pas.
 
 ---
 
@@ -158,7 +159,9 @@ servir pour la journée **et** pour le lien SmileCloud.
 ## L'ordre
 
 1. ~~Le déménagement hors de `Caches`.~~ **Fait.**
-2. Le champ « dossier SmileCloud » et la reconnaissance de noms partagée.
+2. ~~Le champ « dossier SmileCloud » et la reconnaissance de noms partagée.~~ **Fait** —
+   mais rien n'est encore visible dans l'application : choisir un dossier suppose la
+   liste que l'extension livrera, donc le pas suivant.
 3. L'onglet renommé et la récupération.
 
 Les deux premiers sont petits. Le troisième est le vrai morceau, et il sera beaucoup

@@ -11,11 +11,10 @@ entrer un patient dans Oris reste un geste du praticien (spec §58).
 from __future__ import annotations
 
 import hmac
-import unicodedata
 from datetime import date
 from uuid import UUID
 
-from fastapi import APIRouter, Header, Request
+from fastapi import APIRouter, Header, Request, status
 from sqlalchemy.orm import Session
 
 from oris_api.api.dependencies import ActorDep, SessionDep, SettingsDep
@@ -28,7 +27,7 @@ from oris_api.api.schemas import (
     JourOut,
     RendezVousOut,
 )
-from oris_api.services import agenda, patients
+from oris_api.services import agenda, patients, rapprochement
 from oris_api.services.errors import Forbidden, Unprocessable
 from oris_api.services.identity import Actor
 
@@ -49,22 +48,24 @@ def _seulement_ici(request: Request) -> None:
         raise Forbidden("DEPOT_NON_LOCAL")
 
 
-def _cle(prenom: str, nom: str) -> tuple[str, str]:
-    """Clé de rapprochement insensible à la casse et aux accents.
+def _dossiers_connus(session: Session, actor: Actor) -> list[tuple[str, str]]:
+    """Les patients d'Oris, sous la forme que le rapprochement attend."""
+    return [
+        (str(p.id), f"{p.first_name} {p.last_name}") for p in patients.list_patients(session, actor)
+    ]
 
-    Doctolib écrit « MOREAU Chloé », Oris « Moreau Chloe » : sans cette mise à plat,
-    le même patient apparaîtrait deux fois et on lui créerait un second dossier.
+
+def _dossier_de(prenom: str, nom: str, connus: list[tuple[str, str]]) -> UUID | None:
+    """Le dossier Oris de ce rendez-vous, **et seulement s'il n'y a aucun doute**.
+
+    Doctolib écrit « MOREAU Chloé », Oris « Moreau Chloe » : c'est le même patient, et
+    le rapprochement le voit, accents, casse et ordre des mots compris. Mais « Paul » et
+    « Paule » se ressemblent à 95 % sans être la même personne : sous la certitude, on
+    rend `None`. La ligne s'affiche alors comme un patient à créer, et c'est au praticien
+    de dire que c'est le même — jamais à ce code.
     """
-
-    def plat(mot: str) -> str:
-        sans = unicodedata.normalize("NFKD", mot.strip().casefold())
-        return "".join(c for c in sans if not unicodedata.combining(c))
-
-    return plat(prenom), plat(nom)
-
-
-def _dossiers_connus(session: Session, actor: Actor) -> dict[tuple[str, str], UUID]:
-    return {_cle(p.first_name, p.last_name): p.id for p in patients.list_patients(session, actor)}
+    propose = rapprochement.proposer(f"{prenom} {nom}", connus)
+    return UUID(propose.cle) if propose.certain and propose.cle else None
 
 
 @router.get("", response_model=JourneeOut)
@@ -87,7 +88,7 @@ def read_journee(
                 motif=rdv.motif,
                 statut=rdv.statut,
                 smilecloud=rdv.smilecloud,
-                patient_id=connus.get(_cle(rdv.prenom, rdv.nom)),
+                patient_id=_dossier_de(rdv.prenom, rdv.nom, connus),
             )
             for rdv in journee.rendezvous
         ],
@@ -106,7 +107,9 @@ def read_semaine(
             jour=journee.jour,
             lu=journee.disponible,
             patients=len(journee.rendezvous),
-            a_creer=sum(1 for rdv in journee.rendezvous if _cle(rdv.prenom, rdv.nom) not in connus),
+            a_creer=sum(
+                1 for rdv in journee.rendezvous if _dossier_de(rdv.prenom, rdv.nom, connus) is None
+            ),
         )
         for journee in agenda.lire_semaine(settings, depuis, jours)
     ]
@@ -125,6 +128,15 @@ def demander_journee(body: DemandeIn, actor: ActorDep, settings: SettingsDep) ->
     except agenda.JourneeInvalide as erreur:
         raise Unprocessable("JOURNEE_INVALIDE", details=[str(erreur)]) from erreur
     return DemandeOut(jour=body.jour or date.today().isoformat(), demande_le=quand)
+
+
+@router.delete("/demande", status_code=status.HTTP_204_NO_CONTENT)
+def annuler_demande(actor: ActorDep, settings: SettingsDep, jour: str | None = None) -> None:
+    """Retirer une demande restée sans réponse : on ne reste pas coincé en attente."""
+    try:
+        agenda.annuler(settings, jour)
+    except agenda.JourneeInvalide as erreur:
+        raise Unprocessable("JOURNEE_INVALIDE", details=[str(erreur)]) from erreur
 
 
 @router.get("/demandes", response_model=list[DemandeOut])

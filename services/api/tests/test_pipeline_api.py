@@ -289,6 +289,35 @@ def test_the_administrative_note_never_reaches_the_record(api: Any) -> None:
     assert api.patch(f"/patients/{patient['id']}", json={"note": "x" * 501}).status_code == 422
 
 
+def test_the_smilecloud_case_is_linked_once_and_kept(api: Any) -> None:
+    """Le dossier SmileCloud du patient : posé une fois, retenu, détachable.
+
+    Il a son propre champ. `external_id` porte le numéro de dossier du cabinet et ne
+    doit pas bouger quand on rattache SmileCloud — sinon on perd l'un des deux.
+    """
+    patient = api.post(
+        "/patients",
+        json={"first_name": "Justine", "last_name": "ESSAI", "external_id": "CEM-4412"},
+    ).json()
+    assert patient["smilecloud_case_id"] is None
+
+    case = "3c9422c4-c1a5-40ca-968a-c6077a9b34b0"
+    lie = api.patch(f"/patients/{patient['id']}", json={"smilecloud_case_id": case}).json()
+    assert lie["smilecloud_case_id"] == case
+    assert lie["external_id"] == "CEM-4412"  # l'autre numéro n'a pas bougé
+
+    # Il se relit tel quel : le lien est posé une fois, pas redemandé.
+    assert api.get(f"/patients/{patient['id']}").json()["smilecloud_case_id"] == case
+
+    # « Ce n'était pas le bon dossier » doit pouvoir se dire.
+    detache = api.patch(f"/patients/{patient['id']}", json={"smilecloud_case_id": None}).json()
+    assert detache["smilecloud_case_id"] is None
+
+    # Un nom collé par erreur dans le champ est refusé, pas rangé « au cas où ».
+    refuse = api.patch(f"/patients/{patient['id']}", json={"smilecloud_case_id": "Justine ESSAI"})
+    assert refuse.status_code == 422
+
+
 def test_the_note_can_be_dictated_and_the_sound_is_never_kept(api: Any) -> None:
     """Dicter la note (§9) : transcrire, rendre le texte, oublier le son."""
     import hashlib
