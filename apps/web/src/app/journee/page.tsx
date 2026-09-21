@@ -229,11 +229,7 @@ export default function JourneePage() {
                         ✓ dossier existant
                       </Link>
                       {!annule && (
-                        <CommencerConsultation
-                          patientId={rdv.patient_id}
-                          variante="ligne"
-                          libelle="Commencer"
-                        />
+                        <CommencerConsultation patientId={rdv.patient_id} variante="ligne" />
                       )}
                     </>
                   ) : (

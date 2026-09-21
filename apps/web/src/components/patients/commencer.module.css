@@ -93,18 +93,16 @@
   text-align: right;
 }
 
-/* Au bout d'une ligne de rendez-vous : même geste, même vert, mais posé et non surélevé
-   — onze de ces boutons côte à côte ne doivent pas faire un mur. */
+/* Au bout d'une ligne de rendez-vous : le symbole seul, dans une pastille verte. Onze
+   fois le mot « Commencer » ferait un mur ; le symbole d'Oris dit à lui seul de quel
+   geste il s'agit, et le survol donne la phrase entière. */
 .blocLigne {
-  justify-items: stretch;
+  justify-items: end;
 }
 
 .boutonLigne {
-  width: 100%;
-  justify-content: center;
-  padding: 6px 14px 6px 8px;
-  gap: var(--espace-2);
-  border-radius: 9px;
+  padding: 4px;
+  border-radius: 50%;
   box-shadow: var(--relief);
 }
 
@@ -113,10 +111,21 @@
 }
 
 .boutonLigne .disque {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
+  background: transparent;
 }
 
+/* Pendant l'ouverture, les barres bougent d'elles-mêmes : le clic a été pris. */
+.boutonLigne:disabled .disque svg rect {
+  animation: niveau 1.15s ease-in-out infinite;
+}
+
+.boutonLigne:disabled .disque svg rect:nth-child(2) { animation-delay: 0.14s; }
+.boutonLigne:disabled .disque svg rect:nth-child(3) { animation-delay: 0.28s; }
+.boutonLigne:disabled .disque svg rect:nth-child(4) { animation-delay: 0.42s; }
+.boutonLigne:disabled .disque svg rect:nth-child(5) { animation-delay: 0.56s; }
+
 .blocLigne .erreur {
-  text-align: left;
+  text-align: right;
 }

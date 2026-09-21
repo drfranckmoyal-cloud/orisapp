@@ -41,11 +41,21 @@ export function Semaine({
   return (
     <aside className={styles.semaine}>
       <div className={styles.navigation}>
-        <button type="button" title="Semaine précédente" onClick={() => onSemaine(-1)}>
+        <button
+          type="button"
+          title="Semaine précédente"
+          aria-label="Semaine précédente"
+          onClick={() => onSemaine(-1)}
+        >
           ‹
         </button>
         <span className={styles.periode}>{libelleSemaine(debut, jours.length || 7)}</span>
-        <button type="button" title="Semaine suivante" onClick={() => onSemaine(1)}>
+        <button
+          type="button"
+          title="Semaine suivante"
+          aria-label="Semaine suivante"
+          onClick={() => onSemaine(1)}
+        >
           ›
         </button>
       </div>

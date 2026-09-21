@@ -19,10 +19,13 @@ import styles from "./commencer.module.css";
 export function CommencerConsultation({
   patientId,
   variante = "principal",
-  libelle = "Nouvelle consultation",
+  libelle = variante === "ligne"
+    ? "Commencer l’enregistrement de la consultation"
+    : "Nouvelle consultation",
 }: {
   patientId: string;
-  /** `ligne` : au bout d'un rendez-vous, où le bouton ne doit pas écraser la ligne. */
+  /** `ligne` : au bout d'un rendez-vous, le symbole seul. Une liste de onze lignes
+   *  n'a pas besoin de lire onze fois le même mot ; le survol dit ce que fait le geste. */
   variante?: "principal" | "ligne";
   libelle?: string;
 }) {
@@ -45,18 +48,22 @@ export function CommencerConsultation({
     }
   }
 
+  const ligne = variante === "ligne";
+
   return (
-    <div className={`${styles.bloc} ${variante === "ligne" ? styles.blocLigne : ""}`}>
+    <div className={`${styles.bloc} ${ligne ? styles.blocLigne : ""}`}>
       <button
         type="button"
-        className={`${styles.bouton} ${variante === "ligne" ? styles.boutonLigne : ""}`}
+        className={`${styles.bouton} ${ligne ? styles.boutonLigne : ""}`}
         onClick={() => void commencer()}
         disabled={busy}
+        title={ligne ? libelle : undefined}
+        aria-label={ligne ? libelle : undefined}
       >
         <span className={styles.disque} aria-hidden="true">
-          <Symbole taille={variante === "ligne" ? 16 : 20} />
+          <Symbole taille={ligne ? 19 : 20} />
         </span>
-        {busy ? "Ouverture…" : libelle}
+        {!ligne && (busy ? "Ouverture…" : libelle)}
       </button>
       {erreur && (
         <span className={styles.erreur} role="alert">
