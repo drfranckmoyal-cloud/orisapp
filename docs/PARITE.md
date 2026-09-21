@@ -23,6 +23,10 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
 
 ## Écarts voulus (imposés par l'appareil)
 
+- « Tester le micro » : dans les Paramètres de l'iPhone. Sur le site, le navigateur
+  demande l'accès au micro et la barre de niveau de l'écoute suffit ; à ajouter si
+  besoin.
+
 - iPhone : appareil photo, écoute écran verrouillé et pendant un appel, son gardé chiffré
   hors connexion ; **écran d'ouverture** (logo et slogan, 1,5 s) et **Face ID** à
   l'ouverture et au retour après deux minutes — un navigateur a sa propre session.

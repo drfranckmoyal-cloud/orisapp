@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import { Deroule } from "@/components/listening/Deroule";
+import { SymboleVoix } from "@/components/Marque";
 import { Traitement } from "@/components/listening/Traitement";
 import { TranscriptionDirecte } from "@/components/listening/TranscriptionDirecte";
 import {
@@ -494,6 +495,11 @@ export function ListeningScreen({
           >
             {state.phase === "microphone_lost" ? (
               <span style={{ fontSize: 44, fontWeight: 600 }}>!</span>
+            ) : state.phase === "recording" ? (
+              // Les barres suivent la voix : au premier mot, on voit que le micro entend.
+              <span style={{ color: "var(--accent)", display: "grid" }}>
+                <SymboleVoix niveau={state.level} />
+              </span>
             ) : (
               <Image
                 src="/oris-symbole.png"
@@ -501,7 +507,7 @@ export function ListeningScreen({
                 width={368}
                 height={365}
                 className={styles.symbole}
-                style={{ opacity: state.phase === "recording" ? 1 : 0.4 }}
+                style={{ opacity: 0.4 }}
                 priority
               />
             )}

@@ -1,5 +1,19 @@
 # Changelog
 
+## Micro de l'iPhone : diagnostic et micro intégré imposé — 2026-09-21
+- Constat : sur l'iPhone, le son arrive au serveur (il n'est pas muet) mais aucune parole
+  n'y est reconnue ; la même phrase enregistrée sur le Mac est transcrite. Hypothèse la
+  plus probable, **non encore confirmée** : micro Bluetooth (écouteurs) accepté par
+  l'app, qui enregistre à un autre rythme.
+- L'app impose désormais le micro intégré de l'iPhone (catégorie d'enregistrement seule,
+  entrée intégrée préférée).
+- **Tester le micro** (Paramètres, en tête) : six secondes de parole, le serveur les
+  transcrit aussitôt et les oublie (`POST /diagnostic/micro`) ; l'écran affiche ce
+  qu'Oris a compris, le micro utilisé, son rythme et le volume. Le journal ne garde que
+  ces nombres.
+- Pendant l'écoute, sur l'iPhone comme sur le site, les barres du symbole Oris suivent le
+  volume de la voix.
+
 ## Rédaction plus robuste, « Rédiger à nouveau » — 2026-09-21
 - Constat : le compte rendu d'une consultation est parti en version simplifiée (repli)
   alors que Claude le rédige sans faute quand on le rejoue : panne passagère.

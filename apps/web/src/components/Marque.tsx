@@ -35,3 +35,44 @@ export function Symbole({
     </svg>
   );
 }
+
+/** Pendant l'écoute : les barres du symbole suivent la voix (niveau 0…1). Au repos elles
+ *  sont basses ; elles montent quand on parle — on voit que le micro entend. */
+const BARRES_SYMBOLE = [
+  { x: 13, y: 38, h: 34, poids: 0.8 },
+  { x: 31, y: 20, h: 76, poids: 1 },
+  { x: 49, y: 30, h: 48, poids: 0.9 },
+  { x: 67, y: 20, h: 76, poids: 0.95 },
+  { x: 85, y: 38, h: 34, poids: 0.85 },
+];
+
+export function SymboleVoix({ niveau, taille = 62 }: { niveau: number; taille?: number }) {
+  const n = Math.min(1, Math.max(0, niveau));
+  return (
+    <svg
+      viewBox="0 0 120 120"
+      width={taille}
+      height={taille}
+      fill="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {BARRES_SYMBOLE.map((b) => (
+        <rect
+          key={b.x}
+          x={b.x}
+          y={b.y}
+          width={10}
+          height={b.h}
+          rx={5}
+          style={{
+            transformBox: "fill-box",
+            transformOrigin: "center",
+            transform: `scaleY(${0.22 + 0.78 * n * b.poids})`,
+            transition: "transform 90ms linear",
+          }}
+        />
+      ))}
+    </svg>
+  );
+}
