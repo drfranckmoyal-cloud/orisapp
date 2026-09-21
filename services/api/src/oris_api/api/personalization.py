@@ -10,16 +10,23 @@ from datetime import UTC, datetime
 from typing import Annotated, Literal
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 
-from oris_api.api.dependencies import ActorDep, SessionDep
+from oris_api.api.dependencies import ActorDep, SessionDep, depuis_cette_machine
 from oris_api.contracts.generated import PractitionerLearningProfile
-from oris_api.db.models import GlossaryTermRow, ModelVersion, Organization, PromptVersion, User
+from oris_api.db.models import (
+    ApiToken,
+    GlossaryTermRow,
+    ModelVersion,
+    Organization,
+    PromptVersion,
+    User,
+)
 from oris_api.domain.preferences import PractitionerPreferences, PreferencesPatch
-from oris_api.services import personalization
-from oris_api.services.errors import NotFound
+from oris_api.services import authentication, personalization
+from oris_api.services.errors import Forbidden, NotFound
 
 router = APIRouter(tags=["personnalisation"])
 
@@ -314,3 +321,67 @@ def list_suggestions(session: SessionDep, actor: ActorDep) -> list[SuggestionOut
         )
         for item in personalization.suggestions(session, actor)
     ]
+
+
+# --- Appareils connectés ------------------------------------------------------------
+#
+# Chaque appareil (l'iPhone du praticien…) porte un jeton à son nom. Les Paramètres les
+# listent, et en déconnectent un d'un geste — un iPhone perdu ne lit plus rien.
+
+
+class AppareilOut(BaseModel):
+    id: UUID
+    nom: str
+    cree_le: datetime
+    dernier_usage: datetime | None
+    actif: bool
+
+
+class AppareilIn(BaseModel):
+    nom: str = Field(min_length=1, max_length=100)
+
+
+class AppareilCreeOut(AppareilOut):
+    #: Montré une seule fois : la base n'en garde qu'une empreinte.
+    code: str
+
+
+def _appareil(jeton: ApiToken) -> AppareilOut:
+    return AppareilOut(
+        id=jeton.id,
+        nom=jeton.label,
+        cree_le=jeton.created_at,
+        dernier_usage=jeton.last_used_at,
+        actif=jeton.revoked_at is None,
+    )
+
+
+@router.get("/me/appareils", response_model=list[AppareilOut])
+def appareils(session: SessionDep, actor: ActorDep) -> list[AppareilOut]:
+    jetons = session.scalars(
+        select(ApiToken)
+        .where(ApiToken.user_id == actor.user_id)
+        .order_by(ApiToken.created_at.desc())
+    )
+    return [_appareil(j) for j in jetons]
+
+
+@router.post("/me/appareils", response_model=AppareilCreeOut, status_code=201)
+def autoriser_appareil(
+    body: AppareilIn, request: Request, session: SessionDep, actor: ActorDep
+) -> AppareilCreeOut:
+    """Autoriser un nouvel appareil : seulement depuis le Mac du cabinet lui-même."""
+    if not depuis_cette_machine(request):
+        raise Forbidden("DEVICE_FROM_THIS_MAC_ONLY")
+    emis = authentication.issue(session, actor.user_id, body.nom.strip())
+    jeton = session.get(ApiToken, emis.token_id)
+    assert jeton is not None  # noqa: S101 - vient d'être créé
+    return AppareilCreeOut(**_appareil(jeton).model_dump(), code=emis.secret)
+
+
+@router.delete("/me/appareils/{appareil_id}", status_code=204)
+def deconnecter_appareil(appareil_id: UUID, session: SessionDep, actor: ActorDep) -> None:
+    jeton = session.get(ApiToken, appareil_id)
+    if jeton is None or jeton.user_id != actor.user_id:
+        raise NotFound("TOKEN_NOT_FOUND", str(appareil_id))
+    authentication.revoke(session, appareil_id)

@@ -1377,6 +1377,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me/appareils": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Appareils */
+        get: operations["appareils_me_appareils_get"];
+        put?: never;
+        /**
+         * Autoriser Appareil
+         * @description Autoriser un nouvel appareil : seulement depuis le Mac du cabinet lui-même.
+         */
+        post: operations["autoriser_appareil_me_appareils_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/appareils/{appareil_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Deconnecter Appareil */
+        delete: operations["deconnecter_appareil_me_appareils__appareil_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/audit": {
         parameters: {
             query?: never;
@@ -1458,6 +1496,51 @@ export interface components {
             status: "discussed" | "proposed" | "accepted" | "refused" | "deferred" | "planned" | "completed";
             /** Problem */
             problem?: string | null;
+        };
+        /** AppareilCreeOut */
+        AppareilCreeOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Nom */
+            nom: string;
+            /**
+             * Cree Le
+             * Format: date-time
+             */
+            cree_le: string;
+            /** Dernier Usage */
+            dernier_usage: string | null;
+            /** Actif */
+            actif: boolean;
+            /** Code */
+            code: string;
+        };
+        /** AppareilIn */
+        AppareilIn: {
+            /** Nom */
+            nom: string;
+        };
+        /** AppareilOut */
+        AppareilOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Nom */
+            nom: string;
+            /**
+             * Cree Le
+             * Format: date-time
+             */
+            cree_le: string;
+            /** Dernier Usage */
+            dernier_usage: string | null;
+            /** Actif */
+            actif: boolean;
         };
         /**
          * AttachmentOut
@@ -6044,6 +6127,88 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SuggestionOut"][];
+                };
+            };
+        };
+    };
+    appareils_me_appareils_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppareilOut"][];
+                };
+            };
+        };
+    };
+    autoriser_appareil_me_appareils_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppareilIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppareilCreeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deconnecter_appareil_me_appareils__appareil_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appareil_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

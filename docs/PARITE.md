@@ -12,8 +12,9 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
   courrier d'adressage ou d'un compte rendu de soins demandé par erreur.
 - Retouche d'image (recadrage, miroir) dans la documentation clinique.
 - Pièces jointes non photo du dossier patient (PDF, radios) : liste et ouverture.
-- Votre journée (Doctolib), Oris apprend (vocabulaire, préférences), Paramètres complets
-  (cabinet, titres, adresse d'envoi).
+- Votre journée (Doctolib), Oris apprend (vocabulaire, préférences).
+- Paramètres complets du site : profil, rédaction, cabinet, envoi, spécialités,
+  appareils connectés (l'iPhone a : connexion, Tester le micro, Face ID).
 
 ## À rattraper sur le site (existe dans l'app iPhone)
 
@@ -23,9 +24,6 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
 
 ## Écarts voulus (imposés par l'appareil)
 
-- « Tester le micro » : dans les Paramètres de l'iPhone. Sur le site, le navigateur
-  demande l'accès au micro et la barre de niveau de l'écoute suffit ; à ajouter si
-  besoin.
 
 - iPhone : appareil photo, écoute écran verrouillé et pendant un appel, son gardé chiffré
   hors connexion ; **écran d'ouverture** (logo et slogan, 1,5 s) et **Face ID** à

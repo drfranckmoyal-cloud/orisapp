@@ -4,7 +4,7 @@
  */
 
 import { type AudioSource, MicrophoneSource } from "@/lib/audio/sources";
-import { Resampler, TARGET_SAMPLE_RATE, toInt16 } from "@/lib/audio/pcm";
+import { Resampler, TARGET_SAMPLE_RATE, level, toInt16 } from "@/lib/audio/pcm";
 
 export const MAX_DICTATION_MS = 20_000;
 
@@ -15,12 +15,14 @@ export class Dictation {
 
   constructor(private readonly makeSource: () => AudioSource = () => new MicrophoneSource()) {}
 
-  async start(onEnded: () => void = () => {}): Promise<void> {
+  /** `onNiveau` : le volume de la voix (0…1), pour montrer que le micro entend. */
+  async start(onEnded: () => void = () => {}, onNiveau?: (niveau: number) => void): Promise<void> {
     this.pieces = [];
     this.resampler = null;
     this.source = this.makeSource();
     await this.source.start((samples, sampleRate) => {
       this.resampler ??= new Resampler(sampleRate);
+      onNiveau?.(level(samples));
       const resampled = this.resampler.process(samples);
       if (resampled.length > 0) this.pieces.push(toInt16(resampled));
     }, onEnded);

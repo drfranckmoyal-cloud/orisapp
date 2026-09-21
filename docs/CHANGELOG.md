@@ -1,5 +1,20 @@
 # Changelog
 
+## Paramètres du site refaits ; iPhone : couleurs et boutons d'ajout — 2026-09-22
+- Site, **Paramètres** rangés comme les Réglages du Mac : sommaire à gauche (Vous ·
+  Cabinet · Consultation · Connexions · Oris), une carte en relief par rubrique, chacune
+  avec son icône, une phrase qui dit à quoi elle sert, son bouton Enregistrer et son
+  retour sur place. Rubriques : Mon profil, Rédaction (longueur, mots préférés),
+  Cabinet et en-tête (avec aperçu de l'en-tête), Envoi des documents, Correspondants
+  (spécialités), Praticiens, Écoute et micro (avec **Tester le micro**), **Appareils
+  connectés** (nouveau), Connecteurs, Sécurité et données (export), À propos.
+- Serveur : `GET/POST/DELETE /me/appareils` — voir les appareils qui ont un code
+  d'accès, en déconnecter un (iPhone perdu), en autoriser un nouveau (depuis le Mac
+  seulement ; le code s'affiche une fois).
+- iPhone : vignettes des correspondants aux couleurs de leur spécialité, même règle
+  que le site ; « Nouveau patient » et « Nouveau correspondant » en grand bouton vert
+  flottant, en bas à droite.
+
 ## Face ID réparé, micro confirmé — 2026-09-21
 - Micro : l'essai de Franck sur l'iPhone (micro intégré, 48 kHz, crête 13 %) est compris
   par Oris ; imposer le micro intégré a réglé la panne.

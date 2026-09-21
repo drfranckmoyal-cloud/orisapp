@@ -140,6 +140,8 @@ export const LEARNING_EVENT: Record<string, string> = {
 };
 
 const ERRORS: Record<string, string> = {
+  DEVICE_FROM_THIS_MAC_ONLY: "Un nouvel appareil s’autorise depuis le Mac du cabinet uniquement.",
+  TOKEN_NOT_FOUND: "Cet appareil est introuvable : il a peut-être déjà été déconnecté.",
   SMTP_NOT_CONFIGURED: "La boîte d’envoi n’est pas branchée (mot de passe d’application manquant).",
   SENDING_EMAIL_MISSING: "Renseignez votre adresse d’envoi dans Paramètres.",
   SMTP_AUTH_FAILED: "La messagerie a refusé l’identification : vérifiez le mot de passe d’application.",

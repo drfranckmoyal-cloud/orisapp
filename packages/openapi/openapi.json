@@ -3981,6 +3981,107 @@
         }
       }
     },
+    "/me/appareils": {
+      "get": {
+        "tags": [
+          "personnalisation"
+        ],
+        "summary": "Appareils",
+        "operationId": "appareils_me_appareils_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AppareilOut"
+                  },
+                  "type": "array",
+                  "title": "Response Appareils Me Appareils Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "personnalisation"
+        ],
+        "summary": "Autoriser Appareil",
+        "description": "Autoriser un nouvel appareil : seulement depuis le Mac du cabinet lui-même.",
+        "operationId": "autoriser_appareil_me_appareils_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppareilIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppareilCreeOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/appareils/{appareil_id}": {
+      "delete": {
+        "tags": [
+          "personnalisation"
+        ],
+        "summary": "Deconnecter Appareil",
+        "operationId": "deconnecter_appareil_me_appareils__appareil_id__delete",
+        "parameters": [
+          {
+            "name": "appareil_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Appareil Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/audit": {
       "get": {
         "tags": [
@@ -4149,6 +4250,112 @@
         ],
         "title": "AddPlanItem",
         "description": "Ajout manuel d'un élément de plan (§34).\n\nLe praticien décide : l'élément est marqué comme le sien, sans fait d'appui\nextrait — c'est sa décision qui en tient lieu."
+      },
+      "AppareilCreeOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "nom": {
+            "type": "string",
+            "title": "Nom"
+          },
+          "cree_le": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cree Le"
+          },
+          "dernier_usage": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dernier Usage"
+          },
+          "actif": {
+            "type": "boolean",
+            "title": "Actif"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nom",
+          "cree_le",
+          "dernier_usage",
+          "actif",
+          "code"
+        ],
+        "title": "AppareilCreeOut"
+      },
+      "AppareilIn": {
+        "properties": {
+          "nom": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Nom"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nom"
+        ],
+        "title": "AppareilIn"
+      },
+      "AppareilOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "nom": {
+            "type": "string",
+            "title": "Nom"
+          },
+          "cree_le": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cree Le"
+          },
+          "dernier_usage": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dernier Usage"
+          },
+          "actif": {
+            "type": "boolean",
+            "title": "Actif"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nom",
+          "cree_le",
+          "dernier_usage",
+          "actif"
+        ],
+        "title": "AppareilOut"
       },
       "AttachmentOut": {
         "properties": {
