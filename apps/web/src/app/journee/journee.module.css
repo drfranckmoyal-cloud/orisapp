@@ -225,7 +225,8 @@
   grid-template-columns: 62px minmax(0, 1fr) minmax(0, 1fr) 212px;
   gap: var(--espace-3);
   align-items: center;
-  padding: 5px var(--espace-6);
+  /* Entre les 10 px d'origine et les 5 px du premier resserrage. */
+  padding: 7.5px var(--espace-6);
   border-bottom: 1px solid var(--trait);
   transition: background var(--transition);
 }

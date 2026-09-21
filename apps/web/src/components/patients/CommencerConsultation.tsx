@@ -61,7 +61,7 @@ export function CommencerConsultation({
         aria-label={ligne ? libelle : undefined}
       >
         <span className={styles.disque} aria-hidden="true">
-          <Symbole taille={ligne ? 15 : 20} />
+          <Symbole taille={ligne ? 17 : 20} />
         </span>
         {!ligne && (busy ? "Ouverture…" : libelle)}
       </button>
