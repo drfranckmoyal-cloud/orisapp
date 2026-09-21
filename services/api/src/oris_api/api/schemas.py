@@ -389,7 +389,18 @@ class JourneeOut(BaseModel):
     recu_le: str | None = None
     #: Quand une relecture a été demandée, tant que l'extension ne l'a pas servie.
     demande_le: str | None = None
+    #: La dernière tentative de livraison pour ce jour — y compris refusée. Sans elle,
+    #: une livraison vide écartée ne se voyait nulle part et l'écran attendait en silence.
+    derniere_livraison: LivraisonOut | None = None
     rendezvous: list[RendezVousOut] = []
+
+
+class LivraisonOut(BaseModel):
+    le: str
+    rendezvous: int
+    #: Faux quand Oris a gardé la journée déjà déposée plutôt que de l'écraser.
+    remplace: bool
+    raison: str | None = None
 
 
 class DemandeIn(BaseModel):

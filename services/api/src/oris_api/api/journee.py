@@ -25,8 +25,10 @@ from oris_api.api.schemas import (
     JourneeDepot,
     JourneeOut,
     JourOut,
+    LivraisonOut,
     RendezVousOut,
 )
+from oris_api.config import Settings
 from oris_api.services import agenda, patients, rapprochement
 from oris_api.services.errors import Forbidden, Unprocessable
 from oris_api.services.identity import Actor
@@ -68,6 +70,11 @@ def _dossier_de(prenom: str, nom: str, connus: list[tuple[str, str]]) -> UUID | 
     return UUID(propose.cle) if propose.certain and propose.cle else None
 
 
+def _livraison(settings: Settings, jour: str) -> LivraisonOut | None:
+    tentative = agenda.derniere_livraison(settings, jour)
+    return LivraisonOut(**tentative) if tentative else None
+
+
 @router.get("", response_model=JourneeOut)
 def read_journee(
     session: SessionDep, actor: ActorDep, settings: SettingsDep, jour: str | None = None
@@ -80,6 +87,7 @@ def read_journee(
         disponible=journee.disponible,
         recu_le=journee.recu_le,
         demande_le=agenda.demande_pour(settings, journee.jour),
+        derniere_livraison=_livraison(settings, journee.jour),
         rendezvous=[
             RendezVousOut(
                 heure=rdv.heure,

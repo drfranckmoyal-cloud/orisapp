@@ -236,7 +236,13 @@ export default function JourneePage() {
             </div>
           </header>
 
-          {attendue && <Attente depuis={attendue} onAnnuler={() => void annuler()} />}
+          {attendue && (
+            <Attente
+              depuis={attendue}
+              livraison={donnees?.derniere_livraison ?? null}
+              onAnnuler={() => void annuler()}
+            />
+          )}
 
           {journee.state === "loading" && (
             <div className={styles.chargement}>

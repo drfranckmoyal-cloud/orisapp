@@ -38,8 +38,14 @@ EtatSmileCloud = Literal["trouve", "absent", "a_verifier", "ambigu", "demande", 
 #: plutôt que d'être affiché tel quel — un écran ne montre pas un mot qu'il ne comprend pas.
 ETATS: frozenset[str] = frozenset({"trouve", "absent", "a_verifier", "ambigu", "demande"})
 
-#: Au-delà, une demande de relecture est oubliée : voir `_vivantes`.
-DUREE_DEMANDE_H = 12
+#: Au-delà, une demande de relecture est oubliée : voir `_vivantes`. Une heure et non
+#: douze : une demande que personne n'a servie en une heure ne le sera pas, et laisser
+#: l'écran attendre indéfiniment est pire que de lui faire redemander.
+DUREE_DEMANDE_MIN = 60
+
+#: On garde une semaine de tentatives de livraison, pas davantage : c'est un fil
+#: d'événements, pas un journal.
+JOURS_DE_LIVRAISONS = 7
 
 
 @dataclass(frozen=True, slots=True)
@@ -196,7 +202,9 @@ def deposer(settings: Settings, livraison: dict[str, Any]) -> Depot:
         log.info(
             "Dépôt %s ignoré (%s) ; %d rendez-vous gardés", jour, raison, len(ancienne.rendezvous)
         )
-        return Depot(jour=jour, rendezvous=len(ancienne.rendezvous), remplace=False, raison=raison)
+        refus = Depot(jour=jour, rendezvous=len(ancienne.rendezvous), remplace=False, raison=raison)
+        _noter_livraison(settings, refus)
+        return refus
 
     _ecrire(
         fichier,
@@ -219,7 +227,9 @@ def deposer(settings: Settings, livraison: dict[str, Any]) -> Depot:
     )
     _retirer_demande(settings, jour)
     log.info("Journée %s déposée : %d rendez-vous", jour, len(lignes))
-    return Depot(jour=jour, rendezvous=len(lignes), remplace=True)
+    depot = Depot(jour=jour, rendezvous=len(lignes), remplace=True)
+    _noter_livraison(settings, depot)
+    return depot
 
 
 # --- Demander une relecture ---------------------------------------------------------
@@ -246,11 +256,11 @@ def _lire_demandes(settings: Settings) -> dict[str, str]:
 def _vivantes(demandes: dict[str, str]) -> dict[str, str]:
     """Une demande que personne n'a servie finit par ne plus rien vouloir dire.
 
-    Chrome peut rester fermé une journée entière ; la demande doit survivre à ça. Mais
-    relire l'agenda d'avant-hier parce qu'on avait cliqué avant-hier n'a aucun sens :
-    passé douze heures, la demande est oubliée.
+    Une demande que personne n'a servie en une heure ne le sera pas : l'extension est
+    arrêtée, mal configurée, ou bute sur quelque chose. Mieux vaut que l'écran cesse
+    d'attendre et propose de redemander, plutôt qu'il tourne indéfiniment.
     """
-    limite = datetime.now().astimezone() - timedelta(hours=DUREE_DEMANDE_H)
+    limite = datetime.now().astimezone() - timedelta(minutes=DUREE_DEMANDE_MIN)
     gardees = {}
     for jour, quand in demandes.items():
         try:
@@ -298,6 +308,43 @@ def demandes(settings: Settings) -> dict[str, str]:
 
 def demande_pour(settings: Settings, jour: str) -> str | None:
     return _vivantes(_lire_demandes(settings)).get(jour)
+
+
+# --- Ce que l'extension a tenté de livrer -------------------------------------------
+#
+# Une livraison refusée — une liste vide alors qu'une journée était déjà là — ne se
+# voyait nulle part. L'extension réessayait, Oris refusait, et l'écran attendait sans
+# que rien ne l'explique. On garde donc la dernière tentative de chaque jour.
+
+
+def _fichier_livraisons(settings: Settings) -> Path:
+    return settings.journee_dir / "livraisons.json"
+
+
+def _lire_livraisons(settings: Settings) -> dict[str, dict[str, Any]]:
+    try:
+        brut = json.loads(_fichier_livraisons(settings).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return brut if isinstance(brut, dict) else {}
+
+
+def _noter_livraison(settings: Settings, depot: Depot) -> None:
+    livraisons = _lire_livraisons(settings)
+    livraisons[depot.jour] = {
+        "le": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "rendezvous": depot.rendezvous,
+        "remplace": depot.remplace,
+        "raison": depot.raison,
+    }
+    vieux = (date.today() - timedelta(days=JOURS_DE_LIVRAISONS)).isoformat()
+    gardees = {jour: v for jour, v in livraisons.items() if jour >= vieux}
+    _ecrire(_fichier_livraisons(settings), gardees)
+
+
+def derniere_livraison(settings: Settings, jour: str) -> dict[str, Any] | None:
+    tentative = _lire_livraisons(settings).get(jour)
+    return tentative if isinstance(tentative, dict) else None
 
 
 def lire(settings: Settings, jour: str | None = None) -> Journee:

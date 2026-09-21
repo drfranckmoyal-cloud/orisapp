@@ -283,17 +283,6 @@ def test_a_failed_reading_leaves_the_request_standing(tmp_path: Path) -> None:
     assert JOUR in agenda.demandes(reglage)
 
 
-def test_a_request_nobody_served_is_forgotten_after_half_a_day(tmp_path: Path) -> None:
-    """Relire l'agenda d'avant-hier parce qu'on avait cliqué avant-hier n'a aucun sens."""
-    from datetime import datetime, timedelta
-
-    reglage = reglages(tmp_path)
-    vieille = (datetime.now().astimezone() - timedelta(hours=13)).isoformat(timespec="seconds")
-    (tmp_path).mkdir(parents=True, exist_ok=True)
-    (tmp_path / "demandes.json").write_text(json.dumps({JOUR: vieille}), encoding="utf-8")
-    assert agenda.demandes(reglage) == {}
-
-
 def test_the_screen_and_the_extension_see_the_same_request(api: Any, tmp_path: Path) -> None:
     from oris_api.config import get_settings
     from oris_api.main import app
@@ -347,3 +336,35 @@ def test_a_request_can_be_taken_back(api: Any, tmp_path: Path) -> None:
 
     assert retrait.status_code == 204
     assert restantes == []
+
+
+def test_a_refused_delivery_leaves_a_trace_the_screen_can_show(tmp_path: Path) -> None:
+    """Sans trace, l'extension réessayait, Oris refusait, et l'écran attendait en silence."""
+    reglage = reglages(tmp_path)
+    agenda.deposer(reglage, livraison([RDV]))
+    agenda.deposer(reglage, livraison([], diagnostic={"entetes": False}))
+
+    tentative = agenda.derniere_livraison(reglage, JOUR)
+    assert tentative is not None
+    assert tentative["remplace"] is False
+    assert "conservée" in (tentative["raison"] or "")
+    assert tentative["le"]
+
+
+def test_a_served_delivery_leaves_its_trace_too(tmp_path: Path) -> None:
+    reglage = reglages(tmp_path)
+    agenda.deposer(reglage, livraison([RDV, {**RDV, "nom": "Benali"}]))
+    tentative = agenda.derniere_livraison(reglage, JOUR)
+    assert tentative is not None
+    assert (tentative["remplace"], tentative["rendezvous"], tentative["raison"]) == (True, 2, None)
+
+
+def test_a_request_nobody_served_within_the_hour_is_forgotten(tmp_path: Path) -> None:
+    """Passé une heure, l'écran cesse d'attendre et propose de redemander."""
+    from datetime import datetime, timedelta
+
+    reglage = reglages(tmp_path)
+    vieille = (datetime.now().astimezone() - timedelta(minutes=61)).isoformat(timespec="seconds")
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    (tmp_path / "demandes.json").write_text(json.dumps({JOUR: vieille}), encoding="utf-8")
+    assert agenda.demandes(reglage) == {}

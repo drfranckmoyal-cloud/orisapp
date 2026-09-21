@@ -15,19 +15,29 @@ import styles from "./journee.module.css";
 const ABANDON_S = 120;
 
 function etape(secondes: number): string {
-  if (secondes >= ABANDON_S) {
-    return "Toujours rien après deux minutes.";
-  }
+  if (secondes >= ABANDON_S) return "Toujours rien.";
   if (secondes < 12) return "Demande posée. L’extension Chrome se réveille toutes les minutes.";
   if (secondes < 45) return "En attente de l’extension — elle ouvre Doctolib en arrière-plan.";
   return "Doctolib met du temps à répondre. On patiente.";
 }
 
+/** Passé le seuil, on arrête de compter : un chrono à 100:23 ne renseigne plus sur
+ *  rien, il donne seulement l'impression que quelque chose avance encore. */
 function chrono(secondes: number): string {
+  if (secondes >= ABANDON_S) return "plus de 2 min";
   return `${Math.floor(secondes / 60)}:${String(secondes % 60).padStart(2, "0")}`;
 }
 
-export function Attente({ depuis, onAnnuler }: { depuis: string; onAnnuler: () => void }) {
+export function Attente({
+  depuis,
+  livraison,
+  onAnnuler,
+}: {
+  depuis: string;
+  /** La dernière tentative de l'extension pour ce jour, servie ou refusée. */
+  livraison?: { le: string; rendezvous: number; remplace: boolean; raison?: string | null } | null;
+  onAnnuler: () => void;
+}) {
   const debut = new Date(depuis).getTime();
   const [secondes, setSecondes] = useState(() => Math.max(0, Math.round((Date.now() - debut) / 1000)));
 
@@ -40,6 +50,12 @@ export function Attente({ depuis, onAnnuler }: { depuis: string; onAnnuler: () =
   }, [debut]);
 
   const perdue = secondes >= ABANDON_S;
+  /* Une livraison refusée pendant l'attente explique tout : l'extension travaille,
+     c'est Oris qui écarte ce qu'elle apporte. Sans ça, l'écran semblait bloqué. */
+  const refus =
+    livraison && !livraison.remplace && new Date(livraison.le).getTime() >= debut
+      ? livraison
+      : null;
 
   return (
     <div className={`${styles.attente} ${perdue ? styles.attentePerdue : ""}`} role="status">
@@ -55,10 +71,19 @@ export function Attente({ depuis, onAnnuler }: { depuis: string; onAnnuler: () =
         <span className={perdue ? styles.barreArretee : styles.barreGlisse} />
       </div>
 
-      {perdue && (
+      {refus && (
         <span className={styles.attenteAide}>
-          Chrome est-il ouvert, avec l’extension Dental Lens active ? Et Oris est-il
-          déclaré comme destinataire dans ses réglages ?
+          L’extension a livré une journée <strong>vide</strong> à{" "}
+          {new Date(refus.le).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}.
+          Oris a gardé la liste déjà déposée plutôt que de l’effacer. Ouvrez Doctolib sur ce
+          jour et vérifiez que la liste s’y affiche.
+        </span>
+      )}
+
+      {perdue && !refus && (
+        <span className={styles.attenteAide}>
+          Chrome est-il ouvert, avec l’extension Dental Lens active ? Et Oris est-il déclaré
+          comme destinataire dans ses réglages ?
         </span>
       )}
     </div>

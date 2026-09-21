@@ -2036,6 +2036,7 @@ export interface components {
             recu_le?: string | null;
             /** Demande Le */
             demande_le?: string | null;
+            derniere_livraison?: components["schemas"]["LivraisonOut"] | null;
             /**
              * Rendezvous
              * @default []
@@ -2128,6 +2129,17 @@ export interface components {
             total: number;
             /** Reconnections */
             reconnections: number;
+        };
+        /** LivraisonOut */
+        LivraisonOut: {
+            /** Le */
+            le: string;
+            /** Rendezvous */
+            rendezvous: number;
+            /** Remplace */
+            remplace: boolean;
+            /** Raison */
+            raison?: string | null;
         };
         /**
          * MarkCreate

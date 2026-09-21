@@ -5665,6 +5665,16 @@
             ],
             "title": "Demande Le"
           },
+          "derniere_livraison": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LivraisonOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "rendezvous": {
             "items": {
               "$ref": "#/components/schemas/RendezVousOut"
@@ -5891,6 +5901,40 @@
         ],
         "title": "LiveTranscriptOut",
         "description": "Ce qu'Oris entend pendant la consultation (§11, §14.1).\n\n`state` : `disabled` (écoute en direct éteinte), `idle` (pas encore commencée),\n`running`, `stopped`, `failed`. Cette transcription ne sert jamais au dossier."
+      },
+      "LivraisonOut": {
+        "properties": {
+          "le": {
+            "type": "string",
+            "title": "Le"
+          },
+          "rendezvous": {
+            "type": "integer",
+            "title": "Rendezvous"
+          },
+          "remplace": {
+            "type": "boolean",
+            "title": "Remplace"
+          },
+          "raison": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raison"
+          }
+        },
+        "type": "object",
+        "required": [
+          "le",
+          "rendezvous",
+          "remplace"
+        ],
+        "title": "LivraisonOut"
       },
       "MarkCreate": {
         "properties": {

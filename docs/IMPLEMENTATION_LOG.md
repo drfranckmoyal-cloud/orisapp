@@ -1285,3 +1285,33 @@ Les confondre aurait rendu l'information inutilisable pour l'un comme pour l'aut
 
 Routes : `GET`/`POST /patients/{id}/correspondents`, `DELETE
 /patients/{id}/correspondents/{correspondent_id}`.
+
+## L'attente ne tournait plus dans le vide (21 septembre 2026)
+
+Franck : « plus de 100 minutes de recherche pour une lecture d'agenda ». Diagnostic, fait
+sur l'état réel de la machine :
+
+- l'extension **livre bien** à Oris — deux dépôts sont arrivés à 10:06 et 10:09 ;
+- mais ces deux-là étaient **vides**, et deux demandes (21 et 22 septembre) posées à 09:32
+  n'avaient jamais été servies ;
+- une livraison vide refusée pour ne pas écraser une journée déjà déposée **ne se voyait
+  nulle part**. L'extension réessayait, Oris refusait, l'écran attendait — en silence.
+
+Trois défauts corrigés, tous de mon côté :
+
+1. **Le refus laisse maintenant une trace.** La dernière tentative de chaque jour est
+   gardée (`livraisons.json`, une semaine) et remonte dans `GET /journee`. Quand une
+   livraison vide est écartée pendant l'attente, l'écran le dit en toutes lettres avec
+   l'heure, au lieu de laisser croire que rien n'arrive.
+2. **Le chrono s'arrête au seuil.** Il affichait 100:23 : un compteur qui court ne
+   renseigne plus sur rien passé deux minutes, il donne seulement l'impression que
+   quelque chose avance. Il affiche désormais « plus de 2 min ».
+3. **Une demande est oubliée au bout d'une heure**, et non douze. Une demande que
+   personne n'a servie en une heure ne le sera pas ; l'écran doit cesser d'attendre et
+   proposer de redemander.
+
+### Ce qui reste à voir, et qui n'est pas dans Oris
+
+Pourquoi l'extension livre des journées vides pour des jours qui ne le sont pas. Cela se
+règle côté Dental Lens — l'état de la machine montrait deux onglets Doctolib ouverts en
+même temps et une tournée en cours.
