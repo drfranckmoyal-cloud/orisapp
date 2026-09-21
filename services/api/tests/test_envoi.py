@@ -131,3 +131,13 @@ def test_the_website_may_read_the_pdf_name(api: Any) -> None:
         headers={"Origin": "http://localhost:3000"},
     )
     assert "content-disposition" in reponse.headers["access-control-expose-headers"].lower()
+
+
+def test_an_exported_document_counts_as_validated_for_the_consultation(api: Any) -> None:
+    encounter = consultation_traitee(api)
+    for document in documents_by_type(api, encounter["id"]).values():
+        api.post(f"/documents/{document['id']}/validate", json={"acknowledged_warning_codes": []})
+    note = documents_by_type(api, encounter["id"])["consultation_note"]
+    api.get(f"/documents/{note['id']}/export", params={"format": "pdf"})
+    valide = api.post(f"/encounters/{encounter['id']}/validate")
+    assert valide.status_code == 200, valide.text

@@ -17,18 +17,33 @@ import { JetonPraticien } from "@/components/JetonPraticien";
 import { CommencerConsultation } from "@/components/patients/CommencerConsultation";
 import { Correspondants } from "@/components/patients/Correspondants";
 import { NoteDictee } from "@/components/patients/NoteDictee";
+import { DocumentsValides } from "@/components/patients/DocumentsValides";
 import { PiecesJointes } from "@/components/patients/PiecesJointes";
-import { apiRequest, type ClientConfig, type Encounter, type Patient } from "@/lib/api";
-import { DOCUMENT_TYPE, ENCOUNTER_STATUS, errorMessage, formatDate, formatDateTime, nomPatient } from "@/lib/labels";
+import {
+  apiRequest,
+  type ClientConfig,
+  type Encounter,
+  type Patient,
+} from "@/lib/api";
+import {
+  DOCUMENT_TYPE,
+  ENCOUNTER_STATUS,
+  errorMessage,
+  formatDate,
+  formatDateTime,
+  nomPatient,
+} from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
 import styles from "./fiche.module.css";
 
-type Onglet = "consultations" | "pieces";
+type Onglet = "consultations" | "documents" | "pieces";
 
 const TERMINEES = new Set(["validated", "exported", "archived"]);
 
-function tonStatut(statut: string): "neutre" | "attention" | "valide" | "alerte" {
+function tonStatut(
+  statut: string,
+): "neutre" | "attention" | "valide" | "alerte" {
   if (statut === "review") return "attention";
   if (TERMINEES.has(statut)) return "valide";
   if (statut.includes("failed") || statut.includes("error")) return "alerte";
@@ -40,7 +55,8 @@ function age(naissance: string): string {
   const maintenant = new Date();
   let ans = maintenant.getFullYear() - jour.getFullYear();
   const mois = maintenant.getMonth() - jour.getMonth();
-  if (mois < 0 || (mois === 0 && maintenant.getDate() < jour.getDate())) ans -= 1;
+  if (mois < 0 || (mois === 0 && maintenant.getDate() < jour.getDate()))
+    ans -= 1;
   return `${ans} ans`;
 }
 
@@ -64,10 +80,14 @@ export default function PatientPage() {
   const [encounters] = useApi<Encounter[]>(`/encounters?patient_id=${id}`);
   const [config] = useApi<ClientConfig>("/config/client");
   const [onglet, setOnglet] = useState<Onglet>("consultations");
-  const smilecloud = config.state === "ready" && config.data.smilecloud_connected;
+  const smilecloud =
+    config.state === "ready" && config.data.smilecloud_connected;
   const [note, setNote] = useState<string | null>(null);
 
   const consultations = encounters.state === "ready" ? encounters.data : [];
+  const validesCount = consultations
+    .flatMap((e) => e.documents)
+    .filter((d) => d.status === "validated" || d.status === "exported").length;
 
   /** Le champ de note rapporte lui-même l'échec : on le laisse remonter. */
   async function enregistrerNote(valeur: string) {
@@ -78,7 +98,8 @@ export default function PatientPage() {
     rechargerPatient();
   }
 
-  if (patient.state === "error") return <p className="muted">{errorMessage(patient.code)}</p>;
+  if (patient.state === "error")
+    return <p className="muted">{errorMessage(patient.code)}</p>;
 
   const fiche = patient.state === "ready" ? patient.data : null;
   const valeurNote = note ?? fiche?.note ?? "";
@@ -165,6 +186,10 @@ export default function PatientPage() {
             valeur: "consultations",
             libelle: `Historique${consultations.length ? ` (${consultations.length})` : ""}`,
           },
+          {
+            valeur: "documents",
+            libelle: `Documents validés${validesCount ? ` (${validesCount})` : ""}`,
+          },
           { valeur: "pieces", libelle: "Pièces jointes" },
         ]}
       />
@@ -187,15 +212,23 @@ export default function PatientPage() {
             <div className={styles.rangs}>
               {consultations.map((encounter) => (
                 <div key={encounter.id} className={styles.rang}>
-                  <Link href={`/consultations/${encounter.id}`} className={styles.rangLien}>
+                  <Link
+                    href={`/consultations/${encounter.id}`}
+                    className={styles.rangLien}
+                  >
                     <span className={styles.rangTitre}>
-                      {formatDateTime(encounter.started_at ?? encounter.created_at)}
+                      {formatDateTime(
+                        encounter.started_at ?? encounter.created_at,
+                      )}
                     </span>
                     <span className={styles.rangDetail}>
                       {encounter.documents.length === 0
                         ? "aucun document"
                         : encounter.documents
-                            .map((document) => DOCUMENT_TYPE[document.document_type])
+                            .map(
+                              (document) =>
+                                DOCUMENT_TYPE[document.document_type],
+                            )
                             .join(" · ")}
                     </span>
                   </Link>
@@ -220,6 +253,12 @@ export default function PatientPage() {
               ))}
             </div>
           )}
+        </Carte>
+      )}
+
+      {onglet === "documents" && (
+        <Carte bords>
+          <DocumentsValides consultations={consultations} />
         </Carte>
       )}
 

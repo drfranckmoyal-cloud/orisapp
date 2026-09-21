@@ -441,7 +441,8 @@ def validate_encounter(session: Session, actor: Actor, encounter: Encounter) -> 
     active = [
         d for d in documents.list_documents(session, encounter.id) if d.status != "superseded"
     ]
-    if not active or any(d.status != "validated" for d in active):
+    # Un document exporté (téléchargé, envoyé) l'a été après sa validation : il compte.
+    if not active or any(d.status not in {"validated", "exported"} for d in active):
         raise Conflict("DOCUMENTS_NOT_VALIDATED", str(encounter.id))
     transition(session, actor, encounter, "validated")
     return encounter

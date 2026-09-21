@@ -900,3 +900,27 @@
   background: var(--alerte);
   color: #fff;
 }
+
+.resteAValider {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-2) var(--espace-3);
+  flex-wrap: wrap;
+}
+
+.resteBouton {
+  padding: 4px 12px;
+  border: 1px solid var(--attention);
+  border-radius: var(--rayon-pastille);
+  background: var(--surface);
+  font: inherit;
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-demi);
+  color: var(--attention);
+  cursor: pointer;
+}
+
+.resteBouton:hover {
+  background: var(--attention);
+  color: #fff;
+}

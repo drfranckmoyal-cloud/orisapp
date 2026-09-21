@@ -360,6 +360,41 @@ export default function ConsultationPage() {
         </div>
       </header>
 
+      {/* Valider la consultation, c'est valider chacun de ses documents : on dit
+          lesquels restent, et on y mène d'un clic. */}
+      {!shadow && data.status === "review" && docs.length > 0 && (
+        <div
+          className={`banner ${allValidated ? "banner-info" : "banner-review"} ${styles.resteAValider}`}
+        >
+          {allValidated ? (
+            <span>
+              Tous les documents sont validés : vous pouvez{" "}
+              <strong>valider la consultation</strong> (bouton en haut à
+              droite).
+            </span>
+          ) : (
+            <>
+              <span>
+                Pour valider la consultation, validez chacun de ses documents
+                (bouton « Valider » en bas de l’étape 1). Il reste :
+              </span>
+              {docs
+                .filter((doc) => !estValide(doc))
+                .map((doc) => (
+                  <button
+                    key={doc.id}
+                    type="button"
+                    className={styles.resteBouton}
+                    onClick={() => choisir(doc)}
+                  >
+                    {DOCUMENT_TYPE[doc.document_type]}
+                  </button>
+                ))}
+            </>
+          )}
+        </div>
+      )}
+
       {suppression !== "fermee" && (
         <div
           className={`banner banner-critical ${styles.confirmation}`}
