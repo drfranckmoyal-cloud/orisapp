@@ -214,3 +214,5 @@ export type Correspondant = Schemas["CorrespondentOut"];
 export type Rattachement = Schemas["RattachementOut"];
 export type Envoi = Schemas["DeliveryOut"];
 export type FigureDocument = Schemas["FigureOut"];
+export type PlanVue = Schemas["PlanVueOut"];
+export type EtapePlan = Schemas["EtapeOut"];

@@ -633,3 +633,20 @@
   gap: var(--espace-3);
   flex-basis: 100%;
 }
+
+.corrigerPlan {
+  border: 1px solid var(--trait);
+  border-radius: 12px;
+  padding: var(--espace-3) var(--espace-4);
+  background: var(--surface-2);
+}
+
+.corrigerPlan > summary {
+  cursor: pointer;
+  font-weight: var(--graisse-demi);
+  color: var(--encre-douce);
+}
+
+.corrigerPlan[open] > summary {
+  margin-bottom: var(--espace-3);
+}

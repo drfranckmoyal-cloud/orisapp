@@ -56,6 +56,20 @@
   --doc-courrier: #4a5561;
   --doc-courrier-douce: #eceef1;
 
+  /* Étapes du plan de traitement : la même suite qu'au PDF (documents/odontogramme.py). */
+  --etape-0: #b8365a;
+  --etape-0-douce: #f6dce4;
+  --etape-1: #2f6fb0;
+  --etape-1-douce: #dce8f6;
+  --etape-2: #2e8a57;
+  --etape-2-douce: #daf0e3;
+  --etape-3: #b7791f;
+  --etape-3-douce: #f7e9cf;
+  --etape-4: #6b4c9a;
+  --etape-4-douce: #e7def3;
+  --etape-5: #0f7c8c;
+  --etape-5-douce: #d4eef1;
+
   /* Relief : trois couches, plus un filet de lumière. Jamais une ombre seule. */
   --lumiere: inset 0 1px 0 rgb(255 255 255 / 0.9);
   --relief: 0 1px 1px rgb(26 24 21 / 0.05), 0 3px 6px -2px rgb(26 24 21 / 0.06),

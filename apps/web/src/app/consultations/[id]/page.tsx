@@ -12,6 +12,7 @@ import { CorrectionPanel } from "@/components/review/CorrectionPanel";
 import { DocumentBody } from "@/components/review/DocumentView";
 import { Documentation } from "@/components/review/Documentation";
 import { Envois } from "@/components/review/Envois";
+import { PlanVisuel } from "@/components/review/PlanVisuel";
 import { RailRevision } from "@/components/review/RailRevision";
 import type { Selection } from "@/components/review/SourcePanel";
 import { SpokenCorrectionPanel } from "@/components/review/SpokenCorrection";
@@ -633,18 +634,29 @@ export default function ConsultationPage() {
                   </div>
                 )}
 
-                {active.document_type === "treatment_plan_text" && object && (
-                  <TreatmentPlanCards
-                    encounter={data}
-                    clinicalObject={object}
-                    onSelectFact={(factId) =>
-                      setSelection({ kind: "fact", factId })
-                    }
-                    onCorrected={reloadAll}
-                  />
+                {active.document_type === "treatment_plan_text" && (
+                  <PlanVisuel encounterId={id} version={active.version} />
                 )}
 
-                {enEdition === null ? (
+                {active.document_type === "treatment_plan_text" && object && (
+                  // Les outils du plan restent là, repliés : on lit d'abord, on corrige ensuite.
+                  <details className={styles.corrigerPlan}>
+                    <summary>
+                      Modifier le plan (statuts, ordre, ajouts, retraits)
+                    </summary>
+                    <TreatmentPlanCards
+                      encounter={data}
+                      clinicalObject={object}
+                      onSelectFact={(factId) =>
+                        setSelection({ kind: "fact", factId })
+                      }
+                      onCorrected={reloadAll}
+                    />
+                  </details>
+                )}
+
+                {active.document_type ===
+                "treatment_plan_text" ? null : enEdition === null ? (
                   <div className={styles.texte}>
                     <DocumentBody
                       document={active}

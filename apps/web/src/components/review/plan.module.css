@@ -1,0 +1,136 @@
+/* Le plan de traitement à l'écran : la même lecture qu'à l'impression. */
+
+.plan {
+  display: grid;
+  gap: var(--espace-6);
+}
+
+.schema {
+  margin: 0;
+  padding: var(--espace-3) var(--espace-4);
+  border: 1px solid var(--trait);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.schema svg {
+  display: block;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.schema figcaption {
+  margin-top: var(--espace-2);
+  font-size: var(--texte-xs);
+  font-style: italic;
+  color: var(--encre-tres-douce);
+}
+
+.numero {
+  font-size: 2.2px;
+  fill: var(--encre-tres-douce);
+  font-family: var(--police);
+}
+
+.arcade {
+  font-size: 2.8px;
+  font-style: italic;
+  fill: var(--encre-tres-douce);
+}
+
+.etapes {
+  display: grid;
+  gap: var(--espace-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.etape {
+  display: grid;
+  gap: 3px;
+  padding: 2px 0 2px var(--espace-4);
+  border-left: 4px solid;
+  border-radius: 0;
+}
+
+.etape h4 {
+  margin: 0;
+  font-size: var(--texte-lg);
+  line-height: var(--interligne-serre);
+}
+
+.etape p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.meta {
+  font-size: var(--texte-xs);
+  font-style: italic;
+  color: var(--encre-tres-douce);
+}
+
+.sousTitre {
+  margin: 0 0 var(--espace-3);
+  font-size: 12.5px;
+  font-weight: var(--graisse-forte);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+.frise {
+  position: relative;
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: var(--espace-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Le fil qui relie les étapes, derrière les points. */
+.frise::before {
+  content: "";
+  position: absolute;
+  top: 27px;
+  left: 12%;
+  right: 12%;
+  height: 2px;
+  background: var(--trait-fort);
+}
+
+.frise li {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  text-align: center;
+  font-size: var(--texte-xs);
+}
+
+.delai {
+  min-height: 16px;
+  font-style: italic;
+  color: var(--encre-tres-douce);
+}
+
+.point {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px var(--surface);
+}
+
+.friseTitre {
+  color: var(--encre-douce);
+  line-height: 1.35;
+}
+
+.ecarte {
+  margin: 0;
+  color: var(--encre-douce);
+}
