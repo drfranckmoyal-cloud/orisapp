@@ -310,7 +310,7 @@ EXPORT_MEDIA = {
     "structured": "text/plain; charset=utf-8",
 }
 EXPORT_FILENAMES = {
-    "consultation_note": "compte-rendu",
+    "consultation_note": "compte-rendu-consultation",
     "treatment_plan_text": "plan-de-traitement",
     "operative_note": "compte-rendu-operatoire",
     "patient_summary": "resume-patient",
@@ -382,11 +382,10 @@ def export_document(
     else:
         payload = render_text(context, structured=fmt == "structured").encode("utf-8")
 
-    # Le nom du fichier ne porte pas le patient : il vivrait dans un dossier de
-    # téléchargements, hors du dossier clinique. L'identité est dans le document.
+    # Un nom par document, lisible dans un dossier ou une pièce jointe : type, patient,
+    # date (choix du praticien, 21/09/2026). Sans accent ni espace, pour tous les logiciels.
     suffix = "pdf" if fmt == "pdf" else "txt"
-    stamp = context.encounter_date.strftime("%Y-%m-%d")
-    filename = f"oris-{EXPORT_FILENAMES.get(document.document_type, 'document')}-{stamp}.{suffix}"
+    filename = nom_de_fichier(document.document_type, patient, context.encounter_date, suffix)
 
     audit.record(
         session,
@@ -447,3 +446,24 @@ def titres_du_plan(session: Session, encounter_id: UUID) -> dict[str, str]:
             version = current_version(session, document)
             return titres_depuis(version.claims) if version else {}
     return {}
+
+
+def _propre(texte: str) -> str:
+    import re
+    import unicodedata
+
+    sans_accent = unicodedata.normalize("NFKD", texte).encode("ascii", "ignore").decode()
+    return re.sub(r"[^A-Za-z0-9]+", "-", sans_accent).strip("-")
+
+
+def nom_de_fichier(
+    document_type: str, patient: Patient | None, moment: datetime, suffix: str = "pdf"
+) -> str:
+    """« Compte-rendu-consultation_ADJEL-Mansour_2026-09-21.pdf »."""
+    type_ = EXPORT_FILENAMES.get(document_type, "document").capitalize()
+    qui = (
+        f"{_propre(patient.last_name).upper()}-{_propre(patient.first_name)}"
+        if patient
+        else "patient"
+    )
+    return f"{type_}_{qui}_{moment.strftime('%Y-%m-%d')}.{suffix}"

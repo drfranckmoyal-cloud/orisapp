@@ -90,6 +90,8 @@ class User(Base):
     id: Mapped[UUID] = uuid_pk()
     email: Mapped[str] = mapped_column(String(320), unique=True)
     name: Mapped[str] = mapped_column(String(200))
+    #: Adresse d'où partent les documents envoyés par ce praticien.
+    sending_email: Mapped[str] = mapped_column(String(320), default="", server_default="")
     role: Mapped[str] = mapped_column(contract_enum(UserRole, "user_role"))
     preferences: Mapped[dict[str, Any]] = jsonb(dict)
     created_at: Mapped[datetime] = created_at()

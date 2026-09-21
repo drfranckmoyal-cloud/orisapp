@@ -66,7 +66,7 @@ def test_exporting_a_draft_does_not_change_its_status(api: Any) -> None:
     assert response.headers["content-type"] == "application/pdf"
     assert response.content.startswith(b"%PDF")
     # Le nom de fichier ne porte pas le patient.
-    assert 'filename="oris-compte-rendu-' in response.headers["content-disposition"]
+    assert 'filename="Compte-rendu-consultation_' in response.headers["content-disposition"]
     assert documents_by_type(api, eid)["consultation_note"]["status"] == "draft_ai"
 
 

@@ -913,6 +913,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me/boite-envoi": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Boite Envoi */
+        get: operations["boite_envoi_me_boite_envoi_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/documents/{document_id}/envoi": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Preparer Envoi */
+        get: operations["preparer_envoi_documents__document_id__envoi_get"];
+        put?: never;
+        /**
+         * Envoyer
+         * @description Un courriel par destinataire, le document en PDF joint ; chaque envoi est noté.
+         */
+        post: operations["envoyer_documents__document_id__envoi_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/documents/{document_id}/figures": {
         parameters: {
             query?: never;
@@ -1461,6 +1499,17 @@ export interface components {
             /** Encounter Id */
             encounter_id?: string | null;
         };
+        /** BoiteEnvoiOut */
+        BoiteEnvoiOut: {
+            /** Adresse */
+            adresse: string;
+            /** Configure */
+            configure: boolean;
+            /** Raison */
+            raison: string | null;
+            /** Serveur */
+            serveur: string;
+        };
         /**
          * CabinetOut
          * @description Identité imprimée en tête des documents (spec §78).
@@ -1508,6 +1557,11 @@ export interface components {
              * @default
              */
             practitioner_name: string;
+            /**
+             * Sending Email
+             * @default
+             */
+            sending_email: string;
         };
         /** CabinetPatch */
         CabinetPatch: {
@@ -1527,6 +1581,23 @@ export interface components {
             practitioner_title?: string | null;
             /** Qualifications */
             qualifications?: string | null;
+            /** Sending Email */
+            sending_email?: string | null;
+        };
+        /** CandidatOut */
+        CandidatOut: {
+            /** Cle */
+            cle: string;
+            /** Genre */
+            genre: string;
+            /** Libelle */
+            libelle: string;
+            /** Detail */
+            detail: string;
+            /** Email */
+            email: string;
+            /** Coche */
+            coche: boolean;
         };
         /** ChunkReceiptOut */
         ChunkReceiptOut: {
@@ -2108,6 +2179,45 @@ export interface components {
              * Format: date-time
              */
             first_seen_at: string;
+        };
+        /** EnvoiIn */
+        EnvoiIn: {
+            /**
+             * Destinataires
+             * @default []
+             */
+            destinataires: string[];
+            /**
+             * Adresses
+             * @default []
+             */
+            adresses: string[];
+            /** Objet */
+            objet: string;
+            /** Message */
+            message: string;
+        };
+        /**
+         * EnvoiPrepareOut
+         * @description Ce qu'il faut pour envoyer un document : qui, depuis quelle adresse, quel texte.
+         */
+        EnvoiPrepareOut: {
+            /** Expediteur */
+            expediteur: string;
+            /** Configure */
+            configure: boolean;
+            /** Raison */
+            raison: string | null;
+            /** Candidats */
+            candidats: components["schemas"]["CandidatOut"][];
+            /** Objet */
+            objet: string;
+            /** Message */
+            message: string;
+            /** Brouillon */
+            brouillon: boolean;
+            /** Nom Fichier */
+            nom_fichier: string;
         };
         /** EtapeOut */
         EtapeOut: {
@@ -2915,6 +3025,15 @@ export interface components {
             to_tooth: string;
             /** Fact Ids */
             fact_ids?: string[] | null;
+        };
+        /** ResultatEnvoiOut */
+        ResultatEnvoiOut: {
+            /** Destinataire */
+            destinataire: string;
+            /** Envoye */
+            envoye: boolean;
+            /** Code */
+            code: string | null;
         };
         /** SetPlanItemStatus */
         SetPlanItemStatus: {
@@ -5015,6 +5134,92 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    boite_envoi_me_boite_envoi_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BoiteEnvoiOut"];
+                };
+            };
+        };
+    };
+    preparer_envoi_documents__document_id__envoi_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvoiPrepareOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    envoyer_documents__document_id__envoi_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnvoiIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultatEnvoiOut"][];
+                };
             };
             /** @description Validation Error */
             422: {

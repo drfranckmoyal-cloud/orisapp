@@ -2842,6 +2842,126 @@
         }
       }
     },
+    "/me/boite-envoi": {
+      "get": {
+        "tags": [
+          "envoi"
+        ],
+        "summary": "Boite Envoi",
+        "operationId": "boite_envoi_me_boite_envoi_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BoiteEnvoiOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/{document_id}/envoi": {
+      "get": {
+        "tags": [
+          "envoi"
+        ],
+        "summary": "Preparer Envoi",
+        "operationId": "preparer_envoi_documents__document_id__envoi_get",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvoiPrepareOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "envoi"
+        ],
+        "summary": "Envoyer",
+        "description": "Un courriel par destinataire, le document en PDF joint ; chaque envoi est noté.",
+        "operationId": "envoyer_documents__document_id__envoi_post",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnvoiIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ResultatEnvoiOut"
+                  },
+                  "title": "Response Envoyer Documents  Document Id  Envoi Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/documents/{document_id}/figures": {
       "get": {
         "tags": [
@@ -4141,6 +4261,41 @@
         ],
         "title": "Body_add_attachments_patients__patient_id__attachments_post"
       },
+      "BoiteEnvoiOut": {
+        "properties": {
+          "adresse": {
+            "type": "string",
+            "title": "Adresse"
+          },
+          "configure": {
+            "type": "boolean",
+            "title": "Configure"
+          },
+          "raison": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raison"
+          },
+          "serveur": {
+            "type": "string",
+            "title": "Serveur"
+          }
+        },
+        "type": "object",
+        "required": [
+          "adresse",
+          "configure",
+          "raison",
+          "serveur"
+        ],
+        "title": "BoiteEnvoiOut"
+      },
       "CabinetOut": {
         "properties": {
           "name": {
@@ -4185,6 +4340,11 @@
           "practitioner_name": {
             "type": "string",
             "title": "Practitioner Name",
+            "default": ""
+          },
+          "sending_email": {
+            "type": "string",
+            "title": "Sending Email",
             "default": ""
           }
         },
@@ -4292,11 +4452,61 @@
               }
             ],
             "title": "Qualifications"
+          },
+          "sending_email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 320
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sending Email"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "title": "CabinetPatch"
+      },
+      "CandidatOut": {
+        "properties": {
+          "cle": {
+            "type": "string",
+            "title": "Cle"
+          },
+          "genre": {
+            "type": "string",
+            "title": "Genre"
+          },
+          "libelle": {
+            "type": "string",
+            "title": "Libelle"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "coche": {
+            "type": "boolean",
+            "title": "Coche"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cle",
+          "genre",
+          "libelle",
+          "detail",
+          "email",
+          "coche"
+        ],
+        "title": "CandidatOut"
       },
       "ChunkReceiptOut": {
         "properties": {
@@ -5826,6 +6036,106 @@
         ],
         "title": "EngineVersionOut",
         "description": "Un moteur qui a réellement servi, et la consigne qui l'accompagnait."
+      },
+      "EnvoiIn": {
+        "properties": {
+          "destinataires": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Destinataires",
+            "default": []
+          },
+          "adresses": {
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Adresses",
+            "default": []
+          },
+          "objet": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Objet"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "objet",
+          "message"
+        ],
+        "title": "EnvoiIn"
+      },
+      "EnvoiPrepareOut": {
+        "properties": {
+          "expediteur": {
+            "type": "string",
+            "title": "Expediteur"
+          },
+          "configure": {
+            "type": "boolean",
+            "title": "Configure"
+          },
+          "raison": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raison"
+          },
+          "candidats": {
+            "items": {
+              "$ref": "#/components/schemas/CandidatOut"
+            },
+            "type": "array",
+            "title": "Candidats"
+          },
+          "objet": {
+            "type": "string",
+            "title": "Objet"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "brouillon": {
+            "type": "boolean",
+            "title": "Brouillon"
+          },
+          "nom_fichier": {
+            "type": "string",
+            "title": "Nom Fichier"
+          }
+        },
+        "type": "object",
+        "required": [
+          "expediteur",
+          "configure",
+          "raison",
+          "candidats",
+          "objet",
+          "message",
+          "brouillon",
+          "nom_fichier"
+        ],
+        "title": "EnvoiPrepareOut",
+        "description": "Ce qu'il faut pour envoyer un document : qui, depuis quelle adresse, quel texte."
       },
       "EtapeOut": {
         "properties": {
@@ -7840,6 +8150,36 @@
         ],
         "title": "ReplaceTooth",
         "description": "« Remplace 26 par 27 » : faits ciblés (tous si omis), plan et actes liés."
+      },
+      "ResultatEnvoiOut": {
+        "properties": {
+          "destinataire": {
+            "type": "string",
+            "title": "Destinataire"
+          },
+          "envoye": {
+            "type": "boolean",
+            "title": "Envoye"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "destinataire",
+          "envoye",
+          "code"
+        ],
+        "title": "ResultatEnvoiOut"
       },
       "SetPlanItemStatus": {
         "properties": {

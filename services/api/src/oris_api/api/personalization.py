@@ -113,6 +113,8 @@ class CabinetOut(BaseModel):
     #: Une ligne par titre, imprimées sous le nom (« Chirurgien-dentiste »…).
     qualifications: str = ""
     practitioner_name: str = ""
+    #: Adresse d'où partent les documents envoyés par courriel (profil du praticien).
+    sending_email: str = ""
 
 
 class CabinetPatch(BaseModel):
@@ -125,6 +127,7 @@ class CabinetPatch(BaseModel):
     city: Annotated[str, Field(max_length=120)] | None = None
     practitioner_title: Annotated[str, Field(max_length=80)] | None = None
     qualifications: Annotated[str, Field(max_length=400)] | None = None
+    sending_email: Annotated[str, Field(max_length=320)] | None = None
 
 
 def cabinet_out(organisation: Organization, praticien: User | None) -> CabinetOut:
@@ -139,6 +142,7 @@ def cabinet_out(organisation: Organization, praticien: User | None) -> CabinetOu
         practitioner_title=identite.get("practitioner_title", ""),
         qualifications=identite.get("qualifications", ""),
         practitioner_name=praticien.name if praticien else "",
+        sending_email=praticien.sending_email if praticien else "",
     )
 
 
@@ -157,7 +161,14 @@ def patch_cabinet(body: CabinetPatch, session: SessionDep, actor: ActorDep) -> C
     if organisation is None:
         raise NotFound("ORGANIZATION_NOT_FOUND", str(actor.organization_id))
     identite = dict(organisation.identity or {})
-    identite.update(body.model_dump(exclude_none=True))
+    changements = body.model_dump(exclude_none=True)
+    # L'adresse d'envoi appartient au praticien, pas au cabinet.
+    adresse = changements.pop("sending_email", None)
+    if adresse is not None:
+        praticien = session.get(User, actor.user_id)
+        if praticien is not None:
+            praticien.sending_email = adresse.strip()
+    identite.update(changements)
     organisation.identity = identite
     if body.name:
         organisation.name = body.name

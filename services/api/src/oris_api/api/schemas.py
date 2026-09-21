@@ -618,3 +618,46 @@ class PlanVueOut(BaseModel):
     etapes: list[EtapeOut]
     ecartes: list[EtapeOut]
     dents_absentes: list[str]
+
+
+class CandidatOut(BaseModel):
+    cle: str
+    genre: str
+    libelle: str
+    detail: str
+    email: str
+    coche: bool
+
+
+class EnvoiPrepareOut(BaseModel):
+    """Ce qu'il faut pour envoyer un document : qui, depuis quelle adresse, quel texte."""
+
+    expediteur: str
+    configure: bool
+    raison: str | None
+    candidats: list[CandidatOut]
+    objet: str
+    message: str
+    brouillon: bool
+    nom_fichier: str
+
+
+class EnvoiIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    destinataires: Annotated[list[str], Field(max_length=20)] = []
+    adresses: Annotated[list[Annotated[str, Field(max_length=200)]], Field(max_length=10)] = []
+    objet: Annotated[str, Field(min_length=1, max_length=300)]
+    message: Annotated[str, Field(max_length=10_000)]
+
+
+class ResultatEnvoiOut(BaseModel):
+    destinataire: str
+    envoye: bool
+    code: str | None
+
+
+class BoiteEnvoiOut(BaseModel):
+    adresse: str
+    configure: bool
+    raison: str | None
+    serveur: str

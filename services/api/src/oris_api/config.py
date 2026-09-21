@@ -65,6 +65,13 @@ class Settings(BaseSettings):
     # Secret partagé, facultatif : renseigné, le dépôt l'exige en `Authorization: Bearer`.
     # Le dépôt n'accepte de toute façon que les appels venus de cette machine.
     journee_depot_token: SecretStr | None = None
+    # Envoi des documents par courriel (SMTP). Le mot de passe est un « mot de passe
+    # d'application » (Gmail : myaccount.google.com/apppasswords), jamais celui du compte.
+    # Vide : l'envoi est impossible, l'écran le dit.
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: SecretStr | None = None
     max_session_minutes: int = 90
     warn_session_minutes: int = 80
 
@@ -86,6 +93,7 @@ class Settings(BaseSettings):
         "deepgram_api_key",
         "anthropic_api_key",
         "journee_depot_token",
+        "smtp_password",
         mode="before",
     )
     @classmethod

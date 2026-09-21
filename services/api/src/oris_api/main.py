@@ -19,6 +19,7 @@ from oris_api.api import (
     correspondents,
     deliveries,
     encounters,
+    envoi,
     figures,
     health,
     journee,
@@ -32,6 +33,7 @@ from oris_api.config import get_settings
 from oris_api.observability import configure_logging, request_logging_middleware
 from oris_api.providers import build_providers
 from oris_api.services.audio_sink import build_sink
+from oris_api.services.courriel import messagerie_de
 from oris_api.services.errors import ServiceError
 from oris_api.services.live import LiveTranscription
 
@@ -58,6 +60,7 @@ def create_app() -> FastAPI:
     # Refuse de démarrer si un fournisseur configuré n'est pas disponible.
     app.state.providers = build_providers(settings)
     app.state.audio_sink = build_sink(settings)
+    app.state.messagerie = messagerie_de(settings)
     app.middleware("http")(request_logging_middleware)
     app.add_middleware(
         CORSMiddleware,
@@ -72,6 +75,7 @@ def create_app() -> FastAPI:
     app.include_router(journee.router)
     app.include_router(encounters.router)
     app.include_router(deliveries.router)
+    app.include_router(envoi.router)
     app.include_router(figures.router)
     app.include_router(synthetic.router)
     app.include_router(audio.router)
