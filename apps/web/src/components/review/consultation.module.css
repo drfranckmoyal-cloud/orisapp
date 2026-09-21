@@ -337,7 +337,7 @@
   box-shadow: var(--lumiere);
 }
 
-.replie summary {
+.replie > summary {
   display: flex;
   align-items: center;
   justify-content: space-between;

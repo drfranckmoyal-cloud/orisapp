@@ -6,12 +6,12 @@ import { useMemo, useState } from "react";
 import { TypeDocument } from "@/components/documents/TypeDocument";
 import { Icone } from "@/components/Icones";
 import { JetonPraticien } from "@/components/JetonPraticien";
+import { NouvelleConsultationLien } from "@/components/patients/CommencerConsultation";
 import {
   Carte,
   Champ,
   EnTetePage,
   EtatVide,
-  LienBouton,
   Onglets,
   Pastille,
   Squelette,
@@ -200,11 +200,7 @@ export default function ConsultationsPage() {
       <EnTetePage
         surTitre="Historique"
         titre="Consultations"
-        action={
-          <LienBouton href="/consultations/nouvelle">
-            Nouvelle consultation
-          </LienBouton>
-        }
+        action={<NouvelleConsultationLien />}
       />
 
       <div className="barre-filtres">

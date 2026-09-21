@@ -9,6 +9,7 @@
 
 .bouton {
   display: inline-flex;
+  text-decoration: none;
   align-items: center;
   gap: var(--espace-3);
   padding: 9px 18px 9px 10px;

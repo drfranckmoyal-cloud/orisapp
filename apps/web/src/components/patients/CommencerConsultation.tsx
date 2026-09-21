@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -70,6 +71,21 @@ export function CommencerConsultation({
           {erreur}
         </span>
       )}
+    </div>
+  );
+}
+
+/** Le même bouton quand le patient n'est pas encore choisi (liste des consultations) :
+ *  il mène au choix du patient, avec la même apparence que depuis une fiche. */
+export function NouvelleConsultationLien({ libelle = "Nouvelle consultation" }: { libelle?: string }) {
+  return (
+    <div className={styles.bloc}>
+      <Link href="/consultations/nouvelle" className={styles.bouton}>
+        <span className={styles.disque} aria-hidden="true">
+          <Symbole taille={20} />
+        </span>
+        {libelle}
+      </Link>
     </div>
   );
 }

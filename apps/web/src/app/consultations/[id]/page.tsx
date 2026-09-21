@@ -775,28 +775,32 @@ export default function ConsultationPage() {
             />
           )}
 
+          {/* Replié par défaut : on corrige quand on a vu une erreur, pas à chaque fois. */}
           {object && !shadow && (
-            <Carte titre="Corriger le dossier clinique">
-              <p className="muted" style={{ margin: 0 }}>
-                Une correction modifie d’abord le dossier clinique ; Oris
-                réécrit ensuite tous les documents.
-              </p>
-              <SpokenCorrectionPanel
-                encounter={data}
-                clinicalObject={object}
-                onCorrected={reloadAll}
-              />
-              <details>
-                <summary>Corriger sans dicter</summary>
-                <div style={{ marginTop: 12 }}>
-                  <CorrectionPanel
-                    encounter={data}
-                    clinicalObject={object}
-                    onCorrected={reloadAll}
-                  />
-                </div>
-              </details>
-            </Carte>
+            <details className={styles.replie}>
+              <summary>Corriger le dossier clinique</summary>
+              <div className={styles.replieContenu} style={{ display: "grid", gap: 12 }}>
+                <p className="muted" style={{ margin: 0 }}>
+                  Une correction modifie d’abord le dossier clinique ; Oris réécrit ensuite tous
+                  les documents.
+                </p>
+                <SpokenCorrectionPanel
+                  encounter={data}
+                  clinicalObject={object}
+                  onCorrected={reloadAll}
+                />
+                <details>
+                  <summary>Corriger sans dicter</summary>
+                  <div style={{ marginTop: 12 }}>
+                    <CorrectionPanel
+                      encounter={data}
+                      clinicalObject={object}
+                      onCorrected={reloadAll}
+                    />
+                  </div>
+                </details>
+              </div>
+            </details>
           )}
 
           {/* Les pièces du patient : utiles pour s'y référer, pas à chaque consultation.
