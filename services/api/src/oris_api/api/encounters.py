@@ -469,9 +469,11 @@ def generate_operative_note(
     obj = clinical_store.load_current(session, encounter)
     if not documents.operative_note_available(obj):
         raise Conflict("NO_PROCEDURE_TO_DOCUMENT", str(encounter.id))
-    documents.generate(session, encounter, obj, providers, include=["operative_note"])
-    if encounter.status != "review":
-        encounters.transition(session, actor, encounter, "review")
+    # Seulement ce document : les autres, peut-être déjà validés, ne bougent pas, et la
+    # consultation garde son statut (les documents sont indépendants).
+    documents.generate(
+        session, encounter, obj, providers, include=["operative_note"], seulement=True
+    )
     return list_documents(encounter_id, session, actor)
 
 
@@ -488,9 +490,11 @@ def generate_referral_letter(
     obj = clinical_store.load_current(session, encounter)
     if not obj.facts:
         raise Conflict("NOTHING_TO_REFER", str(encounter.id))
-    documents.generate(session, encounter, obj, providers, include=["referral_letter"])
-    if encounter.status != "review":
-        encounters.transition(session, actor, encounter, "review")
+    # Seulement ce document : les autres, peut-être déjà validés, ne bougent pas, et la
+    # consultation garde son statut (les documents sont indépendants).
+    documents.generate(
+        session, encounter, obj, providers, include=["referral_letter"], seulement=True
+    )
     return list_documents(encounter_id, session, actor)
 
 
@@ -572,6 +576,13 @@ def export_document(
         media_type=exported.media_type,
         headers={"content-disposition": f'attachment; filename="{exported.filename}"'},
     )
+
+
+@router.delete("/documents/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_document(document_id: UUID, session: SessionDep, actor: ActorDep) -> None:
+    """Retirer un courrier d'adressage ou un compte rendu opératoire demandé par erreur.
+    409 DOCUMENT_NOT_REMOVABLE pour le compte rendu et le plan, tirés de la consultation."""
+    documents.supprimer(session, actor, document_id)
 
 
 @router.get("/documents/{document_id}", response_model=DocumentOut)

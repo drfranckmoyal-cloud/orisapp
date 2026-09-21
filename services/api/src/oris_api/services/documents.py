@@ -98,11 +98,13 @@ def generate(
     obj: ClinicalEncounter,
     providers: ProviderSet,
     include: Sequence[DocumentDocumentType] = (),
+    seulement: bool = False,
 ) -> list[DocumentRow]:
     """Produit une nouvelle version de chaque document pour la version d'objet donnée.
 
     `include` : documents demandés explicitement par le praticien, en plus de ceux que
-    l'objet justifie de lui-même.
+    l'objet justifie de lui-même. `seulement` : ne produire **que** ceux-là — demander un
+    courrier ne doit pas réécrire (et dévalider) le compte rendu déjà validé.
     """
     # Préférences de rédaction du praticien : la forme lui appartient, le fond non.
     preferences = PractitionerPreferences.load(
@@ -111,6 +113,8 @@ def generate(
     style = Style(length=preferences.document_length, terminology=dict(preferences.terminology))
     existing = {doc.document_type: doc for doc in list_documents(session, encounter.id)}
     wanted = document_types_for(obj, {*existing, *include})
+    if seulement:
+        wanted = [t for t in wanted if t in include]
     produced: list[DocumentRow] = []
 
     # Une consultation fictive ne sort jamais d'Oris, pas même ses faits.
@@ -162,7 +166,7 @@ def generate(
         produced.append(document)
 
     # Un document dont l'objet ne justifie plus l'existence (plan vidé) est remplacé.
-    for existing_type, existing_document in existing.items():
+    for existing_type, existing_document in existing.items() if not seulement else ():
         if existing_type not in wanted and existing_document.status != "superseded":
             existing_document.status = "superseded"
     session.flush()
@@ -467,3 +471,30 @@ def nom_de_fichier(
         else "patient"
     )
     return f"{type_}_{qui}_{moment.strftime('%Y-%m-%d')}.{suffix}"
+
+
+#: Documents qui n'existent que parce que le praticien les a demandés : il peut les retirer.
+A_LA_DEMANDE = frozenset({"referral_letter", "operative_note"})
+
+
+def supprimer(session: Session, actor: Actor, document_id: UUID) -> None:
+    """Supprime un document demandé (courrier, compte rendu opératoire) : ses versions,
+    ses envois notés et ses photos placées partent avec lui ; les pièces jointes restent."""
+    document = session.get(DocumentRow, document_id)
+    encounter = session.get(Encounter, document.encounter_id) if document else None
+    if document is None or encounter is None or encounter.organization_id != actor.organization_id:
+        raise NotFound("DOCUMENT_NOT_FOUND", str(document_id))
+    if document.document_type not in A_LA_DEMANDE:
+        raise Conflict("DOCUMENT_NOT_REMOVABLE", str(document_id), [document.document_type])
+    document.current_version_id = None
+    session.flush()
+    audit.record(
+        session,
+        actor,
+        "document.deleted",
+        "document",
+        document.id,
+        document_type=document.document_type,
+    )
+    session.delete(document)
+    session.flush()

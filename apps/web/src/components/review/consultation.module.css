@@ -975,3 +975,23 @@
     transform: translateY(8px);
   }
 }
+
+.retirerDocument {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--espace-2);
+  flex-wrap: wrap;
+  margin-top: calc(-1 * var(--espace-2));
+  font-size: var(--texte-sm);
+  color: var(--alerte);
+}
+
+.retirerDocument > button:not(.supprimer):not(.supprimerFort) {
+  padding: 6px 12px;
+  border: 1px solid var(--trait-fort);
+  border-radius: var(--rayon-bouton);
+  background: var(--surface);
+  font: inherit;
+  cursor: pointer;
+}

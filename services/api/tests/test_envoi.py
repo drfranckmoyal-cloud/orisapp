@@ -157,3 +157,27 @@ def test_one_validated_document_validates_the_consultation_the_others_stay_indep
     assert plan["status"] in {"draft_ai", "needs_review"}
     valide = api.post(f"/documents/{plan['id']}/validate", json={"acknowledged_warning_codes": []})
     assert valide.status_code == 200, valide.text
+
+
+def test_a_referral_letter_can_be_removed_the_report_cannot(api: Any) -> None:
+    encounter = consultation_traitee(api)
+    api.post(f"/encounters/{encounter['id']}/documents/referral-letter")
+    docs = documents_by_type(api, encounter["id"])
+    assert api.delete(f"/documents/{docs['referral_letter']['id']}").status_code == 204
+    assert "referral_letter" not in documents_by_type(api, encounter["id"])
+    # Il ne revient pas tout seul à la régénération suivante.
+    api.post(f"/encounters/{encounter['id']}/documents/generate")
+    assert "referral_letter" not in documents_by_type(api, encounter["id"])
+    refus = api.delete(f"/documents/{docs['consultation_note']['id']}")
+    assert refus.status_code == 409 and refus.json()["code"] == "DOCUMENT_NOT_REMOVABLE"
+
+
+def test_asking_for_a_letter_leaves_the_validated_report_alone(api: Any) -> None:
+    encounter = consultation_traitee(api)
+    note = documents_by_type(api, encounter["id"])["consultation_note"]
+    api.post(f"/documents/{note['id']}/validate", json={"acknowledged_warning_codes": []})
+    api.post(f"/encounters/{encounter['id']}/documents/referral-letter")
+    apres = documents_by_type(api, encounter["id"])
+    assert apres["consultation_note"]["status"] == "validated"
+    assert apres["consultation_note"]["version"] == note["version"]
+    assert api.get(f"/encounters/{encounter['id']}").json()["status"] == "validated"

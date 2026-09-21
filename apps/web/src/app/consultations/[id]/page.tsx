@@ -49,6 +49,8 @@ import { useConcepts } from "@/lib/useConcepts";
 /** Pendant l'écoute ou le traitement, le serveur refuse la suppression : on ne la propose pas. */
 const EN_COURS = new Set(["recording", "paused", "finalizing", "processing"]);
 const TERMINEES = new Set(["validated", "exported", "archived"]);
+/** Documents créés à la demande du praticien : lui seul les a voulus, il peut les retirer. */
+const A_LA_DEMANDE = new Set(["referral_letter", "operative_note"]);
 
 function tonConsultation(
   statut: string,
@@ -129,6 +131,7 @@ export default function ConsultationPage() {
   >("fermee");
   const motDe = useConcepts();
   const [toast, setToast] = useState<string | null>(null);
+  const [confirmerRetrait, setConfirmerRetrait] = useState<string | null>(null);
 
   function erreur(caught: unknown) {
     const code = caught instanceof ApiError ? caught.code : "UNKNOWN";
@@ -258,6 +261,20 @@ export default function ConsultationPage() {
         },
       });
       setToast(`${DOCUMENT_TYPE[document.document_type]} validé.`);
+      window.setTimeout(() => setToast(null), 3500);
+      reloadAll();
+    } catch (caught) {
+      erreur(caught);
+    }
+  }
+
+  /** Retire un document demandé (courrier d'adressage, compte rendu opératoire). */
+  async function retirerDocument(document: DocumentView) {
+    setConfirmerRetrait(null);
+    try {
+      await apiRequest(`/documents/${document.id}`, { method: "DELETE" });
+      setActiveId(null);
+      setToast(`${DOCUMENT_TYPE[document.document_type]} supprimé.`);
       window.setTimeout(() => setToast(null), 3500);
       reloadAll();
     } catch (caught) {
@@ -612,6 +629,47 @@ export default function ConsultationPage() {
                       </div>
                     )}
                   </header>
+
+                  {/* Un courrier ou un compte rendu opératoire demandé par erreur se retire. */}
+                  {!shadow && A_LA_DEMANDE.has(active.document_type) && (
+                    <div className={styles.retirerDocument}>
+                      {confirmerRetrait === active.id ? (
+                        <>
+                          <span>
+                            Supprimer ce{" "}
+                            {DOCUMENT_TYPE[
+                              active.document_type
+                            ].toLocaleLowerCase("fr-FR")}{" "}
+                            ? Ses versions et ses envois notés partent avec lui.
+                          </span>
+                          <button
+                            type="button"
+                            className={styles.supprimerFort}
+                            onClick={() => void retirerDocument(active)}
+                          >
+                            Supprimer
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmerRetrait(null)}
+                          >
+                            Annuler
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          className={styles.supprimer}
+                          onClick={() => setConfirmerRetrait(active.id)}
+                        >
+                          <Icone nom="corbeille" taille={15} /> Supprimer ce{" "}
+                          {DOCUMENT_TYPE[
+                            active.document_type
+                          ].toLocaleLowerCase("fr-FR")}
+                        </button>
+                      )}
+                    </div>
+                  )}
 
                   {/* Valider se fait ici, en tête du document : on sait ce qu'on valide. */}
                   {!shadow && (
