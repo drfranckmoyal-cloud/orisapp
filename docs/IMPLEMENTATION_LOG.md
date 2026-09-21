@@ -1190,3 +1190,28 @@ suit aussi ce patient). La fiche patient affiche toujours « aucun — à venir 
 
 L'étoile est **verte**, pas orange : l'orange veut dire « à corriger » partout ailleurs
 dans le site, et se serait battue avec la pastille « sans adresse » de la même ligne.
+
+## Alignement des colonnes, et une teinte par spécialité (21 septembre 2026)
+
+**Les colonnes ne s'alignaient pas d'une ligne à l'autre**, et la cause n'était pas une
+impression : chaque ligne est une grille indépendante, si bien qu'une colonne `auto` se
+calcule ligne par ligne. La pastille « sans adresse » élargissait sa colonne, et le bloc
+de contact reculait — sur les seules lignes qui la portaient. Largeurs figées des deux
+côtés : les cinq colonnes de contact démarrent maintenant au même pixel, vérifié.
+
+Le même défaut existait dans la **liste des patients** (pastille « à relire » et numéro
+de dossier) : corrigé aussi.
+
+**Une teinte par spécialité** sur la pastille d'initiales. Neuf teintes prises dans la
+famille chaude du site, jamais des couleurs vives qui feraient ressortir une spécialité
+plus qu'une autre. Sans spécialité, et pour les structures : gris — il n'y a rien à
+distinguer.
+
+La teinte vient du **rang dans la liste des spécialités**, pas d'un calcul sur le nom :
+un premier essai par empreinte du nom donnait la même couleur à deux spécialités
+différentes, ce qui est exactement ce qu'une couleur ne doit pas faire. Les trois
+connues d'avance occupent les trois premiers rangs, donc toujours les mêmes teintes.
+
+Ajouter une spécialité peut décaler la teinte de celles qui la suivent alphabétiquement.
+Sans conséquence : **la couleur ne porte jamais l'information seule**, la spécialité est
+écrite en toutes lettres sur la même ligne.

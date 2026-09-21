@@ -15,7 +15,10 @@
 
 .dossier {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) 170px auto auto;
+  /* Largeurs figées, et non `auto` : chaque ligne est sa propre grille, si bien qu'une
+     colonne `auto` se calcule ligne par ligne. Les pastilles « à relire » et le numéro
+     de dossier décalaient alors la colonne de suivi des seules lignes qui en portaient. */
+  grid-template-columns: 38px minmax(0, 1fr) 170px 150px 18px;
   align-items: center;
   gap: var(--espace-4);
   padding: 11px var(--espace-4);
@@ -137,7 +140,7 @@
 
 @media (max-width: 1020px) {
   .dossier {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: 38px minmax(0, 1fr) auto;
   }
 
   .suivi {

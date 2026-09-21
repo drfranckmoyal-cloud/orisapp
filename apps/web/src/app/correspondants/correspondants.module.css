@@ -90,7 +90,10 @@
   flex: 1;
   min-width: 0;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) 200px auto auto;
+  /* Largeurs figées, et non `auto` : chaque ligne est sa propre grille, si bien qu'une
+     colonne `auto` se calcule ligne par ligne. La pastille « sans adresse » décalait
+     alors le bloc de contact des seules lignes qui la portaient. */
+  grid-template-columns: 38px minmax(0, 1fr) 210px 118px 18px;
   align-items: center;
   gap: var(--espace-4);
   padding: 11px var(--espace-4);
@@ -136,9 +139,8 @@
   height: 38px;
   flex: none;
   border-radius: 50%;
-  background: var(--accent-douce);
-  border: 1px solid var(--trait);
-  color: var(--accent);
+  /* Couleur et bordure viennent de la teinte de la spécialité, posée en plus. */
+  border: 1px solid transparent;
   font-size: var(--texte-sm);
   font-weight: var(--graisse-forte);
 }
@@ -294,7 +296,7 @@
 
 @media (max-width: 900px) {
   .fiche {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: 38px minmax(0, 1fr);
   }
 
   .joindre,
@@ -372,4 +374,75 @@
   .large {
     grid-column: 1 / -1;
   }
+}
+
+/* --- Une teinte par spécialité -------------------------------------------------- */
+/*
+ * Six teintes, prises dans la famille chaude du site — jamais des couleurs vives qui
+ * feraient ressortir une spécialité plus qu'une autre. Les trois connues d'avance ont
+ * la leur pour toujours ; celles qu'ajoute le cabinet tirent la leur de leur nom, ce
+ * qui la rend stable sans rien stocker.
+ *
+ * La couleur ne porte jamais l'information seule : la spécialité est écrite en toutes
+ * lettres sous le nom, sur la même ligne.
+ */
+.teinteVert {
+  background: #e5efe9;
+  border-color: #c9ded4;
+  color: #14533b;
+}
+
+.teinteArdoise {
+  background: #e4e9f0;
+  border-color: #c9d4e2;
+  color: #2c4a6b;
+}
+
+.teinteTerre {
+  background: #f6e6da;
+  border-color: #e6cdb8;
+  color: #8a4213;
+}
+
+.teintePrune {
+  background: #ede2ee;
+  border-color: #dbc8de;
+  color: #5e3566;
+}
+
+.teinteOcre {
+  background: #f5ecd4;
+  border-color: #e5d6ad;
+  color: #7a5a12;
+}
+
+.teinteLagune {
+  background: #dcefee;
+  border-color: #bfdedb;
+  color: #1d5b58;
+}
+
+.teinteSauge {
+  background: #e7eee0;
+  border-color: #d2ddc6;
+  color: #45602f;
+}
+
+.teinteIndigo {
+  background: #e5e4f2;
+  border-color: #cdcae4;
+  color: #403a75;
+}
+
+.teinteRose {
+  background: #f6e3e4;
+  border-color: #e8c9cb;
+  color: #8a3b40;
+}
+
+/* Sans spécialité, et les structures : rien à distinguer, donc rien de coloré. */
+.teinteNeutre {
+  background: var(--surface-douce);
+  border-color: var(--trait-fort);
+  color: var(--encre-douce);
 }

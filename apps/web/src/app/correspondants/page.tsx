@@ -22,6 +22,45 @@ import styles from "./correspondants.module.css";
 /** `null` = toutes ; `""` = seulement celles dont la spécialité n'est pas renseignée. */
 type Filtre = string | null;
 
+/** Les six teintes, dans l'ordre. Les trois spécialités connues d'avance tiennent les
+ *  trois premières ; les suivantes se répartissent sur le reste. */
+const TEINTES = [
+  styles.teinteVert,
+  styles.teinteArdoise,
+  styles.teinteTerre,
+  styles.teintePrune,
+  styles.teinteOcre,
+  styles.teinteLagune,
+  styles.teinteSauge,
+  styles.teinteIndigo,
+  styles.teinteRose,
+];
+
+
+
+/** La teinte d'une spécialité : son rang dans la liste.
+ *
+ * Par le rang, et non par un calcul sur le nom : deux noms différents finissaient par
+ * la même couleur, ce qui est exactement ce qu'une couleur ne doit pas faire. Les trois
+ * spécialités connues d'avance occupent les trois premiers rangs, donc les trois
+ * premières teintes, toujours les mêmes.
+ *
+ * Ajouter une spécialité peut décaler la teinte de celles qui la suivent dans l'ordre
+ * alphabétique. C'est sans conséquence : la spécialité est écrite en toutes lettres sur
+ * la ligne, la couleur ne fait que la rappeler.
+ */
+function teinteDe(c: Correspondant, connues: string[]): string {
+  if (c.kind === "organisation" || !c.specialty) return styles.teinteNeutre ?? "";
+  const rang = connues.indexOf(c.specialty);
+  // Une spécialité retirée de la liste garde une couleur plutôt que de retomber au gris.
+  if (rang < 0) {
+    let somme = 0;
+    for (const lettre of c.specialty) somme = (somme * 31 + lettre.codePointAt(0)!) % 100000;
+    return TEINTES[somme % TEINTES.length] ?? "";
+  }
+  return TEINTES[rang % TEINTES.length] ?? "";
+}
+
 function initiales(c: Correspondant): string {
   const nom = c.last_name.trim();
   if (c.kind === "organisation") return nom.slice(0, 2).toLocaleUpperCase("fr-FR");
@@ -236,9 +275,10 @@ export default function CorrespondantsPage() {
                     }}
                   >
                     <span
-                      className={`${styles.jeton} ${
+                      className={`${styles.jeton} ${teinteDe(c, choix)} ${
                         c.kind === "organisation" ? styles.jetonStructure : ""
                       }`}
+                      title={c.specialty || undefined}
                       aria-hidden="true"
                     >
                       {initiales(c)}
