@@ -218,6 +218,8 @@ Détails, tests et banc d'essai : `docs/DEVELOPMENT.md` et `benchmarks/README.md
 | `docs/PROTOCOLE_ENREGISTREMENT.md` | **Comment enregistrer des consultations jouées** : matériel, six situations, transmission |
 | `docs/consentement/` | Note d'information et formulaire de consentement à faire signer |
 | `docs/KNOWN_LIMITATIONS.md` | Ce qui ne marche pas encore, et les pièges |
+| `docs/JOURNEE_DOCTOLIB.md` | Comment la journée Doctolib arrive dans Oris |
+| `docs/PIECES_JOINTES_SMILECLOUD.md` | **Récupérer les photos d'un patient depuis SmileCloud** : ce qui est décidé, ce qui reste à construire |
 | `docs/DEVELOPMENT.md` | Comment lancer et vérifier le projet |
 | `benchmarks/README.md` | Banc d'essai des services de transcription |
 | `services/api` · `apps/web` · `apps/ios` | Le serveur, le site, l'app iPhone |

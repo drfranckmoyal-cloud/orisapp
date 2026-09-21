@@ -1,6 +1,7 @@
 # Changelog
 
 ## Pièces jointes et connecteurs — 2026-09-21
+- **Les pièces jointes quittent `Caches`.** Elles vivaient dans `~/Library/Caches/Oris/attachments`, que macOS s'autorise à vider quand il manque de place et qui n'est pas sauvegardé comme le reste : une radio de patient pouvait disparaître sans que personne ne soit prévenu. Elles rejoignent `~/Library/Application Support/Oris/attachments`, auprès des journées. L'audio reste dans `Caches`, où il est à sa place : il est éphémère par décision (D010). Les fichiers déjà rangés ont été déplacés, chacun revérifié par son empreinte avant que l'original ne soit retiré.
 - **Aperçu des pièces jointes**, à la manière d'un coup d'œil rapide : un clic ne
   déclenche plus un téléchargement sans prévenir. Les images et les PDF s'affichent ;
   les **empreintes STL se tournent en 3D**, glisser pour pivoter, molette pour
