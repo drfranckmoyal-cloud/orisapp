@@ -585,6 +585,74 @@
         }
       }
     },
+    "/journee/demande": {
+      "post": {
+        "tags": [
+          "journee"
+        ],
+        "summary": "Demander Journee",
+        "description": "Demander à l'extension de (re)lire cet agenda.\n\nOris ne va rien chercher : il pose une demande, que l'extension vient lire à son\nprochain passage et sert en déposant la journée. Rien n'est écrit d'autre que la\ndemande elle-même.",
+        "operationId": "demander_journee_journee_demande_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DemandeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemandeOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/journee/demandes": {
+      "get": {
+        "tags": [
+          "journee"
+        ],
+        "summary": "Read Demandes",
+        "description": "Les journées qu'Oris attend. Lu par l'extension, sur cette machine seulement.",
+        "operationId": "read_demandes_journee_demandes_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DemandeOut"
+                  },
+                  "type": "array",
+                  "title": "Response Read Demandes Journee Demandes Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/journee/depot": {
       "post": {
         "tags": [
@@ -3795,6 +3863,42 @@
         ],
         "title": "CorrectionRequest"
       },
+      "DemandeIn": {
+        "properties": {
+          "jour": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jour"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DemandeIn"
+      },
+      "DemandeOut": {
+        "properties": {
+          "jour": {
+            "type": "string",
+            "title": "Jour"
+          },
+          "demande_le": {
+            "type": "string",
+            "title": "Demande Le"
+          }
+        },
+        "type": "object",
+        "required": [
+          "jour",
+          "demande_le"
+        ],
+        "title": "DemandeOut"
+      },
       "DepotOut": {
         "properties": {
           "jour": {
@@ -4651,6 +4755,17 @@
               }
             ],
             "title": "Recu Le"
+          },
+          "demande_le": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demande Le"
           },
           "rendezvous": {
             "items": {

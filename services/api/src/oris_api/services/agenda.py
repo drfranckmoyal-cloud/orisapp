@@ -38,6 +38,9 @@ EtatSmileCloud = Literal["trouve", "absent", "a_verifier", "ambigu", "demande", 
 #: plutôt que d'être affiché tel quel — un écran ne montre pas un mot qu'il ne comprend pas.
 ETATS: frozenset[str] = frozenset({"trouve", "absent", "a_verifier", "ambigu", "demande"})
 
+#: Au-delà, une demande de relecture est oubliée : voir `_vivantes`.
+DUREE_DEMANDE_H = 12
+
 
 @dataclass(frozen=True, slots=True)
 class RendezVous:
@@ -214,8 +217,82 @@ def deposer(settings: Settings, livraison: dict[str, Any]) -> Depot:
             ],
         },
     )
+    _retirer_demande(settings, jour)
     log.info("Journée %s déposée : %d rendez-vous", jour, len(lignes))
     return Depot(jour=jour, rendezvous=len(lignes), remplace=True)
+
+
+# --- Demander une relecture ---------------------------------------------------------
+#
+# Oris ne va rien chercher : il ne peut donc pas rafraîchir une journée lui-même. Il
+# pose une demande, que l'extension vient lire à son prochain passage et sert en
+# déposant la journée. Le praticien clique, l'extension travaille, la journée arrive.
+
+
+def _fichier_demandes(settings: Settings) -> Path:
+    return settings.journee_dir / "demandes.json"
+
+
+def _lire_demandes(settings: Settings) -> dict[str, str]:
+    try:
+        brut = json.loads(_fichier_demandes(settings).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(brut, dict):
+        return {}
+    return {str(jour): str(quand) for jour, quand in brut.items() if isinstance(quand, str)}
+
+
+def _vivantes(demandes: dict[str, str]) -> dict[str, str]:
+    """Une demande que personne n'a servie finit par ne plus rien vouloir dire.
+
+    Chrome peut rester fermé une journée entière ; la demande doit survivre à ça. Mais
+    relire l'agenda d'avant-hier parce qu'on avait cliqué avant-hier n'a aucun sens :
+    passé douze heures, la demande est oubliée.
+    """
+    limite = datetime.now().astimezone() - timedelta(hours=DUREE_DEMANDE_H)
+    gardees = {}
+    for jour, quand in demandes.items():
+        try:
+            if datetime.fromisoformat(quand) >= limite:
+                gardees[jour] = quand
+        except ValueError:
+            continue
+    return gardees
+
+
+def _ecrire_demandes(settings: Settings, demandes: dict[str, str]) -> None:
+    if demandes:
+        _ecrire(_fichier_demandes(settings), demandes)
+    else:
+        _fichier_demandes(settings).unlink(missing_ok=True)
+
+
+def _retirer_demande(settings: Settings, jour: str) -> None:
+    demandes = _vivantes(_lire_demandes(settings))
+    if demandes.pop(jour, None) is not None:
+        _ecrire_demandes(settings, demandes)
+
+
+def demander(settings: Settings, jour: str | None = None) -> str:
+    """Demander à l'extension de (re)lire cet agenda. Renvoie l'heure de la demande."""
+    demande = _jour_sur(jour) if jour else date.today().isoformat()
+    quand = datetime.now().astimezone().isoformat(timespec="seconds")
+    demandes = _vivantes(_lire_demandes(settings))
+    demandes[demande] = quand
+    _ecrire_demandes(settings, demandes)
+    log.info("Relecture demandée pour la journée %s", demande)
+    return quand
+
+
+def demandes(settings: Settings) -> dict[str, str]:
+    """Les jours qu'on attend, du plus ancien au plus récent. Pour l'extension."""
+    vivantes = _vivantes(_lire_demandes(settings))
+    return dict(sorted(vivantes.items()))
+
+
+def demande_pour(settings: Settings, jour: str) -> str | None:
+    return _vivantes(_lire_demandes(settings)).get(jour)
 
 
 def lire(settings: Settings, jour: str | None = None) -> Journee:

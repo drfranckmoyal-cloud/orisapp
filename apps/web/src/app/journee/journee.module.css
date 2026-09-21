@@ -367,3 +367,38 @@
     width: auto;
   }
 }
+
+/* Une relecture est attendue : le dire, avec un point qui bat pour montrer que l'écran
+   regarde tout seul si elle est arrivée. */
+.attente {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-2);
+  margin: 0;
+  padding: 9px var(--espace-6);
+  border-bottom: 1px solid var(--trait);
+  background: var(--accent-douce);
+  color: var(--accent-fonce);
+  font-size: var(--texte-sm);
+}
+
+.pouls {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pouls 1.6s ease-in-out infinite;
+}
+
+@keyframes pouls {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pouls {
+    animation: none;
+  }
+}

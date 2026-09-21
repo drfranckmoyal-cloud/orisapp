@@ -113,7 +113,9 @@ export function EtatVide({ titre, children }: { titre: string; children?: ReactN
   return (
     <div className={styles.vide}>
       <span className={styles.videTitre}>{titre}</span>
-      {children}
+      {/* Toute l'explication tient dans un seul enfant : `.vide` est une grille, et
+          une phrase contenant un passage en gras y partirait à la ligne toute seule. */}
+      {children && <span>{children}</span>}
     </div>
   );
 }

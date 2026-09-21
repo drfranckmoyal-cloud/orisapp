@@ -12,13 +12,22 @@ from __future__ import annotations
 
 import hmac
 import unicodedata
+from datetime import date
 from uuid import UUID
 
 from fastapi import APIRouter, Header, Request
 from sqlalchemy.orm import Session
 
 from oris_api.api.dependencies import ActorDep, SessionDep, SettingsDep
-from oris_api.api.schemas import DepotOut, JourneeDepot, JourneeOut, JourOut, RendezVousOut
+from oris_api.api.schemas import (
+    DemandeIn,
+    DemandeOut,
+    DepotOut,
+    JourneeDepot,
+    JourneeOut,
+    JourOut,
+    RendezVousOut,
+)
 from oris_api.services import agenda, patients
 from oris_api.services.errors import Forbidden, Unprocessable
 from oris_api.services.identity import Actor
@@ -28,6 +37,16 @@ router = APIRouter(prefix="/journee", tags=["journee"])
 #: Le dépôt n'est ouvert qu'à cette machine. L'extension tourne sur le Mac du praticien,
 #: dans sa session Chrome ; rien d'autre n'a de raison de déposer un agenda.
 LOCALES = frozenset({"127.0.0.1", "::1", "::ffff:127.0.0.1", "localhost"})
+
+
+def _seulement_ici(request: Request) -> None:
+    """Ce que l'extension appelle n'est ouvert qu'à cette machine.
+
+    L'extension tourne sur le Mac du praticien, dans sa session Chrome ; rien d'autre
+    n'a de raison de déposer un agenda ni de savoir ce qu'Oris attend.
+    """
+    if (request.client.host if request.client else "") not in LOCALES:
+        raise Forbidden("DEPOT_NON_LOCAL")
 
 
 def _cle(prenom: str, nom: str) -> tuple[str, str]:
@@ -59,6 +78,7 @@ def read_journee(
         agenda=journee.agenda,
         disponible=journee.disponible,
         recu_le=journee.recu_le,
+        demande_le=agenda.demande_pour(settings, journee.jour),
         rendezvous=[
             RendezVousOut(
                 heure=rdv.heure,
@@ -92,6 +112,30 @@ def read_semaine(
     ]
 
 
+@router.post("/demande", response_model=DemandeOut)
+def demander_journee(body: DemandeIn, actor: ActorDep, settings: SettingsDep) -> DemandeOut:
+    """Demander à l'extension de (re)lire cet agenda.
+
+    Oris ne va rien chercher : il pose une demande, que l'extension vient lire à son
+    prochain passage et sert en déposant la journée. Rien n'est écrit d'autre que la
+    demande elle-même.
+    """
+    try:
+        quand = agenda.demander(settings, body.jour)
+    except agenda.JourneeInvalide as erreur:
+        raise Unprocessable("JOURNEE_INVALIDE", details=[str(erreur)]) from erreur
+    return DemandeOut(jour=body.jour or date.today().isoformat(), demande_le=quand)
+
+
+@router.get("/demandes", response_model=list[DemandeOut])
+def read_demandes(request: Request, settings: SettingsDep) -> list[DemandeOut]:
+    """Les journées qu'Oris attend. Lu par l'extension, sur cette machine seulement."""
+    _seulement_ici(request)
+    return [
+        DemandeOut(jour=jour, demande_le=quand) for jour, quand in agenda.demandes(settings).items()
+    ]
+
+
 @router.post("/depot", response_model=DepotOut)
 def deposer_journee(
     request: Request,
@@ -105,9 +149,7 @@ def deposer_journee(
     machine seulement. Et surtout, **aucun patient n'est créé** — la journée est rangée,
     le praticien décide ensuite, ligne par ligne, laquelle mérite un dossier.
     """
-    client = request.client.host if request.client else ""
-    if client not in LOCALES:
-        raise Forbidden("DEPOT_NON_LOCAL")
+    _seulement_ici(request)
 
     attendu = settings.journee_depot_token
     if attendu is not None:

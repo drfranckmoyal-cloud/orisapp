@@ -201,6 +201,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/journee/demande": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Demander Journee
+         * @description Demander à l'extension de (re)lire cet agenda.
+         *
+         *     Oris ne va rien chercher : il pose une demande, que l'extension vient lire à son
+         *     prochain passage et sert en déposant la journée. Rien n'est écrit d'autre que la
+         *     demande elle-même.
+         */
+        post: operations["demander_journee_journee_demande_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/journee/demandes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Demandes
+         * @description Les journées qu'Oris attend. Lu par l'extension, sur cette machine seulement.
+         */
+        get: operations["read_demandes_journee_demandes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/journee/depot": {
         parameters: {
             query?: never;
@@ -1394,6 +1438,18 @@ export interface components {
              */
             regenerate: boolean;
         };
+        /** DemandeIn */
+        DemandeIn: {
+            /** Jour */
+            jour?: string | null;
+        };
+        /** DemandeOut */
+        DemandeOut: {
+            /** Jour */
+            jour: string;
+            /** Demande Le */
+            demande_le: string;
+        };
         /**
          * DepotOut
          * @description Ce qu'on répond à l'extension : ce qui a été gardé, et sinon pourquoi.
@@ -1723,6 +1779,8 @@ export interface components {
             disponible: boolean;
             /** Recu Le */
             recu_le?: string | null;
+            /** Demande Le */
+            demande_le?: string | null;
             /**
              * Rendezvous
              * @default []
@@ -2895,6 +2953,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    demander_journee_journee_demande_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DemandeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DemandeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_demandes_journee_demandes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DemandeOut"][];
                 };
             };
         };

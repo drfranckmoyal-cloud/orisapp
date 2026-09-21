@@ -377,7 +377,20 @@ class JourneeOut(BaseModel):
     disponible: bool
     #: Quand l'extension a déposé cette journée. Absent = jamais relevée.
     recu_le: str | None = None
+    #: Quand une relecture a été demandée, tant que l'extension ne l'a pas servie.
+    demande_le: str | None = None
     rendezvous: list[RendezVousOut] = []
+
+
+class DemandeIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    #: Le jour à (re)lire. Absent = aujourd'hui.
+    jour: str | None = None
+
+
+class DemandeOut(BaseModel):
+    jour: str
+    demande_le: str
 
 
 class RendezVousDepot(BaseModel):

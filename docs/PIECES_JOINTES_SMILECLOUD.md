@@ -121,7 +121,7 @@ Dental Lens. **Si Dental Lens est éteint, le bouton marche quand même.**
 
 ## 5. Deux préalables, à faire avant
 
-### a) Sortir les pièces jointes du dossier `Caches`
+### a) Sortir les pièces jointes du dossier `Caches` — **fait le 21/09/2026**
 
 `Settings.attachment_dir` vaut aujourd'hui `~/Library/Caches/Oris/attachments`. C'est
 le dossier que macOS s'autorise à **vider** quand il manque de place, et qui n'est pas
@@ -129,8 +129,9 @@ sauvegardé comme le reste. Tant qu'il n'y a que des fichiers d'essai, aucune
 importance. Le jour où on y verse les photos des patients, elles peuvent disparaître
 sans prévenir.
 
-Cible : `~/Library/Application Support/Oris/attachments`, là où Oris range déjà les
-journées. Déménagement **vérifié par empreinte**, jamais une simple copie.
+`attachment_dir` vaut désormais `~/Library/Application Support/Oris/attachments`, là où
+Oris range déjà les journées. Les trois fichiers d'essai présents ont été déplacés et
+chacun revérifié par son empreinte avant que l'original ne soit retiré.
 
 Au passage : `audio_temp_dir` est dans `Caches` aussi — et là c'est justifié, l'audio
 est éphémère par décision (D010). On n'y touche pas.
@@ -157,7 +158,7 @@ servir pour la journée **et** pour le lien SmileCloud.
 
 ## L'ordre
 
-1. Le déménagement hors de `Caches`.
+1. ~~Le déménagement hors de `Caches`.~~ **Fait.**
 2. Le champ « dossier SmileCloud » et la reconnaissance de noms partagée.
 3. L'onglet renommé et la récupération.
 

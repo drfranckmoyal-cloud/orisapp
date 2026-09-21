@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Bouton, EnTetePage, EtatVide, Squelette } from "@/components/ui";
 import { CommencerConsultation } from "@/components/patients/CommencerConsultation";
@@ -60,9 +60,46 @@ export default function JourneePage() {
     [rendezvous],
   );
 
-  function recharger() {
+  const recharger = useCallback(() => {
     rechargerJournee();
     rechargerSemaine();
+  }, [rechargerJournee, rechargerSemaine]);
+
+  /* Revenir de Chrome suffit à rafraîchir : on va lire Doctolib dans l'autre fenêtre,
+     on revient, la journée est là. Sans ça il faudrait recharger la page à la main. */
+  useEffect(() => {
+    const auRetour = () => {
+      if (document.visibilityState === "visible") recharger();
+    };
+    document.addEventListener("visibilitychange", auRetour);
+    window.addEventListener("focus", auRetour);
+    return () => {
+      document.removeEventListener("visibilitychange", auRetour);
+      window.removeEventListener("focus", auRetour);
+    };
+  }, [recharger]);
+
+  /* Tant qu'une relecture est attendue, l'écran va voir tout seul si elle est arrivée :
+     l'extension peut mettre quelques secondes comme une minute. */
+  const attendue = donnees?.demande_le ?? null;
+  useEffect(() => {
+    if (!attendue) return;
+    const minuteur = setInterval(recharger, 8000);
+    return () => clearInterval(minuteur);
+  }, [attendue, recharger]);
+
+  /** Demander à l'extension de (re)lire cet agenda. Oris ne va rien chercher lui-même. */
+  async function demander() {
+    setEncours("demande");
+    setMessage(null);
+    try {
+      await apiRequest("/journee/demande", { method: "POST", body: { jour } });
+      recharger();
+    } catch (error) {
+      setMessage(errorMessage(error instanceof ApiError ? error.code : "UNKNOWN"));
+    } finally {
+      setEncours(null);
+    }
   }
 
   async function creer(rdv: RendezVous) {
@@ -164,16 +201,39 @@ export default function JourneePage() {
                 {rendezvous.length} patient{rendezvous.length > 1 ? "s" : ""}
               </span>
             )}
-            {manquants.length > 0 && (
-              <div className={styles.actions}>
+            <div className={styles.actions}>
+              <Bouton
+                variante="secondaire"
+                onClick={() => void demander()}
+                disabled={encours !== null}
+              >
+                {encours === "demande"
+                  ? "Demande…"
+                  : donnees?.disponible
+                    ? "Mettre à jour"
+                    : "Charger la journée"}
+              </Bouton>
+              {manquants.length > 0 && (
                 <Bouton onClick={() => void creerTous()} disabled={encours !== null}>
                   {encours === "tous"
                     ? "Création…"
                     : `Créer ${manquants.length} dossier${manquants.length > 1 ? "s" : ""}`}
                 </Bouton>
-              </div>
-            )}
+              )}
+            </div>
           </header>
+
+          {attendue && (
+            <p className={styles.attente}>
+              <span className={styles.pouls} aria-hidden="true" />
+              Relecture demandée à {new Date(attendue).toLocaleTimeString("fr-FR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+              {" — l’extension lira Doctolib à son prochain passage, et la journée "}
+              arrivera ici toute seule.
+            </p>
+          )}
 
           {journee.state === "loading" && (
             <div className={styles.chargement}>
@@ -189,9 +249,19 @@ export default function JourneePage() {
           {donnees && !donnees.disponible && (
             <div className={styles.creux}>
               <EtatVide titre="Cette journée n’a pas encore été relevée">
-                L’agenda est relevé par l’<strong>extension Chrome</strong>, qui dépose
-                ensuite la journée dans Oris. Ouvrez Doctolib sur ce jour avec
-                l’extension active : la journée arrivera ici toute seule.
+                {attendue ? (
+                  <>
+                    Oris l’a demandée. L’<strong>extension Chrome</strong> la relèvera dans
+                    Doctolib à son prochain passage ; gardez Chrome ouvert, l’écran se
+                    mettra à jour tout seul.
+                  </>
+                ) : (
+                  <>
+                    L’agenda est relevé par l’<strong>extension Chrome</strong>, qui dépose
+                    ensuite la journée dans Oris. Appuyez sur <strong>Charger la journée</strong>,
+                    ou ouvrez simplement Doctolib sur ce jour avec l’extension active.
+                  </>
+                )}
               </EtatVide>
             </div>
           )}

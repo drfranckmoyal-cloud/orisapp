@@ -48,8 +48,11 @@ class Settings(BaseSettings):
     audio_sink: Literal["memory", "local_temp"] = "local_temp"
     audio_temp_dir: Path = Path.home() / "Library" / "Caches" / "Oris" / "audio"
     audio_max_chunk_bytes: int = 256_000
-    # Pièces jointes du patient : photos, radios, empreintes (spec §55).
-    attachment_dir: Path = Path.home() / "Library" / "Caches" / "Oris" / "attachments"
+    # Pièces jointes du patient : photos, radios, empreintes (spec §55). **Pas dans
+    # `Caches`** : macOS s'autorise à vider ce dossier quand il manque de place, et il
+    # n'est pas sauvegardé comme le reste. L'audio, lui, y reste — il est éphémère par
+    # décision (D010) ; une radio ne l'est pas.
+    attachment_dir: Path = Path.home() / "Library" / "Application Support" / "Oris" / "attachments"
     # Connecteur SmileCloud : éteint tant qu'il n'est pas construit.
     smilecloud_enabled: bool = False
 

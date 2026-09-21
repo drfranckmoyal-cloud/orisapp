@@ -10,6 +10,7 @@ Ce que ces tests tiennent :
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -251,3 +252,81 @@ def test_the_week_column_counts_the_files_still_missing(api: Any, tmp_path: Path
     # Une journée déposée et vide n'est pas une journée jamais relevée : la nuance
     # colore la colonne de gauche.
     assert (mercredi["lu"], mercredi["patients"]) == (True, 0)
+
+
+# --- Demander une relecture ---------------------------------------------------------
+
+
+def test_asking_for_a_day_puts_it_on_the_list_the_extension_reads(tmp_path: Path) -> None:
+    reglage = reglages(tmp_path)
+    quand = agenda.demander(reglage, JOUR)
+    assert agenda.demandes(reglage) == {JOUR: quand}
+    assert agenda.demande_pour(reglage, JOUR) == quand
+    assert agenda.demande_pour(reglage, "2026-09-23") is None
+
+
+def test_delivering_the_day_serves_the_request(tmp_path: Path) -> None:
+    """La demande disparaît quand elle est satisfaite, pas à l'heure qu'il est."""
+    reglage = reglages(tmp_path)
+    agenda.demander(reglage, JOUR)
+    agenda.deposer(reglage, livraison([RDV]))
+    assert agenda.demandes(reglage) == {}
+
+
+def test_a_failed_reading_leaves_the_request_standing(tmp_path: Path) -> None:
+    """Une livraison refusée n'a rien servi : on attend toujours."""
+    reglage = reglages(tmp_path)
+    agenda.deposer(reglage, livraison([RDV]))
+    agenda.demander(reglage, JOUR)
+    depot = agenda.deposer(reglage, livraison([], diagnostic={"entetes": False}))
+    assert depot.remplace is False
+    assert JOUR in agenda.demandes(reglage)
+
+
+def test_a_request_nobody_served_is_forgotten_after_half_a_day(tmp_path: Path) -> None:
+    """Relire l'agenda d'avant-hier parce qu'on avait cliqué avant-hier n'a aucun sens."""
+    from datetime import datetime, timedelta
+
+    reglage = reglages(tmp_path)
+    vieille = (datetime.now().astimezone() - timedelta(hours=13)).isoformat(timespec="seconds")
+    (tmp_path).mkdir(parents=True, exist_ok=True)
+    (tmp_path / "demandes.json").write_text(json.dumps({JOUR: vieille}), encoding="utf-8")
+    assert agenda.demandes(reglage) == {}
+
+
+def test_the_screen_and_the_extension_see_the_same_request(api: Any, tmp_path: Path) -> None:
+    from oris_api.config import get_settings
+    from oris_api.main import app
+
+    app.dependency_overrides[get_settings] = lambda: reglages(tmp_path)
+    try:
+        demande = api.post("/journee/demande", json={"jour": JOUR})
+        journee = api.get("/journee", params={"jour": JOUR}).json()
+        attendues = depuis("127.0.0.1").get("/journee/demandes").json()
+        dehors = depuis("203.0.113.7").get("/journee/demandes")
+    finally:
+        app.dependency_overrides.pop(get_settings, None)
+
+    assert demande.status_code == 200
+    assert demande.json()["jour"] == JOUR
+    # L'écran sait qu'il attend ; l'extension sait quoi lire.
+    assert journee["demande_le"] == demande.json()["demande_le"]
+    assert attendues == [{"jour": JOUR, "demande_le": demande.json()["demande_le"]}]
+    # Et personne d'autre ne sait ce que ce cabinet attend.
+    assert dehors.status_code == 403
+
+
+def test_asking_for_a_day_creates_no_patient_and_no_journee(api: Any, tmp_path: Path) -> None:
+    from oris_api.config import get_settings
+    from oris_api.main import app
+
+    app.dependency_overrides[get_settings] = lambda: reglages(tmp_path)
+    try:
+        api.post("/journee/demande", json={"jour": JOUR})
+        journee = api.get("/journee", params={"jour": JOUR}).json()
+    finally:
+        app.dependency_overrides.pop(get_settings, None)
+
+    # Demander n'est pas recevoir : la journée reste non relevée.
+    assert journee["disponible"] is False
+    assert api.get("/patients").json() == []
