@@ -1,5 +1,11 @@
 # Changelog
 
+## Accueil : « À relire » en tiroir — 2026-09-21
+- iPhone : l'accueil tient sur un écran. « À relire » est un tiroir posé en bas, toujours
+  visible (nombre en pastille, premiers noms) ; un toucher ou un geste vers le haut le
+  déplie en panneau (moitié ou plein écran) avec toute la liste. Sur le site, la carte
+  « À relire » est déjà visible sans défiler : rien à changer.
+
 ## Accueil : bouton qui respire — 2026-09-21
 - iPhone : le grand rond gonfle et dégonfle lentement (4,5 s), son halo en léger
   décalage ; les barres du symbole bougent chacune à son rythme, comme une voix. Le
