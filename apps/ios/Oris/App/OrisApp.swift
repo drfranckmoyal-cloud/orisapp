@@ -41,8 +41,8 @@ struct OrisApp: App {
             // Le site n'a qu'une apparence : l'app ne bascule pas en sombre avec l'iPhone.
             .preferredColorScheme(.light)
             .task {
-                // Le logo en grand, 2,3 secondes, puis l'accueil (ou Face ID).
-                try? await Task.sleep(for: .seconds(2.3))
+                // Le logo en grand, 2,7 secondes, puis l'accueil (ou Face ID).
+                try? await Task.sleep(for: .seconds(2.7))
                 ouverture = false
                 await verrou.deverrouiller()
             }
