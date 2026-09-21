@@ -10,7 +10,6 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
 - Plan de traitement visuel (schéma dentaire, étapes colorées, chronologie).
 - Compte rendu de soins à la demande quand un acte a été dit ; suppression d'un
   courrier d'adressage ou d'un compte rendu de soins demandé par erreur.
-- Retouche d'image (recadrage, miroir) dans la documentation clinique.
 - Pièces jointes non photo du dossier patient (PDF, radios) : liste et ouverture.
 - Votre journée (Doctolib), Oris apprend (vocabulaire, préférences).
 - Paramètres : spécialités des correspondants, praticiens du cabinet, export des

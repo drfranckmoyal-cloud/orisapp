@@ -1,5 +1,13 @@
 # Changelog
 
+## iPhone : retouche des photos et ordre d'impression — 2026-09-22
+- Documentation clinique d'un document : toucher une photo ouvre **Retoucher** —
+  recadrage par huit poignées ou en déplaçant le cadre, miroir horizontal et vertical,
+  « Rétablir ». La version corrigée entre au dossier du patient et remplace la photo
+  dans le document (légende et largeur gardées) ; l'originale reste. Même règle que le
+  site : miroir d'abord, puis recadrage.
+- Chaque photo porte son numéro et deux flèches ↑ ↓ : l'ordre est celui du PDF.
+
 ## SmileCloud : galeries du patient (côté Oris) — 2026-09-22
 - Serveur : lien patient ↔ dossier SmileCloud proposé avec son pourcentage (mêmes
   seuils que Dental Lens ; certitude seulement sur nom identique), demandes de lecture

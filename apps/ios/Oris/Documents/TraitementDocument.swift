@@ -426,6 +426,7 @@ struct DocumentationClinique: View {
     @State private var charge = false
     @State private var erreur: String?
     @State private var enregistrement: Task<Void, Never>?
+    @State private var aRetoucher: Figure?
 
     var body: some View {
         VStack(alignment: .leading, spacing: OrisSpacing.s12) {
@@ -446,10 +447,35 @@ struct DocumentationClinique: View {
 
             ForEach($figures) { $figure in
                 VStack(alignment: .leading, spacing: 8) {
-                    PhotoDistante(client: client, pieceJointeId: figure.attachmentId)
-                        .frame(height: figure.format == "demi" ? 140 : 210)
-                        .frame(maxWidth: figure.format == "demi" ? 200 : .infinity)
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    HStack(alignment: .top, spacing: 8) {
+                        Button { aRetoucher = figure } label: {
+                            PhotoDistante(client: client, pieceJointeId: figure.attachmentId)
+                                .frame(height: figure.format == "demi" ? 140 : 210)
+                                .frame(maxWidth: figure.format == "demi" ? 200 : .infinity)
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .overlay(alignment: .bottomTrailing) {
+                                    Label("Retoucher", systemImage: "crop")
+                                        .font(Police.interface(12, .bold))
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 10).padding(.vertical, 6)
+                                        .background(.black.opacity(0.55), in: Capsule())
+                                        .padding(8)
+                                }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Retoucher la photo \(numero(figure) + 1)")
+                        Spacer(minLength: 0)
+                        // L'ordre des photos dans le PDF : on monte, on descend.
+                        VStack(spacing: 6) {
+                            Text("\(numero(figure) + 1)")
+                                .font(Police.interface(13, .heavy))
+                                .foregroundStyle(Teinte.accent)
+                                .frame(width: 36, height: 28)
+                                .background(Teinte.accentDouce, in: Capsule())
+                            fleche("chevron.up", "Monter la photo", actif: numero(figure) > 0) { deplacer(figure, de: -1) }
+                            fleche("chevron.down", "Descendre la photo", actif: numero(figure) < figures.count - 1) { deplacer(figure, de: 1) }
+                        }
+                    }
                     TextField("Légende", text: $figure.caption)
                         .font(Police.interface(14, .medium))
                         .foregroundStyle(Teinte.encre)
@@ -477,6 +503,10 @@ struct DocumentationClinique: View {
                 if figure.id != figures.last?.id { Divider().overlay(Teinte.trait) }
             }
 
+            if figures.count > 1 {
+                Text("Les photos s’impriment dans cet ordre. Flèches pour le changer ; toucher une photo pour la retoucher.")
+                    .font(Police.interface(12, .medium)).foregroundStyle(Teinte.encreTresDouce)
+            }
             if figures.count < 12 {
                 BoutonAjoutPhoto { jpegs in await ajouter(jpegs) }
             }
@@ -485,6 +515,11 @@ struct DocumentationClinique: View {
             }
         }
         .carte()
+        .fullScreenCover(item: $aRetoucher) { figure in
+            RetoucheImageView(client: client, pieceJointeId: figure.attachmentId) { jpeg in
+                await remplacer(figure, par: jpeg)
+            }
+        }
         .task(id: document.id) {
             figures = (try? await client.figures(documentId: document.id)) ?? []
             charge = true
@@ -508,6 +543,50 @@ struct DocumentationClinique: View {
         figures.append(contentsOf: nouvelles)
         await enregistrer()
         toast = nouvelles.count > 1 ? "\(nouvelles.count) photos ajoutées." : "Photo ajoutée."
+    }
+
+    private func numero(_ figure: Figure) -> Int {
+        figures.firstIndex { $0.id == figure.id } ?? 0
+    }
+
+    private func fleche(_ icone: String, _ nom: String, actif: Bool, _ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: icone)
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(actif ? Teinte.accent : Teinte.traitFort)
+                .frame(width: 36, height: 36)
+                .background(Teinte.surface, in: Circle())
+                .overlay(Circle().strokeBorder(Teinte.trait))
+        }
+        .buttonStyle(.plain)
+        .disabled(!actif)
+        .accessibilityLabel(nom)
+    }
+
+    private func deplacer(_ figure: Figure, de pas: Int) {
+        guard let i = figures.firstIndex(where: { $0.id == figure.id }) else { return }
+        let j = i + pas
+        guard figures.indices.contains(j) else { return }
+        withAnimation(.spring(duration: 0.3)) { figures.swapAt(i, j) }
+        enregistrerPlusTard(delai: 0)
+    }
+
+    /// La photo corrigée entre dans le dossier du patient et prend la place de l'ancienne
+    /// dans le document, avec sa légende et sa largeur. L'originale reste au dossier.
+    private func remplacer(_ figure: Figure, par jpeg: Data?) async {
+        guard let jpeg else { return }
+        erreur = nil
+        let nom = figure.filename.replacingOccurrences(of: #"\.[^.]+$"#, with: "", options: .regularExpression) + "-corrigee.jpg"
+        do {
+            let pieces = try await client.deposerPhoto(patientId: patientId, encounterId: encounterId, jpeg: jpeg, nom: nom)
+            guard let piece = pieces.first, let i = figures.firstIndex(where: { $0.id == figure.id }) else { return }
+            figures[i] = Figure(attachmentId: piece.id, caption: figure.caption, position: figure.position,
+                                format: figure.format, filename: piece.filename, mediaType: piece.mediaType)
+            await enregistrer()
+            toast = "Photo retouchée."
+        } catch {
+            erreur = Labels.erreur(error)
+        }
     }
 
     /// La légende s'enregistre seule, une seconde après la dernière frappe.
