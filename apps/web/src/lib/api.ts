@@ -216,3 +216,6 @@ export type Envoi = Schemas["DeliveryOut"];
 export type FigureDocument = Schemas["FigureOut"];
 export type PlanVue = Schemas["PlanVueOut"];
 export type EtapePlan = Schemas["EtapeOut"];
+export type EnvoiPrepare = Schemas["EnvoiPrepareOut"];
+export type ResultatEnvoi = Schemas["ResultatEnvoiOut"];
+export type BoiteEnvoi = Schemas["BoiteEnvoiOut"];

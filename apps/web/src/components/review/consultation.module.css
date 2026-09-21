@@ -650,3 +650,109 @@
 .corrigerPlan[open] > summary {
   margin-bottom: var(--espace-3);
 }
+
+/* --- Envoi par courriel ------------------------------------------------------------ */
+
+.envoiMail {
+  display: grid;
+  gap: var(--espace-3);
+  padding: var(--espace-4);
+  border: 1px solid var(--trait-fort);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.envoiTete {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espace-3);
+  flex-wrap: wrap;
+}
+
+.envoiTete strong {
+  font-size: var(--texte-md);
+}
+
+.envoiTete span,
+.envoiNote {
+  font-size: var(--texte-xs);
+  color: var(--encre-tres-douce);
+}
+
+.envoiAlerte {
+  margin: 0;
+  padding: var(--espace-2) var(--espace-3);
+  border-radius: 10px;
+  background: var(--attention-douce);
+  color: var(--attention);
+  font-size: var(--texte-sm);
+}
+
+.destinataires {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.destinataires legend {
+  margin-bottom: 4px;
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-demi);
+  color: var(--encre-douce);
+}
+
+.destinataire {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.destinataire:hover {
+  background: var(--surface-douce);
+}
+
+.destinataire input {
+  width: 17px;
+  height: 17px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+
+.adresse {
+  display: block;
+  font-size: var(--texte-xs);
+  color: var(--encre-douce);
+}
+
+.envoiMail textarea.choix {
+  width: 100%;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.envoiMail input.choix {
+  width: 100%;
+}
+
+.resultats {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--texte-sm);
+}
+
+.resultats li[data-ok="true"] {
+  color: var(--valide);
+}
+
+.resultats li[data-ok="false"] {
+  color: var(--alerte);
+}

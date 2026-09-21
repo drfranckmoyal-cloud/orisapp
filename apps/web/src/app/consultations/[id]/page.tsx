@@ -11,6 +11,7 @@ import { PiecesJointes } from "@/components/patients/PiecesJointes";
 import { CorrectionPanel } from "@/components/review/CorrectionPanel";
 import { DocumentBody } from "@/components/review/DocumentView";
 import { Documentation } from "@/components/review/Documentation";
+import { EnvoiDocument } from "@/components/review/EnvoiDocument";
 import { Envois } from "@/components/review/Envois";
 import { PlanVisuel } from "@/components/review/PlanVisuel";
 import { RailRevision } from "@/components/review/RailRevision";
@@ -731,6 +732,18 @@ export default function ConsultationPage() {
                     <Documentation
                       documentId={active.id}
                       patientId={data.patient.id}
+                    />
+                    <EnvoiDocument
+                      documentId={active.id}
+                      version={active.version}
+                      onEnvoye={reloadAll}
+                      onEditer={() => {
+                        setEdition({
+                          documentId: active.id,
+                          texte: active.content,
+                        });
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
                     />
                     <Envois
                       documentId={active.id}

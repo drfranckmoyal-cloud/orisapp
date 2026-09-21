@@ -140,6 +140,14 @@ export const LEARNING_EVENT: Record<string, string> = {
 };
 
 const ERRORS: Record<string, string> = {
+  SMTP_NOT_CONFIGURED: "La boîte d’envoi n’est pas branchée (mot de passe d’application manquant).",
+  SENDING_EMAIL_MISSING: "Renseignez votre adresse d’envoi dans Paramètres.",
+  SMTP_AUTH_FAILED: "La messagerie a refusé l’identification : vérifiez le mot de passe d’application.",
+  SMTP_RECIPIENT_REFUSED: "Adresse refusée par la messagerie.",
+  SMTP_UNAVAILABLE: "Messagerie injoignable : réessayez dans un instant.",
+  NO_RECIPIENT: "Cochez au moins un destinataire.",
+  EMAIL_INVALID: "Une adresse saisie n’est pas valide.",
+  RECIPIENT_UNKNOWN: "Destinataire inconnu : rechargez la page.",
   FIGURE_NOT_PRINTABLE: "Ce format ne s’imprime pas encore (HEIC, radio, empreinte) : choisissez une photo JPEG ou PNG.",
   TOO_MANY_FIGURES: "Douze photos au plus par document.",
   ENCOUNTER_IN_PROGRESS:
