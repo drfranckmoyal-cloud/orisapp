@@ -1559,6 +1559,16 @@ export interface components {
              */
             phone: string;
             /**
+             * Secondary Email
+             * @default
+             */
+            secondary_email: string;
+            /**
+             * Secondary Phone
+             * @default
+             */
+            secondary_phone: string;
+            /**
              * Address
              * @default
              */
@@ -1600,6 +1610,10 @@ export interface components {
             email: string;
             /** Phone */
             phone: string;
+            /** Secondary Email */
+            secondary_email: string;
+            /** Secondary Phone */
+            secondary_phone: string;
             /** Address */
             address: string;
             /** Note */
@@ -1630,6 +1644,10 @@ export interface components {
             email?: string | null;
             /** Phone */
             phone?: string | null;
+            /** Secondary Email */
+            secondary_email?: string | null;
+            /** Secondary Phone */
+            secondary_phone?: string | null;
             /** Address */
             address?: string | null;
             /** Note */

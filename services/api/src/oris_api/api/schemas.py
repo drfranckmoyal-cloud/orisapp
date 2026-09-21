@@ -465,6 +465,8 @@ class CorrespondentOut(BaseModel):
     practice: str
     email: str
     phone: str
+    secondary_email: str
+    secondary_phone: str
     address: str
     note: str
     favorite: bool
@@ -482,6 +484,8 @@ class CorrespondentCreate(BaseModel):
     practice: ShortText = ""
     email: ShortText = ""
     phone: Annotated[str, StringConstraints(max_length=40)] = ""
+    secondary_email: ShortText = ""
+    secondary_phone: Annotated[str, StringConstraints(max_length=40)] = ""
     address: Annotated[str, StringConstraints(max_length=500)] = ""
     note: Annotated[str, StringConstraints(max_length=500)] = ""
     favorite: bool = False
@@ -497,6 +501,8 @@ class CorrespondentUpdate(BaseModel):
     practice: ShortText | None = None
     email: ShortText | None = None
     phone: Annotated[str, StringConstraints(max_length=40)] | None = None
+    secondary_email: ShortText | None = None
+    secondary_phone: Annotated[str, StringConstraints(max_length=40)] | None = None
     address: Annotated[str, StringConstraints(max_length=500)] | None = None
     note: Annotated[str, StringConstraints(max_length=500)] | None = None
     favorite: bool | None = None

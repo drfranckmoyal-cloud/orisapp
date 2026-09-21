@@ -48,7 +48,15 @@ export function Detail({
         {personne && <Ligne cle="Spécialité" valeur={correspondant.specialty} />}
         {personne && <Ligne cle="Cabinet" valeur={correspondant.practice} />}
         <Ligne cle="Adresse électronique" valeur={correspondant.email} />
+        {/* Le second contact ne se montre que s'il existe : une ligne « non renseigné »
+            de plus ferait croire qu'il manque quelque chose. */}
+        {correspondant.secondary_email && (
+          <Ligne cle="Autre adresse" valeur={correspondant.secondary_email} />
+        )}
         <Ligne cle="Téléphone" valeur={correspondant.phone} />
+        {correspondant.secondary_phone && (
+          <Ligne cle="Autre téléphone" valeur={correspondant.secondary_phone} />
+        )}
         <Ligne cle="Adresse postale" valeur={correspondant.address} />
         <Ligne cle="Note" valeur={correspondant.note} />
       </div>

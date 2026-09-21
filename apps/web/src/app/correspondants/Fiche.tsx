@@ -23,6 +23,8 @@ export type Brouillon = {
   practice: string;
   email: string;
   phone: string;
+  secondary_email: string;
+  secondary_phone: string;
   address: string;
   note: string;
 };
@@ -36,6 +38,8 @@ export const VIDE: Brouillon = {
   practice: "",
   email: "",
   phone: "",
+  secondary_email: "",
+  secondary_phone: "",
   address: "",
   note: "",
 };
@@ -50,6 +54,8 @@ export function brouillonDe(c: Correspondant): Brouillon {
     practice: c.practice,
     email: c.email,
     phone: c.phone,
+    secondary_email: c.secondary_email,
+    secondary_phone: c.secondary_phone,
     address: c.address,
     note: c.note,
   };
@@ -73,6 +79,10 @@ export function Fiche({
   onSupprimer?: () => void;
 }) {
   const [brouillon, setBrouillon] = useState<Brouillon>(depart);
+  /* Un second contact est l'exception, pas la règle : il n'encombre le formulaire que
+     si on le demande — ou s'il est déjà rempli, auquel cas le cacher le perdrait. */
+  const [secondCourriel, setSecondCourriel] = useState(Boolean(depart.secondary_email));
+  const [secondNumero, setSecondNumero] = useState(Boolean(depart.secondary_phone));
   const personne = brouillon.kind === "practitioner";
 
   function poser<C extends keyof Brouillon>(champ: C, valeur: Brouillon[C]) {
@@ -184,7 +194,28 @@ export function Fiche({
           value={brouillon.email}
           onChange={(event) => poser("email", event.target.value)}
         />
+        {!secondCourriel && (
+          <button
+            type="button"
+            className={styles.enPlus}
+            onClick={() => setSecondCourriel(true)}
+          >
+            + une autre adresse
+          </button>
+        )}
       </label>
+
+      {secondCourriel && (
+        <label className={`field ${styles.large}`}>
+          Autre adresse électronique
+          <Champ
+            type="email"
+            value={brouillon.secondary_email}
+            placeholder="secrétariat, adresse personnelle…"
+            onChange={(event) => poser("secondary_email", event.target.value)}
+          />
+        </label>
+      )}
 
       <label className="field">
         Téléphone
@@ -193,7 +224,24 @@ export function Fiche({
           value={brouillon.phone}
           onChange={(event) => poser("phone", event.target.value)}
         />
+        {!secondNumero && (
+          <button type="button" className={styles.enPlus} onClick={() => setSecondNumero(true)}>
+            + un autre numéro
+          </button>
+        )}
       </label>
+
+      {secondNumero && (
+        <label className="field">
+          Autre téléphone
+          <Champ
+            type="tel"
+            value={brouillon.secondary_phone}
+            placeholder="portable, ligne directe…"
+            onChange={(event) => poser("secondary_phone", event.target.value)}
+          />
+        </label>
+      )}
 
       <label className={`field ${styles.pleineLargeur}`}>
         Adresse postale

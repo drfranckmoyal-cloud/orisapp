@@ -152,3 +152,34 @@ def test_putting_forward_changes_nothing_else(api: Any) -> None:
     assert {k: apres[k] for k in ("title", "first_name", "specialty", "email")} == {
         k: fiche[k] for k in ("title", "first_name", "specialty", "email")
     }
+
+
+def test_a_second_address_and_number_can_be_kept(api: Any) -> None:
+    """Le cabinet et le portable : les écraser l'un par l'autre obligeait à choisir."""
+    fiche = creer(
+        api,
+        email="secretariat@example.fr",
+        phone="01 23 45 67 89",
+        secondary_email="claire.lemaire@example.fr",
+        secondary_phone="06 11 22 33 44",
+    )
+    assert fiche["email"] == "secretariat@example.fr"
+    assert fiche["secondary_email"] == "claire.lemaire@example.fr"
+    assert fiche["secondary_phone"] == "06 11 22 33 44"
+
+
+def test_the_second_contact_stays_empty_when_nobody_fills_it(api: Any) -> None:
+    fiche = creer(api, email="unique@example.fr")
+    assert (fiche["secondary_email"], fiche["secondary_phone"]) == ("", "")
+
+
+def test_a_structure_keeps_its_second_number(api: Any) -> None:
+    """Un service hospitalier a un standard et une ligne directe : les deux comptent."""
+    fiche = creer(
+        api,
+        kind="organisation",
+        last_name="CHU de Rouen",
+        phone="02 32 88 89 90",
+        secondary_phone="02 32 88 00 00",
+    )
+    assert fiche["secondary_phone"] == "02 32 88 00 00"

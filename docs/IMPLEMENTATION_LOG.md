@@ -1230,3 +1230,23 @@ marge, là où ils occupaient toute la largeur.
 leur couleur arrêtée pour de bon (Omnipraticien, ODF, CMF, Pédodontie) ; les autres se
 partagent les cinq teintes restantes dans l'ordre où elles apparaissent. Rose et non
 rouge : le rouge veut dire l'alerte partout ailleurs dans le site.
+
+## Un second contact, en option (21 septembre 2026)
+
+Migration 0015 : `secondary_email` et `secondary_phone`. Un confrère a souvent deux
+numéros — le cabinet et le portable — et parfois deux adresses, le secrétariat et la
+sienne. Les écraser l'une par l'autre obligeait à choisir laquelle on perd.
+
+C'est l'exception et non la règle : le formulaire ne montre le second champ que si on le
+demande, par un « + une autre adresse » discret sous celui qu'il complète. S'il est déjà
+rempli, il s'affiche d'emblée — le cacher le perdrait. La fiche en lecture ne l'affiche
+que s'il existe : une ligne « non renseigné » de plus ferait croire qu'il manque quelque
+chose.
+
+### Note d'outillage
+
+Deux comportements que je n'arrivais pas à vérifier — la touche Entrée dans un
+formulaire, et un clic sur le bouton d'en-tête — se sont avérés être des **limites de
+l'automatisation du navigateur**, pas des défauts de l'application : `elementFromPoint`
+rend bien le bouton visé, et un `click()` déclenché en JavaScript au même endroit
+fonctionne. À ne pas confondre avec un vrai défaut la prochaine fois.

@@ -4314,6 +4314,18 @@
             "title": "Phone",
             "default": ""
           },
+          "secondary_email": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Secondary Email",
+            "default": ""
+          },
+          "secondary_phone": {
+            "type": "string",
+            "maxLength": 40,
+            "title": "Secondary Phone",
+            "default": ""
+          },
           "address": {
             "type": "string",
             "maxLength": 500,
@@ -4382,6 +4394,14 @@
             "type": "string",
             "title": "Phone"
           },
+          "secondary_email": {
+            "type": "string",
+            "title": "Secondary Email"
+          },
+          "secondary_phone": {
+            "type": "string",
+            "title": "Secondary Phone"
+          },
           "address": {
             "type": "string",
             "title": "Address"
@@ -4411,6 +4431,8 @@
           "practice",
           "email",
           "phone",
+          "secondary_email",
+          "secondary_phone",
           "address",
           "note",
           "favorite",
@@ -4525,6 +4547,30 @@
               }
             ],
             "title": "Phone"
+          },
+          "secondary_email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secondary Email"
+          },
+          "secondary_phone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secondary Phone"
           },
           "address": {
             "anyOf": [

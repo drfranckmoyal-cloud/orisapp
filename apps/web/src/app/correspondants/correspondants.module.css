@@ -482,3 +482,21 @@
   outline: none;
   box-shadow: var(--anneau-focus);
 }
+
+/* « + une autre adresse » : discret, sous le champ qu'il complète. Ce n'est pas une
+   action du formulaire, c'est un champ de plus qu'on déplie. */
+.enPlus {
+  justify-self: start;
+  margin-top: 3px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: var(--texte-xs);
+  cursor: pointer;
+}
+
+.enPlus:hover {
+  text-decoration: underline;
+}

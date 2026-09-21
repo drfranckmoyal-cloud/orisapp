@@ -773,6 +773,10 @@ class Correspondent(Base):
     practice: Mapped[str] = mapped_column(String(200), default="", server_default="")
     email: Mapped[str] = mapped_column(String(200), default="", server_default="")
     phone: Mapped[str] = mapped_column(String(40), default="", server_default="")
+    #: Le second contact : le cabinet et le portable, le secrétariat et lui. Vide dans
+    #: le cas courant — le formulaire ne le montre que si on le demande.
+    secondary_email: Mapped[str] = mapped_column(String(200), default="", server_default="")
+    secondary_phone: Mapped[str] = mapped_column(String(40), default="", server_default="")
     address: Mapped[str] = mapped_column(Text, default="", server_default="")
     note: Mapped[str] = mapped_column(Text, default="", server_default="")
     #: Mis en avant : remonte en tête de liste. On adresse souvent aux trois ou quatre
