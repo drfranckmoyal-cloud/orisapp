@@ -41,13 +41,19 @@ Suite de la prise en charge · Points d'attention / coordination (dont antécéd
 Éléments pertinents · Examens disponibles / pièces jointes · Demande / objectifs · Points
 d'attention / précautions · Coordination / retour souhaité · « Bien confraternellement ».
 
+## Points tranchés le 21 septembre (suite)
+
+- **A.** La proposition thérapeutique ne liste que ce qui est proposé ; une option écartée
+  n'y figure pas (elle reste dans le dossier clinique).
+- **B.** Pas de modèle « suivi » : un contrôle est une consultation.
+- **C.** Formule d'appel « Cher confrère, » sous le bloc Destinataire.
+- **D.** Ordre : Motif · Examen clinique · Diagnostic / analyse · Proposition thérapeutique
+  · Informations données au patient · Actes réalisés · Suite de la prise en charge ·
+  Points d'attention / coordination.
+- **E.** Style télégraphique : plus de « Rapporté par le patient / Constaté », éléments
+  regroupés par rubrique. Numéros de dent et négations jamais raccourcis.
+
 ## Points ouverts
 
-- **A. Options écartées.** Sans statut, « couronnes » écartées au fauteuil se liraient
-  comme une proposition. Proposition : la rubrique ne liste que ce qui est proposé ;
-  une option écartée n'y figure pas (elle reste dans le dossier clinique).
-- **B. « Oublier le suivi »** compris comme : pas de modèle suivi à part. À confirmer.
-- **C. Formule d'appel** du courrier (« Cher confrère, ») : absente du modèle.
-- **D. Ordre des rubriques ajoutées** (Informations, Actes réalisés) dans le compte rendu.
-- **E. Style télégraphique** : à caler sur deux ou trois exemples réels.
 - **F. Plan de traitement** : modèle à écrire ensemble.
+- **G. Le déroulé en filigrane pendant l'écoute** : en discussion.
