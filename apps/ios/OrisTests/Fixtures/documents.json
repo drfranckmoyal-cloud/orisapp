@@ -3,6 +3,7 @@
     "claims": [
       {
         "fact_ids": [],
+        "paragraphe": -1,
         "section": "Limites du compte rendu",
         "text": "Une portion significative de la consultation n’a pas été captée. Le compte rendu ne peut pas être considéré comme exhaustif.",
         "warning_codes": [

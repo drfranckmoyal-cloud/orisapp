@@ -62,6 +62,8 @@ class Claim:
     warning_codes: tuple[str, ...] = ()
     #: Pour le plan : l'élément dont la phrase parle (retrouver son titre court).
     item_id: str = ""
+    #: Paragraphe de la phrase dans sa rubrique (texte rédigé) ; -1 : une ligne à elle.
+    paragraphe: int = -1
 
 
 @dataclass(frozen=True)

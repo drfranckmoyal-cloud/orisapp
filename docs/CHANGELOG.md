@@ -1,5 +1,16 @@
 # Changelog
 
+## Comptes rendus aérés — 2026-09-21
+- Claude découpe chaque rubrique en **paragraphes courts** (une idée chacun) et met en
+  **gras** les seuls éléments clés (diagnostic, traitement, dents, refus). Contrôle :
+  gras bien fermé, jamais plus de huit mots ; les vérifications cliniques portent sur le
+  texte sans marques.
+- PDF : un paragraphe par ligne de contenu, un peu d'air entre eux, gras rendu mot à mot
+  (refermé en fin de ligne, ponctuation collée). Écran : un paragraphe HTML par
+  paragraphe, gras en `<strong>`. Texte copié pour le logiciel du cabinet : sans marques.
+- Plan de traitement : titres d'étape de 2 à 4 mots (proposés par Claude, faits
+  seulement de mots dits), l'action complète en première précision.
+
 ## Plan de traitement visuel — 2026-09-21
 - **Schéma des deux arcades** en vue occlusale (`documents/odontogramme.py`) : dents à la
   taille moyenne de leur type, disposées en U ; dents d'une étape teintées de sa couleur,

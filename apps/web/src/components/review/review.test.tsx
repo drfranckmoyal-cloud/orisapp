@@ -69,6 +69,7 @@ const document: DocumentView = {
     {
       section: "Analyse / diagnostic / hypothèses",
       text: "Suspicion de fissure (16), non confirmée.",
+      paragraphe: -1,
       fact_ids: ["f1"],
       warning_codes: [],
     },
@@ -83,8 +84,12 @@ const document: DocumentView = {
 describe("review screen", () => {
   it("opens the source of a sentence: facts with their axes and the spoken words", () => {
     const onSelect = vi.fn();
-    render(<DocumentBody document={document} selected={null} onSelect={onSelect} />);
-    fireEvent.click(screen.getByText("Suspicion de fissure (16), non confirmée."));
+    render(
+      <DocumentBody document={document} selected={null} onSelect={onSelect} />,
+    );
+    fireEvent.click(
+      screen.getByText("Suspicion de fissure (16), non confirmée."),
+    );
     expect(onSelect).toHaveBeenCalledWith(document.claims[0]);
 
     render(
@@ -96,7 +101,9 @@ describe("review screen", () => {
         motDe={(concept) => concept}
       />,
     );
-    expect(screen.getByText("« Il y a peut-être une fissure sur 16. »")).toBeTruthy();
+    expect(
+      screen.getByText("« Il y a peut-être une fissure sur 16. »"),
+    ).toBeTruthy();
     expect(screen.getByText("incertain")).toBeTruthy();
     expect(screen.getByText("hypothèse")).toBeTruthy();
     expect(screen.getByText(/Praticien — 01:05/)).toBeTruthy();
@@ -104,6 +111,40 @@ describe("review screen", () => {
 
   it("explains blocking API errors in French", () => {
     expect(errorMessage("WARNING_NOT_ACKNOWLEDGED")).toMatch(/alerte critique/);
-    expect(errorMessage("SOMETHING_NEW")).toBe("Action impossible (SOMETHING_NEW).");
+    expect(errorMessage("SOMETHING_NEW")).toBe(
+      "Action impossible (SOMETHING_NEW).",
+    );
+  });
+});
+
+describe("texte rédigé", () => {
+  it("affiche en gras le passage marqué et découpe les paragraphes", () => {
+    const aere: DocumentView = {
+      ...document,
+      claims: [
+        {
+          section: "Examen clinique",
+          text: "Une **agénésie de 12**.",
+          paragraphe: 0,
+          fact_ids: ["f1"],
+          warning_codes: [],
+        },
+        {
+          section: "Examen clinique",
+          text: "Autre idée.",
+          paragraphe: 1,
+          fact_ids: ["f1"],
+          warning_codes: [],
+        },
+      ],
+      validation_issues: [],
+    };
+    const { container } = render(
+      <DocumentBody document={aere} selected={null} onSelect={() => {}} />,
+    );
+    expect(container.querySelector("strong")?.textContent).toBe(
+      "agénésie de 12",
+    );
+    expect(container.querySelectorAll("p")).toHaveLength(2);
   });
 });

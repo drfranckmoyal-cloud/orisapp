@@ -70,17 +70,19 @@ class Layout:
     #: Les phrases d'une rubrique coulent en un paragraphe (compte rendu rédigé) ;
     #: sinon une ligne par élément (plan de traitement, acte).
     paragraphs: bool = False
+    #: Texte aéré : un peu d'air après chaque paragraphe, gras (**…**) respecté.
+    aere: bool = False
 
 
 LAYOUTS: dict[str, Layout] = {
-    "consultation_note": Layout(title="Compte rendu de consultation", paragraphs=True),
+    "consultation_note": Layout(title="Compte rendu de consultation", aere=True),
     "treatment_plan_text": Layout(title="Plan de traitement"),
     "operative_note": Layout(title="Compte rendu opératoire", date_label="Date de l’intervention"),
     "referral_letter": Layout(
         title="Courrier d’adressage",
         letter=True,
         salutation="Cher confrère,",
-        paragraphs=True,
+        aere=True,
         closing="Bien confraternellement,",
         date_label="Date du courrier",
     ),
@@ -151,10 +153,15 @@ def header_lines(context: ExportContext) -> list[str]:
 
 
 def render_text(context: ExportContext, structured: bool) -> str:
-    """Texte à coller dans le logiciel métier : brut, ou précédé de l'en-tête."""
+    """Texte à coller dans le logiciel métier : brut, ou précédé de l'en-tête.
+
+    Le gras (**…**) est une mise en page : il ne part pas dans un logiciel qui l'afficherait
+    tel quel.
+    """
+    contenu = context.content.replace("**", "").strip()
     if not structured:
-        return context.content.strip() + "\n"
-    return "\n".join([*header_lines(context), "", context.content.strip(), ""])
+        return contenu + "\n"
+    return "\n".join([*header_lines(context), "", contenu, ""])
 
 
 def is_heading(line: str) -> bool:
@@ -179,6 +186,75 @@ def wrap(text: str, font: str, size: float, width: float) -> list[str]:
 
 
 Block = tuple[str, str]
+
+
+Mot = tuple[str, bool, bool]  # texte, en gras, collé au mot précédent
+
+
+def _mots_riches(texte: str) -> list[Mot]:
+    """« une **agénésie de 12**. » → (une) (agénésie, gras) (de, gras) (12, gras) (., collé).
+
+    Un mot « collé » suit le précédent sans espace : la ponctuation après un passage en
+    gras ne doit pas s'en détacher."""
+    mots: list[Mot] = []
+    precedent_fini = False  # le morceau précédent finissait-il sans espace ?
+    for index, morceau in enumerate(texte.split("**")):
+        gras = index % 2 == 1
+        for rang, mot in enumerate(morceau.split()):
+            colle = rang == 0 and precedent_fini and not morceau[:1].isspace()
+            mots.append((mot, gras, colle and bool(mots)))
+        if morceau:
+            precedent_fini = not morceau[-1:].isspace()
+    return mots
+
+
+def _serialiser(mots: list[Mot]) -> str:
+    sortie = ""
+    gras = False
+    for mot, en_gras, colle in mots:
+        if gras and not en_gras:
+            sortie += "**"
+        separateur = "" if (colle or not sortie) else " "
+        if en_gras and not gras:
+            sortie += separateur + "**" + mot
+        else:
+            sortie += separateur + mot
+        gras = en_gras
+    if gras:
+        sortie += "**"
+    return sortie
+
+
+def wrap_riche(texte: str, size: float, width: float) -> list[str]:
+    """Comme `wrap`, en mesurant chaque mot dans sa graisse ; le gras est refermé en fin
+    de ligne et rouvert à la suivante."""
+    lignes: list[list[Mot]] = [[]]
+    largeur = 0.0
+    espace = stringWidth(" ", "Times-Roman", size)
+    for mot, gras, colle in _mots_riches(texte):
+        w = stringWidth(mot, "Times-Bold" if gras else "Times-Roman", size)
+        pas = 0.0 if (colle or not lignes[-1]) else espace
+        if lignes[-1] and not colle and largeur + pas + w > width:
+            lignes.append([])
+            largeur = 0.0
+            pas = 0.0
+        largeur += pas + w
+        lignes[-1].append((mot, gras, colle and bool(lignes[-1])))
+    return [_serialiser(ligne) for ligne in lignes if ligne] or [""]
+
+
+def draw_riche(canvas: Canvas, x: float, y: float, ligne: str, size: float) -> None:
+    """Une ligne dont certains mots sont en gras."""
+    espace = stringWidth(" ", "Times-Roman", size)
+    premier = True
+    for mot, gras, colle in _mots_riches(ligne):
+        if not premier and not colle:
+            x += espace
+        police = "Times-Bold" if gras else "Times-Roman"
+        canvas.setFont(police, size)
+        canvas.drawString(x, y, mot)
+        x += stringWidth(mot, police, size)
+        premier = False
 
 
 def paragraph_lines(content: str, paragraphs: bool) -> list[str]:
@@ -214,7 +290,11 @@ def body_blocks(context: ExportContext, layout: Layout, usable: float) -> list[B
         style = "heading" if is_heading(line) else "body"
         font = "Times-Roman"
         size = layout.heading_size + 3 if style == "heading" else layout.body_size + 0.5
-        blocks += [(style, piece) for piece in wrap(line, font, size, usable)]
+        if style == "body" and layout.aere:
+            blocks += [(style, piece) for piece in wrap_riche(line, size, usable)]
+            blocks.append(("air", ""))
+        else:
+            blocks += [(style, piece) for piece in wrap(line, font, size, usable)]
     if layout.closing:
         blocks += [
             ("space", ""),
@@ -429,7 +509,7 @@ def render_pdf(context: ExportContext, cabinet: Cabinet | None = None) -> bytes:
             pages.append([])
             room = other_pages_top - bottom
             used = 0.0
-            if style == "space":
+            if style in {"space", "air"}:
                 continue
         pages[-1].append((style, line))
         used += step
@@ -444,6 +524,9 @@ def render_pdf(context: ExportContext, cabinet: Cabinet | None = None) -> bytes:
         for style, line in page:
             if style == "space":
                 y -= layout.leading / 2
+                continue
+            if style == "air":
+                y -= layout.leading * 0.45
                 continue
             if style == "heading":
                 y -= 2.5 * mm
@@ -461,7 +544,10 @@ def render_pdf(context: ExportContext, cabinet: Cabinet | None = None) -> bytes:
             else:
                 canvas.setFont(SERIF, layout.body_size + 0.5)
                 canvas.setFillColor(color("body"))
-            canvas.drawString(MARGIN, y, line)
+            if "**" in line:
+                draw_riche(canvas, MARGIN, y, line, layout.body_size + 0.5)
+            else:
+                canvas.drawString(MARGIN, y, line)
             y -= layout.leading
         draw_footer(canvas, layout, cabinet, width, number, total)
         canvas.showPage()
@@ -550,6 +636,8 @@ def step_for(style: str, layout: Layout) -> float:
     """Hauteur occupée par une ligne, pour paginer exactement comme on dessine."""
     if style == "space":
         return layout.leading / 2
+    if style == "air":
+        return layout.leading * 0.45
     if style == "heading":
         return layout.leading + 4 * mm
     return layout.leading

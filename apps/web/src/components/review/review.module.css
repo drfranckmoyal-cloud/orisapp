@@ -68,8 +68,18 @@
   background: var(--trait);
 }
 
+.rubrique {
+  display: grid;
+  gap: 10px;
+}
+
 .paragraphe {
   margin: 0;
+}
+
+.paragraphe strong {
+  font-weight: var(--graisse-forte);
+  color: var(--encre);
 }
 
 /* Une phrase dans le paragraphe : cliquable, sans casser la ligne. */

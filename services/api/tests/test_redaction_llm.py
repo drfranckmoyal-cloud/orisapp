@@ -154,3 +154,51 @@ def test_a_network_failure_falls_back_silently_to_the_templates() -> None:
     document = asyncio.run(redacteur.generate(dictee(), "consultation_note"))
     assert "(repli)" in document.generator
     assert "Agénésie de 12 et 22" in document.content
+
+
+def test_paragraphs_and_short_bold_passages_are_kept() -> None:
+    copie = copie_fidele()
+    examen = copie["rubriques"][1]
+    faits = examen["phrases"][0]["fact_ids"]
+    examen["phrases"] = [
+        {"texte": "L'examen révèle une **agénésie de 12 et 22**.", "fact_ids": ["f4"]},
+        {
+            "texte": "Par ailleurs, 11, 13, 21, 23 sont en bon état ; 18 et 28 sont absentes.",
+            "fact_ids": [f for f in faits if f != "f4"],
+            "nouveau_paragraphe": True,
+        },
+    ]
+    redacteur, _ = writer([copie])
+    document = asyncio.run(redacteur.generate(dictee(), "consultation_note"))
+    assert "(repli)" not in document.generator, redacteur.dernier_refus
+    lignes = document.content.split("Examen clinique\n", 1)[1].split("\n")
+    assert lignes[0] == "L'examen révèle une **agénésie de 12 et 22**."
+
+
+def test_a_whole_sentence_in_bold_is_refused() -> None:
+    copie = copie_fidele()
+    phrase = copie["rubriques"][1]["phrases"][0]
+    phrase["texte"] = "**" + phrase["texte"] + "**"
+    redacteur, _ = writer([copie])
+    assert "(repli)" in asyncio.run(redacteur.generate(dictee(), "consultation_note")).generator
+
+
+def test_bold_markers_never_reach_the_text_copied_to_the_record() -> None:
+    from datetime import UTC, datetime
+
+    from oris_api.documents.export import ExportContext, render_text, wrap_riche
+
+    contexte = ExportContext(
+        document_type="consultation_note",
+        content="Examen clinique\nUne **agénésie de 12 et 22**.",
+        practitioner="Dr Test",
+        organization="Cabinet",
+        patient="Patient Test",
+        encounter_date=datetime(2026, 9, 21, tzinfo=UTC),
+        validated_at=None,
+        version=1,
+    )
+    assert "**" not in render_text(contexte, structured=False)
+    # Un passage en gras coupé en fin de ligne est refermé puis rouvert.
+    lignes = wrap_riche("Une **agénésie bilatérale de 12 et 22** constatée.", 10, 60)
+    assert all(ligne.count("**") % 2 == 0 for ligne in lignes)

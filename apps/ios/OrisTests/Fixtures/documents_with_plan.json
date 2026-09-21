@@ -5,6 +5,7 @@
         "fact_ids": [
           "f1"
         ],
+        "paragraphe": -1,
         "section": "Diagnostic / analyse",
         "text": "Suspicion de fissure (16), non confirmée.",
         "warning_codes": []
@@ -13,6 +14,7 @@
         "fact_ids": [
           "f2"
         ],
+        "paragraphe": -1,
         "section": "Suite de la prise en charge",
         "text": "Prévu : examen complémentaire (16).",
         "warning_codes": []
@@ -41,6 +43,7 @@
         "fact_ids": [
           "f2"
         ],
+        "paragraphe": -1,
         "section": "Étape 1 — Compléter l’examen",
         "text": "Dents : 16.",
         "warning_codes": []
@@ -49,6 +52,7 @@
         "fact_ids": [
           "f2"
         ],
+        "paragraphe": -1,
         "section": "Étape 1 — Compléter l’examen",
         "text": "Motif : suspicion de fissure.",
         "warning_codes": []
@@ -57,6 +61,7 @@
         "fact_ids": [
           "f2"
         ],
+        "paragraphe": -1,
         "section": "Étape 1 — Compléter l’examen",
         "text": "Statut : prévu.",
         "warning_codes": []

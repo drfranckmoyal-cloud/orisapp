@@ -1548,6 +1548,11 @@ export interface components {
             fact_ids: string[];
             /** Warning Codes */
             warning_codes: string[];
+            /**
+             * Paragraphe
+             * @default -1
+             */
+            paragraphe: number;
         };
         /** ClientConfigOut */
         ClientConfigOut: {

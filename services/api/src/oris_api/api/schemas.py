@@ -138,6 +138,8 @@ class ClaimOut(BaseModel):
     text: str
     fact_ids: list[str]
     warning_codes: list[str]
+    #: Paragraphe de la phrase dans sa rubrique ; -1 : pas de découpage.
+    paragraphe: int = -1
 
 
 class ValidationIssueOut(BaseModel):

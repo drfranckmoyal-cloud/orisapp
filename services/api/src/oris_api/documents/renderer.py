@@ -185,15 +185,23 @@ def fact_sentence(fact: ClinicalFact, style: Style = DEFAULT_STYLE) -> str:
 
 
 def render_content(claims: Iterable[Claim]) -> str:
+    """Titre de rubrique, puis une ligne par phrase — ou par paragraphe, quand le texte
+    rédigé regroupe ses phrases (une ligne = un paragraphe)."""
     blocks: list[str] = []
     current: str | None = None
+    paragraphe = -1
     for claim in claims:
         if claim.section != current:
             if blocks:
                 blocks.append("")
             blocks.append(claim.section)
             current = claim.section
-        blocks.append(claim.text)
+            paragraphe = -1
+        if claim.paragraphe >= 0 and claim.paragraphe == paragraphe:
+            blocks[-1] = f"{blocks[-1]} {claim.text}"
+        else:
+            blocks.append(claim.text)
+        paragraphe = claim.paragraphe
     return "\n".join(blocks)
 
 

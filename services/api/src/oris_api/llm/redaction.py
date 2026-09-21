@@ -39,7 +39,7 @@ from oris_api.providers.base import DocumentGenerationProvider, ProviderInfo
 
 API_URL = "https://api.anthropic.com/v1/messages"
 API_VERSION = "2023-06-01"
-PROMPT_VERSION = "redaction-fr-2"
+PROMPT_VERSION = "redaction-fr-3"
 MAX_TOKENS = 6_000
 MAX_ATTEMPTS = 2
 TOOL_NAME = "rediger_compte_rendu"
@@ -79,7 +79,15 @@ de », « donc ») s'il n'est pas déjà dans l'un d'eux : juxtapose-les plutôt
 - garde les titres des rubriques à l'identique et dans le même ordre ;
 - pas de formule d'appel ni de signature, pas de mise en forme (ni puces, ni gras) ;
 - deux faits qui disent la même chose tiennent en une seule phrase qui les cite tous \
-les deux."""
+les deux.
+
+Mise en page, pour un texte aéré et lisible d'un coup d'œil :
+- découpe chaque rubrique en paragraphes courts, une idée chacun (une à trois phrases) ; \
+marque `nouveau_paragraphe: true` sur la première phrase de chaque nouveau paragraphe ;
+- mets en gras, entre doubles astérisques (**ainsi**), les seuls éléments clés : \
+diagnostic, traitement proposé ou réalisé, dents concernées, refus, alerte — un ou deux \
+passages courts par paragraphe au plus, jamais une phrase entière ; aucune autre mise \
+en forme."""
 
 TOOL_DESCRIPTION = "Enregistre le compte rendu rédigé, rubrique par rubrique."
 
@@ -107,6 +115,7 @@ def tool_schema() -> dict[str, Any]:
                                 "properties": {
                                     "texte": {"type": "string"},
                                     "fact_ids": {"type": "array", "items": {"type": "string"}},
+                                    "nouveau_paragraphe": {"type": "boolean"},
                                 },
                             },
                         },
@@ -197,8 +206,12 @@ def verifier(
     claims: list[Claim] = []
     for rubrique, rendue in zip(rubriques, rendues, strict=True):
         couverts: set[str] = set()
+        paragraphe = -1
         for phrase in rendue.get("phrases") or []:
             texte = str(phrase.get("texte", "")).strip()
+            if paragraphe < 0 or phrase.get("nouveau_paragraphe"):
+                paragraphe += 1
+            _controler_gras(texte, rubrique.titre)
             cites = [str(fid) for fid in phrase.get("fact_ids") or []]
             if not texte or not cites:
                 raise RedactionRefusee(f"phrase sans fait d'appui dans « {rubrique.titre} »")
@@ -208,13 +221,37 @@ def verifier(
                     f"« {rubrique.titre} » cite des faits d'une autre rubrique : {sorted(hors)}"
                 )
             appui = [facts[fid] for fid in cites if fid in facts]
-            _controler_phrase(texte, appui, rubrique.titre)
+            _controler_phrase(sans_gras(texte), appui, rubrique.titre)
             couverts |= set(cites)
-            claims.append(Claim(rubrique.titre, texte, fact_ids=tuple(dict.fromkeys(cites))))
+            claims.append(
+                Claim(
+                    rubrique.titre,
+                    texte,
+                    fact_ids=tuple(dict.fromkeys(cites)),
+                    paragraphe=paragraphe,
+                )
+            )
         oublies = rubrique.fact_ids - couverts
         if oublies:
             raise RedactionRefusee(f"faits omis dans « {rubrique.titre} » : {sorted(oublies)}")
     return claims
+
+
+GRAS = re.compile(r"\*\*(.+?)\*\*")
+GRAS_MOTS_MAX = 8
+
+
+def sans_gras(texte: str) -> str:
+    return texte.replace("**", "")
+
+
+def _controler_gras(texte: str, titre: str) -> None:
+    """Le gras souligne un mot-clé ; il ne met pas une phrase entière en avant."""
+    if texte.count("**") % 2:
+        raise RedactionRefusee(f"gras mal fermé dans « {titre} »")
+    for passage in GRAS.findall(texte):
+        if len(passage.split()) > GRAS_MOTS_MAX:
+            raise RedactionRefusee(f"passage en gras trop long dans « {titre} » : « {passage} »")
 
 
 def _controler_phrase(texte: str, appui: list[ClinicalFact], titre: str) -> None:
