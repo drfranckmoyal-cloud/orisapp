@@ -19,6 +19,7 @@ struct PatientDossierView: View {
     @State private var pdfEnCours: String?
     @State private var photoOuverte: PieceJointe?
     @State private var toast: String?
+    @State private var edition = false
 
     private var documentsValides: [(document: DocumentSummary, consultation: EncounterSummary)] {
         consultations
@@ -45,6 +46,15 @@ struct PatientDossierView: View {
                         .carte(rembourrage: OrisSpacing.s12, fond: Teinte.alerteDouce)
                 }
 
+                if let note = fiche?.note, !note.isEmpty {
+                    Label(note, systemImage: "note.text")
+                        .font(Police.interface(14, .medium))
+                        .foregroundStyle(Teinte.encreDouce)
+                        .carte(rembourrage: OrisSpacing.s12, fond: Teinte.surface2)
+                }
+
+                CorrespondantsPatient(client: client, patientId: patient.id, toast: $toast)
+
                 Onglets(selection: $volet, choix: [
                     (.consultations, "Consultations · \(consultations.count)"),
                     (.documents, "Documents · \(documentsValides.count)"),
@@ -66,6 +76,20 @@ struct PatientDossierView: View {
         }
         .pageOris()
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Modifier") { edition = true }
+                    .disabled(fiche == nil)
+            }
+        }
+        .sheet(isPresented: $edition) {
+            if let fiche {
+                EditionPatientView(client: client, fiche: fiche) { nouvelle in
+                    self.fiche = nouvelle
+                    toast = "Fiche enregistrée."
+                }
+            }
+        }
         .navigationDestination(item: $nouvelle) { encounter in
             ListeningView(client: client, encounter: encounter) {
                 nouvelle = nil
@@ -87,9 +111,9 @@ struct PatientDossierView: View {
 
     private var entete: some View {
         HStack(spacing: OrisSpacing.s12) {
-            Vignette(initiales: patient.initiales, taille: 54)
+            Vignette(initiales: (fiche?.resume ?? patient).initiales, taille: 54)
             VStack(alignment: .leading, spacing: 4) {
-                NomPatient(patient: patient, taille: 22)
+                NomPatient(patient: fiche?.resume ?? patient, taille: 22)
                 Text(identite)
                     .font(Police.interface(13, .medium))
                     .foregroundStyle(Teinte.encreTresDouce)
@@ -109,6 +133,7 @@ struct PatientDossierView: View {
             morceaux.append("date de naissance non renseignée")
         }
         if let email = fiche?.email, !email.isEmpty { morceaux.append(email) }
+        if let numero = fiche?.externalId, !numero.isEmpty { morceaux.append("dossier \(numero)") }
         return morceaux.joined(separator: " · ")
     }
 

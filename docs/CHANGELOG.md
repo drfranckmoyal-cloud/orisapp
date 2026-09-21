@@ -1,5 +1,16 @@
 # Changelog
 
+## App iPhone : fiche patient modifiable et correspondants — 2026-09-21
+- Dossier patient : bouton **Modifier** (prénom, nom, date de naissance, mail,
+  n° de dossier du cabinet, note). La note s'affiche en tête du dossier.
+- **Correspondants du patient** dans le dossier : rattacher depuis le carnet avec son
+  rôle (nous l'a adressé / nous lui adressons / suit aussi), ou créer le confrère sur
+  place, rattaché dans le même geste ; changer le rôle, retirer, ouvrir sa fiche.
+- Nouvel onglet **Correspondants** : le carnet, avec recherche sans accents, favoris en
+  tête, fiche modifiable (praticien ou structure, civilité, spécialité, coordonnées),
+  boutons Appeler et Écrire, suppression.
+- Formulaires : le nom de chaque champ reste visible devant la saisie.
+
 ## App iPhone : dossier patient et traitement des documents — 2026-09-21
 - Onglet Patients : toucher un patient ouvre son **dossier** (et non plus une
   consultation vide) : consultations, **documents validés** (PDF), **photos**, et le

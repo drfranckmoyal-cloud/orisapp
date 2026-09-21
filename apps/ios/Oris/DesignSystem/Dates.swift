@@ -19,6 +19,14 @@ enum DateOris {
         return f.date(from: texte)
     }
 
+    /// « 1990-03-08 », pour l'envoyer au serveur.
+    static func jourISO(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd"
+        return f.string(from: date)
+    }
+
     private static func format(_ date: Date, _ modele: String) -> String {
         let f = DateFormatter()
         f.locale = francais

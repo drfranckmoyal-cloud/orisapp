@@ -17,6 +17,9 @@ struct RootView: View {
             Tab("Consultations", systemImage: "waveform") {
                 ConsultationsView(model: ConsultationsViewModel(client: client), client: client)
             }
+            Tab("Correspondants", systemImage: "person.crop.rectangle.stack") {
+                CarnetView(client: client)
+            }
             Tab("Paramètres", systemImage: "gearshape") {
                 SettingsView(model: HomeViewModel(client: client), apiURL: client.baseURL, reconnect: reconnect)
             }

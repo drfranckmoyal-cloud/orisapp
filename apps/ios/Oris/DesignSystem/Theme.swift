@@ -318,3 +318,27 @@ private extension UIFont {
         return UIFont(descriptor: descripteur, size: pointSize)
     }
 }
+
+/// Une ligne de formulaire : le nom du champ à gauche, toujours visible, la saisie à droite.
+struct ChampFiche: View {
+    let titre: String
+    @Binding var texte: String
+    var clavier: UIKeyboardType = .default
+    var brut = false
+    /// Plusieurs lignes (adresse postale) : le nom reste en haut.
+    var long = false
+
+    var body: some View {
+        HStack(alignment: long ? .top : .center, spacing: OrisSpacing.s12) {
+            Text(titre)
+                .font(Police.interface(14, .semibold))
+                .foregroundStyle(Teinte.encreTresDouce)
+                .frame(width: 104, alignment: .leading)
+            TextField(titre, text: $texte, axis: long ? .vertical : .horizontal)
+                .keyboardType(clavier)
+                .textInputAutocapitalization(brut ? .never : .sentences)
+                .autocorrectionDisabled(brut)
+                .foregroundStyle(Teinte.encre)
+        }
+    }
+}
