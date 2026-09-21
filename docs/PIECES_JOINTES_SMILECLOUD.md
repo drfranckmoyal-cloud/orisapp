@@ -123,11 +123,10 @@ Dental Lens. **Si Dental Lens est éteint, le bouton marche quand même.**
 
 ### a) Sortir les pièces jointes du dossier `Caches` — **fait le 21/09/2026**
 
-`Settings.attachment_dir` vaut aujourd'hui `~/Library/Caches/Oris/attachments`. C'est
-le dossier que macOS s'autorise à **vider** quand il manque de place, et qui n'est pas
-sauvegardé comme le reste. Tant qu'il n'y a que des fichiers d'essai, aucune
-importance. Le jour où on y verse les photos des patients, elles peuvent disparaître
-sans prévenir.
+`Settings.attachment_dir` pointait sur `~/Library/Caches/Oris/attachments` : le dossier
+que macOS s'autorise à **vider** quand il manque de place, et qui n'est pas sauvegardé
+comme le reste. Sans conséquence tant qu'il n'y a que des fichiers d'essai ; le jour où
+on y verse les photos des patients, elles peuvent disparaître sans prévenir.
 
 `attachment_dir` vaut désormais `~/Library/Application Support/Oris/attachments`, là où
 Oris range déjà les journées. Les trois fichiers d'essai présents ont été déplacés et
