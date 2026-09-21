@@ -78,6 +78,27 @@ Un secret partagé est possible mais désactivé par défaut : renseigner
 `JOURNEE_DEPOT_TOKEN` dans `services/api/.env` le rend obligatoire en
 `Authorization: Bearer …`.
 
+### 1 bis. Ce qu'Oris attend — **fait le 21/09/2026**
+
+Oris ne va rien chercher : il ne peut donc pas rafraîchir une journée lui-même. Le
+praticien appuie sur **Charger la journée** / **Mettre à jour**, Oris pose une demande,
+et l'extension vient la lire :
+
+```
+GET http://127.0.0.1:8000/journee/demandes
+→ [{"jour": "2026-09-24", "demande_le": "2026-09-21T09:13:17+02:00"}]
+```
+
+Même règle que le dépôt : cette machine seulement. Une demande est **servie** par le
+dépôt de la journée correspondante — pas par le simple fait de l'avoir lue, pour qu'une
+lecture ratée laisse la demande debout. Passé douze heures sans être servie, elle est
+oubliée : Chrome peut rester fermé une journée, mais relire l'agenda d'avant-hier parce
+qu'on avait cliqué avant-hier n'aurait aucun sens.
+
+Côté écran, tant qu'une relecture est attendue, l'écran va voir toutes les huit secondes
+si elle est arrivée, et se rafraîchit aussi dès qu'on revient sur sa fenêtre : on part
+lire Doctolib dans Chrome, on revient, la journée est là.
+
 ### 2. Rapprocher — sans créer de doublon
 
 **Choix de Franck (21/09/2026) : le rapprochement se fait par le nom**, avec un

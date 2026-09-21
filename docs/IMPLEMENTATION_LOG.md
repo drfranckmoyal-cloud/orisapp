@@ -1010,3 +1010,28 @@ sur fond clair), `cloud → sand`, `graphite → ink`. 39 tests iOS repassent.
 
 L'app iPhone n'est pas redessinée pour autant : elle a la nouvelle palette, pas la
 nouvelle mise en page. C'est un chantier à part.
+
+## Demander une journée, et la mettre à jour (21 septembre 2026)
+
+Il manquait le geste inverse du dépôt : Oris ne va rien chercher, il ne pouvait donc pas
+rafraîchir une journée. Il pose maintenant une **demande**, que l'extension vient lire.
+
+- `POST /journee/demande` — geste du praticien, depuis l'écran. Écrit la demande, rien
+  d'autre : ni patient, ni journée.
+- `GET /journee/demandes` — lu par l'extension, sur cette machine seulement.
+- Une demande est **servie par le dépôt** de la journée correspondante, pas par le fait
+  de l'avoir lue : une lecture ratée laisse la demande debout.
+- Oubliée au bout de douze heures. Chrome peut rester fermé une journée entière et la
+  demande doit y survivre ; relire l'agenda d'avant-hier n'aurait aucun sens.
+- Le bouton dit **« Charger la journée »** quand rien n'a été relevé, **« Mettre à
+  jour »** ensuite. Tant qu'on attend, un bandeau le dit avec un point qui bat.
+- L'écran se rafraîchit **dès qu'on revient sur sa fenêtre**, et toutes les huit secondes
+  tant qu'une relecture est attendue : on part lire Doctolib dans Chrome, on revient, la
+  journée est là. Vérifié de bout en bout.
+
+### Un défaut de composant corrigé au passage
+
+`EtatVide` est une grille : une explication contenant un passage en gras y partait à la
+ligne toute seule, et l'écran vide de la journée ressemblait à un poème. Les enfants sont
+maintenant enveloppés dans un seul élément — même défaut, même correction que pour les
+bandeaux plus tôt dans la journée.
