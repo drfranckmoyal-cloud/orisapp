@@ -5,7 +5,7 @@
 .filtres {
   display: flex;
   align-items: center;
-  gap: var(--espace-2);
+  gap: 6px;
   flex-wrap: wrap;
   padding: 0 var(--espace-6) var(--espace-4);
 }
@@ -434,10 +434,12 @@
   color: #403a75;
 }
 
+/* Franc et non lavé : c'est celle de la pédodontie, et elle doit se reconnaître d'un
+   coup d'œil. Rose et non rouge — le rouge veut dire l'alerte partout ailleurs. */
 .teinteRose {
-  background: #f6e3e4;
-  border-color: #e8c9cb;
-  color: #8a3b40;
+  background: #fadde6;
+  border-color: #eeb8c9;
+  color: #a03a58;
 }
 
 /* Sans spécialité, et les structures : rien à distinguer, donc rien de coloré. */
@@ -445,4 +447,38 @@
   background: var(--surface-douce);
   border-color: var(--trait-fort);
   color: var(--encre-douce);
+}
+
+/* Un filtre porte la teinte de sa spécialité : la couleur s'apprend ici, en lisant le
+   mot juste à côté, et se retrouve ensuite sur les pastilles de la liste. */
+.filtre {
+  padding: 3px 10px;
+  border: 1px solid;
+  border-radius: var(--rayon-pastille);
+  font: inherit;
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-demi);
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: var(--lumiere);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.filtre:hover {
+  transform: translateY(-1px);
+}
+
+/* Le filtre retenu porte un anneau de sa propre couleur : on voit lequel est choisi
+   sans que la teinte change, sinon on ne saurait plus à quelle spécialité elle va. */
+.filtreChoisi {
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, currentColor 55%, transparent),
+    var(--lumiere),
+    var(--relief);
+  font-weight: var(--graisse-forte);
+}
+
+.filtre:focus-visible {
+  outline: none;
+  box-shadow: var(--anneau-focus);
 }

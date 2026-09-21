@@ -49,16 +49,39 @@ const TEINTES = [
  * alphabétique. C'est sans conséquence : la spécialité est écrite en toutes lettres sur
  * la ligne, la couleur ne fait que la rappeler.
  */
-function teinteDe(c: Correspondant, connues: string[]): string {
-  if (c.kind === "organisation" || !c.specialty) return styles.teinteNeutre ?? "";
-  const rang = connues.indexOf(c.specialty);
-  // Une spécialité retirée de la liste garde une couleur plutôt que de retomber au gris.
+/** Les spécialités dont la couleur est arrêtée, et ne bouge plus jamais. */
+const TEINTES_FIXES: Record<string, number | undefined> = {
+  Omnipraticien: 0, // vert
+  ODF: 1, // ardoise
+  CMF: 2, // terre
+  Pédodontie: 8, // rose
+};
+
+/** Les teintes qui restent à distribuer aux spécialités du cabinet. */
+const TEINTES_LIBRES = TEINTES.filter(
+  (_, rang) => !Object.values(TEINTES_FIXES).includes(rang),
+);
+
+function teintePour(specialite: string, connues: string[]): string {
+  if (!specialite) return styles.teinteNeutre ?? "";
+  const fixe = TEINTES_FIXES[specialite];
+  if (fixe !== undefined) return TEINTES[fixe] ?? "";
+
+  // Les autres se partagent ce qui reste, dans l'ordre où elles apparaissent.
+  const libres = connues.filter((mot) => TEINTES_FIXES[mot] === undefined);
+  const rang = libres.indexOf(specialite);
   if (rang < 0) {
+    // Une spécialité retirée de la liste garde une couleur plutôt que de retomber au gris.
     let somme = 0;
-    for (const lettre of c.specialty) somme = (somme * 31 + lettre.codePointAt(0)!) % 100000;
-    return TEINTES[somme % TEINTES.length] ?? "";
+    for (const lettre of specialite) somme = (somme * 31 + lettre.codePointAt(0)!) % 100000;
+    return TEINTES_LIBRES[somme % TEINTES_LIBRES.length] ?? "";
   }
-  return TEINTES[rang % TEINTES.length] ?? "";
+  return TEINTES_LIBRES[rang % TEINTES_LIBRES.length] ?? "";
+}
+
+function teinteDe(c: Correspondant, connues: string[]): string {
+  // Une structure n'a pas de spécialité : rien à distinguer, donc rien de coloré.
+  return c.kind === "organisation" ? (styles.teinteNeutre ?? "") : teintePour(c.specialty, connues);
 }
 
 function initiales(c: Correspondant): string {
@@ -199,28 +222,30 @@ export default function CorrespondantsPage() {
       >
         {/* Filtrer par spécialité, « non renseignée » comprise : c'est ce filtre-là qui
             sert à retrouver les fiches restées à moitié remplies. */}
+        {/* Chaque filtre porte la teinte de sa spécialité : c'est là qu'on apprend
+            quelle couleur va avec quel mot, sans avoir besoin d'une légende. */}
         <div className={styles.filtres}>
-          <Bouton
-            variante={filtre === null ? "principal" : "secondaire"}
-            onClick={() => setFiltre(null)}
-          >
-            Toutes
-          </Bouton>
-          {choix.map((specialite) => (
-            <Bouton
-              key={specialite}
-              variante={filtre === specialite ? "principal" : "secondaire"}
-              onClick={() => setFiltre(specialite)}
+          {[
+            { valeur: null as Filtre, libelle: "Toutes", teinte: "" },
+            ...choix.map((specialite) => ({
+              valeur: specialite as Filtre,
+              libelle: specialite,
+              teinte: specialite,
+            })),
+            { valeur: "" as Filtre, libelle: "Non renseignée", teinte: "" },
+          ].map(({ valeur, libelle, teinte }) => (
+            <button
+              key={libelle}
+              type="button"
+              aria-pressed={filtre === valeur}
+              className={`${styles.filtre} ${teintePour(teinte, choix)} ${
+                filtre === valeur ? styles.filtreChoisi : ""
+              }`}
+              onClick={() => setFiltre(valeur)}
             >
-              {specialite}
-            </Bouton>
+              {libelle}
+            </button>
           ))}
-          <Bouton
-            variante={filtre === "" ? "principal" : "secondaire"}
-            onClick={() => setFiltre("")}
-          >
-            Non renseignée
-          </Bouton>
         </div>
 
         {carnet.state === "loading" && (

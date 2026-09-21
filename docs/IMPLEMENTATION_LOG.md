@@ -1215,3 +1215,18 @@ connues d'avance occupent les trois premiers rangs, donc toujours les mêmes tei
 Ajouter une spécialité peut décaler la teinte de celles qui la suivent alphabétiquement.
 Sans conséquence : **la couleur ne porte jamais l'information seule**, la spécialité est
 écrite en toutes lettres sur la même ligne.
+
+## Les teintes remontent dans les filtres (21 septembre 2026)
+
+Chaque bouton de filtre porte la teinte de sa spécialité : c'est là qu'on apprend quelle
+couleur va avec quel mot, en le lisant juste à côté, sans avoir besoin d'une légende.
+Le filtre retenu porte un anneau **de sa propre couleur** — changer sa teinte pour
+marquer la sélection aurait défait ce qu'on vient d'apprendre.
+
+Les boutons sont passés au format jeton : neuf tiennent sur une ligne avec 300 px de
+marge, là où ils occupaient toute la largeur.
+
+**Pédodontie est épinglée au rose**, franc et non lavé. Quatre spécialités ont désormais
+leur couleur arrêtée pour de bon (Omnipraticien, ODF, CMF, Pédodontie) ; les autres se
+partagent les cinq teintes restantes dans l'ordre où elles apparaissent. Rose et non
+rouge : le rouge veut dire l'alerte partout ailleurs dans le site.
