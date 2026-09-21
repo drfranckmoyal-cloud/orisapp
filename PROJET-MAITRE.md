@@ -74,6 +74,12 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 - **Noter à qui un document est parti** : le patient, un correspondant ou quelqu'un
   d'autre, par mail, courrier ou en main propre. Oris n'envoie rien lui-même ; la liste
   des consultations affiche « Envoyé à Dr Martin ».
+- **Vos modèles de compte rendu** (21 sept.) : le compte rendu de consultation, le
+  compte rendu opératoire et le courrier d'adressage suivent les rubriques de vos
+  modèles Word, **avec vos mots** (plus de libellés de liste qui trahissaient le sens).
+  Le PDF reprend leur mise en page : en-tête, bloc patient avec « Adressé(e) par »,
+  rubriques vertes, et une dernière page « Documentation clinique » avec les photos
+  que vous choisissez et légendez. Cadrage et décisions : `docs/MODELES_CR.md`.
 - **Supprimer une consultation**, après confirmation : son, transcription, dossier
   clinique et documents partent ; le patient et ses pièces jointes restent.
 - **Exporter en PDF** (A4, avec cabinet, praticien, patient, date et mention de
