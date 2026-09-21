@@ -152,3 +152,15 @@ extension APIClient {
         }
     }
 }
+
+extension APIClient {
+    /// Supprime une consultation : son, transcription, dossier clinique et documents.
+    func supprimerConsultation(id: String) async throws {
+        try await sansReponse("encounters/\(id)", method: "DELETE")
+    }
+
+    /// Supprime un document ; le dossier clinique de la consultation reste.
+    func supprimerDocument(id: String) async throws {
+        try await sansReponse("documents/\(id)", method: "DELETE")
+    }
+}

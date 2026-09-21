@@ -24,11 +24,11 @@ export function TypeDocument({
 }: {
   type: DocumentView["document_type"];
   valide?: boolean;
-  taille?: "normal" | "petit";
+  taille?: "normal" | "petit" | "leger";
 }) {
   return (
     <span
-      className={`${styles.type} ${TEINTE[type] ?? ""} ${taille === "petit" ? styles.petit : ""}`}
+      className={`${styles.type} ${TEINTE[type] ?? ""} ${taille === "petit" ? styles.petit : ""} ${taille === "leger" ? styles.leger : ""}`}
       title={valide ? `${DOCUMENT_TYPE[type]} — validé` : DOCUMENT_TYPE[type]}
     >
       {valide && <Icone nom="valide" taille={12} aria-hidden="true" />}

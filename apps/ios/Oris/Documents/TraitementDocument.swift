@@ -8,6 +8,7 @@ struct TraitementDocument: View {
     let document: DocumentDetail
     let recharger: () async -> Void
     @Binding var toast: String?
+    var supprime: () -> Void = {}
 
     @State private var alerteLue = false
     @State private var enCours = false
@@ -15,6 +16,7 @@ struct TraitementDocument: View {
     @State private var pdf: PDFOuvert?
     @State private var envoiOuvert = false
     @State private var editionOuverte = false
+    @State private var confirmerSuppression = false
 
     private var valide: Bool { [.validated, .exported].contains(document.status) }
     private var critiques: [EncounterWarning] { content.criticalWarnings }
@@ -56,6 +58,7 @@ struct TraitementDocument: View {
                 action("PDF", "doc.richtext") { Task { await ouvrirPDF() } }
                 action("Envoyer", "paperplane") { envoiOuvert = true }
                 action("Modifier", "pencil") { editionOuverte = true }
+                action("Supprimer", "trash", couleur: Teinte.alerte) { confirmerSuppression = true }
             }
 
             if let erreur {
@@ -67,6 +70,12 @@ struct TraitementDocument: View {
         .carte(fond: valide ? Teinte.accentDouce : Teinte.surface)
         .sheet(item: $pdf, onDismiss: { pdf?.effacer() }) { ouvert in
             ApercuPDF(fichier: ouvert.url).ignoresSafeArea()
+        }
+        .confirmationDialog("Supprimer ce \(Labels.documentType(document.documentType).lowercased()) ?",
+                            isPresented: $confirmerSuppression, titleVisibility: .visible) {
+            Button("Supprimer", role: .destructive) { Task { await supprimer() } }
+        } message: {
+            Text("Ses versions, ses photos placées et ses envois notés partent avec lui. Le dossier clinique de la consultation reste.")
         }
         .sheet(isPresented: $envoiOuvert) {
             EnvoiView(client: client, document: document) { resultat in
@@ -82,13 +91,14 @@ struct TraitementDocument: View {
         }
     }
 
-    private func action(_ titre: String, _ icone: String, _ faire: @escaping () -> Void) -> some View {
+    private func action(_ titre: String, _ icone: String, couleur: Color = Teinte.accent,
+                        _ faire: @escaping () -> Void) -> some View {
         Button(action: faire) {
             VStack(spacing: 4) {
                 Image(systemName: icone).font(.system(size: 17, weight: .semibold))
-                Text(titre).font(Police.interface(13, .bold))
+                Text(titre).font(Police.interface(12.5, .bold)).lineLimit(1).minimumScaleFactor(0.8)
             }
-            .foregroundStyle(Teinte.accent)
+            .foregroundStyle(couleur)
             .frame(maxWidth: .infinity, minHeight: 58)
             .background(Teinte.surface, in: RoundedRectangle(cornerRadius: OrisRadius.button, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: OrisRadius.button, style: .continuous)
@@ -105,6 +115,18 @@ struct TraitementDocument: View {
             _ = try await client.valider(documentId: document.id,
                                          alertesLues: alerteLue ? critiques.map(\.code) : [])
             toast = "\(Labels.documentType(document.documentType)) validé."
+            await recharger()
+        } catch {
+            erreur = Labels.erreur(error)
+        }
+    }
+
+    private func supprimer() async {
+        erreur = nil
+        do {
+            try await client.supprimerDocument(id: document.id)
+            toast = "\(Labels.documentType(document.documentType)) supprimé."
+            supprime()
             await recharger()
         } catch {
             erreur = Labels.erreur(error)

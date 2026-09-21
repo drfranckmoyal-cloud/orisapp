@@ -33,6 +33,7 @@ from oris_api.services.clinical_store import replace_segments, save_version
 from oris_api.services.errors import Conflict, NotFound
 from oris_api.services.identity import Actor
 from oris_api.services.patients import get_patient
+from oris_api.stt.audio import SEUIL_SILENCE, concatenate, niveau
 from oris_api.synthetic.corpus import SYNTHETIC_PAYLOAD_PREFIX
 
 logger = logging.getLogger("oris.pipeline")
@@ -239,6 +240,9 @@ def process(
             },
         )
         return encounter
+    # Le volume, mesuré avant la purge : un nombre, jamais le son.
+    niveau_audio = niveau(concatenate(chunks)) if not is_synthetic(encounter) else {"crete": 1.0, "moyen": 1.0}
+    encounter.metadata_json = {**encounter.metadata_json, "niveau_audio": niveau_audio}
     # D010 : l'audio est éphémère ; purgé dès que la transcription a abouti.
     audio.purge(session, sink, encounter)
     if transcription.speaker_labels:
@@ -248,18 +252,19 @@ def process(
         )
     if not transcription.segments:
         # Le fournisseur n'est pas tombé, mais rien d'exploitable n'est revenu : la
-        # trace doit le dire, sinon la panne se lira comme une réussite.
+        # trace doit le dire, sinon la panne se lira comme une réussite. Le volume
+        # mesuré départage « micro muet » et « personne n'a parlé ».
+        volume = niveau_audio
+        regle = "AUDIO_SILENT" if chunks and volume["crete"] < SEUIL_SILENCE else "NO_TRANSCRIPT"
         registry.finish_run(
             session,
             stt_timer,
             status="failed",
-            error_code="NO_TRANSCRIPT",
+            error_code=regle,
             model_version_id=stt_model.id,
             counters={"chunks": len(chunks), "segments": 0},
         )
-        set_processing_errors(
-            encounter, [{"rule": "NO_TRANSCRIPT", "subject_id": str(encounter.id)}]
-        )
+        set_processing_errors(encounter, [{"rule": regle, "subject_id": str(encounter.id)}])
         transition(session, actor, encounter, "transcription_failed")
         logger.warning("pipeline.transcription_failed", extra={"encounter_id": str(encounter.id)})
         return encounter

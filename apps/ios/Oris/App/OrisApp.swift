@@ -3,6 +3,11 @@ import SwiftUI
 @main
 struct OrisApp: App {
     @State private var client: APIClient
+    /// Change à chaque reconnexion : toute l'interface repart avec le nouveau client.
+    @State private var generation = 0
+    @State private var ouverture = true
+    @State private var verrou = Verrou()
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         Connexion.reglerDepuisLeMac()
@@ -12,18 +17,41 @@ struct OrisApp: App {
         }
         _client = State(initialValue: Connexion.client())
     }
-    /// Change à chaque reconnexion : toute l'interface repart avec le nouveau client.
-    @State private var generation = 0
 
     var body: some Scene {
         WindowGroup {
-            RootView(client: client) {
-                client = Connexion.client()
-                generation += 1
+            ZStack {
+                RootView(client: client) {
+                    client = Connexion.client()
+                    generation += 1
+                }
+                .id(generation)
+
+                if verrou.verrouille && !ouverture {
+                    EcranVerrou(verrou: verrou)
+                        .transition(.opacity)
+                }
+                if ouverture {
+                    EcranOuverture()
+                        .transition(.opacity)
+                }
             }
-            .id(generation)
+            .animation(.easeInOut(duration: 0.35), value: ouverture)
+            .animation(.easeInOut(duration: 0.25), value: verrou.verrouille)
             // Le site n'a qu'une apparence : l'app ne bascule pas en sombre avec l'iPhone.
             .preferredColorScheme(.light)
+            .task {
+                // Le logo en grand, une seconde et demie, puis l'accueil (ou Face ID).
+                try? await Task.sleep(for: .seconds(1.5))
+                ouverture = false
+                await verrou.deverrouiller()
+            }
+            .onChange(of: scenePhase) { _, phase in
+                verrou.changement(phase)
+                if phase == .active, verrou.verrouille, !ouverture {
+                    Task { await verrou.deverrouiller() }
+                }
+            }
         }
     }
 }

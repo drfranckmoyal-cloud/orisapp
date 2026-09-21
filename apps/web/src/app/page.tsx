@@ -213,16 +213,18 @@ export default function HomePage() {
                 <Ligne
                   key={encounter.id}
                   href={`/consultations/${encounter.id}`}
+                  compacte
                   titre={nomDe(encounter)}
-                  detail={`${formatDateTime(encounter.started_at ?? encounter.created_at)} · ${documentsDe(encounter)}`}
                   fin={
-                    <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span className={styles.finRelire}>
+                      <span title={documentsDe(encounter)}>
+                        {formatDateTime(encounter.started_at ?? encounter.created_at)}
+                      </span>
                       <JetonPraticien
                         nom={encounter.practitioner.name}
                         titre={encounter.practitioner.title}
                         taille="petit"
                       />
-                      <Pastille ton="attention">à relire</Pastille>
                     </span>
                   }
                 />

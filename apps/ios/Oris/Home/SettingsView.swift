@@ -11,6 +11,7 @@ struct SettingsView: View {
     @State private var jeton = ""
     @State private var jetonPresent = Connexion.jeton != nil
     @State private var message: String?
+    @State private var verrouActif = Verrou.actif
 
     private var appVersion: String {
         let info = Bundle.main.infoDictionary
@@ -52,6 +53,17 @@ struct SettingsView: View {
                     Text("Connexion à Oris")
                 } footer: {
                     Text("Sur l’iPhone : l’adresse du Mac sur le Wi-Fi du cabinet (par exemple 192.168.1.20:8000) et un jeton créé sur le Mac. Laissez l’adresse vide pour revenir à « localhost ».")
+                }
+
+                Section {
+                    Toggle("Verrouiller avec \(Verrou.nomMethode)", isOn: $verrouActif)
+                        .onChange(of: verrouActif) { _, actif in
+                            UserDefaults.standard.set(actif, forKey: Verrou.reglage)
+                        }
+                } header: {
+                    Text("Sécurité")
+                } footer: {
+                    Text("Demandé à l’ouverture d’Oris et au retour après deux minutes d’absence.")
                 }
 
                 Section("Cet appareil") {

@@ -12,6 +12,7 @@ struct ConsultationDetailView: View {
     @State private var toast: String?
     @State private var redaction = false
     @State private var erreur: String?
+    @Environment(\.dismiss) private var fermer
 
     var body: some View {
         Group {
@@ -52,10 +53,14 @@ struct ConsultationDetailView: View {
                 }
 
                 if content.documents.isEmpty {
-                    NoDocumentCard(encounter: content.encounter)
+                    NoDocumentCard(encounter: content.encounter) {
+                        Task { await supprimerConsultation(content) }
+                    }
                 }
 
-                Intercalaires(tab: $tab, documents: content.documents, aVerifier: content.reviewItemCount)
+                if !content.documents.isEmpty {
+                    Intercalaires(tab: $tab, documents: content.documents, aVerifier: content.reviewItemCount)
+                }
 
                 if !content.documents.isEmpty,
                    !content.documents.contains(where: { $0.documentType == .referralLetter }) {
@@ -76,7 +81,8 @@ struct ConsultationDetailView: View {
                 case .document(let type):
                     if let document = content.documents.first(where: { $0.documentType == type }) {
                         TraitementDocument(client: model.client, content: content, document: document,
-                                           recharger: { await model.refresh() }, toast: $toast)
+                                           recharger: { await model.refresh() }, toast: $toast,
+                                           supprime: { tab = .document(.consultationNote) })
                         DocumentCard(document: document)
                         DocumentationClinique(client: model.client, patientId: content.encounter.patient.id,
                                               encounterId: content.encounter.id, document: document, toast: $toast)
@@ -92,6 +98,16 @@ struct ConsultationDetailView: View {
 }
 
 extension ConsultationDetailView {
+    /// Rien n'a été entendu : rien à perdre, la consultation s'efface d'un geste.
+    fileprivate func supprimerConsultation(_ content: ConsultationDetailViewModel.Content) async {
+        do {
+            try await model.client.supprimerConsultation(id: content.encounter.id)
+            fermer()
+        } catch {
+            erreur = Labels.erreur(error)
+        }
+    }
+
     fileprivate func redigerCourrier(_ content: ConsultationDetailViewModel.Content) async {
         redaction = true
         erreur = nil
@@ -117,13 +133,13 @@ private struct EnTeteConsultation: View {
             VStack(alignment: .leading, spacing: 4) {
                 NomPatient(patient: encounter.patient, taille: 20)
                 if let date = encounter.date {
-                    Text("\(DateOris.jour(date)) · \(DateOris.heure(date))")
+                    Text("\(DateOris.jour(date).capitalizedPremiere) · \(DateOris.heure(date))")
                         .font(Police.interface(13, .medium))
                         .foregroundStyle(Teinte.encreTresDouce)
                 }
+                StatutLeger(texte: Labels.encounterStatus(encounter.status), ton: encounter.status.ton)
             }
             Spacer(minLength: 4)
-            Pastille(texte: Labels.encounterStatus(encounter.status), ton: encounter.status.ton)
         }
         .padding(.top, OrisSpacing.s8)
         .accessibilityElement(children: .combine)
@@ -271,11 +287,18 @@ private struct ReviewCard: View {
 /// Pas de compte rendu : on dit pourquoi, et ce qu'on peut faire.
 private struct NoDocumentCard: View {
     let encounter: EncounterSummary
+    var supprimer: () -> Void = {}
+
+    private var rules: Set<String> { Set(encounter.processingErrors.map(\.rule)) }
+
+    private var rienEntendu: Bool { rules.contains("NO_TRANSCRIPT") || rules.contains("AUDIO_SILENT") }
 
     private var reason: String {
-        let rules = Set(encounter.processingErrors.map(\.rule))
+        if rules.contains("AUDIO_SILENT") {
+            return "Le micro n’a capté aucun son : l’enregistrement est muet. Vérifiez que le micro n’est pas couvert ou coupé, puis refaites un essai."
+        }
         if rules.contains("NO_TRANSCRIPT") {
-            return "Aucune parole n’a été entendue dans l’enregistrement : il n’y a rien à rédiger."
+            return "Aucune parole n’a été reconnue dans l’enregistrement : il n’y a rien à rédiger."
         }
         if rules.contains("STT_UNAVAILABLE") {
             return "La transcription était indisponible. Relancez le traitement depuis l’ordinateur, dans la consultation."
@@ -287,9 +310,21 @@ private struct NoDocumentCard: View {
     }
 
     var body: some View {
-        Label(reason, systemImage: "doc.questionmark")
-            .font(Police.interface(15, .medium))
-            .foregroundStyle(Teinte.encreDouce)
-            .carte()
+        VStack(alignment: .leading, spacing: OrisSpacing.s12) {
+            Label(reason, systemImage: rules.contains("AUDIO_SILENT") ? "mic.slash" : "doc.questionmark")
+                .font(Police.interface(15, .medium))
+                .foregroundStyle(Teinte.encreDouce)
+            if rienEntendu {
+                Button(role: .destructive, action: supprimer) {
+                    Label("Supprimer cette consultation", systemImage: "trash")
+                        .font(Police.interface(15, .bold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity, minHeight: 46)
+                        .background(Teinte.alerte, in: RoundedRectangle(cornerRadius: OrisRadius.button, style: .continuous))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .carte()
     }
 }

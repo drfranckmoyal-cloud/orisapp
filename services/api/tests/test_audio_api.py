@@ -361,3 +361,15 @@ def test_voices_not_separated_are_flagged_for_review(api: Any) -> None:
     assert finished["status"] == "review"
     warnings = clinical_object(api, eid)["warnings"]
     assert [(w["code"], w["severity"]) for w in warnings] == [("SPEAKER_ROLES_UNKNOWN", "review")]
+
+
+def test_a_silent_recording_says_the_microphone_heard_nothing(api: Any) -> None:
+    """Un micro muet ne se confond pas avec « personne n'a parlé » (panne iPhone du 21/09)."""
+    eid = new_encounter(api)
+    for sequence in range(2):
+        put_chunk(api, eid, sequence, bytes(64000))
+    finished = api.post(
+        f"/encounters/{eid}/finish", json={"final_sequence": 1, "client_recorded_ms": 4000}
+    ).json()
+    assert finished["status"] == "transcription_failed"
+    assert finished["processing_errors"][0]["rule"] == "AUDIO_SILENT"

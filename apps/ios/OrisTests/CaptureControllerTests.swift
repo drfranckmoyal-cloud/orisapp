@@ -29,6 +29,10 @@ final class FakeInput: AudioInput {
         continuation?.yield(.samples([Float](repeating: 0.1, count: Int(16_000 * seconds)), sampleRate: 16_000))
     }
 
+    func emitSilence(seconds: Double) {
+        continuation?.yield(.samples([Float](repeating: 0, count: Int(16_000 * seconds)), sampleRate: 16_000))
+    }
+
     func emit(_ event: AudioInputEvent) {
         continuation?.yield(event)
     }
@@ -132,6 +136,22 @@ final class CaptureControllerTests: XCTestCase {
         XCTAssertEqual(items, ["chunk0", "chunk1", "pause", "resume", "chunk2"])
         XCTAssertEqual(api.finishes, [[2, 5000]])
         XCTAssertEqual(api.acceptGaps, [false])
+    }
+
+    /// Panne iPhone du 21/09 : un micro muet se voit pendant l'écoute, pas à la fin.
+    func testAMuteMicrophoneIsFlaggedWhileListening() async {
+        let controller = makeController()
+        await controller.start(patientInformed: true)
+        inputs[0].emitSilence(seconds: 1)
+        await settle()
+        XCTAssertFalse(controller.microMuet, "trop tôt pour conclure")
+        clock += 7
+        inputs[0].emitSilence(seconds: 1)
+        await settle()
+        XCTAssertTrue(controller.microMuet)
+        inputs[0].emit(seconds: 1)
+        await settle()
+        XCTAssertFalse(controller.microMuet, "le bandeau disparaît dès que le micro entend")
     }
 
     func testDeniedMicrophoneDoesNotStartTheConsultation() async {

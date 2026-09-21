@@ -48,6 +48,11 @@ final class CaptureController {
     private(set) var lostUploads = 0
     private(set) var warnDurationReached = false
     private(set) var maxDurationReached = false
+    /// Le micro ne capte rien depuis plusieurs secondes : on le dit tout de suite, au lieu
+    /// de le découvrir à la fin (« transcription impossible »).
+    private(set) var microMuet = false
+    private var dernierSon: Date?
+    private var debutEcoute: Date?
 
     let uploader: Uploader
     private let api: any CaptureAPI
@@ -126,6 +131,10 @@ final class CaptureController {
         await uploader.enqueue(.pause)
         phase = .paused
         level = 0
+        // La pause n'est pas un silence : la surveillance repart à la reprise.
+        debutEcoute = nil
+        dernierSon = nil
+        microMuet = false
     }
 
     func resume() async {
@@ -269,12 +278,33 @@ final class CaptureController {
         }
         recordedMs = chunker.recordedMs
         level = PCM.level(samples)
+        surveillerLeSon(samples)
         if recordedMs >= limits.warnSessionMs { warnDurationReached = true }
         if recordedMs >= limits.maxSessionMs {
             // Durée maximale : pause automatique, rien n'est perdu (spec §12).
             maxDurationReached = true
             await pause()
         }
+    }
+
+    /// Au-dessous de ce niveau de crête (≈ -50 dBFS), le micro n'entend rien : même le
+    /// souffle d'une pièce calme passe au-dessus.
+    static let seuilSilence: Float = 0.003
+    static let delaiMicroMuetMs = 6_000
+
+    private func surveillerLeSon(_ samples: [Float]) {
+        let instant = now()
+        if debutEcoute == nil { debutEcoute = instant }
+        let crete = samples.reduce(Float(0)) { max($0, abs($1)) }
+        if crete >= Self.seuilSilence { dernierSon = instant }
+        let depuis = dernierSon ?? debutEcoute ?? instant
+        microMuet = instant.timeIntervalSince(depuis) * 1000 >= Double(Self.delaiMicroMuetMs)
+        #if DEBUG
+        // Diagnostic de la prise de son : un nombre, jamais le son.
+        if Int(instant.timeIntervalSince1970 * 10) % 20 == 0 {
+            print("oris.niveau crete=\(crete) taux=\(Int(resampler?.inputRate ?? 0))")
+        }
+        #endif
     }
 
     private func store(_ chunk: PcmChunk) async {

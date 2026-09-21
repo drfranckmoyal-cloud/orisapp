@@ -15,6 +15,26 @@ def concatenate(chunks: Iterable[AudioChunk]) -> bytes:
     return b"".join(chunk.payload for chunk in sorted(chunks, key=lambda c: c.sequence))
 
 
+def niveau(pcm: bytes) -> dict[str, float]:
+    """Volume d'un enregistrement PCM 16 bits : crête et moyenne, de 0 à 1.
+
+    Un simple nombre, jamais le son : il dit si le micro a capté quelque chose.
+    """
+    import array
+
+    echantillons = array.array("h")
+    echantillons.frombytes(pcm[: len(pcm) - len(pcm) % 2])
+    if not echantillons:
+        return {"crete": 0.0, "moyen": 0.0}
+    crete = max(abs(x) for x in echantillons) / 32768
+    moyen = (sum(x * x for x in echantillons) / len(echantillons)) ** 0.5 / 32768
+    return {"crete": round(crete, 4), "moyen": round(moyen, 5)}
+
+
+#: En dessous, l'enregistrement est muet : le micro n'a rien capté (≈ -50 dBFS de crête).
+SEUIL_SILENCE = 0.003
+
+
 def pcm_to_wav(pcm: bytes, sample_rate: int = SAMPLE_RATE) -> bytes:
     buffer = io.BytesIO()
     with wave.open(buffer, "wb") as output:

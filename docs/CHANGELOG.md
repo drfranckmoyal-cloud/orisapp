@@ -1,5 +1,22 @@
 # Changelog
 
+## Micro, suppressions, étiquettes légères, accueil, Face ID — 2026-09-21
+- **Micro muet repéré** : le serveur mesure le volume de chaque enregistrement avant la
+  transcription (un nombre, jamais le son). Un enregistrement muet dit « le micro n'a
+  capté aucun son » (`AUDIO_SILENT`) au lieu de « transcription impossible ». Sur
+  l'iPhone, un bandeau prévient **pendant** l'écoute si rien n'est capté depuis 6 s.
+  Réglage audio iPhone passé en mode d'enregistrement standard (le mode « lecture de
+  parole » était inadapté).
+- **Supprimer** : une consultation depuis sa ligne (iPhone : glisser ; site : corbeille),
+  ses documents partent avec elle ; une consultation sans parole d'un geste depuis sa
+  fiche ; **tout document** (compte rendu et plan compris), le dossier clinique restant.
+- **Étiquettes légères** dans les listes : statut en texte avec un point de couleur,
+  documents en texte coloré séparés par « · » — plus de bulles.
+- iPhone : **écran d'ouverture** (logo, nom, slogan, 1,5 s), **Face ID** (réglable dans
+  Paramètres), accueil refait : marque en grand, symbole Oris animé dans un grand rond
+  qui lance la consultation, « À relire » resserré.
+- Site : symbole du bandeau « Commencer » animé en permanence, « À relire » resserré.
+
 ## App iPhone : fiche patient modifiable et correspondants — 2026-09-21
 - Dossier patient : bouton **Modifier** (prénom, nom, date de naissance, mail,
   n° de dossier du cabinet, note). La note s'affiche en tête du dossier.

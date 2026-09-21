@@ -44,3 +44,18 @@
   color: var(--doc-courrier);
   background: var(--doc-courrier-douce);
 }
+
+/* Dans une liste : le mot seul, dans sa teinte, sans bulle — il se lit sans peser. */
+.type.leger {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 11.5px;
+  gap: 2px;
+}
+
+.type.leger + .type.leger::before {
+  content: "·";
+  margin-right: 6px;
+  color: var(--trait-fort);
+}

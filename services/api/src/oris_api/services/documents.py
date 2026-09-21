@@ -474,18 +474,14 @@ def nom_de_fichier(
 
 
 #: Documents qui n'existent que parce que le praticien les a demandés : il peut les retirer.
-A_LA_DEMANDE = frozenset({"referral_letter", "operative_note"})
-
-
 def supprimer(session: Session, actor: Actor, document_id: UUID) -> None:
-    """Supprime un document demandé (courrier, compte rendu opératoire) : ses versions,
-    ses envois notés et ses photos placées partent avec lui ; les pièces jointes restent."""
+    """Supprime un document, quel qu'il soit (choix de Franck, 21/09/2026) : ses versions,
+    ses envois notés et ses photos placées partent avec lui ; les pièces jointes et le
+    dossier clinique restent. Le journal d'audit garde la trace de la suppression."""
     document = session.get(DocumentRow, document_id)
     encounter = session.get(Encounter, document.encounter_id) if document else None
     if document is None or encounter is None or encounter.organization_id != actor.organization_id:
         raise NotFound("DOCUMENT_NOT_FOUND", str(document_id))
-    if document.document_type not in A_LA_DEMANDE:
-        raise Conflict("DOCUMENT_NOT_REMOVABLE", str(document_id), [document.document_type])
     document.current_version_id = None
     session.flush()
     audit.record(

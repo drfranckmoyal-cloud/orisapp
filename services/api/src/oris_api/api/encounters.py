@@ -581,7 +581,7 @@ def export_document(
 @router.delete("/documents/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_document(document_id: UUID, session: SessionDep, actor: ActorDep) -> None:
     """Retirer un courrier d'adressage ou un compte rendu opératoire demandé par erreur.
-    409 DOCUMENT_NOT_REMOVABLE pour le compte rendu et le plan, tirés de la consultation."""
+    Tout document se supprime ; le dossier clinique, lui, reste."""
     documents.supprimer(session, actor, document_id)
 
 

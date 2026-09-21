@@ -265,6 +265,15 @@
   border-top: none;
 }
 
+/* Liste resserrée (accueil) : une ligne par élément, sans épaisseur inutile. */
+.ligneCompacte {
+  padding: 7px 0;
+}
+
+.ligneCompacte .ligneTitre {
+  white-space: nowrap;
+}
+
 .ligne:hover {
   background: var(--surface-douce);
   border-radius: 10px;

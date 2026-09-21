@@ -49,8 +49,6 @@ import { useConcepts } from "@/lib/useConcepts";
 /** Pendant l'écoute ou le traitement, le serveur refuse la suppression : on ne la propose pas. */
 const EN_COURS = new Set(["recording", "paused", "finalizing", "processing"]);
 const TERMINEES = new Set(["validated", "exported", "archived"]);
-/** Documents créés à la demande du praticien : lui seul les a voulus, il peut les retirer. */
-const A_LA_DEMANDE = new Set(["referral_letter", "operative_note"]);
 
 function tonConsultation(
   statut: string,
@@ -420,6 +418,21 @@ export default function ConsultationPage() {
             .map((e) => PROCESSING_RULE[e.rule])
             .filter(Boolean)
             .join(" ")}
+          {/* Rien n'a été entendu : rien à perdre, la consultation s'efface d'un geste. */}
+          {data.processing_errors.some(
+            (e) => e.rule === "NO_TRANSCRIPT" || e.rule === "AUDIO_SILENT",
+          ) && (
+            <div>
+              <button
+                type="button"
+                className={styles.supprimerFort}
+                disabled={suppression === "en_cours"}
+                onClick={() => void supprimer()}
+              >
+                <Icone nom="corbeille" taille={15} /> Supprimer cette consultation
+              </button>
+            </div>
+          )}
           {data.processing_errors.some((e) => e.rule === "STT_UNAVAILABLE") && (
             <div>
               <Bouton
@@ -630,8 +643,8 @@ export default function ConsultationPage() {
                     )}
                   </header>
 
-                  {/* Un courrier ou un compte rendu opératoire demandé par erreur se retire. */}
-                  {!shadow && A_LA_DEMANDE.has(active.document_type) && (
+                  {/* Tout document se supprime (21/09/2026) ; le dossier clinique reste. */}
+                  {!shadow && (
                     <div className={styles.retirerDocument}>
                       {confirmerRetrait === active.id ? (
                         <>

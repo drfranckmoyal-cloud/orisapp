@@ -11,16 +11,28 @@ struct HomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: OrisSpacing.s24) {
-                    MarqueOris()
-                        .padding(.top, OrisSpacing.s4)
+                    // La marque, bien visible, et la date du jour.
+                    VStack(spacing: 4) {
+                        HStack(spacing: 10) {
+                            SymboleOris(couleur: Teinte.accent)
+                                .frame(width: 40, height: 40)
+                            Text("Oris")
+                                .font(Police.marque(40))
+                                .foregroundStyle(Teinte.accentFonce)
+                        }
+                        Text(DateOris.jour(Date()).capitalizedPremiere)
+                            .font(Police.interface(14, .semibold))
+                            .foregroundStyle(Teinte.encreTresDouce)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, OrisSpacing.s8)
 
-                    EnTetePage(surtitre: DateOris.jour(Date()), titre: "Accueil")
-
-                    BandeauCommencer { showNewConsultation = true }
+                    BoutonEcoute { showNewConsultation = true }
+                        .frame(maxWidth: .infinity)
 
                     CarteARelire(consultations: model.aRelire)
 
-                    ServerStatusCard(state: model.serverState, diagnostic: model.diagnostic)
+                    ServerStatusCard(state: model.serverState, diagnostic: model.diagnostic, compact: true)
                 }
                 .padding(.horizontal, OrisSpacing.s16)
                 .padding(.bottom, OrisSpacing.s32)
@@ -39,50 +51,45 @@ struct HomeView: View {
     }
 }
 
-/// « Commencer une consultation » : le cœur de l'app, à la taille du cœur de l'app.
-struct BandeauCommencer: View {
+/// Le cœur de l'app : le symbole Oris dans un grand rond vert qui respire. Un toucher
+/// lance une consultation.
+struct BoutonEcoute: View {
     let action: () -> Void
+    @State private var appuye = false
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: OrisSpacing.s16) {
-                Image("Symbole-creme")
-                    .resizable()
-                    .interpolation(.high)
-                    .frame(width: 34, height: 34)
-                    .frame(width: 68, height: 68)
-                    .background(.white.opacity(0.13), in: Circle())
-                    .overlay(Circle().strokeBorder(.white.opacity(0.22), lineWidth: 1))
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("Commencer une consultation")
-                        .font(Police.marque(23))
-                        .tracking(-0.4)
-                        .foregroundStyle(.white)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Text("Oris écoute. Le dossier sera prêt avant la fin du rendez-vous.")
-                        .font(Police.interface(14, .semibold, relativeTo: .subheadline))
-                        .foregroundStyle(Teinte.accentClair)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
+            VStack(spacing: 14) {
+                ZStack {
+                    Circle()
+                        .fill(Teinte.accentDouce)
+                        .frame(width: 214, height: 214)
+                    Circle()
+                        .fill(LinearGradient(colors: [Teinte.accentVif, Teinte.accent, Teinte.accentFonce],
+                                             startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 176, height: 176)
+                        .overlay(Circle().strokeBorder(.white.opacity(0.16), lineWidth: 1))
+                        .shadow(color: Teinte.accentFonce.opacity(0.28), radius: 3, y: 2)
+                        .shadow(color: Teinte.accentFonce.opacity(0.45), radius: 24, y: 16)
+                    SymboleOris(couleur: .white, anime: true)
+                        .frame(width: 92, height: 92)
                 }
-                Spacer(minLength: 0)
+                .scaleEffect(appuye ? 0.96 : 1)
+                VStack(spacing: 3) {
+                    Text("Commencer une consultation")
+                        .font(Police.marque(22))
+                        .foregroundStyle(Teinte.accentFonce)
+                    Text("Oris écoute. Le dossier sera prêt avant la fin du rendez-vous.")
+                        .font(Police.interface(13.5, .medium))
+                        .foregroundStyle(Teinte.encreDouce)
+                        .multilineTextAlignment(.center)
+                }
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 22)
-            .background(
-                LinearGradient(colors: [Teinte.accentVif, Teinte.accent, Teinte.accentFonce],
-                               startPoint: .topLeading, endPoint: .bottomTrailing),
-                in: RoundedRectangle(cornerRadius: 22, style: .continuous)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .strokeBorder(Teinte.accentFonce, lineWidth: 1)
-            )
-            .shadow(color: Teinte.accentFonce.opacity(0.25), radius: 2, y: 2)
-            .shadow(color: Teinte.accentFonce.opacity(0.45), radius: 22, y: 16)
         }
         .buttonStyle(.plain)
+        .simultaneousGesture(DragGesture(minimumDistance: 0)
+            .onChanged { _ in withAnimation(.easeOut(duration: 0.12)) { appuye = true } }
+            .onEnded { _ in withAnimation(.spring(duration: 0.3)) { appuye = false } })
         .accessibilityLabel("Commencer une consultation")
     }
 }
@@ -92,7 +99,7 @@ struct CarteARelire: View {
     let consultations: [EncounterSummary]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: OrisSpacing.s12) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text("À relire")
                     .font(Police.titreCarte)
@@ -109,27 +116,27 @@ struct CarteARelire: View {
                     .font(Police.note)
                     .foregroundStyle(Teinte.encreTresDouce)
             }
-            ForEach(consultations.prefix(6)) { consultation in
-                NavigationLink(value: consultation.id) {
-                    HStack(spacing: OrisSpacing.s12) {
-                        VStack(alignment: .leading, spacing: 3) {
-                            NomPatient(patient: consultation.patient, taille: 15.5)
+            VStack(spacing: 0) {
+                ForEach(consultations.prefix(6)) { consultation in
+                    NavigationLink(value: consultation.id) {
+                        HStack(spacing: OrisSpacing.s8) {
+                            NomPatient(patient: consultation.patient, taille: 14.5)
+                            Spacer(minLength: 4)
                             Text(detail(consultation))
-                                .font(Police.interface(12.5, .medium, relativeTo: .caption))
+                                .font(Police.interface(12, .medium))
                                 .foregroundStyle(Teinte.encreTresDouce)
+                                .lineLimit(1)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(Teinte.traitFort)
                         }
-                        Spacer(minLength: OrisSpacing.s8)
-                        Pastille(texte: "à relire", ton: .attention)
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(Teinte.traitFort)
+                        .padding(.vertical, 8)
+                        .contentShape(Rectangle())
                     }
-                    .padding(.vertical, 6)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                if consultation.id != consultations.prefix(6).last?.id {
-                    Divider().overlay(Teinte.trait)
+                    .buttonStyle(.plain)
+                    if consultation.id != consultations.prefix(6).last?.id {
+                        Divider().overlay(Teinte.trait.opacity(0.7))
+                    }
                 }
             }
         }
@@ -137,17 +144,29 @@ struct CarteARelire: View {
     }
 
     private func detail(_ consultation: EncounterSummary) -> String {
-        let quand = consultation.date.map { "\(DateOris.court($0)) \(DateOris.heure($0))" } ?? ""
-        let n = consultation.documents.count
-        return n == 0 ? quand : "\(quand) · \(n) document\(n > 1 ? "s" : "")"
+        guard let date = consultation.date else { return "" }
+        return DateOris.repere(date).map { "\($0.lowercased()) \(DateOris.heure(date))" } ?? DateOris.court(date)
     }
 }
 
 struct ServerStatusCard: View {
     let state: HomeViewModel.ServerState
     var diagnostic: String? = nil
+    /// Accueil : une seule ligne discrète tant que tout va bien.
+    var compact = false
 
     var body: some View {
+        if compact, case .reachable = state {
+            Label("Connecté au serveur Oris", systemImage: "checkmark.circle.fill")
+                .font(Police.interface(12.5, .semibold))
+                .foregroundStyle(Teinte.encreTresDouce)
+                .frame(maxWidth: .infinity)
+        } else {
+            complet
+        }
+    }
+
+    private var complet: some View {
         VStack(alignment: .leading, spacing: OrisSpacing.s12) {
             Text("État du service")
                 .font(Police.titreCarte)

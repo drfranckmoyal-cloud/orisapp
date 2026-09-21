@@ -159,7 +159,7 @@ def test_one_validated_document_validates_the_consultation_the_others_stay_indep
     assert valide.status_code == 200, valide.text
 
 
-def test_a_referral_letter_can_be_removed_the_report_cannot(api: Any) -> None:
+def test_any_document_can_be_removed(api: Any) -> None:
     encounter = consultation_traitee(api)
     api.post(f"/encounters/{encounter['id']}/documents/referral-letter")
     docs = documents_by_type(api, encounter["id"])
@@ -168,8 +168,12 @@ def test_a_referral_letter_can_be_removed_the_report_cannot(api: Any) -> None:
     # Il ne revient pas tout seul à la régénération suivante.
     api.post(f"/encounters/{encounter['id']}/documents/generate")
     assert "referral_letter" not in documents_by_type(api, encounter["id"])
-    refus = api.delete(f"/documents/{docs['consultation_note']['id']}")
-    assert refus.status_code == 409 and refus.json()["code"] == "DOCUMENT_NOT_REMOVABLE"
+    # Le compte rendu et le plan aussi (choix du 21/09/2026) ; le dossier clinique reste.
+    assert api.delete(f"/documents/{docs['consultation_note']['id']}").status_code == 204
+    assert api.delete(f"/documents/{docs['treatment_plan_text']['id']}").status_code == 204
+    restants = documents_by_type(api, encounter["id"])
+    assert "consultation_note" not in restants and "treatment_plan_text" not in restants
+    assert api.get(f"/encounters/{encounter['id']}/clinical-object").status_code == 200
 
 
 def test_asking_for_a_letter_leaves_the_validated_report_alone(api: Any) -> None:

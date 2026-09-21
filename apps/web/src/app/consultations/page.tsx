@@ -13,11 +13,10 @@ import {
   EnTetePage,
   EtatVide,
   Onglets,
-  Pastille,
   Squelette,
 } from "@/components/ui";
 import { aujourdhuiISO, enISO, jourDecale } from "@/app/journee/dates";
-import type { Encounter } from "@/lib/api";
+import { ApiError, apiRequest, type Encounter } from "@/lib/api";
 import { ENCOUNTER_STATUS, errorMessage } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
@@ -109,11 +108,32 @@ function Envoi({ encounter }: { encounter: Encounter }) {
   return <span className={styles.rien}>Pas encore envoyé</span>;
 }
 
-function Rangee({ encounter }: { encounter: Encounter }) {
+function Rangee({
+  encounter,
+  supprimee,
+}: {
+  encounter: Encounter;
+  supprimee: () => void;
+}) {
   const documents = encounter.documents.filter(
     (d) => d.status !== "superseded",
   );
+  const [confirmer, setConfirmer] = useState(false);
+  const [erreur, setErreur] = useState<string | null>(null);
+
+  async function supprimer() {
+    setErreur(null);
+    try {
+      await apiRequest(`/encounters/${encounter.id}`, { method: "DELETE" });
+      supprimee();
+    } catch (caught) {
+      setConfirmer(false);
+      setErreur(errorMessage(caught instanceof ApiError ? caught.code : "UNKNOWN"));
+    }
+  }
+
   return (
+    <div className={styles.ligne}>
     <Link
       href={
         EN_ECOUTE.has(encounter.status)
@@ -143,7 +163,7 @@ function Rangee({ encounter }: { encounter: Encounter }) {
               key={d.id}
               type={d.document_type}
               valide={d.status === "validated" || d.status === "exported"}
-              taille="petit"
+              taille="leger"
             />
           ))}
           {encounter.mode === "shadow" && (
@@ -152,19 +172,53 @@ function Rangee({ encounter }: { encounter: Encounter }) {
         </span>
       </span>
       <Envoi encounter={encounter} />
-      <span className={styles.statut}>
-        <Pastille ton={ton(encounter.status)}>
-          {ENCOUNTER_STATUS[encounter.status]}
-        </Pastille>
+      <span className={`${styles.statut} ${styles[`ton_${ton(encounter.status)}`] ?? ""}`}>
+        <span className={styles.point} aria-hidden="true" />
+        {ENCOUNTER_STATUS[encounter.status]}
       </span>
       <Icone nom="suivant" taille={14} className={styles.chevron} />
     </Link>
+    {/* Supprimer d'ici : la consultation et ses documents partent ensemble. Pas
+        pendant l'écoute ou le traitement : le serveur refuserait. */}
+    <span className={styles.corbeilleZone}>
+      {EN_COURS.has(encounter.status) ? null : confirmer ? (
+        <>
+          <button
+            type="button"
+            className={styles.corbeilleConfirmer}
+            onClick={() => void supprimer()}
+          >
+            Supprimer{documents.length > 0 ? ` (+ ${documents.length} doc.)` : ""}
+          </button>
+          <button
+            type="button"
+            className={styles.corbeilleAnnuler}
+            onClick={() => setConfirmer(false)}
+            aria-label="Annuler la suppression"
+          >
+            ×
+          </button>
+        </>
+      ) : (
+        <button
+          type="button"
+          className={styles.corbeille}
+          onClick={() => setConfirmer(true)}
+          title="Supprimer cette consultation et ses documents"
+          aria-label={`Supprimer la consultation de ${encounter.patient.last_name}`}
+        >
+          <Icone nom="corbeille" taille={15} />
+        </button>
+      )}
+      {erreur && <span className={styles.corbeilleErreur}>{erreur}</span>}
+    </span>
+    </div>
   );
 }
 
 /** Toutes les consultations, jour par jour : on retrouve sa journée d'un coup d'œil. */
 export default function ConsultationsPage() {
-  const [encounters] = useApi<Encounter[]>("/encounters");
+  const [encounters, recharger] = useApi<Encounter[]>("/encounters");
   const [filtre, setFiltre] = useState<Filtre>("toutes");
   const [recherche, setRecherche] = useState("");
 
@@ -250,7 +304,7 @@ export default function ConsultationsPage() {
             <Bandeau iso={date} nombre={liste.length} />
             <div className={styles.liste}>
               {liste.map((encounter) => (
-                <Rangee key={encounter.id} encounter={encounter} />
+                <Rangee key={encounter.id} encounter={encounter} supprimee={recharger} />
               ))}
             </div>
           </section>

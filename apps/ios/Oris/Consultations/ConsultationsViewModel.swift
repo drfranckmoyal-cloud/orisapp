@@ -24,6 +24,19 @@ final class ConsultationsViewModel {
             state = .failed
         }
     }
+
+    /// Supprime la consultation et ses documents, puis retire la ligne.
+    func supprimer(_ id: String) async throws {
+        try await client.supprimerConsultation(id: id)
+        if case .loaded(let encounters) = state {
+            state = .loaded(encounters.filter { $0.id != id })
+        }
+    }
+}
+
+extension EncounterSummary {
+    /// Pendant l'écoute ou le traitement, le serveur refuse la suppression.
+    var supprimable: Bool { ![.recording, .paused, .finalizing, .processing].contains(status) }
 }
 
 @MainActor

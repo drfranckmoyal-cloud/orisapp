@@ -172,11 +172,105 @@
   display: flex;
 }
 
+/* Le statut en texte léger, avec un point de couleur : lisible sans bulle. */
 .statut {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 6px;
   min-width: 0;
   white-space: nowrap;
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-demi);
+  color: var(--encre-douce);
+}
+
+.point {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--trait-fort);
+}
+
+.ton_attention { color: var(--attention); }
+.ton_attention .point { background: var(--attention-vif); }
+.ton_valide { color: var(--valide); }
+.ton_valide .point { background: var(--accent-vif); }
+.ton_alerte { color: var(--alerte); }
+.ton_alerte .point { background: var(--alerte); }
+
+/* La ligne et sa corbeille : la corbeille hors du lien, pour ne pas ouvrir la
+   consultation en voulant la supprimer. */
+.ligne {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  border-top: 1px solid var(--trait);
+}
+
+.ligne:first-child {
+  border-top: 0;
+}
+
+.ligne .rangee {
+  border-top: 0;
+}
+
+.corbeilleZone {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: var(--espace-3);
+}
+
+.corbeille {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--trait-fort);
+  cursor: pointer;
+  transition: color var(--transition), background var(--transition);
+}
+
+.ligne:hover .corbeille {
+  color: var(--encre-tres-douce);
+}
+
+.corbeille:hover,
+.corbeille:focus-visible {
+  color: var(--alerte) !important;
+  background: var(--alerte-douce);
+}
+
+.corbeilleConfirmer {
+  border: 0;
+  border-radius: 8px;
+  padding: 5px 10px;
+  background: var(--alerte);
+  color: #fff;
+  font: inherit;
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-demi);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.corbeilleAnnuler {
+  border: 0;
+  background: none;
+  font-size: 18px;
+  color: var(--encre-tres-douce);
+  cursor: pointer;
+}
+
+.corbeilleErreur {
+  font-size: var(--texte-xs);
+  color: var(--alerte);
 }
 
 .chevron {

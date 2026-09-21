@@ -143,14 +143,16 @@ export function Ligne({
   titre,
   detail,
   fin,
+  compacte = false,
 }: {
   href: string;
   titre: ReactNode;
   detail?: ReactNode;
   fin?: ReactNode;
+  compacte?: boolean;
 }) {
   return (
-    <Link href={href} className={styles.ligne}>
+    <Link href={href} className={`${styles.ligne} ${compacte ? styles.ligneCompacte : ""}`}>
       <span>
         <span className={styles.ligneTitre}>{titre}</span>
         {detail && (

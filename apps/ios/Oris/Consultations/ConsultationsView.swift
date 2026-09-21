@@ -26,21 +26,30 @@ struct ConsultationsView: View {
     let client: APIClient
     @State private var filtre: Filtre = .toutes
     @State private var recherche = ""
+    @State private var aSupprimer: EncounterSummary?
+    @State private var erreur: String?
+    @State private var toast: String?
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            // Une liste iOS : le geste « glisser pour supprimer » y est natif et fiable.
+            List {
                 VStack(alignment: .leading, spacing: OrisSpacing.s16) {
                     EnTetePage(surtitre: "Historique", titre: "Consultations")
-
                     ChoixFiltre(filtre: $filtre)
                     ChampRecherche(texte: $recherche)
-
-                    contenu
+                    if let erreur {
+                        Text(erreur).font(Police.note).foregroundStyle(Teinte.alerte)
+                    }
                 }
-                .padding(.horizontal, OrisSpacing.s16)
-                .padding(.bottom, OrisSpacing.s32)
+                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 4, trailing: 16))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+
+                contenu
             }
+            .listStyle(.plain)
+            .environment(\.defaultMinListRowHeight, 0)
             .pageOris()
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: String.self) { id in
@@ -52,8 +61,34 @@ struct ConsultationsView: View {
                     ConsultationDetailView(model: ConsultationDetailViewModel(encounterId: id, client: client))
                 }
             }
+            .confirmationDialog(titreSuppression, isPresented: Binding(
+                get: { aSupprimer != nil }, set: { if !$0 { aSupprimer = nil } }
+            ), titleVisibility: .visible) {
+                Button("Supprimer", role: .destructive) {
+                    if let e = aSupprimer { Task { await supprimer(e) } }
+                }
+            } message: {
+                Text("La transcription, le dossier clinique et les documents seront effacés, sans retour possible. Le patient et ses photos restent.")
+            }
+            .toast($toast)
             .refreshable { await model.refresh() }
             .task { await model.refresh() }
+        }
+    }
+
+    private var titreSuppression: String {
+        guard let e = aSupprimer else { return "" }
+        let n = e.documents.count
+        return "Supprimer la consultation de \(e.patient.displayName)" + (n > 0 ? " et ses \(n) document\(n > 1 ? "s" : "") ?" : " ?")
+    }
+
+    private func supprimer(_ e: EncounterSummary) async {
+        erreur = nil
+        do {
+            try await model.supprimer(e.id)
+            toast = "Consultation supprimée."
+        } catch {
+            erreur = Labels.erreur(error)
         }
     }
 
@@ -65,29 +100,59 @@ struct ConsultationsView: View {
                 .tint(Teinte.accent)
                 .frame(maxWidth: .infinity)
                 .padding(.top, OrisSpacing.s32)
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
         case .failed:
             MessageVide(icone: "exclamationmark.triangle", titre: "Serveur Oris injoignable",
                         texte: "Tirez vers le bas pour réessayer.")
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
         case .loaded(let encounters):
             let jours = Self.parJour(encounters.filter { filtre.garde($0) && correspond($0) })
             if jours.isEmpty {
                 MessageVide(icone: "waveform", titre: "Aucune consultation",
                             texte: "Commencez une consultation depuis l’accueil.")
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
             }
             ForEach(jours, id: \.jour) { groupe in
-                BandeauJour(jour: groupe.jour, nombre: groupe.consultations.count)
-                VStack(spacing: 0) {
+                Section {
                     ForEach(groupe.consultations) { encounter in
-                        NavigationLink(value: encounter.id) {
+                        ZStack {
+                            // Le lien invisible sous la ligne : pas de chevron système en double.
+                            NavigationLink(value: encounter.id) { EmptyView() }.opacity(0)
                             EncounterRow(encounter: encounter)
                         }
-                        .buttonStyle(.plain)
-                        if encounter.id != groupe.consultations.last?.id {
-                            Divider().overlay(Teinte.trait).padding(.leading, 14)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                        .listRowBackground(
+                            FondLigne(premiere: encounter.id == groupe.consultations.first?.id,
+                                      derniere: encounter.id == groupe.consultations.last?.id)
+                        )
+                        .listRowSeparatorTint(Teinte.trait)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            if encounter.supprimable {
+                                Button(role: .destructive) { aSupprimer = encounter } label: {
+                                    Label("Supprimer", systemImage: "trash")
+                                }
+                                .tint(Teinte.alerte)
+                            }
+                        }
+                        .contextMenu {
+                            if encounter.supprimable {
+                                Button(role: .destructive) { aSupprimer = encounter } label: {
+                                    Label("Supprimer la consultation", systemImage: "trash")
+                                }
+                            }
                         }
                     }
+                } header: {
+                    BandeauJour(jour: groupe.jour, nombre: groupe.consultations.count)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 4)
+                        .background(Teinte.fond)
+                        .listRowInsets(EdgeInsets())
                 }
-                .carte(rembourrage: 0)
+                .listSectionSeparator(.hidden)
             }
         }
     }
@@ -189,15 +254,12 @@ struct EncounterRow: View {
                 .frame(width: 42, alignment: .leading)
                 .padding(.top, 1)
             Vignette(initiales: encounter.practitioner?.initiales ?? "FM", taille: 24)
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
                 NomPatient(patient: encounter.patient, taille: 15.5)
-                Flux(espace: 4) {
-                    Pastille(texte: Labels.encounterStatus(encounter.status), ton: encounter.status.ton)
-                    ForEach(encounter.documents) { document in
-                        PastilleDocument(
-                            type: document.documentType,
-                            valide: [.validated, .exported].contains(document.status)
-                        )
+                Flux(espace: 10) {
+                    StatutLeger(texte: Labels.encounterStatus(encounter.status), ton: encounter.status.ton)
+                    if !encounter.documents.isEmpty {
+                        DocumentsLegers(documents: encounter.documents)
                     }
                 }
                 if encounter.criticalWarningCount > 0 {
@@ -212,9 +274,42 @@ struct EncounterRow: View {
                 .foregroundStyle(Teinte.traitFort)
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+        .padding(.vertical, 10)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
+    }
+}
+
+extension View {
+    /// Un appui long propose de supprimer, seulement si la ligne peut l'être.
+    @ViewBuilder
+    func supprimable(_ possible: Bool, _ action: @escaping () -> Void) -> some View {
+        if possible {
+            contextMenu {
+                Button(role: .destructive, action: action) { Label("Supprimer la consultation", systemImage: "trash") }
+            }
+        } else {
+            self
+        }
+    }
+}
+
+/// Le fond blanc d'une ligne, arrondi en haut de la première et en bas de la dernière :
+/// les lignes d'un même jour forment une carte, comme sur le site.
+struct FondLigne: View {
+    let premiere: Bool
+    let derniere: Bool
+
+    var body: some View {
+        UnevenRoundedRectangle(
+            topLeadingRadius: premiere ? OrisRadius.card : 0,
+            bottomLeadingRadius: derniere ? OrisRadius.card : 0,
+            bottomTrailingRadius: derniere ? OrisRadius.card : 0,
+            topTrailingRadius: premiere ? OrisRadius.card : 0,
+            style: .continuous
+        )
+        .fill(Teinte.surface)
+        .padding(.horizontal, 16)
     }
 }
 

@@ -189,6 +189,8 @@ const ERRORS: Record<string, string> = {
 export const PROCESSING_RULE: Record<string, string> = {
   STT_UNAVAILABLE:
     "Le service de transcription n’a pas répondu. L’audio est conservé : relancez le traitement plus tard.",
+  AUDIO_SILENT:
+    "Le micro n’a capté aucun son : l’enregistrement est muet. Vérifiez que le micro n’est pas couvert ou coupé, puis refaites un essai.",
   NO_TRANSCRIPT:
     "Aucune parole n’a été reconnue dans l’enregistrement : rien n’a pu être rédigé. Vérifiez que le micro capte bien les deux voix, puis refaites un essai.",
   SPEAKER_ROLES_UNKNOWN:

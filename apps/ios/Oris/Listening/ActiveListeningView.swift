@@ -105,6 +105,9 @@ struct ActiveListeningView: View {
 
     @ViewBuilder
     private var banners: some View {
+        if controller.phase == .recording && controller.microMuet {
+            Banner(text: "Le micro ne capte aucun son. Vérifiez qu’il n’est pas couvert, que les AirPods ne sont pas rangés, puis parlez : ce bandeau disparaît dès qu’Oris vous entend.", critical: true)
+        }
         if controller.phase == .microphoneLost || controller.phase == .interrupted {
             Banner(text: "Aucun son n’est capté. Touchez Reprendre quand la consultation reprend : l’interruption sera signalée dans le dossier.", critical: true)
         }

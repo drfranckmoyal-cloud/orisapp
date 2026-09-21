@@ -20,6 +20,7 @@ struct PatientDossierView: View {
     @State private var photoOuverte: PieceJointe?
     @State private var toast: String?
     @State private var edition = false
+    @State private var aSupprimer: EncounterSummary?
 
     private var documentsValides: [(document: DocumentSummary, consultation: EncounterSummary)] {
         consultations
@@ -102,6 +103,15 @@ struct PatientDossierView: View {
         .sheet(item: $photoOuverte) { photo in
             PhotoPleinEcran(client: client, photo: photo)
         }
+        .confirmationDialog("Supprimer cette consultation ?", isPresented: Binding(
+            get: { aSupprimer != nil }, set: { if !$0 { aSupprimer = nil } }
+        ), titleVisibility: .visible) {
+            Button("Supprimer", role: .destructive) {
+                if let e = aSupprimer { Task { await supprimer(e) } }
+            }
+        } message: {
+            Text("La transcription, le dossier clinique et ses documents seront effacés, sans retour possible.")
+        }
         .toast($toast)
         .refreshable { await charger() }
         .task { await charger() }
@@ -151,6 +161,7 @@ struct PatientDossierView: View {
                         LigneConsultationPatient(encounter: e)
                     }
                     .buttonStyle(.plain)
+                    .supprimable(e.supprimable) { aSupprimer = e }
                     if e.id != consultations.last?.id {
                         Divider().overlay(Teinte.trait).padding(.leading, 14)
                     }
@@ -262,6 +273,16 @@ struct PatientDossierView: View {
         }
     }
 
+    private func supprimer(_ e: EncounterSummary) async {
+        do {
+            try await client.supprimerConsultation(id: e.id)
+            consultations.removeAll { $0.id == e.id }
+            toast = "Consultation supprimée."
+        } catch {
+            erreur = Labels.erreur(error)
+        }
+    }
+
     private func commencer() async {
         do {
             nouvelle = try await client.createEncounter(patientId: patient.id)
@@ -300,14 +321,14 @@ private struct LigneConsultationPatient: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: OrisSpacing.s12) {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(encounter.date.map { "\(DateOris.jour($0).capitalizedPremiere) · \(DateOris.heure($0))" } ?? "—")
                     .font(Police.interface(15, .bold))
                     .foregroundStyle(Teinte.encre)
-                Flux(espace: 4) {
-                    Pastille(texte: Labels.encounterStatus(encounter.status), ton: encounter.status.ton)
-                    ForEach(encounter.documents) { d in
-                        PastilleDocument(type: d.documentType, valide: [.validated, .exported].contains(d.status))
+                Flux(espace: 10) {
+                    StatutLeger(texte: Labels.encounterStatus(encounter.status), ton: encounter.status.ton)
+                    if !encounter.documents.isEmpty {
+                        DocumentsLegers(documents: encounter.documents)
                     }
                 }
             }
@@ -318,7 +339,7 @@ private struct LigneConsultationPatient: View {
                 .padding(.top, 4)
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+        .padding(.vertical, 10)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
     }

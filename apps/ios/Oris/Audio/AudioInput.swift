@@ -52,8 +52,10 @@ final class MicrophoneInput: AudioInput {
         }
         let session = AVAudioSession.sharedInstance()
         do {
-            // Parole, micro des AirPods autorisé ; capture poursuivie écran verrouillé (mode audio).
-            try session.setCategory(.record, mode: .spokenAudio, options: [.allowBluetoothHFP])
+            // Micro des AirPods autorisé ; capture poursuivie écran verrouillé (mode audio).
+            // Mode « enregistrement » standard : `.spokenAudio` est fait pour *lire* de la
+            // parole (livres audio), pas pour la capter.
+            try session.setCategory(.playAndRecord, mode: .default, options: [.allowBluetoothHFP, .defaultToSpeaker])
             try session.setActive(true)
         } catch {
             throw CaptureFailure.captureFailed
