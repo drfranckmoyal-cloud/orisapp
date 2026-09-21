@@ -56,6 +56,13 @@ d'attention / précautions · Coordination / retour souhaité · « Bien confrat
   Constaté » est dit dans la phrase quand il compte. Numéros de dent et négations
   jamais raccourcis. Calage à faire sur exemples réels.
 
+## Avancement
+
+- **21/09 — Compte rendu de consultation** : rubriques et ordre du modèle, phrases avec
+  les mots dits, validateur `negation_unclear`. Reste : mise en page PDF du modèle
+  (en-tête, bloc patient, page photos), rédaction plus liée (phrases fusionnées par un
+  modèle de langue, sous contrôle du validateur), trois styles (point H).
+
 ## Points ouverts
 
 - **F. Plan de traitement** : modèle à écrire ensemble.

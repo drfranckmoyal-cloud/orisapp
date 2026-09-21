@@ -1,5 +1,27 @@
 # Changelog
 
+## Compte rendu rédigé avec les mots dits — 2026-09-21
+- **Le compte rendu de consultation suit le modèle du Dr Moyal** : Motif · Examen
+  clinique · Diagnostic / analyse · Proposition thérapeutique · Informations données au
+  patient · Actes réalisés · Suite de la prise en charge · Points d'attention /
+  coordination. Une rubrique vide n'existe pas.
+- **Les phrases reprennent ce qui a été dit** (la valeur du fait) au lieu d'un libellé
+  de liste. Sur la dictée de référence, l'ancienne rédaction écrivait « Non constaté :
+  bridge en place » pour « 11, 13, 21, 23 sont en bon état », « disharmonie
+  dento-dentaire » pour « espace mésiodistal suffisant », « préparation pour facettes »
+  pour une préparation palatine d'ailettes. Ces erreurs sont figées en test
+  (`tests/test_redaction_consultation.py`, dictée anonymisée en fixture).
+- Les axes du fait (négation, incertitude, dit par le patient, antériorité, refus) ne
+  sont ajoutés que si les mots dits ne les portent pas. Une valeur trop courte pour
+  faire une phrase (« douleur nocturne ») garde la formulation par axes des tests
+  critiques A–J, qui passent tous.
+- **Nouveau contrôle du validateur, `negation_unclear`** : un fait nié dont la phrase ne
+  dit pas l'absence est signalé « à vérifier » — ni corrigé ni bloqué à la place du
+  praticien.
+- Options écartées ou refusées : hors de la proposition, dans « Points d'attention ».
+  Une proposition dite deux fois ne s'écrit qu'une fois, la plus complète.
+- À l'écran, une rubrique se lit comme un paragraphe ; chaque phrase reste cliquable.
+
 ## Consultations refondues — 2026-09-21
 - **Liste resserrée** : une ligne fine par consultation, un jour par carte. Le jour se lit
   dans un bandeau vert en petites capitales (« AUJOURD'HUI · lundi 21 septembre »), qui

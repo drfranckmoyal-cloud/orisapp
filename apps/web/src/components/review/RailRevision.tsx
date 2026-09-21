@@ -37,6 +37,7 @@ const LIBELLES_PROBLEME: Record<string, string> = {
   fact_not_rendered: "Fait non repris dans le document",
   unrendered_concept: "Élément non reconnu, à rédiger",
   operative_field_missing: "Champ important non dicté",
+  negation_unclear: "Négation à vérifier : la phrase ne dit pas l’absence",
 };
 
 /** Rail de révision (S08) : à vérifier, données cliniques, historique.

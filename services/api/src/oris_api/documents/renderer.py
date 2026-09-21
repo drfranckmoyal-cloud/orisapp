@@ -13,6 +13,7 @@ Les sections vides ne sont pas affichées (§32.1).
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 
@@ -33,6 +34,10 @@ REDUNDANT_PREFIXES = {
     "Symptômes rapportés": ("Rapporté par le patient : ",),
     "Examen clinique": ("Constaté : ",),
     "Options thérapeutiques discutées": ("Option discutée : ",),
+    # Rubriques du modèle du Dr Moyal : le motif est ce que le patient dit, la
+    # proposition ce que le praticien propose.
+    "Motif de la consultation": ("Rapporté par le patient : ",),
+    "Proposition thérapeutique": ("Option discutée : ", "Proposé : "),
 }
 NON_EXHAUSTIVE = "Le compte rendu ne peut pas être considéré comme exhaustif."
 UNRENDERED_PREFIX = "À rédiger"
@@ -214,17 +219,190 @@ def limits_claims(encounter: ClinicalEncounter) -> list[Claim]:
     ]
 
 
+# --- Compte rendu de consultation, modèle du Dr Moyal (docs/MODELES_CR.md) ------------
+
+#: Rubriques et ordre arrêtés avec le praticien le 21/09/2026 (décision D, D023).
+RUBRIQUES_CONSULTATION = (
+    "Motif de la consultation",
+    "Examen clinique",
+    "Diagnostic / analyse",
+    "Proposition thérapeutique",
+    "Informations données au patient",
+    "Actes réalisés",
+    "Suite de la prise en charge",
+    "Points d’attention / coordination",
+)
+MOTIF, EXAMEN, DIAGNOSTIC, PROPOSITION, INFORMATIONS, ACTES, SUITE, ATTENTION = (
+    RUBRIQUES_CONSULTATION
+)
+
+#: En dessous, la valeur n'est qu'un libellé (« douleur nocturne ») : elle ne porte pas
+#: seule la négation ou le statut, et la formulation par axes (plus haut) reste la règle.
+MOTS_MIN_PHRASE = 4
+
+NEGATION = re.compile(
+    r"\b(pas|non|aucune?|absence|absente?s?|sans|ni|jamais|impossib\w*|refus\w*|"
+    r"écart\w*|n[’']|bon état|normal\w*|sain\w*|suffisant\w*|respecté\w*)",
+    re.IGNORECASE,
+)
+INCERTITUDE = re.compile(
+    r"\b(possible\w*|peut[- ]être|probable\w*|suspicion|suspect\w*|incertain\w*|"
+    r"doute\w*|semble\w*|évoqu\w*|hypoth\w*|potentiel\w*|à confirmer|éventuel\w*)",
+    re.IGNORECASE,
+)
+PATIENT = re.compile(
+    r"\b(patiente?|se plaint|rapporte|signale|souhait\w*|dit|décrit|ressent)\b", re.IGNORECASE
+)
+ANTERIEUR = re.compile(r"\b(antérieur\w*|déjà|précédemment|auparavant|il y a)\b", re.IGNORECASE)
+INFORMATION = re.compile(r"^(information|informé|informée|explication|expliqué)", re.IGNORECASE)
+DENT_ECRITE = re.compile(r"(?<!\d)([1-4][1-8]|[5-8][1-5])(?!\d)")
+
+#: Préfixes dictés qui ne font que répéter le titre de la rubrique.
+PREFIXES_DICTES = re.compile(
+    r"^(proposition thérapeutique|diagnostic( / analyse)?|information(s)? (données au )?patient|"
+    r"motif( de (la )?consultation)?|examen clinique|point(s)? d[’']attention|"
+    r"suite de la prise en charge)\s*:\s*",
+    re.IGNORECASE,
+)
+SUFFIXE_MOTIF = re.compile(r",\s*motif de (la )?consultation\s*$", re.IGNORECASE)
+
+
+def rubrique_de(fact: ClinicalFact) -> str:
+    """Où va un fait. Décisions du 21/09/2026 : antécédents dans « Points d'attention »,
+    radios dans « Examen clinique », options écartées ou refusées hors de la proposition."""
+    category, status, concept = fact.category, fact.clinical_status, fact.concept
+    value = fact.value if isinstance(fact.value, str) else ""
+    if concept == "referral" or category in {"chief_complaint", "symptom"}:
+        return MOTIF
+    if category in {"clinical_finding", "radiographic_finding"}:
+        return EXAMEN
+    if category in {"assessment", "diagnosis"}:
+        return DIAGNOSTIC
+    if (
+        category == "patient_information"
+        or concept == "informed_consent"
+        or INFORMATION.match(value.strip())
+    ):
+        return INFORMATIONS
+    if concept == "cost_estimate" or category == "follow_up":
+        return SUITE
+    if category in {"history", "medication"}:
+        return ATTENTION
+    if category in {"treatment_option", "treatment_decision", "material", "procedure"}:
+        if status == "performed" and fact.assertion != "absent":
+            return ACTES
+        if status in {"planned", "deferred"}:
+            return SUITE
+        if fact.assertion != "present" or status == "refused":
+            return ATTENTION
+        return PROPOSITION
+    return ATTENTION
+
+
+def phrase_dictee(fact: ClinicalFact) -> str | None:
+    """La valeur dite, nettoyée, si elle forme une phrase ; sinon None.
+
+    Un traitement médicamenteux garde sa formulation dédiée (« n'est plus pris
+    actuellement ») ; une valeur codée (traduite par l'ontologie) n'est pas une phrase dite.
+    """
+    if not isinstance(fact.value, str) or fact.category == "medication":
+        return None
+    if translate_value(fact.value) != fact.value:
+        return None
+    texte = SUFFIXE_MOTIF.sub("", PREFIXES_DICTES.sub("", fact.value.strip())).strip(" .;")
+    if len(texte.split()) < MOTS_MIN_PHRASE:
+        return None
+    return capitalize(texte)
+
+
+def negation_ecrite(texte: str) -> bool:
+    """La phrase dit-elle une absence ? Sert au validateur pour les faits niés."""
+    return NEGATION.search(texte) is not None
+
+
+def phrase_redigee(fact: ClinicalFact, style: Style = DEFAULT_STYLE) -> str:
+    """Une phrase de compte rendu pour ce fait.
+
+    La phrase reprend les mots dits : c'est ce qui garde le sens (« agénésie », « gouttière
+    conformatrice »), là où un libellé de liste l'appauvrissait. Les axes du fait ne sont
+    ajoutés que quand les mots dits ne les portent pas déjà. Une valeur trop courte pour
+    faire une phrase garde la formulation par axes, éprouvée par les tests critiques.
+    """
+    dite = phrase_dictee(fact)
+    if dite is None:
+        return fact_sentence(fact, style)
+
+    texte = dite
+    if not DENT_ECRITE.search(texte) and fact.teeth:
+        texte += teeth_suffix(fact.teeth)
+    status = fact.clinical_status
+
+    incertain = fact.assertion == "uncertain" or fact.certainty in {"possible", "probable"}
+    if incertain and not INCERTITUDE.search(texte):
+        texte += ", non confirmé"
+    if status == "patient_reported" and not PATIENT.search(texte):
+        texte = f"Selon le patient, {texte[:1].lower()}{texte[1:]}"
+    anterieur = fact.temporality == "past" and status in {"discussed", "proposed"}
+    if anterieur and not ANTERIEUR.search(texte):
+        texte = f"Évoqué antérieurement : {texte[:1].lower()}{texte[1:]}"
+    if status == "refused" and not NEGATION.search(texte):
+        texte = f"Refusé : {texte[:1].lower()}{texte[1:]}"
+    elif (
+        fact.assertion == "absent"
+        and status in {"discussed", "proposed"}
+        and not NEGATION.search(texte)
+    ):
+        texte = f"Écarté : {texte[:1].lower()}{texte[1:]}"
+    return f"{texte}."
+
+
+def _cle(texte: str) -> str:
+    return re.sub(r"[^a-z0-9àâäéèêëîïôöùûüç]+", " ", texte.lower()).strip()
+
+
 def render_consultation_note(
     encounter: ClinicalEncounter, style: Style = DEFAULT_STYLE
 ) -> GeneratedDocument:
+    """Compte rendu de consultation dans les rubriques du modèle, avec les mots dits.
+
+    Une rubrique sans contenu n'existe pas. Deux faits qui disent la même chose dans la
+    même rubrique (« 2 bridges cantilever » et le détail des deux bridges) ne font
+    qu'une phrase, la plus complète, qui cite les deux faits.
+    """
+    par_rubrique: dict[str, list[Claim]] = {rubrique: [] for rubrique in RUBRIQUES_CONSULTATION}
+    for fact in encounter.facts:
+        rubrique = rubrique_de(fact)
+        texte = phrase_redigee(fact, style)
+        if style.length == "concise":
+            texte = shorten(rubrique, texte)
+        claims = par_rubrique[rubrique]
+        # Comparer ce qui a été dit, pas la formule autour : « 2 bridges cantilever » est
+        # contenu dans le détail des deux bridges, même rédigé « Proposé : … ».
+        dit = fact.value if isinstance(fact.value, str) else ""
+        dit = SUFFIXE_MOTIF.sub("", PREFIXES_DICTES.sub("", dit.strip()))
+        cle = _cle(dit) if len(_cle(dit).split()) >= 2 else _cle(texte)
+        doublon = next(
+            (
+                i
+                for i, claim in enumerate(claims)
+                if cle and (cle in _cle(claim.text) or _cle(claim.text) in cle)
+            ),
+            None,
+        )
+        if doublon is not None:
+            garde = claims[doublon]
+            plus_long = texte if len(texte) > len(garde.text) else garde.text
+            claims[doublon] = Claim(
+                rubrique,
+                plus_long,
+                fact_ids=(*garde.fact_ids, fact.fact_id),
+                warning_codes=garde.warning_codes,
+            )
+            continue
+        claims.append(Claim(rubrique, texte, fact_ids=(fact.fact_id,)))
     claims = limits_claims(encounter)
-    for section, categories in SECTION_ORDER:
-        for fact in encounter.facts:
-            if fact.category in categories:
-                text = fact_sentence(fact, style)
-                if style.length == "concise":
-                    text = shorten(section, text)
-                claims.append(Claim(section, text, fact_ids=(fact.fact_id,)))
+    for rubrique in RUBRIQUES_CONSULTATION:
+        claims += par_rubrique[rubrique]
     return GeneratedDocument("consultation_note", render_content(claims), tuple(claims))
 
 

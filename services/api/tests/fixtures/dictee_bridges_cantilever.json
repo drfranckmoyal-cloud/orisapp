@@ -1,0 +1,781 @@
+{
+ "origine": "Dictée du Dr Moyal, 21/09/2026, sans patient réel (compte rendu dicté rubrique par rubrique). Nom du correspondant remplacé.",
+ "facts": [
+  {
+   "fact_id": "f1",
+   "category": "history",
+   "concept": "referral",
+   "value": "Patient adressé par le docteur Martin",
+   "teeth": [],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "past",
+   "clinical_status": "observed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t3",
+    "t4",
+    "t5",
+    "t11"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f2",
+   "category": "chief_complaint",
+   "concept": "missing_tooth",
+   "value": "Absence de 12 et 22, motif de consultation",
+   "teeth": [
+    "12",
+    "22"
+   ],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "current",
+   "clinical_status": "observed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t6",
+    "t7",
+    "t8",
+    "t9",
+    "t10",
+    "t12"
+   ],
+   "confidence": 0.9,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f3",
+   "category": "chief_complaint",
+   "concept": "removable_denture",
+   "value": "Le patient se plaint de la prothèse amovible qu'il a depuis plusieurs années et souhaiterait une solution fixe",
+   "teeth": [],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "current",
+   "clinical_status": "patient_reported",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t12"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f4",
+   "category": "clinical_finding",
+   "concept": "missing_tooth",
+   "value": "Agénésie de 12 et 22",
+   "teeth": [
+    "12",
+    "22"
+   ],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "current",
+   "clinical_status": "observed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t13",
+    "t14",
+    "t15",
+    "t16"
+   ],
+   "confidence": 0.9,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f5",
+   "category": "clinical_finding",
+   "concept": "existing_bridge",
+   "value": "11, 13, 21, 23 sont en bon état",
+   "teeth": [
+    "11",
+    "13",
+    "21",
+    "23"
+   ],
+   "surfaces": [],
+   "assertion": "absent",
+   "temporality": "current",
+   "clinical_status": "observed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t17"
+   ],
+   "confidence": 0.6,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f6",
+   "category": "clinical_finding",
+   "concept": "radiographic_bone_loss",
+   "value": "Défaut osseux vestibulaire en situation de 12 et 22",
+   "teeth": [
+    "12",
+    "22"
+   ],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "current",
+   "clinical_status": "observed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t18",
+    "t19",
+    "t20",
+    "t21"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f7",
+   "category": "clinical_finding",
+   "concept": "missing_tooth",
+   "value": "Absence de 18 et 28, tubérosités disponibles",
+   "teeth": [
+    "18",
+    "28"
+   ],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "current",
+   "clinical_status": "observed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t23",
+    "t24"
+   ],
+   "confidence": 0.8,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f8",
+   "category": "diagnosis",
+   "concept": "missing_tooth",
+   "value": "Diagnostic : agénésie de 12 et 22",
+   "teeth": [
+    "12",
+    "22"
+   ],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "current",
+   "clinical_status": "clinician_assessment",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t25",
+    "t26"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f9",
+   "category": "clinical_finding",
+   "concept": "tooth_proportion",
+   "value": "Espace prothétique respecté pour la réalisation",
+   "teeth": [
+    "12",
+    "22"
+   ],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "current",
+   "clinical_status": "clinician_assessment",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t27",
+    "t28",
+    "t29",
+    "t30"
+   ],
+   "confidence": 0.8,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f10",
+   "category": "clinical_finding",
+   "concept": "tooth_size_discrepancy",
+   "value": "Espace mésiodistal entre 11 et 13, et 21 et 23 est suffisant",
+   "teeth": [
+    "11",
+    "13",
+    "21",
+    "23"
+   ],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "current",
+   "clinical_status": "clinician_assessment",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t31",
+    "t32",
+    "t33",
+    "t34"
+   ],
+   "confidence": 0.8,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f11",
+   "category": "procedure",
+   "concept": "aesthetic_simulation",
+   "value": "Simulation réalisée aujourd'hui sur le logiciel SmileCloud, réalisation possible",
+   "teeth": [
+    "12",
+    "22"
+   ],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "current",
+   "clinical_status": "performed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t35",
+    "t36",
+    "t37",
+    "t38",
+    "t39"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f12",
+   "category": "treatment_option",
+   "concept": "bridge",
+   "value": "Proposition thérapeutique : réalisation de 2 bridges cantilever séparés, un en remplacement de 12 avec ailette sur 11, un en remplacement de 22 avec ailette sur 21",
+   "teeth": [
+    "11",
+    "12",
+    "21",
+    "22"
+   ],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "future",
+   "clinical_status": "proposed",
+   "speaker_role": "practitioner",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t40",
+    "t41",
+    "t42",
+    "t43"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f13",
+   "category": "material",
+   "concept": "layered_zirconia",
+   "value": "Bridges réalisés en zircone stratifiée",
+   "teeth": [
+    "11",
+    "12",
+    "21",
+    "22"
+   ],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "future",
+   "clinical_status": "proposed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t44",
+    "t45",
+    "t46"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f14",
+   "category": "other",
+   "concept": "informed_consent",
+   "value": "Patient informé, déjà informé sur les modalités de réalisation d'un bridge cantilever",
+   "teeth": [],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "past",
+   "clinical_status": "observed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t47",
+    "t48",
+    "t49",
+    "t50"
+   ],
+   "confidence": 0.8,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f15",
+   "category": "treatment_option",
+   "concept": "bridge",
+   "value": "Proposition thérapeutique : 2 bridges cantilever",
+   "teeth": [
+    "11",
+    "12",
+    "21",
+    "22"
+   ],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "future",
+   "clinical_status": "proposed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t51",
+    "t52",
+    "t53",
+    "t54"
+   ],
+   "confidence": 0.8,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f16",
+   "category": "treatment_option",
+   "concept": "minor_surgery_generic",
+   "value": "Proposition de greffes de conjonctif enfoui avec prélèvement tubérositaire bilatéral pour la conformation des tissus avant la réalisation des bridges, pour permettre une meilleure émergence prothétique",
+   "teeth": [
+    "12",
+    "22"
+   ],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "future",
+   "clinical_status": "proposed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t54",
+    "t55",
+    "t56",
+    "t57",
+    "t58",
+    "t59",
+    "t60",
+    "t61",
+    "t62",
+    "t63"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f17",
+   "category": "other",
+   "concept": "veneer_preparation",
+   "value": "Information patient : légère préparation de 0,3 à 0,5 mm d'épaisseur en palatin, à l'arrière de 11 et 21",
+   "teeth": [
+    "11",
+    "21"
+   ],
+   "surfaces": [
+    "P"
+   ],
+   "assertion": "present",
+   "temporality": "future",
+   "clinical_status": "discussed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t64",
+    "t65",
+    "t66",
+    "t67",
+    "t68",
+    "t69"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f18",
+   "category": "treatment_option",
+   "concept": "treatment_sequence",
+   "value": "Chirurgie en premier lieu : prélèvement, séance de chirurgie d'environ 2 heures avec prélèvement de conjonctif au niveau de la tubérosité maxillaire et greffe",
+   "teeth": [],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "future",
+   "clinical_status": "discussed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t70",
+    "t71",
+    "t72",
+    "t73",
+    "t74"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f19",
+   "category": "treatment_option",
+   "concept": "occlusal_splint",
+   "value": "Période d'attente de 8 semaines avec mise en place d'une gouttière conformatrice pour les tissus",
+   "teeth": [],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "future",
+   "clinical_status": "discussed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t75",
+    "t76",
+    "t77",
+    "t78"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f20",
+   "category": "treatment_option",
+   "concept": "treatment_sequence",
+   "value": "Ensuite réalisation des 2 bridges cantilever avec une séance de préparation des bridges et 2 semaines après une séance de collage",
+   "teeth": [
+    "11",
+    "12",
+    "21",
+    "22"
+   ],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "future",
+   "clinical_status": "discussed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t79",
+    "t80"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f21",
+   "category": "procedure",
+   "concept": "panoramic_radiograph",
+   "value": "Radiographie panoramique réalisée ce jour",
+   "teeth": [],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "current",
+   "clinical_status": "performed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t81",
+    "t82",
+    "t83",
+    "t84",
+    "t85"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f22",
+   "category": "procedure",
+   "concept": "clinical_photographs",
+   "value": "Bilan photographique exo et endo buccal réalisé ce jour",
+   "teeth": [],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "current",
+   "clinical_status": "performed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t86",
+    "t87",
+    "t88"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f23",
+   "category": "procedure",
+   "concept": "scan",
+   "value": "Empreinte numérique réalisée ce jour",
+   "teeth": [],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "current",
+   "clinical_status": "performed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t89",
+    "t90"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f24",
+   "category": "procedure",
+   "concept": "cost_estimate",
+   "value": "Devis réalisé et délivré au patient ce jour, en attente de sa réponse pour la suite des soins",
+   "teeth": [],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "current",
+   "clinical_status": "performed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t91",
+    "t92",
+    "t93",
+    "t94",
+    "t95",
+    "t96",
+    "t97"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f25",
+   "category": "treatment_option",
+   "concept": "implant_option",
+   "value": "Solution implantaire évoquée, mais impossibilité de réaliser en raison de la proximité radiculaire des dents bordant l'édentement",
+   "teeth": [
+    "12",
+    "22"
+   ],
+   "surfaces": [],
+   "assertion": "absent",
+   "temporality": "current",
+   "clinical_status": "discussed",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t98",
+    "t99",
+    "t100",
+    "t101",
+    "t102",
+    "t103",
+    "t104",
+    "t105",
+    "t106"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f26",
+   "category": "treatment_option",
+   "concept": "implant_option",
+   "value": "Possible de poser des implants mais avec traitement orthodontique préalable",
+   "teeth": [],
+   "surfaces": [],
+   "assertion": "uncertain",
+   "temporality": "future",
+   "clinical_status": "discussed",
+   "speaker_role": "unknown",
+   "certainty": "possible",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t106",
+    "t107",
+    "t108",
+    "t109",
+    "t110",
+    "t111"
+   ],
+   "confidence": 0.8,
+   "manually_validated": false
+  },
+  {
+   "fact_id": "f27",
+   "category": "treatment_option",
+   "concept": "orthodontic_treatment",
+   "value": "Le patient refuse pour l'instant le traitement orthodontique préalable",
+   "teeth": [],
+   "surfaces": [],
+   "assertion": "present",
+   "temporality": "current",
+   "clinical_status": "refused",
+   "speaker_role": "unknown",
+   "certainty": "certain",
+   "source_type": "audio",
+   "evidence_segment_ids": [
+    "t112"
+   ],
+   "confidence": 0.85,
+   "manually_validated": false
+  }
+ ],
+ "treatment_plan": {
+  "plan_id": "plan1",
+  "status": "review",
+  "goals": [
+   "Remplacement de 12 et 22 par solution fixe"
+  ],
+  "notes": [
+   "Devis délivré au patient ce jour, en attente de sa réponse pour la suite des soins"
+  ],
+  "items": [
+   {
+    "item_id": "pi1",
+    "teeth": [
+     "12",
+     "22"
+    ],
+    "problem": "Agénésie de 12 et 22, patient insatisfait de la prothèse amovible",
+    "action": "Réalisation de 2 bridges cantilever en zircone stratifiée (12 avec ailette sur 11, 22 avec ailette sur 21)",
+    "status": "proposed",
+    "priority": "unspecified",
+    "sequence": 3,
+    "alternatives": [
+     "implant_option"
+    ],
+    "prerequisites": [
+     "greffe de conjonctif enfoui bilatérale préalable",
+     "période d'attente de 8 semaines"
+    ],
+    "uncertainties": [],
+    "evidence_fact_ids": [
+     "f12",
+     "f13",
+     "f15"
+    ]
+   },
+   {
+    "item_id": "pi2",
+    "teeth": [
+     "12",
+     "22"
+    ],
+    "problem": "Défaut de conformation des tissus mous limitant l'émergence prothétique",
+    "action": "Greffe de conjonctif enfoui avec prélèvement tubérositaire bilatéral",
+    "status": "proposed",
+    "priority": "unspecified",
+    "sequence": 1,
+    "alternatives": [],
+    "prerequisites": [],
+    "uncertainties": [],
+    "evidence_fact_ids": [
+     "f16",
+     "f18"
+    ]
+   },
+   {
+    "item_id": "pi3",
+    "teeth": [],
+    "problem": null,
+    "action": "Port d'une gouttière conformatrice pendant 8 semaines après la greffe",
+    "status": "discussed",
+    "priority": "unspecified",
+    "sequence": 2,
+    "alternatives": [],
+    "prerequisites": [],
+    "uncertainties": [],
+    "evidence_fact_ids": [
+     "f19"
+    ]
+   },
+   {
+    "item_id": "pi4",
+    "teeth": [
+     "11",
+     "12",
+     "21",
+     "22"
+    ],
+    "problem": null,
+    "action": "Séance de préparation des bridges puis séance de collage 2 semaines après",
+    "status": "discussed",
+    "priority": "unspecified",
+    "sequence": 4,
+    "alternatives": [],
+    "prerequisites": [],
+    "uncertainties": [],
+    "evidence_fact_ids": [
+     "f20"
+    ]
+   },
+   {
+    "item_id": "pi5",
+    "teeth": [
+     "12",
+     "22"
+    ],
+    "problem": "Espace disponible pour implants limité par proximité radiculaire",
+    "action": "Pose d'implants",
+    "status": "refused",
+    "priority": "unspecified",
+    "sequence": null,
+    "alternatives": [],
+    "prerequisites": [
+     "traitement orthodontique préalable"
+    ],
+    "uncertainties": [
+     "possibilité de réalisation incertaine sans orthodontie"
+    ],
+    "evidence_fact_ids": [
+     "f25",
+     "f26",
+     "f27"
+    ]
+   }
+  ]
+ },
+ "procedures": []
+}

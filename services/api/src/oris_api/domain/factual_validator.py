@@ -9,7 +9,11 @@ from __future__ import annotations
 import re
 
 from oris_api.contracts import ClinicalEncounter
-from oris_api.documents.renderer import UNRENDERED_PREFIX, missing_important_slots
+from oris_api.documents.renderer import (
+    UNRENDERED_PREFIX,
+    missing_important_slots,
+    negation_ecrite,
+)
 from oris_api.domain.types import GeneratedDocument, ValidationIssue
 
 # Numéros FDI permanents et temporaires isolés dans le texte.
@@ -47,6 +51,11 @@ def validate_document(
             fact.clinical_status == "performed" for fact in support
         ):
             issues.append(ValidationIssue("performed_not_supported", "critical", claim_index=index))
+
+        # Un fait nié rédigé avec les mots dits : la phrase doit dire l'absence. Sinon,
+        # le praticien relit — le texte n'est ni corrigé ni bloqué à sa place.
+        if any(fact.assertion == "absent" for fact in support) and not negation_ecrite(claim.text):
+            issues.append(ValidationIssue("negation_unclear", "review", claim_index=index))
 
         if claim.text.startswith(UNRENDERED_PREFIX):
             issues.append(ValidationIssue("unrendered_concept", "review", claim_index=index))

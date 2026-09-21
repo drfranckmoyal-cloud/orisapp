@@ -68,19 +68,25 @@
   background: var(--trait);
 }
 
+.paragraphe {
+  margin: 0;
+}
+
+/* Une phrase dans le paragraphe : cliquable, sans casser la ligne. */
 .claim {
-  display: block;
-  width: 100%;
-  text-align: left;
+  display: inline;
   font: inherit;
   line-height: inherit;
+  text-align: left;
   color: var(--encre);
   background: none;
   border: none;
-  border-radius: 6px;
-  padding: 3px 8px;
-  margin-left: -8px;
+  border-radius: 5px;
+  padding: 2px 3px;
+  margin: 0 1px 0 -3px;
   cursor: pointer;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 .claim:hover {
@@ -93,7 +99,9 @@
 }
 
 .claim[data-flagged="true"] {
-  border-left: 3px solid var(--color-warning);
+  background: var(--attention-douce);
+  text-decoration: underline wavy var(--attention-vif);
+  text-underline-offset: 3px;
 }
 
 .factList {

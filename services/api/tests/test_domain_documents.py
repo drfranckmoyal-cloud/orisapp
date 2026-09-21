@@ -49,7 +49,7 @@ def test_every_claim_cites_facts_and_every_fact_is_rendered() -> None:
 
 def test_empty_sections_are_omitted() -> None:
     note = render_consultation_note(encounter("ORIS-SYN-092"))
-    assert note.content.splitlines()[0] == "Symptômes rapportés"
+    assert note.content.splitlines()[0] == "Motif de la consultation"
     assert "Examen clinique" not in note.content
 
 
@@ -106,7 +106,9 @@ def test_validator_catches_performed_claim_on_planned_fact() -> None:
 def test_validator_flags_unrendered_fact_for_review() -> None:
     obj = encounter("ORIS-SYN-092")
     partial = GeneratedDocument(
-        "consultation_note", "", (Claim("S", "Rapporté par le patient : x (16).", ("f1",)),)
+        "consultation_note",
+        "",
+        (Claim("S", "Rapporté par le patient : absence de x (16).", ("f1",)),),
     )
     issues = validate_document(partial, obj)
     assert [(i.code, i.severity, i.fact_id) for i in issues] == [

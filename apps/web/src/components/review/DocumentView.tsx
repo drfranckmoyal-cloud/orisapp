@@ -33,18 +33,31 @@ export function DocumentBody({
       {sections.map((section) => (
         <section key={section.title}>
           <h3 className={styles.sectionTitle}>{section.title}</h3>
-          {section.claims.map(({ claim, index }) => (
-            <button
-              key={index}
-              type="button"
-              className={styles.claim}
-              data-selected={selected === claim}
-              data-flagged={flagged.has(index)}
-              onClick={() => onSelect(claim)}
-            >
-              {claim.text}
-            </button>
-          ))}
+          {/* Une rubrique se lit comme un paragraphe ; chaque phrase reste cliquable
+              pour ouvrir sa source. */}
+          <p className={styles.paragraphe}>
+            {section.claims.map(({ claim, index }) => (
+              // Un <span> et non un <button> : un bouton ne se coupe pas en fin de
+              // ligne, la phrase ne coulerait pas dans le paragraphe.
+              <span
+                key={index}
+                role="button"
+                tabIndex={0}
+                className={styles.claim}
+                data-selected={selected === claim}
+                data-flagged={flagged.has(index)}
+                onClick={() => onSelect(claim)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onSelect(claim);
+                  }
+                }}
+              >
+                {claim.text}
+              </span>
+            ))}
+          </p>
         </section>
       ))}
     </div>
