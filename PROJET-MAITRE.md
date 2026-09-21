@@ -29,7 +29,7 @@ traitement et les comptes rendus opératoires. Trois principes tiennent tout :
 | M0 | Fondations : serveur, base de données, formats communs, coquilles web et iPhone | **Terminé** |
 | M1 | Consultation fictive de bout en bout : faits, compte rendu, plan, corrections, validation | **Terminé** |
 | M2 | Écoute au micro sur le site | **Terminé** |
-| M3 | Écoute sur iPhone (appels, écouteurs, écran verrouillé) | **Terminé, non vu à l'écran** |
+| M3 | Écoute sur iPhone (appels, écouteurs, écran verrouillé) | **Terminé** — installée sur l'iPhone de Franck le 21 sept., reliée au Mac par le Wi-Fi |
 | M4 | Banc d'essai des services de transcription (Azure, Deepgram) | **Terminé** — Deepgram mesuré le 18 sept. sur 100 consultations |
 | M5 | Extraction clinique par une vraie IA (Claude) | **Terminé** — mesuré sur le corpus |
 | M6 | Écran de consultation : sortie des documents, plan en cartes | **Terminé** |
@@ -38,6 +38,7 @@ traitement et les comptes rendus opératoires. Trois principes tiennent tout :
 | M9 | Personnalisation : dictionnaire, mots préférés, suggestions | **Terminé** |
 | M10 | Sécurisation : accès par jeton, journal d'audit, purge du son | **Terminé côté logiciel** |
 | M11 | Mise en situation clinique : mode ombre, porte d'entrée en bêta | **Terminé côté logiciel** |
+| — | App iPhone au niveau du site : couleurs, dossier patient, documents (valider, PDF, envoi), photos, fiche modifiable, correspondants | **Fait le 21 sept.** |
 
 Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENTATION_LOG.md`.
 
@@ -159,10 +160,8 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 | Quoi | Pourquoi | Quand |
 |---|---|---|
 | **Organiser une séance d'enregistrement** avec des confrères (tout est prêt : note d'information, consentement, protocole) | C'est ce qui remplacera les voix de synthèse et dira la vérité sur la qualité | Dès que vous voulez |
-| **Logo et coordonnées du cabinet** (fichier image + adresse, téléphone, mention légale) | Ils s'impriment en tête de chaque document ; pour l'instant c'est le logo Oris | Quand vous voulez |
 | **Compléter `docs/VOCABULAIRE.md`** | Oris n'écrit que ce qu'il sait nommer ; ce qu'il ignore est signalé « à rédiger » | Quand vous voulez, thème par thème |
 | Clé Azure Speech (optionnel) | Comparer Deepgram à un fournisseur certifié HDS | Avant de choisir |
-| Autoriser le **simulateur iPhone** (« Let Claude use it ») | Pour que je vérifie l'app à l'écran, pas seulement par les tests | Quand vous voulez |
 | **Enregistrements de consultations jouées** par des praticiens | Les voix de synthèse ne suffisent pas pour choisir un fournisseur | Avant de choisir |
 | **Tarifs et statut de conformité** des fournisseurs (`benchmarks/providers.json`) | Je n'invente aucun prix ni aucune conformité | Avant de choisir |
 | Cadrage **HDS / RGPD** (hébergement agréé données de santé) | Aucune donnée de patient réel tant que ce n'est pas fait | Avant tout patient réel |
@@ -195,8 +194,8 @@ Liste complète : `docs/KNOWN_LIMITATIONS.md`. Les quatre plus importantes :
    ni chiffrement du son côté serveur.
 3. **Les scores sont flatteurs** : ils sont mesurés sur des consultations inventées,
    lues par des voix de synthèse, écrites pour ce projet.
-4. **L'app iPhone n'a jamais tourné devant quelqu'un** : elle est vérifiée par
-   39 tests automatiques, pas à l'écran.
+4. **L'app iPhone n'a pas encore servi en consultation** : elle tourne sur l'iPhone de
+   Franck et est vérifiée à l'écran et par 49 tests, mais aucune vraie écoute au fauteuil.
 
 ---
 
