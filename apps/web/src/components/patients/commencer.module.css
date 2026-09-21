@@ -101,7 +101,7 @@
 }
 
 .boutonLigne {
-  padding: 4px;
+  padding: 3px;
   border-radius: 50%;
   box-shadow: var(--relief);
 }
@@ -110,9 +110,10 @@
   box-shadow: var(--relief-haut);
 }
 
+/* Assez petit pour ne pas dicter la hauteur des lignes de la journée. */
 .boutonLigne .disque {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   background: transparent;
 }
 

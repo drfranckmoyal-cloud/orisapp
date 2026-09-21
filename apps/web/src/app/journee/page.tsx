@@ -213,8 +213,9 @@ export default function JourneePage() {
               </span>
             )}
             <div className={styles.actions}>
-              <Bouton
-                variante="secondaire"
+              <button
+                type="button"
+                className={styles.majPlanning}
                 onClick={() => void demander()}
                 disabled={encours !== null || attendue !== null}
               >
@@ -223,9 +224,9 @@ export default function JourneePage() {
                   : attendue
                     ? "Relecture demandée"
                     : donnees?.disponible
-                      ? "Mettre à jour"
+                      ? "Mettre à jour le planning"
                       : "Charger la journée"}
-              </Bouton>
+              </button>
               {manquants.length > 0 && (
                 <Bouton onClick={() => void creerTous()} disabled={encours !== null}>
                   {encours === "tous"
@@ -318,7 +319,7 @@ export default function JourneePage() {
                       disabled={encours !== null}
                       onClick={() => void creerUn(rdv)}
                     >
-                      {encours === cle ? "Création…" : "Créer le dossier"}
+                      {encours === cle ? "Création…" : "+ Créer le dossier"}
                     </button>
                   )}
                 </span>

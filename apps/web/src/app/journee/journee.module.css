@@ -225,7 +225,7 @@
   grid-template-columns: 62px minmax(0, 1fr) minmax(0, 1fr) 212px;
   gap: var(--espace-3);
   align-items: center;
-  padding: 10px var(--espace-6);
+  padding: 5px var(--espace-6);
   border-bottom: 1px solid var(--trait);
   transition: background var(--transition);
 }
@@ -292,28 +292,56 @@
   gap: var(--espace-3);
 }
 
+/* « Créer le dossier », ligne par ligne : discret. Onze boutons verts pleins en colonne
+   prenaient toute l'attention de l'écran, alors que le sujet est la journée, pas le
+   bouton. Le geste d'ensemble, « Créer N dossiers », garde seul le vert plein. */
 .creerLigne {
-  width: 100%;
-  padding: 7px 13px;
-  border: 1px solid transparent;
-  border-radius: 9px;
-  background: var(--accent);
-  color: var(--encre-inverse);
+  padding: 3px 11px;
+  border: 1px solid var(--trait-fort);
+  border-radius: var(--rayon-pastille);
+  background: transparent;
+  color: var(--accent);
   font: inherit;
-  font-size: var(--texte-sm);
+  font-size: var(--texte-xs);
   font-weight: var(--graisse-demi);
+  white-space: nowrap;
   cursor: pointer;
-  box-shadow: var(--relief);
-  transition: background var(--transition), transform var(--transition);
+  transition: background var(--transition), border-color var(--transition);
 }
 
 .creerLigne:hover:not(:disabled) {
-  background: var(--accent-fonce);
-  transform: translateY(-1px);
+  background: var(--accent-douce);
+  border-color: var(--accent);
 }
 
 .creerLigne:disabled {
   opacity: 0.5;
+  cursor: default;
+}
+
+/* « Mettre à jour le planning » : un geste d'entretien, pas une action principale. */
+.majPlanning {
+  padding: 4px 12px;
+  border: 1px solid var(--trait-fort);
+  border-radius: var(--rayon-pastille);
+  background: var(--surface);
+  color: var(--encre-douce);
+  font: inherit;
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-demi);
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: var(--lumiere);
+  transition: color var(--transition), border-color var(--transition);
+}
+
+.majPlanning:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.majPlanning:disabled {
+  opacity: 0.55;
   cursor: default;
 }
 
