@@ -1,5 +1,19 @@
 # Changelog
 
+## SmileCloud : galeries du patient (côté Oris) — 2026-09-22
+- Serveur : lien patient ↔ dossier SmileCloud proposé avec son pourcentage (mêmes
+  seuils que Dental Lens ; certitude seulement sur nom identique), demandes de lecture
+  des galeries et de rapatriement posées pour l'extension, réception des galeries et
+  des originaux (pièces jointes, étiquette « SmileCloud · galerie », doublons refusés),
+  vidéos et CBCT écartés d'office, chaque refus dit. Stockage hors iCloud
+  (`~/Library/Application Support/Oris/smilecloud`). Contrat : 
+  `docs/PIECES_JOINTES_SMILECLOUD.md`.
+- Site : onglet **Documentation / Pièces jointes**, carte **Récupération SmileCloud**
+  (relier, voir les galeries, cocher, rapatrier, suivi « 3 / 12 reçus »).
+- iPhone : la même carte, dans l'onglet **Documentation** du dossier.
+- **Reste à faire, côté extension Chrome (session Dental Lens, contrat envoyé)** : livrer
+  la liste des dossiers, lire les galeries, livrer les originaux.
+
 ## Voyants Doctolib et SmileCloud ; Paramètres de l'iPhone refaits — 2026-09-22
 - Site : en bas de la colonne de gauche, deux voyants **Doctolib** et **SmileCloud**,
   mêmes états que Dental Lens (ouvert, fermé, à reconnecter, lecture en cours, Chrome

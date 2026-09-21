@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import {
   Carte,
@@ -19,6 +19,7 @@ import { Correspondants } from "@/components/patients/Correspondants";
 import { NoteDictee } from "@/components/patients/NoteDictee";
 import { DocumentsValides } from "@/components/patients/DocumentsValides";
 import { PiecesJointes } from "@/components/patients/PiecesJointes";
+import { SmileCloud } from "@/components/patients/SmileCloud";
 import {
   apiRequest,
   type ClientConfig,
@@ -80,6 +81,9 @@ export default function PatientPage() {
   const [encounters] = useApi<Encounter[]>(`/encounters?patient_id=${id}`);
   const [config] = useApi<ClientConfig>("/config/client");
   const [onglet, setOnglet] = useState<Onglet>("consultations");
+  // Les fichiers rapatriés de SmileCloud rechargent la liste des pièces jointes.
+  const [versionPieces, setVersionPieces] = useState(0);
+  const rafraichirPieces = useCallback(() => setVersionPieces((v) => v + 1), []);
   const smilecloud =
     config.state === "ready" && config.data.smilecloud_connected;
   const [note, setNote] = useState<string | null>(null);
@@ -190,7 +194,7 @@ export default function PatientPage() {
             valeur: "documents",
             libelle: `Documents validés${validesCount ? ` (${validesCount})` : ""}`,
           },
-          { valeur: "pieces", libelle: "Pièces jointes" },
+          { valeur: "pieces", libelle: "Documentation / Pièces jointes" },
         ]}
       />
 
@@ -264,7 +268,8 @@ export default function PatientPage() {
 
       {onglet === "pieces" && (
         <Carte bords>
-          <PiecesJointes patientId={id} />
+          <SmileCloud patientId={id} rapatries={rafraichirPieces} />
+          <PiecesJointes key={versionPieces} patientId={id} />
         </Carte>
       )}
     </div>

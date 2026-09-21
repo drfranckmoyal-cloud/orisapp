@@ -140,6 +140,8 @@ export const LEARNING_EVENT: Record<string, string> = {
 };
 
 const ERRORS: Record<string, string> = {
+  SMILECLOUD_NON_RELIE: "Reliez d’abord ce patient à son dossier SmileCloud.",
+  SMILECLOUD_INVALIDE: "Identifiant de dossier SmileCloud non reconnu.",
   DEVICE_FROM_THIS_MAC_ONLY: "Un nouvel appareil s’autorise depuis le Mac du cabinet uniquement.",
   TOKEN_NOT_FOUND: "Cet appareil est introuvable : il a peut-être déjà été déconnecté.",
   SMTP_NOT_CONFIGURED: "La boîte d’envoi n’est pas branchée (mot de passe d’application manquant).",

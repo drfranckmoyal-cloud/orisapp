@@ -59,7 +59,7 @@ struct PatientDossierView: View {
                 Onglets(selection: $volet, choix: [
                     (.consultations, "Consultations · \(consultations.count)"),
                     (.documents, "Documents · \(documentsValides.count)"),
-                    (.photos, "Photos · \(photos.filter(\.estImage).count)"),
+                    (.photos, "Documentation · \(photos.filter(\.estImage).count)"),
                 ])
 
                 if chargement {
@@ -233,6 +233,15 @@ struct PatientDossierView: View {
     }
 
     private var voletPhotos: some View {
+        VStack(spacing: OrisSpacing.s16) {
+            CarteSmileCloud(client: client, patientId: patient.id) {
+                Task { photos = (try? await client.piecesJointes(patientId: patient.id)) ?? photos }
+            }
+            voletPhotosDuDossier
+        }
+    }
+
+    private var voletPhotosDuDossier: some View {
         VStack(alignment: .leading, spacing: OrisSpacing.s12) {
             BoutonAjoutPhoto { jpegs in await deposer(jpegs) }
             let images = photos.filter(\.estImage)

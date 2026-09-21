@@ -53,3 +53,21 @@ final class CorrespondantsTests: XCTestCase {
         XCTAssertEqual("Stéphanie".sansAccents, "stephanie")
     }
 }
+
+final class SmileCloudTests: XCTestCase {
+    func testTheServersSmileCloudStateIsRead() throws {
+        let json = """
+        {"case_id":"0f3c2a1b-1111-4222-8333-944455556666","nom":"Anne Essai","etat":"relie","candidats":[],
+         "galeries":[{"id":"g1","nom":"Photos initiales","date":"2026-09-01","fichiers":[
+           {"res_id":"a1","nom":"face.jpg","nature":"photo","rapatriable":true},
+           {"res_id":"a2","nom":"sourire.mp4","nature":"video","rapatriable":false}]}],
+         "galeries_lues_le":"2026-09-22T09:00:00+00:00","lecture_en_cours":false,
+         "recuperation":{"demande":"d1","total":2,"recus":1,"ecartes":[{"res_id":"a2","raison":"video"}],
+                         "termine":true,"demande_le":"2026-09-22T09:01:00+00:00"}}
+        """
+        let etat = try JSONDecoder().decode(EtatSmileCloud.self, from: Data(json.utf8))
+        XCTAssertEqual(etat.etat, "relie")
+        XCTAssertEqual(etat.galeries?.first?.fichiers.filter(\.rapatriable).count, 1)
+        XCTAssertEqual(etat.recuperation?.recus, 1)
+    }
+}
