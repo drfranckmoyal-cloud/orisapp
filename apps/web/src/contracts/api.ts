@@ -446,6 +446,164 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/smilecloud/dossiers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deposer Dossiers
+         * @description La liste des dossiers SmileCloud, relevée par l'extension.
+         */
+        post: operations["deposer_dossiers_smilecloud_dossiers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/smilecloud/demandes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Demandes
+         * @description Ce qu'Oris attend de l'extension : lire des galeries, rapatrier des fichiers.
+         */
+        get: operations["demandes_smilecloud_demandes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/smilecloud/galeries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Deposer Galeries */
+        post: operations["deposer_galeries_smilecloud_galeries_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/smilecloud/fichier": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Recevoir Fichier
+         * @description Un original lu dans SmileCloud, rangé dans le dossier du patient. Refus dits.
+         */
+        post: operations["recevoir_fichier_smilecloud_fichier_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/smilecloud/ecarte": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ecarter
+         * @description L'extension n'a pas pu lire ce fichier (ou l'a reconnu comme vidéo, CBCT…).
+         */
+        post: operations["ecarter_smilecloud_ecarte_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/smilecloud": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Etat Patient */
+        get: operations["etat_patient_patients__patient_id__smilecloud_get"];
+        /**
+         * Relier
+         * @description Relier (ou délier) le patient à son dossier SmileCloud. Un geste du praticien.
+         */
+        put: operations["relier_patients__patient_id__smilecloud_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/smilecloud/galeries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Lire Galeries
+         * @description Demander à l'extension de relire les galeries du dossier relié.
+         */
+        post: operations["lire_galeries_patients__patient_id__smilecloud_galeries_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/smilecloud/recuperer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Recuperer
+         * @description Rapatrier les fichiers cochés. Vidéos et CBCT sont écartés d'office, et le disent.
+         */
+        post: operations["recuperer_patients__patient_id__smilecloud_recuperer_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters": {
         parameters: {
             query?: never;
@@ -1774,21 +1932,6 @@ export interface components {
             /** Sending Email */
             sending_email?: string | null;
         };
-        /** CandidatOut */
-        CandidatOut: {
-            /** Cle */
-            cle: string;
-            /** Genre */
-            genre: string;
-            /** Libelle */
-            libelle: string;
-            /** Detail */
-            detail: string;
-            /** Email */
-            email: string;
-            /** Coche */
-            coche: boolean;
-        };
         /** ChunkReceiptOut */
         ChunkReceiptOut: {
             /** Sequence */
@@ -2144,6 +2287,22 @@ export interface components {
              */
             sent_at: string;
         };
+        /** DemandeExtensionOut */
+        DemandeExtensionOut: {
+            /** Id */
+            id: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "galeries" | "fichiers";
+            /** Case Id */
+            case_id: string;
+            /** Demande Le */
+            demande_le: string;
+            /** Fichiers */
+            fichiers?: string[] | null;
+        };
         /** DemandeIn */
         DemandeIn: {
             /** Jour */
@@ -2262,6 +2421,27 @@ export interface components {
              * @default []
              */
             acknowledged_warning_codes: string[];
+        };
+        /** DossierIn */
+        DossierIn: {
+            /** Nom */
+            nom: string;
+            /** Case Id */
+            case_id: string;
+        };
+        /** DossiersIn */
+        DossiersIn: {
+            /** Dossiers */
+            dossiers: components["schemas"]["DossierIn"][];
+        };
+        /** EcartIn */
+        EcartIn: {
+            /** Demande */
+            demande: string;
+            /** Res Id */
+            res_id: string;
+            /** Raison */
+            raison: string;
         };
         /** EncounterCreate */
         EncounterCreate: {
@@ -2406,7 +2586,7 @@ export interface components {
             /** Raison */
             raison: string | null;
             /** Candidats */
-            candidats: components["schemas"]["CandidatOut"][];
+            candidats: components["schemas"]["oris_api__api__schemas__CandidatOut"][];
             /** Objet */
             objet: string;
             /** Message */
@@ -2464,6 +2644,32 @@ export interface components {
             /** Value */
             value?: unknown;
         };
+        /** FichierGalerieIn */
+        FichierGalerieIn: {
+            /** Res Id */
+            res_id: string;
+            /**
+             * Nom
+             * @default
+             */
+            nom: string;
+            /**
+             * Nature
+             * @default autre
+             */
+            nature: string;
+        };
+        /** FichierOut */
+        FichierOut: {
+            /** Res Id */
+            res_id: string;
+            /** Nom */
+            nom: string;
+            /** Nature */
+            nature: string;
+            /** Rapatriable */
+            rapatriable: boolean;
+        };
         /** FigureIn */
         FigureIn: {
             /**
@@ -2516,6 +2722,44 @@ export interface components {
             detail: string;
             /** Occurrences */
             occurrences: number;
+        };
+        /** GalerieIn */
+        GalerieIn: {
+            /**
+             * Id
+             * @default
+             */
+            id: string;
+            /**
+             * Nom
+             * @default
+             */
+            nom: string;
+            /**
+             * Date
+             * @default
+             */
+            date: string;
+            /** Fichiers */
+            fichiers?: components["schemas"]["FichierGalerieIn"][];
+        };
+        /** GalerieOut */
+        GalerieOut: {
+            /** Id */
+            id: string;
+            /** Nom */
+            nom: string;
+            /** Date */
+            date: string;
+            /** Fichiers */
+            fichiers: components["schemas"]["FichierOut"][];
+        };
+        /** GaleriesIn */
+        GaleriesIn: {
+            /** Case Id */
+            case_id: string;
+            /** Galeries */
+            galeries: components["schemas"]["GalerieIn"][];
         };
         /** GlossaryTermOut */
         GlossaryTermOut: {
@@ -2676,6 +2920,11 @@ export interface components {
             preferences: components["schemas"]["PractitionerPreferences"];
             /** Glossary */
             glossary: components["schemas"]["GlossaryTermOut"][];
+        };
+        /** LienIn */
+        LienIn: {
+            /** Case Id */
+            case_id?: string | null;
         };
         /**
          * LiveSegmentOut
@@ -3134,6 +3383,28 @@ export interface components {
              */
             database: "ok" | "unreachable";
         };
+        /** RecuperationOut */
+        RecuperationOut: {
+            /** Demande */
+            demande: string;
+            /** Total */
+            total: number;
+            /** Recus */
+            recus: number;
+            /** Ecartes */
+            ecartes: {
+                [key: string]: string;
+            }[];
+            /** Termine */
+            termine: boolean;
+            /** Demande Le */
+            demande_le: string;
+        };
+        /** RecupererIn */
+        RecupererIn: {
+            /** Fichiers */
+            fichiers: string[];
+        };
         /** RemoveFact */
         RemoveFact: {
             /**
@@ -3275,6 +3546,24 @@ export interface components {
              * @enum {string}
              */
             status: "discussed" | "proposed" | "accepted" | "refused" | "deferred" | "planned" | "completed";
+        };
+        /** SmileCloudPatientOut */
+        SmileCloudPatientOut: {
+            /** Case Id */
+            case_id: string | null;
+            /** Nom */
+            nom: string | null;
+            /** Etat */
+            etat: string;
+            /** Candidats */
+            candidats: components["schemas"]["oris_api__api__smilecloud__CandidatOut"][];
+            /** Galeries */
+            galeries: components["schemas"]["GalerieOut"][] | null;
+            /** Galeries Lues Le */
+            galeries_lues_le: string | null;
+            /** Lecture En Cours */
+            lecture_en_cours: boolean;
+            recuperation: components["schemas"]["RecuperationOut"] | null;
         };
         /** SpecialtyIn */
         SpecialtyIn: {
@@ -3488,6 +3777,30 @@ export interface components {
             detail: string;
             /** Ouvrir */
             ouvrir: ("doctolib" | "smilecloud") | null;
+        };
+        /** CandidatOut */
+        oris_api__api__schemas__CandidatOut: {
+            /** Cle */
+            cle: string;
+            /** Genre */
+            genre: string;
+            /** Libelle */
+            libelle: string;
+            /** Detail */
+            detail: string;
+            /** Email */
+            email: string;
+            /** Coche */
+            coche: boolean;
+        };
+        /** CandidatOut */
+        oris_api__api__smilecloud__CandidatOut: {
+            /** Case Id */
+            case_id: string;
+            /** Nom */
+            nom: string;
+            /** Pour Cent */
+            pour_cent: number;
         };
     };
     responses: never;
@@ -4421,6 +4734,320 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deposer_dossiers_smilecloud_dossiers_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DossiersIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: number;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    demandes_smilecloud_demandes_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DemandeExtensionOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deposer_galeries_smilecloud_galeries_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GaleriesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: number;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recevoir_fichier_smilecloud_fichier_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-demande": string;
+                "x-res-id": string;
+                "x-nom": string;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ecarter_smilecloud_ecarte_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EcartIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    etat_patient_patients__patient_id__smilecloud_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmileCloudPatientOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    relier_patients__patient_id__smilecloud_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LienIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmileCloudPatientOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    lire_galeries_patients__patient_id__smilecloud_galeries_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmileCloudPatientOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recuperer_patients__patient_id__smilecloud_recuperer_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecupererIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmileCloudPatientOut"];
+                };
             };
             /** @description Validation Error */
             422: {

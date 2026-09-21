@@ -62,6 +62,8 @@ class Settings(BaseSettings):
     # date : ce sont de vrais noms, ils n'entrent dans le dossier clinique que le jour
     # où le praticien crée le dossier lui-même.
     journee_dir: Path = Path.home() / "Library" / "Application Support" / "Oris" / "journees"
+    # SmileCloud : liste des dossiers, galeries lues, demandes en cours. Hors iCloud.
+    smilecloud_dir: Path = Path.home() / "Library" / "Application Support" / "Oris" / "smilecloud"
     # Secret partagé, facultatif : renseigné, le dépôt l'exige en `Authorization: Bearer`.
     # Le dépôt n'accepte de toute façon que les appels venus de cette machine.
     journee_depot_token: SecretStr | None = None

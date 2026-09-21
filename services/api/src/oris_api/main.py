@@ -27,6 +27,7 @@ from oris_api.api import (
     maintenance,
     patients,
     personalization,
+    smilecloud,
     synthetic,
 )
 from oris_api.api.schemas import ApiErrorBody
@@ -77,6 +78,7 @@ def create_app() -> FastAPI:
     app.include_router(correspondents.router)
     app.include_router(journee.router)
     app.include_router(connecteurs.router)
+    app.include_router(smilecloud.router)
     app.include_router(encounters.router)
     app.include_router(deliveries.router)
     app.include_router(envoi.router)

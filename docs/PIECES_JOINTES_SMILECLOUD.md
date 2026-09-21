@@ -166,3 +166,76 @@ sert déjà. Le lien SmileCloud s'en servira au troisième pas.
 
 Les deux premiers sont petits. Le troisième est le vrai morceau, et il sera beaucoup
 plus simple une fois les deux autres posés.
+
+---
+
+## Contrat avec l'extension — côté Oris écrit le 22/09/2026
+
+*Côté Oris : fait et testé (`tests/test_smilecloud.py`, l'extension y est jouée par le
+test). Côté extension : **à écrire par la session Dental Lens**. Toutes les routes
+ci-dessous répondent sur `http://127.0.0.1:8000`, **à ce Mac seulement** (403
+`DEPOT_NON_LOCAL` sinon) ; si `JOURNEE_DEPOT_TOKEN` est posé dans `.env`, il vaut ici aussi
+en `Authorization: Bearer …`. L'extension peut les déclarer comme un destinataire de plus,
+à côté de `/journee/depot`.*
+
+### 1. Livrer la liste des dossiers — `POST /smilecloud/dossiers`
+
+```json
+{"dossiers": [{"nom": "Anne Essai", "case_id": "0f3c2a1b-…"}]}
+```
+
+Remplace la liste précédente (une liste complète à chaque fois). C'est l'inventaire que
+Dental Lens tient déjà : le même, poussé ici quand il est refait. Oris en tire ses
+propositions de lien (pourcentage, seuils de `attribution.py`), et le praticien confirme.
+
+### 2. Lire les demandes — `GET /smilecloud/demandes`
+
+```json
+[{"id": "9c…", "type": "galeries", "case_id": "0f3c…", "demande_le": "2026-09-22T09:00:00+00:00"},
+ {"id": "a4…", "type": "fichiers", "case_id": "0f3c…", "demande_le": "…",
+  "fichiers": ["<res_id>", "<res_id>"]}]
+```
+
+Même rythme que `/journee/demandes`. Une demande non servie en 12 h disparaît. Pour
+`fichiers`, la liste ne contient que ce qui reste à livrer : une livraison interrompue
+reprend où elle s'était arrêtée.
+
+### 3. Livrer les galeries — `POST /smilecloud/galeries`
+
+Lu sur `…/case/<uuid>/documentation/resources?sideTab=1&agID=all` (voir
+`RECUPERATION-SMILECLOUD.md`, § 2) :
+
+```json
+{"case_id": "0f3c…",
+ "galeries": [{"id": "<agID>", "nom": "Photos initiales", "date": "2026-09-01",
+               "fichiers": [{"res_id": "<uuid>", "nom": "face.jpg", "nature": "photo"}]}]}
+```
+
+`nature` ∈ `photo`, `radio`, `scan3d`, `pdf`, `video`, `cbct`, `autre`. Reconnaître vidéos
+et CBCT **sans les télécharger** (D87) : Oris ne les demandera jamais. Sert la demande
+`galeries` du dossier.
+
+### 4. Livrer un fichier — `POST /smilecloud/fichier`
+
+Corps : les octets de l'original (`Content-Type: application/octet-stream`). En-têtes :
+`X-Demande: <id>`, `X-Res-Id: <res_id>`, `X-Nom: <nom de fichier avec extension>`.
+Réponse : `{"recu": true, "termine": false}` ou `{"recu": false, "raison":
+"UNSUPPORTED_ATTACHMENT_FORMAT", "termine": …}`. Un fichier par appel, rien sur le disque
+du Mac (D88). Oris range dans le dossier du patient relié, étiquette « SmileCloud ·
+<galerie> », refuse les doublons par empreinte.
+
+### 5. Dire un échec — `POST /smilecloud/ecarte`
+
+```json
+{"demande": "<id>", "res_id": "<res_id>", "raison": "illisible"}
+```
+
+Pour tout fichier que l'extension n'a pas pu lire : il apparaît dans le compte rendu de
+la récupération. Jamais d'abandon en silence.
+
+### Côté praticien (site et iPhone)
+
+`GET /patients/{id}/smilecloud` (état : relié, proposition avec %, galeries, lecture en
+cours, dernière récupération), `PUT …/smilecloud` (relier / délier),
+`POST …/smilecloud/galeries` (demander la lecture), `POST …/smilecloud/recuperer`
+(`{"fichiers": [res_id…]}`).

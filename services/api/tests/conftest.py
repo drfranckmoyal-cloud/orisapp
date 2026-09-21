@@ -30,6 +30,7 @@ os.environ["SMTP_USER"] = ""
 os.environ["ENABLE_LIVE_TRANSCRIPT"] = "false"
 # Les journées déposées par les tests vivent dans un dossier jetable, jamais celui du poste.
 os.environ["JOURNEE_DIR"] = str(Path(tempfile.mkdtemp(prefix="oris-journees-")))
+os.environ["SMILECLOUD_DIR"] = str(Path(tempfile.mkdtemp(prefix="oris-smilecloud-")))
 # Les pièces jointes des tests vivent dans un dossier jetable, jamais celui du poste.
 os.environ["ATTACHMENT_DIR"] = str(Path(tempfile.mkdtemp(prefix="oris-pieces-")))
 os.environ["APP_ENV"] = "local"

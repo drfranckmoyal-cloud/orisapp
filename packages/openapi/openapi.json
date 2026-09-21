@@ -1352,6 +1352,538 @@
         }
       }
     },
+    "/smilecloud/dossiers": {
+      "post": {
+        "tags": [
+          "smilecloud"
+        ],
+        "summary": "Deposer Dossiers",
+        "description": "La liste des dossiers SmileCloud, relevée par l'extension.",
+        "operationId": "deposer_dossiers_smilecloud_dossiers_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DossiersIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "title": "Response Deposer Dossiers Smilecloud Dossiers Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/smilecloud/demandes": {
+      "get": {
+        "tags": [
+          "smilecloud"
+        ],
+        "summary": "Demandes",
+        "description": "Ce qu'Oris attend de l'extension : lire des galeries, rapatrier des fichiers.",
+        "operationId": "demandes_smilecloud_demandes_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DemandeExtensionOut"
+                  },
+                  "title": "Response Demandes Smilecloud Demandes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/smilecloud/galeries": {
+      "post": {
+        "tags": [
+          "smilecloud"
+        ],
+        "summary": "Deposer Galeries",
+        "operationId": "deposer_galeries_smilecloud_galeries_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GaleriesIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "title": "Response Deposer Galeries Smilecloud Galeries Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/smilecloud/fichier": {
+      "post": {
+        "tags": [
+          "smilecloud"
+        ],
+        "summary": "Recevoir Fichier",
+        "description": "Un original lu dans SmileCloud, rangé dans le dossier du patient. Refus dits.",
+        "operationId": "recevoir_fichier_smilecloud_fichier_post",
+        "parameters": [
+          {
+            "name": "x-demande",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Demande"
+            }
+          },
+          {
+            "name": "x-res-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Res-Id"
+            }
+          },
+          {
+            "name": "x-nom",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200,
+              "title": "X-Nom"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "contentMediaType": "application/octet-stream",
+                "title": "Contenu"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Recevoir Fichier Smilecloud Fichier Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/smilecloud/ecarte": {
+      "post": {
+        "tags": [
+          "smilecloud"
+        ],
+        "summary": "Ecarter",
+        "description": "L'extension n'a pas pu lire ce fichier (ou l'a reconnu comme vidéo, CBCT…).",
+        "operationId": "ecarter_smilecloud_ecarte_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcartIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Ecarter Smilecloud Ecarte Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patients/{patient_id}/smilecloud": {
+      "get": {
+        "tags": [
+          "smilecloud"
+        ],
+        "summary": "Etat Patient",
+        "operationId": "etat_patient_patients__patient_id__smilecloud_get",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmileCloudPatientOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "smilecloud"
+        ],
+        "summary": "Relier",
+        "description": "Relier (ou délier) le patient à son dossier SmileCloud. Un geste du praticien.",
+        "operationId": "relier_patients__patient_id__smilecloud_put",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LienIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmileCloudPatientOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patients/{patient_id}/smilecloud/galeries": {
+      "post": {
+        "tags": [
+          "smilecloud"
+        ],
+        "summary": "Lire Galeries",
+        "description": "Demander à l'extension de relire les galeries du dossier relié.",
+        "operationId": "lire_galeries_patients__patient_id__smilecloud_galeries_post",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmileCloudPatientOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patients/{patient_id}/smilecloud/recuperer": {
+      "post": {
+        "tags": [
+          "smilecloud"
+        ],
+        "summary": "Recuperer",
+        "description": "Rapatrier les fichiers cochés. Vidéos et CBCT sont écartés d'office, et le disent.",
+        "operationId": "recuperer_patients__patient_id__smilecloud_recuperer_post",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecupererIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmileCloudPatientOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters": {
       "get": {
         "tags": [
@@ -4937,44 +5469,6 @@
         "type": "object",
         "title": "CabinetPatch"
       },
-      "CandidatOut": {
-        "properties": {
-          "cle": {
-            "type": "string",
-            "title": "Cle"
-          },
-          "genre": {
-            "type": "string",
-            "title": "Genre"
-          },
-          "libelle": {
-            "type": "string",
-            "title": "Libelle"
-          },
-          "detail": {
-            "type": "string",
-            "title": "Detail"
-          },
-          "email": {
-            "type": "string",
-            "title": "Email"
-          },
-          "coche": {
-            "type": "boolean",
-            "title": "Coche"
-          }
-        },
-        "type": "object",
-        "required": [
-          "cle",
-          "genre",
-          "libelle",
-          "detail",
-          "email",
-          "coche"
-        ],
-        "title": "CandidatOut"
-      },
       "ChunkReceiptOut": {
         "properties": {
           "sequence": {
@@ -5963,6 +6457,52 @@
         ],
         "title": "DeliveryOut"
       },
+      "DemandeExtensionOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "galeries",
+              "fichiers"
+            ],
+            "title": "Type"
+          },
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "demande_le": {
+            "type": "string",
+            "title": "Demande Le"
+          },
+          "fichiers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fichiers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "case_id",
+          "demande_le"
+        ],
+        "title": "DemandeExtensionOut"
+      },
       "DemandeIn": {
         "properties": {
           "jour": {
@@ -6239,6 +6779,67 @@
         "additionalProperties": false,
         "type": "object",
         "title": "DocumentValidate"
+      },
+      "DossierIn": {
+        "properties": {
+          "nom": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Nom"
+          },
+          "case_id": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Case Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nom",
+          "case_id"
+        ],
+        "title": "DossierIn"
+      },
+      "DossiersIn": {
+        "properties": {
+          "dossiers": {
+            "items": {
+              "$ref": "#/components/schemas/DossierIn"
+            },
+            "type": "array",
+            "maxItems": 20000,
+            "title": "Dossiers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dossiers"
+        ],
+        "title": "DossiersIn"
+      },
+      "EcartIn": {
+        "properties": {
+          "demande": {
+            "type": "string",
+            "title": "Demande"
+          },
+          "res_id": {
+            "type": "string",
+            "title": "Res Id"
+          },
+          "raison": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Raison"
+          }
+        },
+        "type": "object",
+        "required": [
+          "demande",
+          "res_id",
+          "raison"
+        ],
+        "title": "EcartIn"
       },
       "EncounterCreate": {
         "properties": {
@@ -6589,7 +7190,7 @@
           },
           "candidats": {
             "items": {
-              "$ref": "#/components/schemas/CandidatOut"
+              "$ref": "#/components/schemas/oris_api__api__schemas__CandidatOut"
             },
             "type": "array",
             "title": "Candidats"
@@ -6823,6 +7424,60 @@
         "type": "object",
         "title": "FactChanges"
       },
+      "FichierGalerieIn": {
+        "properties": {
+          "res_id": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Res Id"
+          },
+          "nom": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Nom",
+            "default": ""
+          },
+          "nature": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Nature",
+            "default": "autre"
+          }
+        },
+        "type": "object",
+        "required": [
+          "res_id"
+        ],
+        "title": "FichierGalerieIn"
+      },
+      "FichierOut": {
+        "properties": {
+          "res_id": {
+            "type": "string",
+            "title": "Res Id"
+          },
+          "nom": {
+            "type": "string",
+            "title": "Nom"
+          },
+          "nature": {
+            "type": "string",
+            "title": "Nature"
+          },
+          "rapatriable": {
+            "type": "boolean",
+            "title": "Rapatriable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "res_id",
+          "nom",
+          "nature",
+          "rapatriable"
+        ],
+        "title": "FichierOut"
+      },
       "FigureIn": {
         "properties": {
           "attachment_id": {
@@ -6943,6 +7598,92 @@
           "occurrences"
         ],
         "title": "FrequentCorrectionOut"
+      },
+      "GalerieIn": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Id",
+            "default": ""
+          },
+          "nom": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Nom",
+            "default": ""
+          },
+          "date": {
+            "type": "string",
+            "maxLength": 40,
+            "title": "Date",
+            "default": ""
+          },
+          "fichiers": {
+            "items": {
+              "$ref": "#/components/schemas/FichierGalerieIn"
+            },
+            "type": "array",
+            "maxItems": 2000,
+            "title": "Fichiers"
+          }
+        },
+        "type": "object",
+        "title": "GalerieIn"
+      },
+      "GalerieOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "nom": {
+            "type": "string",
+            "title": "Nom"
+          },
+          "date": {
+            "type": "string",
+            "title": "Date"
+          },
+          "fichiers": {
+            "items": {
+              "$ref": "#/components/schemas/FichierOut"
+            },
+            "type": "array",
+            "title": "Fichiers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nom",
+          "date",
+          "fichiers"
+        ],
+        "title": "GalerieOut"
+      },
+      "GaleriesIn": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Case Id"
+          },
+          "galeries": {
+            "items": {
+              "$ref": "#/components/schemas/GalerieIn"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "title": "Galeries"
+          }
+        },
+        "type": "object",
+        "required": [
+          "case_id",
+          "galeries"
+        ],
+        "title": "GaleriesIn"
       },
       "GlossaryTermOut": {
         "properties": {
@@ -7345,6 +8086,24 @@
         ],
         "title": "LearningExport",
         "description": "Tout ce qu'Oris a retenu de vous, en un fichier lisible (§124)."
+      },
+      "LienIn": {
+        "properties": {
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          }
+        },
+        "type": "object",
+        "title": "LienIn"
       },
       "LiveSegmentOut": {
         "properties": {
@@ -8500,6 +9259,68 @@
         ],
         "title": "ReadinessResponse"
       },
+      "RecuperationOut": {
+        "properties": {
+          "demande": {
+            "type": "string",
+            "title": "Demande"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "recus": {
+            "type": "integer",
+            "title": "Recus"
+          },
+          "ecartes": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Ecartes"
+          },
+          "termine": {
+            "type": "boolean",
+            "title": "Termine"
+          },
+          "demande_le": {
+            "type": "string",
+            "title": "Demande Le"
+          }
+        },
+        "type": "object",
+        "required": [
+          "demande",
+          "total",
+          "recus",
+          "ecartes",
+          "termine",
+          "demande_le"
+        ],
+        "title": "RecuperationOut"
+      },
+      "RecupererIn": {
+        "properties": {
+          "fichiers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Fichiers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fichiers"
+        ],
+        "title": "RecupererIn"
+      },
       "RemoveFact": {
         "properties": {
           "operation": {
@@ -8772,6 +9593,94 @@
           "status"
         ],
         "title": "SetPlanItemStatus"
+      },
+      "SmileCloudPatientOut": {
+        "properties": {
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "nom": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nom"
+          },
+          "etat": {
+            "type": "string",
+            "title": "Etat"
+          },
+          "candidats": {
+            "items": {
+              "$ref": "#/components/schemas/oris_api__api__smilecloud__CandidatOut"
+            },
+            "type": "array",
+            "title": "Candidats"
+          },
+          "galeries": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/GalerieOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Galeries"
+          },
+          "galeries_lues_le": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Galeries Lues Le"
+          },
+          "lecture_en_cours": {
+            "type": "boolean",
+            "title": "Lecture En Cours"
+          },
+          "recuperation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecuperationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "case_id",
+          "nom",
+          "etat",
+          "candidats",
+          "galeries",
+          "galeries_lues_le",
+          "lecture_en_cours",
+          "recuperation"
+        ],
+        "title": "SmileCloudPatientOut"
       },
       "SpecialtyIn": {
         "properties": {
@@ -9370,6 +10279,67 @@
           "ouvrir"
         ],
         "title": "VoyantOut"
+      },
+      "oris_api__api__schemas__CandidatOut": {
+        "properties": {
+          "cle": {
+            "type": "string",
+            "title": "Cle"
+          },
+          "genre": {
+            "type": "string",
+            "title": "Genre"
+          },
+          "libelle": {
+            "type": "string",
+            "title": "Libelle"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "coche": {
+            "type": "boolean",
+            "title": "Coche"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cle",
+          "genre",
+          "libelle",
+          "detail",
+          "email",
+          "coche"
+        ],
+        "title": "CandidatOut"
+      },
+      "oris_api__api__smilecloud__CandidatOut": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "nom": {
+            "type": "string",
+            "title": "Nom"
+          },
+          "pour_cent": {
+            "type": "integer",
+            "title": "Pour Cent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "case_id",
+          "nom",
+          "pour_cent"
+        ],
+        "title": "CandidatOut"
       }
     }
   }
