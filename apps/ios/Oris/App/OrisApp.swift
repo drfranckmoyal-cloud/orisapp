@@ -44,13 +44,9 @@ struct OrisApp: App {
                 // Le logo en grand, 2,7 secondes, puis l'accueil (ou Face ID).
                 try? await Task.sleep(for: .seconds(2.7))
                 ouverture = false
-                await verrou.deverrouiller()
             }
             .onChange(of: scenePhase) { _, phase in
                 verrou.changement(phase)
-                if phase == .active, verrou.verrouille, !ouverture {
-                    Task { await verrou.deverrouiller() }
-                }
             }
         }
     }

@@ -1,5 +1,14 @@
 # Changelog
 
+## Face ID réparé, micro confirmé — 2026-09-21
+- Micro : l'essai de Franck sur l'iPhone (micro intégré, 48 kHz, crête 13 %) est compris
+  par Oris ; imposer le micro intégré a réglé la panne.
+- Face ID : l'app demandait « Face ID ou code » pendant l'ouverture, et iOS sautait au
+  code. Elle demande maintenant Face ID seul, dès que l'écran de verrouillage s'affiche ;
+  le code reste possible (« Utiliser le code de l'iPhone »). Si Face ID est refusé pour
+  Oris, l'écran dit où l'activer (Réglages › Oris › Face ID).
+- Écran d'ouverture : 2,7 s.
+
 ## Micro de l'iPhone : diagnostic et micro intégré imposé — 2026-09-21
 - Constat : sur l'iPhone, le son arrive au serveur (il n'est pas muet) mais aucune parole
   n'y est reconnue ; la même phrase enregistrée sur le Mac est transcrite. Hypothèse la

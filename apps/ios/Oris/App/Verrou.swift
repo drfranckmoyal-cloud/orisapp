@@ -33,24 +33,55 @@ final class Verrou {
         verrouille = Self.actif
     }
 
-    func deverrouiller() async {
-        guard verrouille else { return }
+    private var enCours = false
+
+    /// Face ID d'abord, seul : iOS ne passe au code que si on le demande (« Utiliser le
+    /// code ») ou si Face ID est bloqué. Demander « Face ID ou code » d'emblée, pendant
+    /// l'ouverture de l'app, faisait sauter iOS directement au code.
+    func deverrouiller(avecCode: Bool = false) async {
+        guard verrouille, !enCours else { return }
+        enCours = true
+        defer { enCours = false }
+        // Laisser l'app finir de passer au premier plan : iOS refuse Face ID avant.
+        try? await Task.sleep(for: .milliseconds(350))
+
         let contexte = LAContext()
         contexte.localizedCancelTitle = "Annuler"
+        contexte.localizedFallbackTitle = "Utiliser le code"
         var erreur: NSError?
+        let biometrie = contexte.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &erreur)
+        let politique: LAPolicy = (biometrie && !avecCode)
+            ? .deviceOwnerAuthenticationWithBiometrics : .deviceOwnerAuthentication
+
+        if !biometrie, let code = (erreur as? LAError)?.code, !avecCode {
+            switch code {
+            case .biometryNotAvailable:
+                message = "Face ID n’est pas autorisé pour Oris. Réglages › Oris › Face ID : activez-le. En attendant, déverrouillez avec le code."
+            case .biometryNotEnrolled:
+                message = "Face ID n’est pas configuré sur cet iPhone : déverrouillez avec le code."
+            case .biometryLockout:
+                message = "Face ID est bloqué après plusieurs échecs : saisissez le code de l’iPhone."
+            default:
+                break
+            }
+        }
         // Ni Face ID ni code sur l'appareil (simulateur) : rien à demander.
-        guard contexte.canEvaluatePolicy(.deviceOwnerAuthentication, error: &erreur) else {
+        guard contexte.canEvaluatePolicy(politique, error: nil) else {
             verrouille = false
             return
         }
         do {
-            if try await contexte.evaluatePolicy(.deviceOwnerAuthentication,
-                                                 localizedReason: "Ouvrir les dossiers de vos patients") {
+            if try await contexte.evaluatePolicy(politique, localizedReason: "Ouvrir les dossiers de vos patients") {
                 verrouille = false
                 message = nil
             }
+        } catch let erreur as LAError where erreur.code == .userFallback {
+            enCours = false
+            await deverrouiller(avecCode: true)
         } catch {
-            message = "Oris reste verrouillé. Touchez « Déverrouiller » pour réessayer."
+            if message == nil {
+                message = "Oris reste verrouillé. Touchez « Déverrouiller » pour réessayer."
+            }
         }
     }
 
@@ -94,10 +125,17 @@ struct EcranVerrou: View {
             }
             .buttonStyle(BoutonPrincipal())
             .padding(.horizontal, OrisSpacing.s32)
+            Button("Utiliser le code de l’iPhone") {
+                Task { await verrou.deverrouiller(avecCode: true) }
+            }
+            .font(Police.interface(15, .semibold))
+            .foregroundStyle(Teinte.accent)
             Spacer()
         }
         .padding(OrisSpacing.s16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Teinte.fond.ignoresSafeArea())
+        // Face ID part tout seul dès que l'écran s'affiche : pas besoin de toucher.
+        .task { await verrou.deverrouiller() }
     }
 }
