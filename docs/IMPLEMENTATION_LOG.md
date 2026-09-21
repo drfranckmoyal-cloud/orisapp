@@ -1257,3 +1257,9 @@ formulaire, et un clic sur le bouton d'en-tête — se sont avérés être des *
 l'automatisation du navigateur**, pas des défauts de l'application : `elementFromPoint`
 rend bien le bouton visé, et un `click()` déclenché en JavaScript au même endroit
 fonctionne. À ne pas confondre avec un vrai défaut la prochaine fois.
+
+## « + Nouveau correspondant » descend près de la recherche (21 septembre 2026)
+
+Le bouton était discret et en haut de page, loin de la liste. Il est maintenant vert,
+porte un « + », et se tient à côté du champ de recherche, dans le cadre de la liste :
+ajouter est l'action de cet écran, elle se tient là où l'on cherche.

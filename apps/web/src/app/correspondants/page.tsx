@@ -172,21 +172,7 @@ export default function CorrespondantsPage() {
 
   return (
     <div className="page">
-      <EnTetePage
-        surTitre="Carnet d’adresses"
-        titre="Correspondants"
-        action={
-          <Bouton
-            variante="secondaire"
-            onClick={() => {
-              setOuvert(null);
-              setNouveau((ouvert) => !ouvert);
-            }}
-          >
-            {nouveau ? "Annuler" : "Nouveau correspondant"}
-          </Bouton>
-        }
-      />
+      <EnTetePage surTitre="Carnet d’adresses" titre="Correspondants" />
 
       {message && (
         <div className="banner banner-info" role="status">
@@ -210,14 +196,26 @@ export default function CorrespondantsPage() {
         bords
         titre={`${liste.length} correspondant${liste.length > 1 ? "s" : ""}`}
         action={
-          <Champ
-            type="search"
-            value={recherche}
-            placeholder="Rechercher un nom, un cabinet…"
-            aria-label="Rechercher un correspondant"
-            style={{ width: 260 }}
-            onChange={(event) => setRecherche(event.target.value)}
-          />
+          <div className={styles.outils}>
+            <Champ
+              type="search"
+              value={recherche}
+              placeholder="Rechercher un nom, un cabinet…"
+              aria-label="Rechercher un correspondant"
+              style={{ width: 260 }}
+              onChange={(event) => setRecherche(event.target.value)}
+            />
+            {/* Ajouter est l'action de cet écran : elle se tient là où l'on cherche,
+                pas en haut de page à distance de la liste. */}
+            <Bouton
+              onClick={() => {
+                setOuvert(null);
+                setNouveau((ouvert) => !ouvert);
+              }}
+            >
+              {nouveau ? "Annuler" : "+ Nouveau correspondant"}
+            </Bouton>
+          </div>
         }
       >
         {/* Filtrer par spécialité, « non renseignée » comprise : c'est ce filtre-là qui
