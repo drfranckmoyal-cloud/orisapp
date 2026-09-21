@@ -26,18 +26,24 @@
 3. Sur l'iPhone, la première fois : Réglages › Général › VPN et gestion de l'appareil ›
    faire confiance à son profil de développeur.
 
-## Ce qui reste à décider
+## Serveur ouvert au Wi-Fi du cabinet — fait le 21/09/2026
 
-- **Ouvrir le serveur Oris au Wi-Fi du cabinet.** Aujourd'hui il n'écoute que le Mac
-  lui-même (`127.0.0.1`) : l'iPhone ne peut pas le joindre. L'ouvrir (`--host 0.0.0.0`
-  dans `lancer-oris.command`) est désormais sûr pour les données : hors du Mac, **tout
-  appel sans jeton est refusé** (règle ajoutée le 21/09, testée). Mais c'est un choix :
-  le serveur devient visible des autres appareils du réseau, même s'ils ne peuvent rien
-  lire.
-- **Créer le jeton de l'iPhone**, une fois le point précédent tranché :
-  `services/api/.venv.nosync/bin/python scripts/issue_token.py --email praticien.demo@oris.local --label "iPhone de Franck"`
-  puis le coller dans l'app (Paramètres › Connexion à Oris), avec l'adresse du Mac sur
-  le Wi-Fi (Réglages Système › Wi-Fi › Détails).
-- **Données réelles** : une consultation enregistrée sur l'iPhone part sur le Mac, comme
-  depuis le site. Même règle qu'ailleurs : développement local seulement jusqu'à
-  l'hébergement agréé HDS.
+Décision de Franck : `lancer-oris.command` démarre désormais le serveur sur le réseau
+(`--host 0.0.0.0`). Vérifié : depuis le Mac, tout répond ; depuis le Wi-Fi, sans jeton,
+refus `AUTHENTICATION_REQUIRED` ; le dépôt de la journée (extension Chrome) reste réservé
+au Mac.
+
+Adresse à saisir dans l'app (Paramètres › Connexion à Oris) : **`MacBook-Pro-3.local:8000`**
+— le nom du Mac ne change pas, contrairement à son adresse IP (10.0.0.7 le 21/09).
+Au premier lancement, macOS peut demander d'autoriser Python à accepter les connexions
+entrantes : répondre « Autoriser ».
+
+## Reste à faire, le jour de l'installation sur l'iPhone
+
+1. Franck signe l'app dans Xcode avec son identifiant Apple (voir plus haut).
+2. Claude crée le jeton « iPhone de Franck » (`scripts/issue_token.py`) et l'ouvre dans
+   un fichier sur le Mac ; Franck le copie, le colle dans l'app (Paramètres › Connexion
+   à Oris) — le presse-papiers passe du Mac à l'iPhone s'ils partagent le même compte
+   Apple — puis le fichier est supprimé.
+3. Données réelles : même règle qu'ailleurs, développement local seulement jusqu'à
+   l'hébergement agréé HDS.

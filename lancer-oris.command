@@ -35,8 +35,10 @@ echo "2/4  Mise à jour de la base…"
 
 echo "3/4  Serveur Oris…"
 pkill -f "uvicorn oris_api" 2>/dev/null
-(cd services/api && nohup "../../$UVICORN" oris_api.main:app --port 8000 --no-access-log \
-  >> ../../logs/api.log 2>&1 &)
+# Ouvert au Wi-Fi du cabinet pour l'iPhone (décision du 21/09/2026). Hors de ce Mac,
+# le serveur exige un jeton d'accès : un appareil sans jeton ne lit rien.
+(cd services/api && nohup "../../$UVICORN" oris_api.main:app --host 0.0.0.0 --port 8000 \
+  --no-access-log >> ../../logs/api.log 2>&1 &)
 
 echo "4/4  Site…"
 pkill -f "next dev" 2>/dev/null
