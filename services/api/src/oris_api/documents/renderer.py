@@ -17,7 +17,7 @@ import re
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 
-from oris_api.contracts import ClinicalEncounter, ClinicalFact, Procedure, TreatmentPlanItem
+from oris_api.contracts import ClinicalEncounter, ClinicalFact, Procedure
 from oris_api.documents.operative_templates import (
     SECTIONS,
     Slot,
@@ -56,16 +56,6 @@ SECTION_ORDER = (
     ("Suite / contrôle", {"follow_up"}),
     ("Autres éléments", {"other"}),
 )
-
-PLAN_STATUS_LABELS = {
-    "discussed": "discuté",
-    "proposed": "proposé",
-    "accepted": "accepté",
-    "refused": "refusé",
-    "deferred": "reporté",
-    "planned": "prévu",
-    "completed": "réalisé",
-}
 
 
 def teeth_suffix(teeth: Iterable[str]) -> str:
@@ -419,37 +409,37 @@ def render_consultation_note(
     return GeneratedDocument("consultation_note", render_content(claims), tuple(claims))
 
 
-def plan_item_sentence(item: TreatmentPlanItem) -> str:
-    teeth = f"{', '.join(item.teeth)} — " if item.teeth else ""
-    number = f"{item.sequence}. " if item.sequence is not None else ""
-    parts = [f"{number}{teeth}{item.action} — statut : {PLAN_STATUS_LABELS[item.status]}"]
-    if item.problem:
-        parts.append(f"motif : {item.problem}")
-    if item.alternatives:
-        parts.append(f"alternatives : {', '.join(item.alternatives)}")
-    if item.prerequisites:
-        parts.append(f"préalables : {', '.join(item.prerequisites)}")
-    if item.uncertainties:
-        parts.append(f"incertitudes : {', '.join(item.uncertainties)}")
-    return " ; ".join(parts) + "."
-
-
 def render_treatment_plan(encounter: ClinicalEncounter) -> GeneratedDocument:
+    """Plan de traitement : une rubrique par étape, puis la chronologie et ce qui est écarté.
+
+    La forme visuelle (schéma, frise) est dessinée à partir de la même vue
+    (`documents/plan.py`) ; ce texte en est la version à copier dans le dossier.
+    """
+    from oris_api.documents.plan import entete, plan_vue
+
+    vue = plan_vue(encounter)
     claims = limits_claims(encounter)
-    plan = encounter.treatment_plan
-    if plan is not None:
-        # Numérotation uniquement si la séquence a été énoncée (§33.3).
-        items = sorted(plan.items, key=lambda i: (i.sequence is None, i.sequence or 0))
-        for item in items:
-            claims.append(
-                Claim(
-                    "Plan de traitement",
-                    plan_item_sentence(item),
-                    fact_ids=tuple(item.evidence_fact_ids),
-                )
-            )
-        # Les objectifs (`goals`) ne portent pas de faits d'appui dans le schéma :
-        # ils ne sont pas rédigés tant qu'ils ne peuvent pas être justifiés.
+    for etape in vue.etapes:
+        titre = entete(etape)
+        lignes = []
+        if etape.dents:
+            lignes.append(f"Dents : {', '.join(etape.dents)}.")
+        lignes += list(etape.details)
+        if etape.delai:
+            lignes.append(f"Délai : {etape.delai}.")
+        lignes.append(f"Statut : {etape.statut}.")
+        claims += [Claim(titre, ligne, fact_ids=etape.fact_ids) for ligne in lignes]
+    if any(delai for _, delai in vue.chronologie) and len(vue.etapes) > 1:
+        frise = " → ".join(
+            f"{titre} ({delai})" if delai else titre for titre, delai in vue.chronologie
+        )
+        tous = tuple(dict.fromkeys(f for e in vue.etapes for f in e.fact_ids))
+        claims.append(Claim("Chronologie", f"{frise}.", fact_ids=tous))
+    for etape in vue.ecartes:
+        dents = f" ({', '.join(etape.dents)})" if etape.dents else ""
+        motif = " ".join(etape.details)
+        texte = f"{etape.titre}{dents} — {etape.statut}." + (f" {motif}" if motif else "")
+        claims.append(Claim("Écarté", texte, fact_ids=etape.fact_ids))
     return GeneratedDocument("treatment_plan_text", render_content(claims), tuple(claims))
 
 

@@ -357,7 +357,14 @@ def export_document(
     )
     adresse_par, destinataire = _correspondants_du_document(session, encounter)
     photos = figures.a_imprimer(session, magasin, document.id) if magasin and fmt == "pdf" else ()
+    vue_plan = None
+    if document.document_type == "treatment_plan_text" and fmt == "pdf":
+        from oris_api.documents.plan import plan_vue
+        from oris_api.services.clinical_store import load_current
+
+        vue_plan = plan_vue(load_current(session, encounter))
     context = ExportContext(
+        plan=vue_plan,
         figures=photos,
         referred_by=adresse_par,
         recipient=destinataire,

@@ -41,12 +41,28 @@
         "fact_ids": [
           "f2"
         ],
-        "section": "Plan de traitement",
-        "text": "1. 16 — compléter l’examen — statut : prévu ; motif : suspicion de fissure.",
+        "section": "Étape 1 — Compléter l’examen",
+        "text": "Dents : 16.",
+        "warning_codes": []
+      },
+      {
+        "fact_ids": [
+          "f2"
+        ],
+        "section": "Étape 1 — Compléter l’examen",
+        "text": "Motif : suspicion de fissure.",
+        "warning_codes": []
+      },
+      {
+        "fact_ids": [
+          "f2"
+        ],
+        "section": "Étape 1 — Compléter l’examen",
+        "text": "Statut : prévu.",
         "warning_codes": []
       }
     ],
-    "content": "Plan de traitement\n1. 16 — compléter l’examen — statut : prévu ; motif : suspicion de fissure.",
+    "content": "Étape 1 — Compléter l’examen\nDents : 16.\nMotif : suspicion de fissure.\nStatut : prévu.",
     "created_at": "2026-09-17T09:00:00+00:00",
     "document_type": "treatment_plan_text",
     "encounter_id": "00000000-0000-4000-8000-000000000001",

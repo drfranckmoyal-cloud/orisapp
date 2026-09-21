@@ -2409,6 +2409,50 @@
         }
       }
     },
+    "/encounters/{encounter_id}/plan-vue": {
+      "get": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Plan View",
+        "description": "Le plan de traitement mis en forme pour le schéma et la chronologie.",
+        "operationId": "plan_view_encounters__encounter_id__plan_vue_get",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanVueOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/documents/{document_id}/text": {
       "post": {
         "tags": [
@@ -5778,6 +5822,77 @@
         "title": "EngineVersionOut",
         "description": "Un moteur qui a réellement servi, et la consigne qui l'accompagnait."
       },
+      "EtapeOut": {
+        "properties": {
+          "titre": {
+            "type": "string",
+            "title": "Titre"
+          },
+          "rang": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rang"
+          },
+          "dents": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Dents"
+          },
+          "details": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Details"
+          },
+          "statut": {
+            "type": "string",
+            "title": "Statut"
+          },
+          "delai": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delai"
+          },
+          "couleur": {
+            "type": "integer",
+            "title": "Couleur"
+          },
+          "fact_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fact Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "titre",
+          "rang",
+          "dents",
+          "details",
+          "statut",
+          "delai",
+          "couleur",
+          "fact_ids"
+        ],
+        "title": "EtapeOut"
+      },
       "FactChanges": {
         "properties": {
           "assertion": {
@@ -7038,6 +7153,44 @@
         "additionalProperties": false,
         "type": "object",
         "title": "PatientUpdate"
+      },
+      "PlanVueOut": {
+        "properties": {
+          "numerote": {
+            "type": "boolean",
+            "title": "Numerote"
+          },
+          "etapes": {
+            "items": {
+              "$ref": "#/components/schemas/EtapeOut"
+            },
+            "type": "array",
+            "title": "Etapes"
+          },
+          "ecartes": {
+            "items": {
+              "$ref": "#/components/schemas/EtapeOut"
+            },
+            "type": "array",
+            "title": "Ecartes"
+          },
+          "dents_absentes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Dents Absentes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "numerote",
+          "etapes",
+          "ecartes",
+          "dents_absentes"
+        ],
+        "title": "PlanVueOut",
+        "description": "Le plan mis en forme : étapes, chronologie, écartés, dents absentes du schéma."
       },
       "PractitionerLearningProfile": {
         "properties": {

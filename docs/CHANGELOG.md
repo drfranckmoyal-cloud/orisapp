@@ -1,5 +1,16 @@
 # Changelog
 
+## Plan de traitement visuel — 2026-09-21
+- **Schéma des deux arcades** en vue occlusale (`documents/odontogramme.py`) : dents à la
+  taille moyenne de leur type, disposées en U ; dents d'une étape teintées de sa couleur,
+  une pastille par étape ; dents absentes en pointillé.
+- **Une étape par élément du plan**, avec un titre court tiré de ce qui a été dit, ses
+  dents, ses précisions, son délai et son statut. Numérotées seulement si l'ordre a été
+  dit ; sinon l'ordre de la dictée, sans numéro (décision du 21/09).
+- **Chronologie** en frise quand un délai a été dit — délais cités, jamais calculés.
+- **Écarté** : les options refusées, à part, avec leur motif.
+- Même vue pour le texte à copier, le PDF et l'écran (`GET /encounters/{id}/plan-vue`).
+
 ## Rédaction par Claude, sous le contrôle d'Oris — 2026-09-21
 - **Le compte rendu de consultation et le courrier d'adressage sont rédigés** en
   paragraphes liés, sans redite (`llm/redaction.py`, `DOCUMENT_GENERATION_PROVIDER=anthropic`).

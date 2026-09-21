@@ -54,12 +54,12 @@ def test_empty_sections_are_omitted() -> None:
 
 
 def test_sequence_number_only_when_explicit() -> None:
-    assert (
-        render_treatment_plan(encounter("ORIS-SYN-091")).content.splitlines()[1].startswith("27 — ")
-    )
-    assert (
-        render_treatment_plan(encounter("ORIS-SYN-093")).content.splitlines()[1].startswith("1. ")
-    )
+    """Sans rang dit, l'ordre de la dictée, sans numéro : un numéro inventé serait une
+    chronologie inventée (décision du 21/09/2026)."""
+    sans_rang = render_treatment_plan(encounter("ORIS-SYN-091")).content
+    assert "Étape" not in sans_rang
+    avec_rang = render_treatment_plan(encounter("ORIS-SYN-093")).content
+    assert avec_rang.splitlines()[0].startswith("Étape 1 — ")
 
 
 def test_audio_gap_is_critical_and_stated_in_document() -> None:

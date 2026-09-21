@@ -160,7 +160,7 @@ def test_explicit_validation_then_correction_reopens_review(api: Any) -> None:
     assert {d["status"] for d in docs.values()} == {"draft_ai"}
     note = docs["consultation_note"]["content"]
     assert "Accepté : dépose de la restauration et réévaluation (27)." in note
-    assert "statut : accepté" in docs["treatment_plan_text"]["content"]
+    assert "Statut : accepté." in docs["treatment_plan_text"]["content"]
 
 
 def plan_de(api: Any, eid: str) -> list[dict[str, Any]]:
@@ -201,7 +201,8 @@ def test_the_practitioner_adds_a_plan_item_of_his_own(api: Any) -> None:
     assert appui["value"] == "gouttière de protection"
     # Le document suit.
     assert (
-        "gouttière de protection" in documents_by_type(api, eid)["treatment_plan_text"]["content"]
+        "gouttière de protection"
+        in documents_by_type(api, eid)["treatment_plan_text"]["content"].lower()
     )
 
 

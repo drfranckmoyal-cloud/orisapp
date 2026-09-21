@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import hashlib
-from typing import Annotated
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Body, Header, Response, status
@@ -29,12 +29,14 @@ from oris_api.api.schemas import (
     EncounterFinish,
     EncounterOut,
     EncounterStart,
+    EtapeOut,
     LearningEventOut,
     LiveSegmentOut,
     LiveTranscriptOut,
     MarkCreate,
     MarkOut,
     ObjectVersionOut,
+    PlanVueOut,
     ProgressOut,
     SpokenCorrectionOut,
     SpokenCorrectionRequest,
@@ -490,6 +492,34 @@ def generate_referral_letter(
     if encounter.status != "review":
         encounters.transition(session, actor, encounter, "review")
     return list_documents(encounter_id, session, actor)
+
+
+@router.get("/encounters/{encounter_id}/plan-vue", response_model=PlanVueOut)
+def plan_view(encounter_id: UUID, session: SessionDep, actor: ActorDep) -> PlanVueOut:
+    """Le plan de traitement mis en forme pour le schéma et la chronologie."""
+    from oris_api.documents.plan import plan_vue
+
+    encounter = encounters.get_encounter(session, actor, encounter_id)
+    vue = plan_vue(clinical_store.load_current(session, encounter))
+
+    def sortie(etape: Any) -> EtapeOut:
+        return EtapeOut(
+            titre=etape.titre,
+            rang=etape.rang,
+            dents=list(etape.dents),
+            details=list(etape.details),
+            statut=etape.statut,
+            delai=etape.delai,
+            couleur=etape.couleur,
+            fact_ids=list(etape.fact_ids),
+        )
+
+    return PlanVueOut(
+        numerote=vue.numerote,
+        etapes=[sortie(e) for e in vue.etapes],
+        ecartes=[sortie(e) for e in vue.ecartes],
+        dents_absentes=list(vue.dents_absentes),
+    )
 
 
 @router.post("/documents/{document_id}/text", response_model=DocumentOut)

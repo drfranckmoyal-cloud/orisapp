@@ -751,6 +751,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/encounters/{encounter_id}/plan-vue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Plan View
+         * @description Le plan de traitement mis en forme pour le schéma et la chronologie.
+         */
+        get: operations["plan_view_encounters__encounter_id__plan_vue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/documents/{document_id}/text": {
         parameters: {
             query?: never;
@@ -2084,6 +2104,25 @@ export interface components {
              */
             first_seen_at: string;
         };
+        /** EtapeOut */
+        EtapeOut: {
+            /** Titre */
+            titre: string;
+            /** Rang */
+            rang: number | null;
+            /** Dents */
+            dents: string[];
+            /** Details */
+            details: string[];
+            /** Statut */
+            statut: string;
+            /** Delai */
+            delai: string | null;
+            /** Couleur */
+            couleur: number;
+            /** Fact Ids */
+            fact_ids: string[];
+        };
         /** FactChanges */
         FactChanges: {
             /** Assertion */
@@ -2552,6 +2591,20 @@ export interface components {
             note?: string | null;
             /** Smilecloud Case Id */
             smilecloud_case_id?: string | null;
+        };
+        /**
+         * PlanVueOut
+         * @description Le plan mis en forme : étapes, chronologie, écartés, dents absentes du schéma.
+         */
+        PlanVueOut: {
+            /** Numerote */
+            numerote: boolean;
+            /** Etapes */
+            etapes: components["schemas"]["EtapeOut"][];
+            /** Ecartes */
+            ecartes: components["schemas"]["EtapeOut"][];
+            /** Dents Absentes */
+            dents_absentes: string[];
         };
         /** PractitionerLearningProfile */
         PractitionerLearningProfile: {
@@ -4664,6 +4717,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DocumentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    plan_view_encounters__encounter_id__plan_vue_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanVueOut"];
                 };
             };
             /** @description Validation Error */

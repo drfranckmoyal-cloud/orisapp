@@ -21,6 +21,8 @@ os.environ["STT_PROVIDER"] = "mock"
 os.environ["CLINICAL_EXTRACTION_PROVIDER"] = "mock"
 os.environ["ALLOW_EXTERNAL_STT"] = "false"
 os.environ["ALLOW_EXTERNAL_LLM"] = "false"
+# La rédaction par Claude est testée avec un modèle simulé, jamais celle du poste.
+os.environ["DOCUMENT_GENERATION_PROVIDER"] = "mock"
 # L'écoute en direct est injectée par les tests qui la veulent, jamais héritée du poste.
 os.environ["ENABLE_LIVE_TRANSCRIPT"] = "false"
 # Les journées déposées par les tests vivent dans un dossier jetable, jamais celui du poste.

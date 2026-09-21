@@ -596,3 +596,23 @@ class FigureOut(BaseModel):
     position: int
     filename: str
     media_type: str
+
+
+class EtapeOut(BaseModel):
+    titre: str
+    rang: int | None
+    dents: list[str]
+    details: list[str]
+    statut: str
+    delai: str | None
+    couleur: int
+    fact_ids: list[str]
+
+
+class PlanVueOut(BaseModel):
+    """Le plan mis en forme : étapes, chronologie, écartés, dents absentes du schéma."""
+
+    numerote: bool
+    etapes: list[EtapeOut]
+    ecartes: list[EtapeOut]
+    dents_absentes: list[str]
