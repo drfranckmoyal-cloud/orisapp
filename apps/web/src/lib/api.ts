@@ -80,7 +80,7 @@ export class ApiError extends Error {
 
 export async function apiRequest<T>(
   path: string,
-  init: { method?: "GET" | "POST" | "PATCH"; body?: unknown } = {},
+  init: { method?: "GET" | "POST" | "PATCH" | "DELETE"; body?: unknown } = {},
   fetcher: typeof fetch = fetch,
   baseUrl: string = API_BASE_URL,
 ): Promise<T> {

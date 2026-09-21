@@ -1093,3 +1093,33 @@ contrats et gabarits iOS régénérés.
 permet encore de choisir un dossier SmileCloud — parce que la seule façon sensée de le
 choisir est la liste des dossiers que l'extension Chrome livrera, et qu'elle n'existe
 pas encore. C'est le troisième pas du cadrage.
+
+## L'attente se montre, et « au prochain passage » veut dire quelque chose (21/09/2026)
+
+Trois défauts signalés par Franck sur l'écran d'attente, et une question qui en valait
+la peine : « que veut dire au prochain passage ? »
+
+Réponse, lue dans le code de l'extension (`extension/background.js` de Dental Lens) :
+elle se réveille sur une alarme **toutes les minutes** (`PERIODE_MINUTES = 1`), demande
+au Mac ce qu'il y a à faire, et si un agenda est à lire, ouvre
+`pro.doctolib.fr/calendar/<jour>/list` dans un onglet de fond, laisse la page s'installer
+(≈ 6 s), lit la liste et livre. Soit **dix à quatre-vingt-dix secondes** en pratique.
+L'écran le dit maintenant en ces termes, au lieu d'une formule creuse.
+
+- **Barre d'attente** avec le temps écoulé, et trois phrases qui suivent le déroulé
+  réel. La barre glisse sans prétendre connaître l'avancement — on ne sait pas où en est
+  l'extension — mais le chrono, lui, dit quelque chose de vrai.
+- **Passé deux minutes**, la barre s'arrête (continuer à glisser laisserait croire que
+  quelque chose avance), le bandeau passe à l'orange et pose les deux bonnes questions :
+  Chrome est-il ouvert, et Oris est-il déclaré comme destinataire ?
+- **Le bouton ne se represse plus** tant qu'on attend : il affiche « Relecture
+  demandée » et reste éteint.
+- **`DELETE /journee/demande`** et un bouton « Annuler » : une demande sans réponse ne
+  coince plus l'écran.
+
+### Ce qui manque encore, et qui n'est pas dans Oris
+
+L'extension demande à **Dental Lens** ce qu'il y a à lire ; elle ne connaît pas encore
+`GET /journee/demandes` d'Oris. Tant que ces quelques lignes ne sont pas écrites dans le
+projet Dental Lens, le bouton pose une demande que personne ne sert — et l'écran finit
+par le dire, ce qui est déjà mieux que d'attendre en silence.

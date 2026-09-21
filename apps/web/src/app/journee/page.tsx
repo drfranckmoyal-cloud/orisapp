@@ -9,6 +9,7 @@ import { ApiError, apiRequest, type Journee, type Jour, type RendezVous } from "
 import { errorMessage } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 import { aujourdhuiISO, enFrancais, jourDecale, lundiDe } from "./dates";
+import { Attente } from "./Attente";
 import { Semaine } from "./Semaine";
 import styles from "./journee.module.css";
 
@@ -99,6 +100,16 @@ export default function JourneePage() {
       setMessage(errorMessage(error instanceof ApiError ? error.code : "UNKNOWN"));
     } finally {
       setEncours(null);
+    }
+  }
+
+  async function annuler() {
+    setMessage(null);
+    try {
+      await apiRequest(`/journee/demande?jour=${jour}`, { method: "DELETE" });
+      recharger();
+    } catch (error) {
+      setMessage(errorMessage(error instanceof ApiError ? error.code : "UNKNOWN"));
     }
   }
 
@@ -205,13 +216,15 @@ export default function JourneePage() {
               <Bouton
                 variante="secondaire"
                 onClick={() => void demander()}
-                disabled={encours !== null}
+                disabled={encours !== null || attendue !== null}
               >
                 {encours === "demande"
                   ? "Demande…"
-                  : donnees?.disponible
-                    ? "Mettre à jour"
-                    : "Charger la journée"}
+                  : attendue
+                    ? "Relecture demandée"
+                    : donnees?.disponible
+                      ? "Mettre à jour"
+                      : "Charger la journée"}
               </Bouton>
               {manquants.length > 0 && (
                 <Bouton onClick={() => void creerTous()} disabled={encours !== null}>
@@ -223,17 +236,7 @@ export default function JourneePage() {
             </div>
           </header>
 
-          {attendue && (
-            <p className={styles.attente}>
-              <span className={styles.pouls} aria-hidden="true" />
-              Relecture demandée à {new Date(attendue).toLocaleTimeString("fr-FR", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-              {" — l’extension lira Doctolib à son prochain passage, et la journée "}
-              arrivera ici toute seule.
-            </p>
-          )}
+          {attendue && <Attente depuis={attendue} onAnnuler={() => void annuler()} />}
 
           {journee.state === "loading" && (
             <div className={styles.chargement}>
@@ -251,9 +254,9 @@ export default function JourneePage() {
               <EtatVide titre="Cette journée n’a pas encore été relevée">
                 {attendue ? (
                   <>
-                    Oris l’a demandée. L’<strong>extension Chrome</strong> la relèvera dans
-                    Doctolib à son prochain passage ; gardez Chrome ouvert, l’écran se
-                    mettra à jour tout seul.
+                    Oris l’a demandée. L’<strong>extension Chrome</strong> se réveille toutes
+                    les minutes : au réveil suivant, elle ouvrira Doctolib sur ce jour en
+                    arrière-plan, lira la liste et la déposera ici. Gardez Chrome ouvert.
                   </>
                 ) : (
                   <>

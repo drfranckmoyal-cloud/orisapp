@@ -368,37 +368,100 @@
   }
 }
 
-/* Une relecture est attendue : le dire, avec un point qui bat pour montrer que l'écran
-   regarde tout seul si elle est arrivée. */
+/* Une relecture est attendue. La barre glisse sans prétendre connaître l'avancement —
+   on ne sait pas où en est l'extension. Le chrono, lui, dit quelque chose de vrai. */
 .attente {
-  display: flex;
-  align-items: center;
+  display: grid;
   gap: var(--espace-2);
-  margin: 0;
-  padding: 9px var(--espace-6);
+  padding: 10px var(--espace-6);
   border-bottom: 1px solid var(--trait);
   background: var(--accent-douce);
   color: var(--accent-fonce);
   font-size: var(--texte-sm);
 }
 
-.pouls {
-  width: 7px;
-  height: 7px;
-  flex: none;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: pouls 1.6s ease-in-out infinite;
+.attenteHaut {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-3);
 }
 
-@keyframes pouls {
-  50% {
-    opacity: 0.25;
+.attenteTexte {
+  flex: 1;
+  min-width: 0;
+}
+
+.chrono {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--graisse-demi);
+  flex: none;
+}
+
+.annuler {
+  flex: none;
+  border: 1px solid var(--trait-fort);
+  border-radius: 8px;
+  padding: 3px 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: var(--texte-xs);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.annuler:hover {
+  background: rgb(255 255 255 / 0.6);
+}
+
+.barre {
+  height: 4px;
+  border-radius: 3px;
+  background: rgb(14 58 41 / 0.12);
+  overflow: hidden;
+}
+
+.barreGlisse,
+.barreArretee {
+  display: block;
+  height: 100%;
+  width: 34%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-vif));
+}
+
+.barreGlisse {
+  animation: glisse 1.5s ease-in-out infinite;
+}
+
+/* Passé deux minutes, la barre s'arrête : continuer à glisser laisserait croire que
+   quelque chose avance encore. */
+.barreArretee {
+  width: 100%;
+  opacity: 0.35;
+  animation: none;
+}
+
+@keyframes glisse {
+  0% {
+    margin-left: -34%;
+  }
+  100% {
+    margin-left: 100%;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pouls {
+  .barreGlisse {
     animation: none;
   }
+}
+
+.attentePerdue {
+  background: var(--attention-douce);
+  color: #6e470d;
+}
+
+.attenteAide {
+  font-size: var(--texte-xs);
 }
