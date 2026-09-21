@@ -98,8 +98,15 @@ def list_correspondents(
             # structure n'a pas de spécialité par nature, pas par oubli : elle n'a rien
             # à faire dans cette liste.
             statement = statement.where(Correspondent.kind == "practitioner")
+    # Les mis en avant d'abord : c'est à eux qu'on adresse le plus souvent.
     return list(
-        session.scalars(statement.order_by(Correspondent.last_name, Correspondent.first_name))
+        session.scalars(
+            statement.order_by(
+                Correspondent.favorite.desc(),
+                Correspondent.last_name,
+                Correspondent.first_name,
+            )
+        )
     )
 
 

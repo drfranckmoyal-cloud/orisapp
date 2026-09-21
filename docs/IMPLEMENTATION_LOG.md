@@ -1171,3 +1171,22 @@ suit aussi ce patient). La fiche patient affiche toujours « aucun — à venir 
   entre modèles et migrations l'a vu — c'est exactement son travail. Au passage, la base
   de test portait un second schéma (`learning`) qu'un `DROP SCHEMA public` laissait
   intact : les migrations se rejouent maintenant sur une base réellement vide.
+
+## Le carnet, après relecture de Franck (21 septembre 2026)
+
+- **Une seule frontière.** Le creux de la liste était un second cadre posé dans la carte :
+  deux bordures emboîtées, et des lignes qui ne rejoignaient jamais le bord. La carte
+  passe en bords francs, le creux devient son corps, les lignes vont d'un bord à l'autre.
+- **Ouvrir une fiche, c'est la lire.** On y vient pour retrouver un numéro ou vérifier une
+  adresse ; tomber d'emblée sur un formulaire donne l'impression qu'on risque d'abîmer
+  quelque chose. La fiche s'ouvre en lecture, un bouton « Modifier » discret la rend
+  modifiable.
+- **Nom du cabinet et adresse électronique** tiennent sur deux colonnes : dans une seule,
+  ils étaient coupés la plupart du temps.
+- **Mettre en avant** (migration 0014) : une étoile à gauche de chaque ligne, hors du
+  bouton qui ouvre la fiche — c'est un geste de tri, pas une modification. Les marqués
+  remontent en tête. À quoi cela servira d'autre n'est pas tranché ; le champ est posé
+  parce qu'il ne coûte rien.
+
+L'étoile est **verte**, pas orange : l'orange veut dire « à corriger » partout ailleurs
+dans le site, et se serait battue avec la pastille « sans adresse » de la même ligne.

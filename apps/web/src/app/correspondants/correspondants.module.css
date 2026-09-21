@@ -7,21 +7,88 @@
   align-items: center;
   gap: var(--espace-2);
   flex-wrap: wrap;
+  padding: 0 var(--espace-6) var(--espace-4);
 }
 
+/* Ce qui a besoin d'une marge quand la carte n'en a plus. */
+.marge {
+  padding: 0 var(--espace-6) var(--espace-6);
+}
+
+/* Le creux est le corps de la carte, pas un second cadre posé dedans : deux frontières
+   emboîtées cassaient la continuité de la liste. */
 .liste {
   display: grid;
   gap: var(--espace-3);
-  padding: var(--espace-3);
-  border-radius: 16px;
+  padding: var(--espace-4);
+  border-top: 1px solid var(--trait);
+  border-radius: 0 0 var(--rayon-carte) var(--rayon-carte);
   background: var(--surface-douce);
   box-shadow: inset 0 2px 6px rgb(26 24 21 / 0.1);
 }
 
+/* Une entrée du carnet : sa ligne, et le volet qui s'ouvre dessous. */
+.bloc {
+  display: grid;
+}
+
+/* Une ligne, c'est l'étoile puis la fiche : l'étoile trie, elle ne modifie pas, et
+   n'a donc rien à faire à l'intérieur du bouton qui ouvre la fiche. */
+.rang {
+  display: flex;
+  align-items: stretch;
+  gap: var(--espace-2);
+}
+
+.etoile {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--trait-fort);
+  cursor: pointer;
+  transition: color var(--transition), background var(--transition);
+}
+
+.etoile:hover {
+  background: rgb(255 255 255 / 0.7);
+  color: var(--encre-tres-douce);
+}
+
+/* Le vert de l'action, pas l'orange : l'orange veut dire « à corriger » partout
+   ailleurs, et se battrait avec la pastille « sans adresse » de la même ligne. */
+.etoileMise {
+  color: var(--accent);
+}
+
+.etoileMise:hover {
+  color: var(--accent-fonce);
+}
+
+.etoile:focus-visible {
+  outline: none;
+  box-shadow: var(--anneau-focus);
+}
+
+/* Le volet ouvert sous une fiche : même largeur qu'elle, pour qu'il en descende. */
+.volet {
+  margin-top: var(--espace-2);
+  margin-left: 40px;
+  border: 1px solid var(--trait-fort);
+  border-radius: 13px;
+  background: var(--surface);
+  padding: var(--espace-4);
+  box-shadow: var(--lumiere), var(--relief);
+}
+
 .fiche {
-  /* Un bouton ne s'étire pas tout seul dans une grille : sans cette largeur, chaque
-     fiche s'arrête à son contenu et la liste ressemble à un escalier. */
-  width: 100%;
+  /* Un bouton ne s'étire pas tout seul : sans cette largeur, chaque fiche s'arrête à
+     son contenu et la liste ressemble à un escalier. */
+  flex: 1;
+  min-width: 0;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) 200px auto auto;
   align-items: center;
@@ -239,5 +306,70 @@
 
   .chevron {
     display: none;
+  }
+}
+
+
+/* --- La fiche en lecture ------------------------------------------------------- */
+
+.detail {
+  display: grid;
+  gap: var(--espace-3);
+}
+
+.cadreDetail {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  border: 1px solid var(--trait);
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #faf7f1, #ece6da);
+}
+
+.ligneDetail {
+  display: contents;
+}
+
+.cle,
+.valeur {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  padding: 5px var(--espace-3);
+  border-top: 1px solid var(--trait);
+}
+
+.ligneDetail:first-child .cle,
+.ligneDetail:first-child .valeur {
+  border-top: 0;
+}
+
+.cle {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--encre-tres-douce);
+  font-weight: var(--graisse-demi);
+  background: rgb(255 255 255 / 0.35);
+}
+
+.valeur {
+  font-size: var(--texte-sm);
+  white-space: pre-line;
+}
+
+.piedDetail {
+  display: flex;
+}
+
+/* Un nom de cabinet et une adresse électronique tiennent rarement dans une colonne :
+   coupés, ils obligent à cliquer dedans pour les relire. */
+.large {
+  grid-column: span 2;
+}
+
+@media (max-width: 700px) {
+  .large {
+    grid-column: 1 / -1;
   }
 }

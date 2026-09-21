@@ -29,6 +29,8 @@ const TRACES = {
     </>
   ),
   chevron: <path d="M4 10.5 8 6.5l4 4" />,
+  /** Étoile : le correspondant qu'on met en avant. */
+  favori: <path d="M10 3.2l2.1 4.5 4.9.6-3.6 3.4.9 4.9L10 14.7l-4.3 1.9.9-4.9L3 8.3l4.9-.6z" />,
   /** Chevron couché : « entrer dans », au bout d'une ligne cliquable. */
   suivant: <path d="m7.6 4.8 5.2 5.2-5.2 5.2" />,
   import: (

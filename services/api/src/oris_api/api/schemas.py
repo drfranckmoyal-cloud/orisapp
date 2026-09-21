@@ -467,6 +467,7 @@ class CorrespondentOut(BaseModel):
     phone: str
     address: str
     note: str
+    favorite: bool
     created_at: datetime
 
 
@@ -483,6 +484,7 @@ class CorrespondentCreate(BaseModel):
     phone: Annotated[str, StringConstraints(max_length=40)] = ""
     address: Annotated[str, StringConstraints(max_length=500)] = ""
     note: Annotated[str, StringConstraints(max_length=500)] = ""
+    favorite: bool = False
 
 
 class CorrespondentUpdate(BaseModel):
@@ -497,6 +499,7 @@ class CorrespondentUpdate(BaseModel):
     phone: Annotated[str, StringConstraints(max_length=40)] | None = None
     address: Annotated[str, StringConstraints(max_length=500)] | None = None
     note: Annotated[str, StringConstraints(max_length=500)] | None = None
+    favorite: bool | None = None
 
 
 class SpecialtyIn(BaseModel):

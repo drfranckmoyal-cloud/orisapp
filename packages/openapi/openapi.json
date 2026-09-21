@@ -4325,6 +4325,11 @@
             "maxLength": 500,
             "title": "Note",
             "default": ""
+          },
+          "favorite": {
+            "type": "boolean",
+            "title": "Favorite",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -4385,6 +4390,10 @@
             "type": "string",
             "title": "Note"
           },
+          "favorite": {
+            "type": "boolean",
+            "title": "Favorite"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -4404,6 +4413,7 @@
           "phone",
           "address",
           "note",
+          "favorite",
           "created_at"
         ],
         "title": "CorrespondentOut"
@@ -4539,6 +4549,17 @@
               }
             ],
             "title": "Note"
+          },
+          "favorite": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Favorite"
           }
         },
         "additionalProperties": false,

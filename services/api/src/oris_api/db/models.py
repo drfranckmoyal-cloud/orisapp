@@ -21,6 +21,7 @@ from typing import Any, Literal
 from uuid import UUID
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     Date,
     DateTime,
@@ -30,6 +31,7 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
@@ -773,6 +775,9 @@ class Correspondent(Base):
     phone: Mapped[str] = mapped_column(String(40), default="", server_default="")
     address: Mapped[str] = mapped_column(Text, default="", server_default="")
     note: Mapped[str] = mapped_column(Text, default="", server_default="")
+    #: Mis en avant : remonte en tête de liste. On adresse souvent aux trois ou quatre
+    #: mêmes confrères, noyés dans un carnet qui grossit.
+    favorite: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
     created_at: Mapped[datetime] = created_at()
     updated_at: Mapped[datetime] = updated_at()
 

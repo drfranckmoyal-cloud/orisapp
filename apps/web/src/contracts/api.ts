@@ -1568,6 +1568,11 @@ export interface components {
              * @default
              */
             note: string;
+            /**
+             * Favorite
+             * @default false
+             */
+            favorite: boolean;
         };
         /** CorrespondentOut */
         CorrespondentOut: {
@@ -1599,6 +1604,8 @@ export interface components {
             address: string;
             /** Note */
             note: string;
+            /** Favorite */
+            favorite: boolean;
             /**
              * Created At
              * Format: date-time
@@ -1627,6 +1634,8 @@ export interface components {
             address?: string | null;
             /** Note */
             note?: string | null;
+            /** Favorite */
+            favorite?: boolean | null;
         };
         /** DemandeIn */
         DemandeIn: {

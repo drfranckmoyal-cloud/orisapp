@@ -167,7 +167,7 @@ export function Fiche({
       {/* Une structure est déjà un établissement : lui demander son « cabinet » en plus
           ne veut rien dire. */}
       {personne && (
-        <label className="field">
+        <label className={`field ${styles.large}`}>
           Nom du cabinet
           <Champ
             value={brouillon.practice}
@@ -177,7 +177,7 @@ export function Fiche({
         </label>
       )}
 
-      <label className="field">
+      <label className={`field ${styles.large}`}>
         Adresse électronique
         <Champ
           type="email"

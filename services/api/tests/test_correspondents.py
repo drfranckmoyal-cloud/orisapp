@@ -123,3 +123,32 @@ def test_a_correspondent_can_be_removed(api: Any) -> None:
     fiche = creer(api)
     assert api.delete(f"/correspondents/{fiche['id']}").status_code == 204
     assert api.get(f"/correspondents/{fiche['id']}").status_code == 404
+
+
+def test_the_ones_put_forward_come_first(api: Any) -> None:
+    """On adresse souvent aux trois ou quatre mêmes : ils remontent en tête."""
+    creer(api, last_name="Zimmer")
+    remonte = creer(api, last_name="Voisin")
+    creer(api, last_name="Arnaud")
+
+    assert [c["last_name"] for c in api.get("/correspondents").json()] == [
+        "Arnaud",
+        "Voisin",
+        "Zimmer",
+    ]
+    api.patch(f"/correspondents/{remonte['id']}", json={"favorite": True})
+    assert [c["last_name"] for c in api.get("/correspondents").json()] == [
+        "Voisin",
+        "Arnaud",
+        "Zimmer",
+    ]
+
+
+def test_putting_forward_changes_nothing_else(api: Any) -> None:
+    """L'étoile se met depuis la liste : elle ne doit toucher à aucun autre champ."""
+    fiche = creer(api, title="Dr", first_name="Claire", specialty="ODF", email="c@example.fr")
+    apres = api.patch(f"/correspondents/{fiche['id']}", json={"favorite": True}).json()
+    assert apres["favorite"] is True
+    assert {k: apres[k] for k in ("title", "first_name", "specialty", "email")} == {
+        k: fiche[k] for k in ("title", "first_name", "specialty", "email")
+    }

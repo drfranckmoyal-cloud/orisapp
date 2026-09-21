@@ -8,6 +8,7 @@ import { ApiError, apiRequest, type Correspondant } from "@/lib/api";
 import { errorMessage } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
+import { Detail } from "./Detail";
 import { Fiche, VIDE, brouillonDe, type Brouillon } from "./Fiche";
 import styles from "./correspondants.module.css";
 
@@ -48,6 +49,8 @@ export default function CorrespondantsPage() {
 
   const [nouveau, setNouveau] = useState(false);
   const [ouvert, setOuvert] = useState<string | null>(null);
+  /** Ouvrir une fiche, c'est la lire. La modifier est un second geste, volontaire. */
+  const [modifie, setModifie] = useState(false);
   const [occupe, setOccupe] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -66,7 +69,8 @@ export default function CorrespondantsPage() {
         body: brouillon,
       });
       setNouveau(false);
-      setOuvert(null);
+      setModifie(false);
+      if (!id) setOuvert(null);
       setMessage(id ? "Correspondant modifié." : "Correspondant ajouté.");
       recharger();
       rechargerSpecialites();
@@ -74,6 +78,18 @@ export default function CorrespondantsPage() {
       setMessage(errorMessage(error instanceof ApiError ? error.code : "UNKNOWN"));
     } finally {
       setOccupe(false);
+    }
+  }
+
+  async function mettreEnAvant(c: Correspondant) {
+    try {
+      await apiRequest(`/correspondents/${c.id}`, {
+        method: "PATCH",
+        body: { favorite: !c.favorite },
+      });
+      recharger();
+    } catch (error) {
+      setMessage(errorMessage(error instanceof ApiError ? error.code : "UNKNOWN"));
     }
   }
 
@@ -129,6 +145,7 @@ export default function CorrespondantsPage() {
       )}
 
       <Carte
+        bords
         titre={`${liste.length} correspondant${liste.length > 1 ? "s" : ""}`}
         action={
           <Champ
@@ -167,85 +184,120 @@ export default function CorrespondantsPage() {
           </Bouton>
         </div>
 
-        {carnet.state === "loading" && <Squelette lignes={4} />}
-        {carnet.state === "error" && <EtatVide titre={errorMessage(carnet.code)} />}
+        {carnet.state === "loading" && (
+          <div className={styles.marge}>
+            <Squelette lignes={4} />
+          </div>
+        )}
+        {carnet.state === "error" && (
+          <div className={styles.marge}>
+            <EtatVide titre={errorMessage(carnet.code)} />
+          </div>
+        )}
 
         {carnet.state === "ready" && liste.length === 0 && (
+          <div className={styles.marge}>
           <EtatVide titre={recherche || filtre !== null ? "Aucun correspondant" : "Carnet vide"}>
             {recherche || filtre !== null
               ? "Aucun correspondant ne répond à cette recherche."
               : "Ajoutez le premier confrère ou la première structure à qui vous adressez des patients."}
           </EtatVide>
+          </div>
         )}
 
         {liste.length > 0 && (
           <div className={styles.liste}>
             {liste.map((c) => (
-              <div key={c.id}>
-                <button
-                  type="button"
-                  className={`${styles.fiche} ${ouvert === c.id ? styles.ficheOuverte : ""}`}
-                  aria-expanded={ouvert === c.id}
-                  onClick={() => {
-                    setNouveau(false);
-                    setOuvert((actuel) => (actuel === c.id ? null : c.id));
-                  }}
-                >
-                  <span
-                    className={`${styles.jeton} ${
-                      c.kind === "organisation" ? styles.jetonStructure : ""
-                    }`}
-                    aria-hidden="true"
+              <div key={c.id} className={styles.bloc}>
+                <div className={styles.rang}>
+                  {/* L'étoile se met depuis la liste : c'est un geste de tri, pas une
+                      modification de la fiche. Elle reste donc hors du bouton. */}
+                  <button
+                    type="button"
+                    className={`${styles.etoile} ${c.favorite ? styles.etoileMise : ""}`}
+                    aria-pressed={c.favorite}
+                    title={c.favorite ? "Retirer de la tête de liste" : "Mettre en tête de liste"}
+                    aria-label={
+                      c.favorite ? "Retirer de la tête de liste" : "Mettre en tête de liste"
+                    }
+                    onClick={() => void mettreEnAvant(c)}
                   >
-                    {initiales(c)}
-                  </span>
+                    <Icone nom="favori" taille={15} />
+                  </button>
 
-                  <span className={styles.qui}>
-                    <span className={styles.nom}>{nomComplet(c)}</span>
-                    <span className={styles.dessous}>
-                      {c.kind === "organisation"
-                        ? "structure"
-                        : c.specialty || <span className={styles.manque}>spécialité non renseignée</span>}
-                      {c.practice && ` · ${c.practice}`}
+                  <button
+                    type="button"
+                    className={`${styles.fiche} ${ouvert === c.id ? styles.ficheOuverte : ""}`}
+                    aria-expanded={ouvert === c.id}
+                    onClick={() => {
+                      setNouveau(false);
+                      setModifie(false);
+                      setOuvert((actuel) => (actuel === c.id ? null : c.id));
+                    }}
+                  >
+                    <span
+                      className={`${styles.jeton} ${
+                        c.kind === "organisation" ? styles.jetonStructure : ""
+                      }`}
+                      aria-hidden="true"
+                    >
+                      {initiales(c)}
                     </span>
-                  </span>
 
-                  <span className={styles.joindre}>
-                    <span className={styles.dessous}>
-                      {c.email || <span className={styles.manque}>pas de courriel</span>}
+                    <span className={styles.qui}>
+                      <span className={styles.nom}>{nomComplet(c)}</span>
+                      <span className={styles.dessous}>
+                        {c.kind === "organisation"
+                          ? "structure"
+                          : c.specialty || (
+                              <span className={styles.manque}>spécialité non renseignée</span>
+                            )}
+                        {c.practice && ` · ${c.practice}`}
+                      </span>
                     </span>
-                    <span className={styles.dessous}>
-                      {c.phone || <span className={styles.manque}>pas de téléphone</span>}
+
+                    <span className={styles.joindre}>
+                      <span className={styles.dessous}>
+                        {c.email || <span className={styles.manque}>pas de courriel</span>}
+                      </span>
+                      <span className={styles.dessous}>
+                        {c.phone || <span className={styles.manque}>pas de téléphone</span>}
+                      </span>
                     </span>
-                  </span>
 
-                  {/* L'adresse postale est ce dont la lettre a besoin : son absence se
-                      signale, sa présence ne dit rien de particulier. */}
-                  <span className={styles.marques}>
-                    {!c.address && (
-                      <Pastille ton="attention" point>
-                        sans adresse
-                      </Pastille>
-                    )}
-                  </span>
+                    {/* L'adresse postale est ce dont la lettre a besoin : son absence se
+                        signale, sa présence ne dit rien de particulier. */}
+                    <span className={styles.marques}>
+                      {!c.address && (
+                        <Pastille ton="attention" point>
+                          sans adresse
+                        </Pastille>
+                      )}
+                    </span>
 
-                  <span className={styles.chevron} aria-hidden="true">
-                    <Icone nom="suivant" taille={16} />
-                  </span>
-                </button>
+                    <span className={styles.chevron} aria-hidden="true">
+                      <Icone nom="suivant" taille={16} />
+                    </span>
+                  </button>
+                </div>
 
-                {ouvert === c.id && (
-                  <Carte titre={`Modifier — ${nomComplet(c)}`}>
-                    <Fiche
-                      depart={brouillonDe(c)}
-                      specialites={choix}
-                      occupe={occupe}
-                      onValider={(brouillon) => void enregistrer(brouillon, c.id)}
-                      onAnnuler={() => setOuvert(null)}
-                      onSupprimer={() => void supprimer(c.id)}
-                    />
-                  </Carte>
-                )}
+                {ouvert === c.id &&
+                  (modifie ? (
+                    <div className={styles.volet}>
+                      <Fiche
+                        depart={brouillonDe(c)}
+                        specialites={choix}
+                        occupe={occupe}
+                        onValider={(brouillon) => void enregistrer(brouillon, c.id)}
+                        onAnnuler={() => setModifie(false)}
+                        onSupprimer={() => void supprimer(c.id)}
+                      />
+                    </div>
+                  ) : (
+                    <div className={styles.volet}>
+                      <Detail correspondant={c} onModifier={() => setModifie(true)} />
+                    </div>
+                  ))}
               </div>
             ))}
           </div>
