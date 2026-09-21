@@ -798,3 +798,33 @@ class CorrespondentSpecialty(Base):
     organization_id: Mapped[UUID] = mapped_column(ForeignKey("organizations.id"), index=True)
     label: Mapped[str] = mapped_column(String(80))
     created_at: Mapped[datetime] = created_at()
+
+
+class PatientCorrespondent(Base):
+    """Le lien entre un patient et un correspondant, et ce que ce lien veut dire.
+
+    Le rôle est porté par le **lien**, pas par le correspondant : le même confrère
+    adresse un patient et en reçoit un autre.
+    """
+
+    __tablename__ = "patient_correspondents"
+    __table_args__ = (
+        CheckConstraint(
+            "role in ('referred_by', 'referred_to', 'also_follows')",
+            name="patient_correspondent_role",
+        ),
+        UniqueConstraint("patient_id", "correspondent_id", name="uq_patient_correspondent_pair"),
+    )
+
+    id: Mapped[UUID] = uuid_pk()
+    organization_id: Mapped[UUID] = mapped_column(ForeignKey("organizations.id"), index=True)
+    patient_id: Mapped[UUID] = mapped_column(
+        ForeignKey("patients.id", ondelete="CASCADE"), index=True
+    )
+    correspondent_id: Mapped[UUID] = mapped_column(
+        ForeignKey("correspondents.id", ondelete="CASCADE"), index=True
+    )
+    #: `referred_by` (il nous l'a adressé), `referred_to` (nous le lui adressons),
+    #: `also_follows` (il le suit aussi, sans que personne n'ait adressé personne).
+    role: Mapped[str] = mapped_column(String(20))
+    created_at: Mapped[datetime] = created_at()

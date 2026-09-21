@@ -15,6 +15,7 @@ import {
 import { Icone } from "@/components/Icones";
 import { JetonPraticien } from "@/components/JetonPraticien";
 import { CommencerConsultation } from "@/components/patients/CommencerConsultation";
+import { Correspondants } from "@/components/patients/Correspondants";
 import { NoteDictee } from "@/components/patients/NoteDictee";
 import { PiecesJointes } from "@/components/patients/PiecesJointes";
 import { apiRequest, type ClientConfig, type Encounter, type Patient } from "@/lib/api";
@@ -135,8 +136,7 @@ export default function PatientPage() {
             </Info>
 
             <Info cle="Correspondants">
-              {/* Le rattachement viendra avec l'écran dédié. */}
-              <Absent quoi="aucun — à venir" />
+              <Correspondants patientId={id} />
             </Info>
             <Info cle="SmileCloud">
               <Pastille ton={smilecloud ? "valide" : "attention"} point>

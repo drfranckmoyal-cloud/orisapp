@@ -16,7 +16,7 @@ from uuid import UUID
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
-from oris_api.db.models import Correspondent, CorrespondentSpecialty
+from oris_api.db.models import Correspondent, CorrespondentSpecialty, PatientCorrespondent
 from oris_api.services import audit
 from oris_api.services.errors import Conflict, NotFound, Unprocessable
 from oris_api.services.identity import Actor
@@ -171,3 +171,80 @@ def delete_correspondent(session: Session, actor: Actor, correspondent_id: UUID)
     correspondant = get_correspondent(session, actor, correspondent_id)
     session.delete(correspondant)
     audit.record(session, actor, "correspondent.deleted", "correspondent", correspondent_id)
+
+
+# --- Rattachement à un patient ------------------------------------------------------
+#
+# Deux sens différents se cachent derrière le mot : **qui a adressé ce patient**, et
+# **à qui on l'adresse**. Le rôle est donc porté par le lien, pas par le correspondant :
+# le même confrère adresse un patient et en reçoit un autre.
+
+ROLES: frozenset[str] = frozenset({"referred_by", "referred_to", "also_follows"})
+
+
+def rattachements(
+    session: Session, actor: Actor, patient_id: UUID
+) -> list[tuple[PatientCorrespondent, Correspondent]]:
+    """Les correspondants d'un patient, avec ce que chaque lien veut dire."""
+    lignes = session.execute(
+        select(PatientCorrespondent, Correspondent)
+        .join(Correspondent, Correspondent.id == PatientCorrespondent.correspondent_id)
+        .where(
+            PatientCorrespondent.organization_id == actor.organization_id,
+            PatientCorrespondent.patient_id == patient_id,
+        )
+        .order_by(Correspondent.last_name, Correspondent.first_name)
+    )
+    return [(lien, correspondant) for lien, correspondant in lignes]
+
+
+def _lien(
+    session: Session, actor: Actor, patient_id: UUID, correspondent_id: UUID
+) -> PatientCorrespondent | None:
+    return session.scalar(
+        select(PatientCorrespondent).where(
+            PatientCorrespondent.organization_id == actor.organization_id,
+            PatientCorrespondent.patient_id == patient_id,
+            PatientCorrespondent.correspondent_id == correspondent_id,
+        )
+    )
+
+
+def rattacher(
+    session: Session, actor: Actor, patient_id: UUID, correspondent_id: UUID, role: str
+) -> PatientCorrespondent:
+    """Rattacher, ou changer le rôle si le lien existe déjà.
+
+    Refaire le geste avec un autre rôle corrige plutôt que de doubler la ligne : deux
+    fois le même confrère sur une fiche, avec deux rôles, serait illisible.
+    """
+    if role not in ROLES:
+        raise Unprocessable("CORRESPONDENT_ROLE_UNKNOWN", details=[role])
+    # Lève si le correspondant n'est pas celui d'un autre cabinet.
+    get_correspondent(session, actor, correspondent_id)
+
+    existant = _lien(session, actor, patient_id, correspondent_id)
+    if existant is not None:
+        existant.role = role
+        session.flush()
+        audit.record(session, actor, "patient.correspondent_updated", "patient", patient_id)
+        return existant
+
+    lien = PatientCorrespondent(
+        organization_id=actor.organization_id,
+        patient_id=patient_id,
+        correspondent_id=correspondent_id,
+        role=role,
+    )
+    session.add(lien)
+    session.flush()
+    audit.record(session, actor, "patient.correspondent_attached", "patient", patient_id)
+    return lien
+
+
+def detacher(session: Session, actor: Actor, patient_id: UUID, correspondent_id: UUID) -> None:
+    lien = _lien(session, actor, patient_id, correspondent_id)
+    if lien is None:
+        raise NotFound("CORRESPONDENT_LINK_NOT_FOUND", str(correspondent_id))
+    session.delete(lien)
+    audit.record(session, actor, "patient.correspondent_detached", "patient", patient_id)

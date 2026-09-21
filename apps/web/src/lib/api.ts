@@ -209,3 +209,6 @@ export type Jour = Schemas["JourOut"];
 
 /** Carnet d'adresses : confrères et structures à qui l'on adresse un patient. */
 export type Correspondant = Schemas["CorrespondentOut"];
+
+/** Le lien entre un patient et un correspondant, et ce qu'il veut dire. */
+export type Rattachement = Schemas["RattachementOut"];

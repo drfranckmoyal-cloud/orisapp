@@ -1,6 +1,6 @@
 /** Libellés français de l'interface. Les valeurs viennent des contrats générés. */
 
-import type { ClinicalFactView, DocumentView, Encounter } from "./api";
+import type { ClinicalFactView, DocumentView, Encounter, Rattachement } from "./api";
 
 export const ENCOUNTER_STATUS: Record<Encounter["status"], string> = {
   draft: "Brouillon",
@@ -25,6 +25,13 @@ export const DOCUMENT_STATUS: Record<DocumentView["status"], string> = {
   exported: "Exporté",
   superseded: "Remplacé",
   outdated: "Périmé",
+};
+
+/** Ce que veut dire un lien patient ↔ correspondant, en français d'usage. */
+export const ROLE_CORRESPONDANT: Record<Rattachement["role"], string> = {
+  referred_by: "nous l’a adressé",
+  referred_to: "nous lui adressons",
+  also_follows: "suit aussi ce patient",
 };
 
 export const DOCUMENT_TYPE: Record<DocumentView["document_type"], string> = {

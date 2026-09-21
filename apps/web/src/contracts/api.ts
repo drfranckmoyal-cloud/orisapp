@@ -163,6 +163,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/patients/{patient_id}/correspondents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Patient Correspondents */
+        get: operations["list_patient_correspondents_patients__patient_id__correspondents_get"];
+        put?: never;
+        /**
+         * Attach Patient Correspondent
+         * @description Rattacher, ou corriger le rôle si le correspondant est déjà là.
+         */
+        post: operations["attach_patient_correspondent_patients__patient_id__correspondents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/correspondents/{correspondent_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Detach Patient Correspondent */
+        delete: operations["detach_patient_correspondent_patients__patient_id__correspondents__correspondent_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/correspondents/specialties": {
         parameters: {
             query?: never;
@@ -2440,6 +2478,31 @@ export interface components {
             /** Remaining */
             remaining: number;
         };
+        /** RattachementIn */
+        RattachementIn: {
+            /**
+             * Correspondent Id
+             * Format: uuid
+             */
+            correspondent_id: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "referred_by" | "referred_to" | "also_follows";
+        };
+        /**
+         * RattachementOut
+         * @description Un correspondant du patient, et ce que le lien veut dire.
+         */
+        RattachementOut: {
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "referred_by" | "referred_to" | "also_follows";
+            correspondent: components["schemas"]["CorrespondentOut"];
+        };
         /** ReadinessResponse */
         ReadinessResponse: {
             /**
@@ -3099,6 +3162,102 @@ export interface operations {
             header?: never;
             path: {
                 attachment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_patient_correspondents_patients__patient_id__correspondents_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RattachementOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    attach_patient_correspondent_patients__patient_id__correspondents_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RattachementIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RattachementOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    detach_patient_correspondent_patients__patient_id__correspondents__correspondent_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                correspondent_id: string;
             };
             cookie?: never;
         };

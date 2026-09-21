@@ -1263,3 +1263,25 @@ fonctionne. À ne pas confondre avec un vrai défaut la prochaine fois.
 Le bouton était discret et en haut de page, loin de la liste. Il est maintenant vert,
 porte un « + », et se tient à côté du champ de recherche, dans le cadre de la liste :
 ajouter est l'action de cet écran, elle se tient là où l'on cherche.
+
+## Rattacher un patient à ses correspondants (21 septembre 2026)
+
+Migration 0016, table `patient_correspondents`. **Le rôle est porté par le lien, pas par
+le correspondant** : le même confrère adresse un patient et en reçoit un autre. Trois
+rôles — *nous l'a adressé*, *nous lui adressons*, *suit aussi ce patient*.
+
+Deux sens très différents se cachaient derrière le mot « correspondant » : qui a adressé
+ce patient (d'où viennent les patients du cabinet) et à qui on l'adresse (à qui écrire).
+Les confondre aurait rendu l'information inutilisable pour l'un comme pour l'autre.
+
+- Un correspondant n'apparaît **qu'une fois par patient**. Refaire le geste avec un autre
+  rôle **corrige** au lieu de doubler la ligne : deux fois la même personne sur une fiche,
+  avec deux rôles, serait illisible et sans usage.
+- Sur la fiche patient, chaque jeton porte le nom **et ce que le lien veut dire** : on lit
+  le sens sans avoir à cliquer. Le volet de rattachement demande d'abord le rôle, ensuite
+  le confrère — c'est l'ordre dans lequel on y pense.
+- **Détacher n'efface pas la fiche du carnet.** Supprimer un correspondant du carnet, en
+  revanche, emporte ses rattachements (et jamais les patients).
+
+Routes : `GET`/`POST /patients/{id}/correspondents`, `DELETE
+/patients/{id}/correspondents/{correspondent_id}`.

@@ -1,0 +1,163 @@
+/* Les correspondants d'un patient, dans le cadre d'informations de sa fiche.
+   Place comptée : des jetons sur une ligne, et le choix ne se déplie que si on le
+   demande. */
+
+.bloc {
+  display: grid;
+  gap: var(--espace-2);
+  width: 100%;
+}
+
+.jetons {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.jeton {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 4px 3px 10px;
+  border: 1px solid var(--trait-fort);
+  border-radius: var(--rayon-pastille);
+  background: var(--surface);
+  box-shadow: var(--lumiere);
+  font-size: var(--texte-xs);
+}
+
+.nom {
+  font-weight: var(--graisse-demi);
+}
+
+/* Ce que le lien veut dire, sur le jeton : « nous l'a adressé » n'est pas
+   « nous lui adressons », et la fiche doit le dire sans qu'on ait à cliquer. */
+.role {
+  color: var(--encre-tres-douce);
+  font-style: italic;
+}
+
+.retirer {
+  width: 16px;
+  height: 16px;
+  align-self: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-douce);
+  color: var(--encre-douce);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.retirer:hover {
+  background: var(--alerte-douce);
+  color: var(--alerte);
+}
+
+.ajouter {
+  border: 0;
+  padding: 0 4px;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-demi);
+  cursor: pointer;
+}
+
+.ajouter:hover {
+  text-decoration: underline;
+}
+
+.aucun {
+  font-size: var(--texte-xs);
+  font-style: italic;
+  color: var(--encre-tres-douce);
+}
+
+/* Le volet de rattachement : d'abord ce que le lien veut dire, ensuite qui. */
+.choix {
+  display: grid;
+  gap: var(--espace-2);
+  padding: var(--espace-3);
+  border: 1px solid var(--trait);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--lumiere);
+}
+
+.roles {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.roleChoix {
+  padding: 3px 10px;
+  border: 1px solid var(--trait-fort);
+  border-radius: var(--rayon-pastille);
+  background: var(--fond);
+  color: var(--encre-douce);
+  font: inherit;
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-demi);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition),
+    border-color var(--transition);
+}
+
+.roleRetenu {
+  background: var(--accent);
+  border-color: var(--accent-fonce);
+  color: var(--encre-inverse);
+}
+
+.propositions {
+  display: grid;
+  gap: 4px;
+  max-height: 190px;
+  overflow: auto;
+}
+
+.proposition {
+  display: grid;
+  gap: 1px;
+  text-align: left;
+  padding: 6px 10px;
+  border: 1px solid var(--trait);
+  border-radius: 9px;
+  background: var(--fond);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.proposition:hover:not(:disabled) {
+  background: var(--accent-douce);
+  border-color: var(--accent);
+}
+
+.proposition:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.detail {
+  font-size: var(--texte-xs);
+  color: var(--encre-tres-douce);
+}
+
+.aide {
+  margin: 0;
+  font-size: 10.5px;
+  color: var(--trait-fort);
+}
+
+.erreur {
+  font-size: var(--texte-xs);
+  color: var(--alerte);
+}

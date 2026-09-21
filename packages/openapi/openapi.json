@@ -479,6 +479,155 @@
         }
       }
     },
+    "/patients/{patient_id}/correspondents": {
+      "get": {
+        "tags": [
+          "patients"
+        ],
+        "summary": "List Patient Correspondents",
+        "operationId": "list_patient_correspondents_patients__patient_id__correspondents_get",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RattachementOut"
+                  },
+                  "title": "Response List Patient Correspondents Patients  Patient Id  Correspondents Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "patients"
+        ],
+        "summary": "Attach Patient Correspondent",
+        "description": "Rattacher, ou corriger le rôle si le correspondant est déjà là.",
+        "operationId": "attach_patient_correspondent_patients__patient_id__correspondents_post",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RattachementIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RattachementOut"
+                  },
+                  "title": "Response Attach Patient Correspondent Patients  Patient Id  Correspondents Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patients/{patient_id}/correspondents/{correspondent_id}": {
+      "delete": {
+        "tags": [
+          "patients"
+        ],
+        "summary": "Detach Patient Correspondent",
+        "operationId": "detach_patient_correspondent_patients__patient_id__correspondents__correspondent_id__delete",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Patient Id"
+            }
+          },
+          {
+            "name": "correspondent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Correspondent Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/correspondents/specialties": {
       "get": {
         "tags": [
@@ -6651,6 +6800,54 @@
           "remaining"
         ],
         "title": "PurgeReportOut"
+      },
+      "RattachementIn": {
+        "properties": {
+          "correspondent_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Correspondent Id"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "referred_by",
+              "referred_to",
+              "also_follows"
+            ],
+            "title": "Role"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "correspondent_id",
+          "role"
+        ],
+        "title": "RattachementIn"
+      },
+      "RattachementOut": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "referred_by",
+              "referred_to",
+              "also_follows"
+            ],
+            "title": "Role"
+          },
+          "correspondent": {
+            "$ref": "#/components/schemas/CorrespondentOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "correspondent"
+        ],
+        "title": "RattachementOut",
+        "description": "Un correspondant du patient, et ce que le lien veut dire."
       },
       "ReadinessResponse": {
         "properties": {

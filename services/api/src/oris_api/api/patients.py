@@ -11,16 +11,26 @@ from fastapi import APIRouter, Body, File, Form, Header, Response, UploadFile, s
 from oris_api.api.dependencies import ActorDep, MagasinDep, ProvidersDep, SessionDep
 from oris_api.api.schemas import (
     AttachmentOut,
+    CorrespondentOut,
     DictationOut,
     PatientCreate,
     PatientListOut,
     PatientOut,
     PatientUpdate,
+    RattachementIn,
+    RattachementOut,
 )
 from oris_api.db.models import Attachment
 from oris_api.domain.types import AudioChunk
 from oris_api.providers.base import TranscriptionUnavailable
-from oris_api.services import async_bridge, attachments, audio, encounters, patients
+from oris_api.services import (
+    async_bridge,
+    attachments,
+    audio,
+    correspondents,
+    encounters,
+    patients,
+)
 from oris_api.services.errors import Conflict, Unprocessable
 
 router = APIRouter(prefix="/patients", tags=["patients"])
@@ -187,3 +197,37 @@ def remove_attachment(
 ) -> Response:
     attachments.remove_attachment(session, actor, magasin, attachment_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# --- Correspondants du patient ------------------------------------------------------
+
+
+@router.get("/{patient_id}/correspondents", response_model=list[RattachementOut])
+def list_patient_correspondents(
+    patient_id: UUID, session: SessionDep, actor: ActorDep
+) -> list[RattachementOut]:
+    patients.get_patient(session, actor, patient_id)
+    return [
+        RattachementOut(role=lien.role, correspondent=CorrespondentOut.model_validate(fiche))
+        for lien, fiche in correspondents.rattachements(session, actor, patient_id)
+    ]
+
+
+@router.post("/{patient_id}/correspondents", response_model=list[RattachementOut])
+def attach_patient_correspondent(
+    patient_id: UUID, body: RattachementIn, session: SessionDep, actor: ActorDep
+) -> list[RattachementOut]:
+    """Rattacher, ou corriger le rôle si le correspondant est déjà là."""
+    patients.get_patient(session, actor, patient_id)
+    correspondents.rattacher(session, actor, patient_id, body.correspondent_id, body.role)
+    return list_patient_correspondents(patient_id, session, actor)
+
+
+@router.delete(
+    "/{patient_id}/correspondents/{correspondent_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+def detach_patient_correspondent(
+    patient_id: UUID, correspondent_id: UUID, session: SessionDep, actor: ActorDep
+) -> None:
+    patients.get_patient(session, actor, patient_id)
+    correspondents.detacher(session, actor, patient_id, correspondent_id)

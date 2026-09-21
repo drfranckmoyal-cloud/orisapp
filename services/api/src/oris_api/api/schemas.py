@@ -511,3 +511,19 @@ class CorrespondentUpdate(BaseModel):
 class SpecialtyIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     label: Annotated[str, StringConstraints(min_length=1, max_length=80)]
+
+
+CorrespondentRole = Literal["referred_by", "referred_to", "also_follows"]
+
+
+class RattachementOut(BaseModel):
+    """Un correspondant du patient, et ce que le lien veut dire."""
+
+    role: CorrespondentRole
+    correspondent: CorrespondentOut
+
+
+class RattachementIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    correspondent_id: UUID
+    role: CorrespondentRole
