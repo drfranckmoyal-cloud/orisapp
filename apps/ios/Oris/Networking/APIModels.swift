@@ -8,13 +8,19 @@ struct PatientSummary: Codable, Equatable, Sendable, Identifiable {
     let id: String
     let firstName: String
     let lastName: String
+    /// Présents dans la liste des patients seulement.
+    var consultations: Int? = nil
+    var derniereConsultation: String? = nil
+    var aRelire: Int? = nil
 
     var displayName: String { "\(firstName) \(lastName)" }
 
     enum CodingKeys: String, CodingKey {
-        case id
+        case id, consultations
         case firstName = "first_name"
         case lastName = "last_name"
+        case derniereConsultation = "derniere_consultation"
+        case aRelire = "a_relire"
     }
 }
 
@@ -40,9 +46,18 @@ struct ProcessingError: Codable, Equatable, Sendable {
     }
 }
 
+struct Praticien: Codable, Equatable, Sendable {
+    let name: String
+
+    var initiales: String {
+        name.split(separator: " ").compactMap(\.first).prefix(2).map(String.init).joined().uppercased()
+    }
+}
+
 struct EncounterSummary: Codable, Equatable, Sendable, Identifiable {
     let id: String
     let patient: PatientSummary
+    var practitioner: Praticien? = nil
     let status: ClinicalEncounterStatus
     let objectVersion: Int
     let startedAt: String?
@@ -53,7 +68,7 @@ struct EncounterSummary: Codable, Equatable, Sendable, Identifiable {
     let documents: [DocumentSummary]
 
     enum CodingKeys: String, CodingKey {
-        case id, patient, status, documents
+        case id, patient, practitioner, status, documents
         case objectVersion = "object_version"
         case startedAt = "started_at"
         case createdAt = "created_at"

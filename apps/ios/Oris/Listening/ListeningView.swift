@@ -26,7 +26,7 @@ struct ListeningView: View {
     var body: some View {
         Group {
             if !loaded {
-                ProgressView("Chargement…")
+                ProgressView("Chargement…").tint(Teinte.accent)
             } else if let controller, controller.phase != .ready, controller.phase != .starting, controller.phase != .error {
                 ActiveListeningView(
                     patientName: encounter.patient.displayName,
@@ -44,7 +44,9 @@ struct ListeningView: View {
                 preScreen
             }
         }
-        .background(OrisColor.sand)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Teinte.fond.ignoresSafeArea())
+        .tint(Teinte.accent)
         // Pendant l'écoute, rien ne doit pouvoir faire quitter l'écran par erreur.
         .toolbar(.hidden, for: .tabBar)
         .navigationBarBackButtonHidden(controller.map { [.recording, .paused, .interrupted, .microphoneLost, .finishing].contains($0.phase) } ?? false)
@@ -67,22 +69,23 @@ struct ListeningView: View {
     private var preScreen: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: OrisSpacing.s24) {
-                VStack(alignment: .leading, spacing: OrisSpacing.s4) {
-                    Text(encounter.patient.displayName)
-                        .font(.title.bold())
-                        .foregroundStyle(OrisColor.deepGreen)
+                HStack(spacing: OrisSpacing.s12) {
+                    Vignette(initiales: encounter.patient.initiales, taille: 46)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("AVANT L’ÉCOUTE")
+                            .font(Police.interface(11.5, .bold, relativeTo: .caption))
+                            .tracking(1.1)
+                            .foregroundStyle(Teinte.encreTresDouce)
+                        NomPatient(patient: encounter.patient, taille: 22)
+                    }
                 }
 
                 // Consultation ou acte : fixe le modèle de compte rendu et le déroulé.
-                Picker("Type de séance", selection: $visitKind) {
-                    ForEach(VisitKind.allCases) { kind in
-                        Text(kind.label).tag(kind)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .disabled(controller?.phase == .starting)
+                ChoixSeance(choix: $visitKind)
+                    .disabled(controller?.phase == .starting)
 
                 DerouleView(kind: visitKind)
+                    .carte(fond: Teinte.surface2)
 
                 VStack(alignment: .leading, spacing: OrisSpacing.s12) {
                     StatusLine(
@@ -97,16 +100,22 @@ struct ListeningView: View {
                     )
                 }
 
-                if config?.testAudioSourceEnabled == true {
-                    Toggle("Son de test, sans micro (développement)", isOn: $useTestTone)
+                VStack(spacing: OrisSpacing.s12) {
+                    if config?.testAudioSourceEnabled == true {
+                        Toggle("Son de test, sans micro (développement)", isOn: $useTestTone)
+                    }
+                    if config?.patientInformationMode != "none" {
+                        Toggle("Le patient a été informé de l’enregistrement de la consultation.", isOn: $patientInformed)
+                    }
                 }
-                if config?.patientInformationMode != "none" {
-                    Toggle("Le patient a été informé de l’enregistrement de la consultation.", isOn: $patientInformed)
-                }
+                .font(Police.interface(15, .semibold))
+                .foregroundStyle(Teinte.encre)
+                .tint(Teinte.accent)
+                .carte()
 
                 if let code = controller?.errorCode {
                     VStack(alignment: .leading, spacing: OrisSpacing.s8) {
-                        Text(Self.message(for: code)).foregroundStyle(OrisColor.danger)
+                        Text(Self.message(for: code)).font(Police.note).foregroundStyle(Teinte.alerte)
                         if code == CaptureFailure.permissionDenied.rawValue {
                             Button("Ouvrir les Réglages") {
                                 if let url = URL(string: UIApplication.openSettingsURLString) {
@@ -120,17 +129,16 @@ struct ListeningView: View {
                 Button {
                     Task { await start() }
                 } label: {
-                    Text(controller?.phase == .starting ? "Démarrage…" : "Commencer l’écoute")
-                        .font(.title3.bold())
-                        .frame(maxWidth: .infinity, minHeight: 56)
+                    Label(controller?.phase == .starting ? "Démarrage…" : "Commencer l’écoute", systemImage: "waveform")
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(OrisColor.orisGreen)
+                .buttonStyle(BoutonPrincipal())
                 .disabled(controller?.phase == .starting || (config?.patientInformationMode != "none" && !patientInformed))
             }
-            .padding(OrisSpacing.s16)
+            .padding(.horizontal, OrisSpacing.s16)
+            .padding(.bottom, OrisSpacing.s32)
         }
-        .navigationTitle("Avant l’écoute")
+        .scrollContentBackground(.hidden)
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -146,16 +154,19 @@ struct ListeningView: View {
 
     private var relaunchView: some View {
         VStack(alignment: .leading, spacing: OrisSpacing.s16) {
-            Text(encounter.patient.displayName).font(.title.bold()).foregroundStyle(OrisColor.deepGreen)
+            NomPatient(patient: encounter.patient, taille: 22)
             Label(
                 encounter.status == .recording
                     ? "L’écoute a été interrompue (app fermée). La partie non captée sera signalée comme manquante."
                     : "L’écoute était en pause quand l’app a été fermée.",
                 systemImage: "exclamationmark.octagon.fill"
             )
-            .foregroundStyle(OrisColor.danger)
+            .font(Police.interface(15, .semibold))
+            .foregroundStyle(Teinte.alerte)
+            .carte(fond: Teinte.alerteDouce)
             if let audio {
-                Text("Audio déjà reçu : \(formatDuration(audio.receivedDurationMs)).").font(.subheadline)
+                Text("Audio déjà reçu : \(formatDuration(audio.receivedDurationMs)).")
+                    .font(Police.note).foregroundStyle(Teinte.encreDouce)
             }
             if config?.testAudioSourceEnabled == true {
                 Toggle("Son de test, sans micro (développement)", isOn: $useTestTone)
@@ -163,16 +174,15 @@ struct ListeningView: View {
             Button {
                 Task { await resumeAfterRelaunch() }
             } label: {
-                Text("Reprendre l’écoute").font(.title3.bold()).frame(maxWidth: .infinity, minHeight: 56)
+                Text("Reprendre l’écoute")
             }
-            .buttonStyle(.borderedProminent)
-            .tint(OrisColor.orisGreen)
+            .buttonStyle(BoutonPrincipal())
             Button("Terminer la consultation") {
                 Task { await finishAfterRelaunch() }
             }
-            .frame(maxWidth: .infinity, minHeight: 44)
+            .buttonStyle(BoutonSecondaire())
             if let errorText {
-                Text(errorText).foregroundStyle(OrisColor.danger)
+                Text(errorText).font(Police.note).foregroundStyle(Teinte.alerte)
             }
             Spacer()
         }
@@ -292,11 +302,36 @@ struct StatusLine: View {
 
     var body: some View {
         Label(text, systemImage: icon)
-            .font(.subheadline)
-            .foregroundStyle(tone == .critical ? OrisColor.danger : tone == .warning ? OrisColor.warning : OrisColor.deepGreen)
-            .padding(OrisSpacing.s12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(OrisColor.white, in: RoundedRectangle(cornerRadius: 12))
+            .font(Police.interface(14.5, .semibold))
+            .foregroundStyle(tone == .critical ? Teinte.alerte : tone == .warning ? Teinte.attention : Teinte.accent)
+            .carte(rembourrage: OrisSpacing.s12, fond: tone == .critical ? Teinte.alerteDouce : tone == .warning ? Teinte.attentionDouce : Teinte.surface)
             .accessibilityElement(children: .combine)
+    }
+}
+
+/// Consultation ou acte : deux grandes pilules, comme les filtres du site.
+struct ChoixSeance: View {
+    @Binding var choix: VisitKind
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(VisitKind.allCases) { kind in
+                Button { choix = kind } label: {
+                    Text(kind.label)
+                        .font(Police.interface(15, kind == choix ? .heavy : .semibold))
+                        .foregroundStyle(kind == choix ? .white : Teinte.encreDouce)
+                        .frame(maxWidth: .infinity, minHeight: 42)
+                        .background {
+                            if kind == choix {
+                                RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Teinte.accent)
+                            }
+                        }
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(kind == choix ? .isSelected : [])
+            }
+        }
+        .padding(4)
+        .background(Teinte.surfaceDouce, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
     }
 }

@@ -1,5 +1,19 @@
 # Changelog
 
+## App iPhone aux couleurs du site — 2026-09-21
+- Même langue visuelle que le site : fond crème, vert profond, Manrope pour
+  l'interface et Fraunces pour le nom « Oris » (polices embarquées dans l'app).
+- L'app reste en apparence claire même quand l'iPhone est en mode sombre : c'était la
+  cause du « blanc sur blanc ».
+- Accueil : date, grand bandeau vert « Commencer une consultation », carte « À relire ».
+- Patients : cartes avec initiales, NOM Prénom, nombre de comptes rendus, « à relire ».
+- Consultations : filtres, bandeau par jour, heure, praticien, pastilles de statut et
+  de documents (teinte par type), qui passent à la ligne au lieu d'être coupées.
+- Fiche consultation : intercalaires colorés par document, texte en page avec
+  rubriques titrées et mots-clés en gras.
+- Connexion : l'app déclenche la question d'iOS sur le réseau local, et dit en clair
+  l'adresse essayée et la cause d'un échec ; adresse et jeton se posent depuis le Mac.
+
 ## Comptes rendus aérés — 2026-09-21
 - Claude découpe chaque rubrique en **paragraphes courts** (une idée chacun) et met en
   **gras** les seuls éléments clés (diagnostic, traitement, dents, refus). Contrôle :

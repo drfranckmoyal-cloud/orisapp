@@ -21,6 +21,6 @@ struct RootView: View {
                 SettingsView(model: HomeViewModel(client: client), apiURL: client.baseURL, reconnect: reconnect)
             }
         }
-        .tint(OrisColor.orisGreen)
+        .tint(Teinte.accent)
     }
 }

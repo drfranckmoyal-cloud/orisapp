@@ -6,6 +6,7 @@ struct OrisApp: App {
 
     init() {
         Connexion.reglerDepuisLeMac()
+        ApparenceOris.appliquer()
         if !["localhost", "127.0.0.1", "::1"].contains(Connexion.serveur.host() ?? "") {
             ReseauLocal.demanderLAutorisation()
         }
@@ -21,6 +22,8 @@ struct OrisApp: App {
                 generation += 1
             }
             .id(generation)
+            // Le site n'a qu'une apparence : l'app ne bascule pas en sombre avec l'iPhone.
+            .preferredColorScheme(.light)
         }
     }
 }

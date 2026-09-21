@@ -14,14 +14,17 @@ struct ConsultationDetailView: View {
         Group {
             switch model.state {
             case .loading:
-                ProgressView("Chargement…")
+                ProgressView("Chargement…").tint(Teinte.accent)
             case .failed:
-                ContentUnavailableView("Consultation indisponible", systemImage: "exclamationmark.triangle")
+                MessageVide(icone: "exclamationmark.triangle", titre: "Consultation indisponible",
+                            texte: "Tirez vers le bas pour réessayer.")
+                    .padding(OrisSpacing.s16)
             case .loaded(let content):
                 loaded(content)
             }
         }
-        .background(OrisColor.sand)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .pageOris()
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await model.refresh() }
         .task { await model.refresh() }
@@ -31,13 +34,7 @@ struct ConsultationDetailView: View {
     private func loaded(_ content: ConsultationDetailViewModel.Content) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: OrisSpacing.s16) {
-                VStack(alignment: .leading, spacing: OrisSpacing.s4) {
-                    Text(content.encounter.patient.displayName)
-                        .font(.title2.bold())
-                        .foregroundStyle(OrisColor.deepGreen)
-                    Text("\(Labels.encounterStatus(content.encounter.status)) · dossier clinique v\(content.encounter.objectVersion)")
-                        .font(.subheadline)
-                }
+                EnTeteConsultation(encounter: content.encounter)
 
                 ForEach(content.criticalWarnings, id: \.code) { warning in
                     Label {
@@ -45,23 +42,16 @@ struct ConsultationDetailView: View {
                     } icon: {
                         Image(systemName: "exclamationmark.octagon.fill")
                     }
-                    .foregroundStyle(OrisColor.danger)
-                    .padding(OrisSpacing.s12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(OrisColor.white, in: RoundedRectangle(cornerRadius: OrisRadius.card))
+                    .font(Police.note)
+                    .foregroundStyle(Teinte.alerte)
+                    .carte(rembourrage: OrisSpacing.s12, fond: Teinte.alerteDouce)
                 }
 
                 if content.documents.isEmpty {
                     NoDocumentCard(encounter: content.encounter)
                 }
 
-                Picker("Vue", selection: $tab) {
-                    ForEach(content.documents) { document in
-                        Text(Labels.documentType(document.documentType)).tag(Tab.document(document.documentType))
-                    }
-                    Text("À vérifier (\(content.reviewItemCount))").tag(Tab.review)
-                }
-                .pickerStyle(.segmented)
+                Intercalaires(tab: $tab, documents: content.documents, aVerifier: content.reviewItemCount)
 
                 switch tab {
                 case .document(let type):
@@ -72,9 +62,76 @@ struct ConsultationDetailView: View {
                     ReviewCard(content: content)
                 }
             }
-            .padding(OrisSpacing.s16)
+            .padding(.horizontal, OrisSpacing.s16)
+            .padding(.bottom, OrisSpacing.s32)
         }
     }
+}
+
+/// Le patient, la date et le statut, comme l'en-tête de la page consultation du site.
+private struct EnTeteConsultation: View {
+    let encounter: EncounterSummary
+
+    var body: some View {
+        HStack(alignment: .center, spacing: OrisSpacing.s12) {
+            Vignette(initiales: encounter.patient.initiales, taille: 46)
+            VStack(alignment: .leading, spacing: 4) {
+                NomPatient(patient: encounter.patient, taille: 20)
+                if let date = encounter.date {
+                    Text("\(DateOris.jour(date)) · \(DateOris.heure(date))")
+                        .font(Police.interface(13, .medium))
+                        .foregroundStyle(Teinte.encreTresDouce)
+                }
+            }
+            Spacer(minLength: 4)
+            Pastille(texte: Labels.encounterStatus(encounter.status), ton: encounter.status.ton)
+        }
+        .padding(.top, OrisSpacing.s8)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// Un intercalaire par document, à la teinte de son type ; puis « À vérifier ».
+private struct Intercalaires: View {
+    @Binding var tab: ConsultationDetailView.Tab
+    let documents: [DocumentDetail]
+    let aVerifier: Int
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 6) {
+                ForEach(documents) { document in
+                    let teinte = Teinte.document(document.documentType)
+                    onglet(Labels.documentType(document.documentType), .document(document.documentType),
+                           encre: teinte.encre, fond: teinte.fond)
+                }
+                onglet("À vérifier · \(aVerifier)", .review,
+                       encre: aVerifier > 0 ? Teinte.attention : Teinte.encreDouce,
+                       fond: aVerifier > 0 ? Teinte.attentionDouce : Teinte.surfaceDouce)
+            }
+        }
+    }
+
+    private func onglet(_ titre: String, _ cible: ConsultationDetailView.Tab, encre: Color, fond: Color) -> some View {
+        let actif = tab == cible
+        return Button { tab = cible } label: {
+            Text(titre)
+                .font(Police.interface(14, .bold))
+                .foregroundStyle(actif ? .white : encre)
+                .padding(.horizontal, 14)
+                .frame(minHeight: 36)
+                .background(actif ? encre : fond, in: Capsule())
+                .overlay(Capsule().strokeBorder(encre.opacity(actif ? 0 : 0.2), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(actif ? .isSelected : [])
+    }
+}
+
+/// Le texte du site garde ses mots-clés en gras (**…**).
+func texteRiche(_ brut: String) -> AttributedString {
+    (try? AttributedString(markdown: brut, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
+        ?? AttributedString(brut)
 }
 
 private struct DocumentCard: View {
@@ -93,38 +150,41 @@ private struct DocumentCard: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: OrisSpacing.s12) {
-            HStack {
-                Text(Labels.documentStatus(document.status))
-                    .font(.caption.bold())
-                    .padding(.horizontal, OrisSpacing.s8)
-                    .padding(.vertical, OrisSpacing.s4)
-                    .background(OrisColor.sand, in: Capsule())
+        VStack(alignment: .leading, spacing: OrisSpacing.s16) {
+            HStack(spacing: OrisSpacing.s8) {
+                Pastille(texte: Labels.documentStatus(document.status),
+                         ton: [.validated, .exported].contains(document.status) ? .valide : .attention)
                 Text("Version \(document.version)")
-                    .font(.caption)
+                    .font(Police.interface(12, .semibold))
+                    .foregroundStyle(Teinte.encreTresDouce)
             }
             if !document.isCurrent {
                 Label("Rédigé avant la dernière correction : à régénérer.", systemImage: "arrow.triangle.2.circlepath")
-                    .font(.footnote)
-                    .foregroundStyle(OrisColor.warning)
+                    .font(Police.note)
+                    .foregroundStyle(Teinte.attention)
             }
             ForEach(sections, id: \.title) { section in
-                VStack(alignment: .leading, spacing: OrisSpacing.s4) {
-                    Text(section.title.uppercased())
-                        .font(.caption.bold())
-                        .foregroundStyle(OrisColor.deepGreen)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(section.title)
+                        .font(Police.interface(14.5, .heavy))
+                        .foregroundStyle(Teinte.document(document.documentType).encre)
+                        .padding(.bottom, 2)
+                        .overlay(alignment: .bottom) {
+                            Rectangle().fill(Teinte.document(document.documentType).encre.opacity(0.25))
+                                .frame(height: 1.5).offset(y: 2)
+                        }
                     ForEach(Array(section.claims.enumerated()), id: \.offset) { _, claim in
-                        Text(claim.text)
-                            .font(.body)
-                            .foregroundStyle(OrisColor.ink)
+                        Text(texteRiche(claim.text))
+                            .font(Police.interface(15.5, .regular))
+                            .lineSpacing(4)
+                            .foregroundStyle(Teinte.encre)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
+                .padding(.top, 4)
             }
         }
-        .padding(OrisSpacing.s16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(OrisColor.white, in: RoundedRectangle(cornerRadius: OrisRadius.card))
+        .carte(rembourrage: 20)
     }
 }
 
@@ -135,7 +195,8 @@ private struct ReviewCard: View {
         VStack(alignment: .leading, spacing: OrisSpacing.s16) {
             if content.reviewItemCount == 0 {
                 Text("Aucun point signalé. La validation reste une action du praticien.")
-                    .font(.subheadline)
+                    .font(Police.note)
+                    .foregroundStyle(Teinte.encreDouce)
             }
             ForEach(content.warnings, id: \.code) { warning in
                 Label(warning.message, systemImage: warning.severity == .critical ? "exclamationmark.octagon" : "exclamationmark.triangle")
@@ -147,21 +208,23 @@ private struct ReviewCard: View {
             }
 
             Text("Faits cliniques (\(content.facts.count))")
-                .font(.headline)
-                .foregroundStyle(OrisColor.deepGreen)
+                .font(Police.titreCarte)
+                .foregroundStyle(Teinte.encre)
             ForEach(content.facts, id: \.factId) { fact in
                 VStack(alignment: .leading, spacing: OrisSpacing.s4) {
                     Text(fact.concept + (fact.teeth.isEmpty ? "" : " — dent \(fact.teeth.joined(separator: ", "))"))
-                        .font(.subheadline.bold())
+                        .font(Police.interface(14.5, .bold))
+                        .foregroundStyle(Teinte.encre)
                     Text([Labels.assertion(fact.assertion), Labels.clinicalStatus(fact.clinicalStatus), Labels.certainty(fact.certainty)].joined(separator: " · "))
-                        .font(.caption)
+                        .font(Police.interface(12.5, .medium))
+                        .foregroundStyle(Teinte.encreTresDouce)
                 }
                 .accessibilityElement(children: .combine)
             }
         }
-        .padding(OrisSpacing.s16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(OrisColor.white, in: RoundedRectangle(cornerRadius: OrisRadius.card))
+        .font(Police.interface(14.5, .semibold))
+        .foregroundStyle(Teinte.attention)
+        .carte()
     }
 }
 
@@ -186,9 +249,8 @@ private struct NoDocumentCard: View {
 
     var body: some View {
         Label(reason, systemImage: "doc.questionmark")
-            .foregroundStyle(OrisColor.ink)
-            .padding(OrisSpacing.s12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(OrisColor.white, in: RoundedRectangle(cornerRadius: OrisRadius.card))
+            .font(Police.interface(15, .medium))
+            .foregroundStyle(Teinte.encreDouce)
+            .carte()
     }
 }

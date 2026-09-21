@@ -37,6 +37,7 @@ struct SettingsView: View {
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                     Button("Enregistrer et se reconnecter", action: enregistrer)
+                        .font(Police.interface(15.5, .bold))
                     if jetonPresent {
                         Button("Oublier le jeton", role: .destructive) {
                             Connexion.oublierJeton()
@@ -45,7 +46,7 @@ struct SettingsView: View {
                         }
                     }
                     if let message {
-                        Text(message).font(.footnote).foregroundStyle(OrisColor.danger)
+                        Text(message).font(Police.note).foregroundStyle(Teinte.alerte)
                     }
                 } header: {
                     Text("Connexion à Oris")
@@ -60,10 +61,14 @@ struct SettingsView: View {
 
                 Section {
                     Text("Le cabinet, vos titres, le vocabulaire et les préférences de rédaction se règlent sur l’ordinateur, dans Oris › Paramètres.")
-                        .font(.footnote)
-                        .foregroundStyle(OrisColor.ink)
+                        .font(Police.note)
+                        .foregroundStyle(Teinte.encreDouce)
                 }
             }
+            .font(Police.interface(15.5, .medium))
+            .foregroundStyle(Teinte.encre)
+            .tint(Teinte.accent)
+            .pageOris()
             .navigationTitle("Paramètres")
             .refreshable { await model.refresh() }
             .task { await model.refresh() }

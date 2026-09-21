@@ -14,6 +14,11 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Manrope.ttf</string>
+		<string>Fraunces.ttf</string>
+	</array>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_oris._tcp</string>

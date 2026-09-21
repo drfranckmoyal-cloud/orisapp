@@ -29,14 +29,14 @@ struct ActiveListeningView: View {
     var body: some View {
         VStack(spacing: OrisSpacing.s16) {
             HStack {
-                Text(patientName).font(.headline).foregroundStyle(OrisColor.deepGreen)
+                Text(patientName).font(Police.texteFort).foregroundStyle(Teinte.encre)
                 Spacer()
                 Label(
                     connectionText,
                     systemImage: controller.reconnecting || !isOnline ? "wifi.exclamationmark" : "wifi"
                 )
-                .font(.caption.bold())
-                .foregroundStyle(controller.reconnecting || !isOnline ? OrisColor.warning : OrisColor.deepGreen)
+                .font(Police.interface(12, .bold))
+                .foregroundStyle(controller.reconnecting || !isOnline ? Teinte.attention : Teinte.accent)
             }
 
             banners
@@ -45,29 +45,32 @@ struct ActiveListeningView: View {
 
             ZStack {
                 Circle()
-                    .fill(controller.phase == .recording ? OrisColor.orisGreen : OrisColor.white)
+                    .fill(controller.phase == .recording
+                          ? AnyShapeStyle(LinearGradient(colors: [Teinte.accentVif, Teinte.accent, Teinte.accentFonce], startPoint: .topLeading, endPoint: .bottomTrailing))
+                          : AnyShapeStyle(Teinte.surface))
+                    .shadow(color: Teinte.accentFonce.opacity(0.35), radius: 22, y: 12)
                     .frame(width: 140, height: 140)
                     .scaleEffect(pulse && controller.phase == .recording && !reduceMotion ? 1.06 : 1)
                     .animation(reduceMotion ? nil : .easeInOut(duration: 0.9).repeatForever(autoreverses: true), value: pulse)
                 Image(systemName: symbol)
                     .font(.system(size: 52, weight: .semibold))
-                    .foregroundStyle(controller.phase == .recording ? OrisColor.white : OrisColor.deepGreen)
+                    .foregroundStyle(controller.phase == .recording ? Color.white : Teinte.accent)
             }
             .accessibilityHidden(true)
             .onAppear { pulse = true }
 
             Text(stateText)
-                .font(.title2.bold())
-                .foregroundStyle(controller.phase == .microphoneLost || controller.phase == .interrupted ? OrisColor.danger : OrisColor.deepGreen)
+                .font(Police.marque(26))
+                .foregroundStyle(controller.phase == .microphoneLost || controller.phase == .interrupted ? Teinte.alerte : Teinte.accentFonce)
                 .accessibilityAddTraits(.updatesFrequently)
 
             Text(formatDuration(controller.recordedMs))
-                .font(.system(size: 48, weight: .semibold).monospacedDigit())
-                .foregroundStyle(OrisColor.deepGreen)
+                .font(Police.interface(48, .bold).monospacedDigit())
+                .foregroundStyle(Teinte.encre)
                 .accessibilityLabel("Durée écoutée \(formatDuration(controller.recordedMs))")
 
             ProgressView(value: controller.level)
-                .tint(OrisColor.brightGreen)
+                .tint(Teinte.accentVif)
                 .frame(width: 200)
                 .accessibilityHidden(true)
 
@@ -79,6 +82,8 @@ struct ActiveListeningView: View {
             actions
         }
         .padding(OrisSpacing.s16)
+        .background(Teinte.fond.ignoresSafeArea())
+        .tint(Teinte.accent)
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -125,11 +130,13 @@ struct ActiveListeningView: View {
                     Text(missing != nil
                          ? "\(missing?.count ?? 0) segment(s) ne sont pas arrivés au serveur."
                          : "Connexion absente : les derniers segments attendent. Ils restent chiffrés sur l’iPhone.")
-                        .font(.footnote)
+                        .font(Police.note)
+                        .foregroundStyle(Teinte.encreDouce)
                         .multilineTextAlignment(.center)
                     Button("Terminer malgré tout") { finish(true) }
-                        .buttonStyle(.bordered)
-                    Text("La partie manquante sera signalée par une alerte critique.").font(.caption)
+                        .buttonStyle(BoutonSecondaire())
+                    Text("La partie manquante sera signalée par une alerte critique.")
+                        .font(Police.interface(12, .medium)).foregroundStyle(Teinte.encreTresDouce)
                 }
             }
         } else {
@@ -138,27 +145,25 @@ struct ActiveListeningView: View {
                     Button {
                         Task { await controller.pause() }
                     } label: {
-                        Text("Pause").font(.title3.bold()).frame(maxWidth: .infinity, minHeight: 56)
+                        Text("Pause")
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(BoutonSecondaire())
                 } else {
                     Button {
                         Task { await controller.resume() }
                     } label: {
-                        Text("Reprendre").font(.title3.bold()).frame(maxWidth: .infinity, minHeight: 56)
+                        Text("Reprendre")
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(BoutonSecondaire())
                     .disabled(controller.maxDurationReached)
                 }
                 Button {
                     finish(false)
                 } label: {
-                    Text("Terminer").font(.title3.bold()).frame(maxWidth: .infinity, minHeight: 56)
+                    Text("Terminer")
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(OrisColor.deepGreen)
+                .buttonStyle(BoutonPrincipal())
             }
-            .tint(OrisColor.deepGreen)
         }
     }
 }
@@ -169,10 +174,8 @@ private struct Banner: View {
 
     var body: some View {
         Label(text, systemImage: critical ? "exclamationmark.octagon.fill" : "exclamationmark.triangle.fill")
-            .font(.footnote)
-            .foregroundStyle(critical ? OrisColor.danger : OrisColor.warning)
-            .padding(OrisSpacing.s12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(OrisColor.white, in: RoundedRectangle(cornerRadius: 12))
+            .font(Police.note)
+            .foregroundStyle(critical ? Teinte.alerte : Teinte.attention)
+            .carte(rembourrage: OrisSpacing.s12, fond: critical ? Teinte.alerteDouce : Teinte.attentionDouce)
     }
 }
