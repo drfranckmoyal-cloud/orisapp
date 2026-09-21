@@ -54,7 +54,6 @@
   position: relative;
   display: inline-block;
   overflow: hidden;
-  cursor: crosshair;
   touch-action: none;
   user-select: none;
 }
@@ -70,8 +69,28 @@
   position: absolute;
   border: 2px solid #fff;
   box-shadow: 0 0 0 9999px rgb(0 0 0 / 0.5);
-  pointer-events: none;
+  cursor: move;
 }
+
+/* Poignées : un carré blanc à chaque coin, une barre au milieu de chaque bord. */
+.poignee {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 2px solid var(--accent);
+  border-radius: 3px;
+  background: #fff;
+}
+
+.poignee[data-prise="h"] { left: 50%; top: 0; width: 34px; height: 10px; margin: -5px 0 0 -17px; cursor: ns-resize; }
+.poignee[data-prise="b"] { left: 50%; top: 100%; width: 34px; height: 10px; margin: -5px 0 0 -17px; cursor: ns-resize; }
+.poignee[data-prise="g"] { left: 0; top: 50%; width: 10px; height: 34px; margin: -17px 0 0 -5px; cursor: ew-resize; }
+.poignee[data-prise="d"] { left: 100%; top: 50%; width: 10px; height: 34px; margin: -17px 0 0 -5px; cursor: ew-resize; }
+.poignee[data-prise="hg"] { left: 0; top: 0; cursor: nwse-resize; }
+.poignee[data-prise="hd"] { left: 100%; top: 0; cursor: nesw-resize; }
+.poignee[data-prise="bg"] { left: 0; top: 100%; cursor: nesw-resize; }
+.poignee[data-prise="bd"] { left: 100%; top: 100%; cursor: nwse-resize; }
 
 .outils,
 .pied {

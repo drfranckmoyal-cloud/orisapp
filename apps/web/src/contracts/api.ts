@@ -2287,6 +2287,8 @@ export interface components {
              * @default
              */
             caption: string;
+            /** Format */
+            format?: ("large" | "demi") | null;
         };
         /** FigureOut */
         FigureOut: {
@@ -2299,6 +2301,11 @@ export interface components {
             caption: string;
             /** Position */
             position: number;
+            /**
+             * Format
+             * @enum {string}
+             */
+            format: "large" | "demi";
             /** Filename */
             filename: string;
             /** Media Type */

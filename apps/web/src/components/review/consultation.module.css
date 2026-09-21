@@ -515,9 +515,9 @@
   display: grid;
   gap: var(--espace-3);
   padding: var(--espace-4) var(--espace-4) var(--espace-4);
-  border: 1.5px solid var(--accent);
+  border: 1.5px solid var(--etape-1);
   border-radius: 14px;
-  background: var(--accent-douce);
+  background: var(--etape-1-douce);
   transition: box-shadow var(--transition), background var(--transition);
 }
 
@@ -535,8 +535,8 @@
 
 .documentationTete h3 {
   margin: 0;
-  font-size: var(--texte-lg);
-  color: var(--accent);
+  font-size: var(--texte-xl);
+  color: var(--etape-1);
 }
 
 .documentationTete span {
@@ -702,9 +702,9 @@
   display: grid;
   gap: var(--espace-3);
   padding: var(--espace-4);
-  border: 1px solid var(--trait-fort);
+  border: 1.5px solid var(--etape-3);
   border-radius: 14px;
-  background: var(--surface-2);
+  background: var(--etape-3-douce);
 }
 
 .envoiTete {
@@ -715,7 +715,8 @@
 }
 
 .envoiTete strong {
-  font-size: var(--texte-md);
+  font-size: var(--texte-xl);
+  color: var(--etape-3);
 }
 
 .envoiTete span,
@@ -828,4 +829,39 @@
 
 .ajouterAdresse:hover {
   background: var(--accent-douce);
+}
+
+/* Une photo « pleine largeur » occupe toute la rangée, comme à l'impression. */
+.figure[data-format="large"] {
+  grid-column: 1 / -1;
+}
+
+.figure[data-format="large"] img {
+  height: 240px;
+}
+
+.format {
+  display: inline-flex;
+  width: fit-content;
+  padding: 2px;
+  gap: 2px;
+  border-radius: 8px;
+  background: var(--surface-douce);
+}
+
+.format button {
+  padding: 3px 9px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-demi);
+  color: var(--encre-douce);
+  cursor: pointer;
+}
+
+.format button[aria-pressed="true"] {
+  background: var(--etape-1);
+  color: #fff;
 }

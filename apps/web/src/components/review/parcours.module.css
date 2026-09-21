@@ -1,0 +1,70 @@
+/* Le parcours d'un document : trois étapes, trois couleurs, une barre qui les relie. */
+
+.etape {
+  --teinte: var(--accent);
+  --teinte-douce: var(--accent-douce);
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: var(--espace-4);
+}
+
+.etape[data-teinte="documentation"] {
+  --teinte: var(--etape-1);
+  --teinte-douce: var(--etape-1-douce);
+}
+
+.etape[data-teinte="envoi"] {
+  --teinte: var(--etape-3);
+  --teinte-douce: var(--etape-3-douce);
+}
+
+.rail {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+/* La barre verticale descend jusqu'à l'étape suivante. */
+.rail::after {
+  content: "";
+  position: absolute;
+  top: 56px;
+  bottom: calc(-1 * var(--espace-6));
+  left: 50%;
+  width: 4px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: linear-gradient(var(--teinte), var(--trait));
+}
+
+.etape[data-dernier="true"] .rail::after {
+  display: none;
+}
+
+.numero {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border: 3px solid var(--teinte);
+  border-radius: 50%;
+  background: var(--surface);
+  font-size: 26px;
+  font-weight: var(--graisse-forte);
+  color: var(--teinte);
+  box-shadow: var(--lumiere), var(--relief);
+}
+
+.etape[data-fait="true"] .numero {
+  background: var(--teinte);
+  color: #fff;
+}
+
+.corps {
+  display: grid;
+  gap: var(--espace-4);
+  min-width: 0;
+  padding-bottom: var(--espace-6);
+}

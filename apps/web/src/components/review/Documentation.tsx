@@ -30,7 +30,8 @@ function vignette(id: string): string {
   return `${API_BASE_URL}/patients/attachments/${id}/apercu`;
 }
 
-type Figure = { attachment_id: string; caption: string };
+type Format = "large" | "demi";
+type Figure = { attachment_id: string; caption: string; format?: Format };
 
 /** Ce qui est en cours de correction : une photo déposée, ou une pièce déjà rangée. */
 type Retouche = {
@@ -84,7 +85,14 @@ export function Documentation({
     posees.map((f) => ({
       attachment_id: f.attachment_id,
       caption: brouillons[f.attachment_id] ?? f.caption,
+      format: f.format,
     }));
+
+  function changerFormat(id: string, format: Format) {
+    void poser(
+      actuelles().map((f) => (f.attachment_id === id ? { ...f, format } : f)),
+    );
+  }
 
   async function poser(liste: Figure[]) {
     setErreur(null);
@@ -240,14 +248,34 @@ export function Documentation({
       {posees.length > 0 && (
         <ol className={styles.figures}>
           {posees.map((figure, index) => (
-            <li key={figure.attachment_id} className={styles.figure}>
+            <li
+              key={figure.attachment_id}
+              className={styles.figure}
+              data-format={figure.format}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element -- fichier servi par l'API */}
               <img src={vignette(figure.attachment_id)} alt={figure.filename} />
               <div className={styles.figureTexte}>
-                <span className={styles.figureNumero}>
-                  Fig. {index + 1}
-                  {index === 0 && " · grand format"}
-                </span>
+                <span className={styles.figureNumero}>Fig. {index + 1}</span>
+                {/* La taille à l'impression : c'est le praticien qui choisit. */}
+                <div
+                  className={styles.format}
+                  role="group"
+                  aria-label="Taille à l'impression"
+                >
+                  {(["large", "demi"] as const).map((format) => (
+                    <button
+                      key={format}
+                      type="button"
+                      aria-pressed={figure.format === format}
+                      onClick={() =>
+                        changerFormat(figure.attachment_id, format)
+                      }
+                    >
+                      {format === "large" ? "Pleine largeur" : "Moitié"}
+                    </button>
+                  ))}
+                </div>
                 <input
                   className={styles.choix}
                   value={brouillons[figure.attachment_id] ?? figure.caption}

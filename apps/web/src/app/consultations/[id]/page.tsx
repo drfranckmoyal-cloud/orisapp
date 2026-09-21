@@ -12,6 +12,7 @@ import { CorrectionPanel } from "@/components/review/CorrectionPanel";
 import { DocumentBody } from "@/components/review/DocumentView";
 import { Documentation } from "@/components/review/Documentation";
 import { EnvoiDocument } from "@/components/review/EnvoiDocument";
+import { EtapeParcours } from "@/components/review/EtapeParcours";
 import { Envois } from "@/components/review/Envois";
 import { PlanVisuel } from "@/components/review/PlanVisuel";
 import { RailRevision } from "@/components/review/RailRevision";
@@ -559,181 +560,246 @@ export default function ConsultationPage() {
                 role="tabpanel"
                 aria-label={DOCUMENT_TYPE[active.document_type]}
               >
-                <header className={styles.feuilleEntete}>
-                  <div>
-                    <h2 className={styles.feuilleTitre}>
-                      {DOCUMENT_TYPE[active.document_type]}
-                    </h2>
-                    <p className={styles.feuilleVersion}>
-                      {DOCUMENT_STATUS[active.status]} · version{" "}
-                      {active.version} · rédigé depuis le dossier clinique v
-                      {active.generated_from_object_version}
-                    </p>
-                  </div>
-                  {!shadow && !enEdition && (
-                    <div className={styles.outils}>
-                      <Bouton
-                        variante="discret"
-                        onClick={() =>
+                {/* Trois temps, dans l'ordre : rédiger et valider, documenter, envoyer. */}
+                <EtapeParcours
+                  numero={1}
+                  teinte="redaction"
+                  fait={estValide(active)}
+                >
+                  <header className={styles.feuilleEntete}>
+                    <div>
+                      <h2 className={styles.feuilleTitre}>
+                        {DOCUMENT_TYPE[active.document_type]}
+                      </h2>
+                      <p className={styles.feuilleVersion}>
+                        {DOCUMENT_STATUS[active.status]} · version{" "}
+                        {active.version} · rédigé depuis le dossier clinique v
+                        {active.generated_from_object_version}
+                      </p>
+                    </div>
+                    {!shadow && !enEdition && (
+                      <div className={styles.outils}>
+                        <Bouton
+                          variante="discret"
+                          onClick={() =>
+                            setEdition({
+                              documentId: active.id,
+                              texte: active.content,
+                            })
+                          }
+                        >
+                          Éditer
+                        </Bouton>
+                        <Bouton
+                          variante="discret"
+                          onClick={() => void raccourcir()}
+                        >
+                          Raccourcir
+                        </Bouton>
+                        <Bouton
+                          variante="discret"
+                          onClick={() => void copyForRecord(active)}
+                        >
+                          Copier
+                        </Bouton>
+                        <Bouton
+                          variante="secondaire"
+                          onClick={() => void exportDocument(active)}
+                        >
+                          PDF
+                        </Bouton>
+                      </div>
+                    )}
+                  </header>
+
+                  {feedback && (
+                    <div
+                      className={`banner ${feedback.tone === "ok" ? "banner-info" : "banner-critical"}`}
+                      role="status"
+                    >
+                      {feedback.text}
+                    </div>
+                  )}
+
+                  {!active.is_current && (
+                    <div className="banner banner-review">
+                      Ce document a été rédigé avant la dernière correction du
+                      dossier clinique.
+                      <div>
+                        <Bouton
+                          variante="secondaire"
+                          onClick={() =>
+                            act(
+                              `/encounters/${id}/documents/generate`,
+                              undefined,
+                              "Documents régénérés.",
+                            )
+                          }
+                        >
+                          Régénérer les documents
+                        </Bouton>
+                      </div>
+                    </div>
+                  )}
+
+                  {active.document_type === "treatment_plan_text" && (
+                    <PlanVisuel encounterId={id} version={active.version} />
+                  )}
+
+                  {active.document_type === "treatment_plan_text" && object && (
+                    // Les outils du plan restent là, repliés : on lit d'abord, on corrige ensuite.
+                    <details className={styles.corrigerPlan}>
+                      <summary>
+                        Modifier le plan (statuts, ordre, ajouts, retraits)
+                      </summary>
+                      <TreatmentPlanCards
+                        encounter={data}
+                        clinicalObject={object}
+                        onSelectFact={(factId) =>
+                          setSelection({ kind: "fact", factId })
+                        }
+                        onCorrected={reloadAll}
+                      />
+                    </details>
+                  )}
+
+                  {active.document_type ===
+                  "treatment_plan_text" ? null : enEdition === null ? (
+                    <div className={styles.texte}>
+                      <DocumentBody
+                        document={active}
+                        selected={
+                          selection?.kind === "claim" ? selection.claim : null
+                        }
+                        onSelect={(claim) =>
+                          setSelection({ kind: "claim", claim })
+                        }
+                      />
+                    </div>
+                  ) : (
+                    <div style={{ display: "grid", gap: 12 }}>
+                      <div className="banner banner-review">
+                        Vous réécrivez le texte de ce document seulement. Le
+                        dossier clinique ne changera pas : si une donnée
+                        clinique est fausse, corrigez-la plutôt à droite.
+                      </div>
+                      <Zone
+                        value={enEdition.texte}
+                        autoFocus
+                        aria-label="Texte du document"
+                        onChange={(event) =>
                           setEdition({
                             documentId: active.id,
-                            texte: active.content,
+                            texte: event.target.value,
                           })
                         }
-                      >
-                        Éditer
-                      </Bouton>
-                      <Bouton
-                        variante="discret"
-                        onClick={() => void raccourcir()}
-                      >
-                        Raccourcir
-                      </Bouton>
-                      <Bouton
-                        variante="discret"
-                        onClick={() => void copyForRecord(active)}
-                      >
-                        Copier
-                      </Bouton>
-                      <Bouton
-                        variante="secondaire"
-                        onClick={() => void exportDocument(active)}
-                      >
-                        PDF
-                      </Bouton>
+                      />
+                      <Barre>
+                        <Bouton onClick={() => void enregistrerTexte(active)}>
+                          Enregistrer
+                        </Bouton>
+                        <Bouton
+                          variante="secondaire"
+                          onClick={() => setEdition(null)}
+                        >
+                          Annuler
+                        </Bouton>
+                      </Barre>
                     </div>
                   )}
-                </header>
 
-                {feedback && (
-                  <div
-                    className={`banner ${feedback.tone === "ok" ? "banner-info" : "banner-critical"}`}
-                    role="status"
-                  >
-                    {feedback.text}
-                  </div>
-                )}
+                  {active.generator.startsWith("practitioner") &&
+                    enEdition === null && (
+                      <p className="muted" style={{ margin: 0 }}>
+                        Texte réécrit à la main : la provenance phrase par
+                        phrase n’est plus disponible sur ce document.
+                      </p>
+                    )}
 
-                {!active.is_current && (
-                  <div className="banner banner-review">
-                    Ce document a été rédigé avant la dernière correction du
-                    dossier clinique.
-                    <div>
-                      <Bouton
-                        variante="secondaire"
-                        onClick={() =>
-                          act(
-                            `/encounters/${id}/documents/generate`,
-                            undefined,
-                            "Documents régénérés.",
-                          )
-                        }
-                      >
-                        Régénérer les documents
-                      </Bouton>
-                    </div>
-                  </div>
-                )}
-
-                {active.document_type === "treatment_plan_text" && (
-                  <PlanVisuel encounterId={id} version={active.version} />
-                )}
-
-                {active.document_type === "treatment_plan_text" && object && (
-                  // Les outils du plan restent là, repliés : on lit d'abord, on corrige ensuite.
-                  <details className={styles.corrigerPlan}>
-                    <summary>
-                      Modifier le plan (statuts, ordre, ajouts, retraits)
-                    </summary>
-                    <TreatmentPlanCards
-                      encounter={data}
-                      clinicalObject={object}
-                      onSelectFact={(factId) =>
-                        setSelection({ kind: "fact", factId })
-                      }
-                      onCorrected={reloadAll}
-                    />
-                  </details>
-                )}
-
-                {active.document_type ===
-                "treatment_plan_text" ? null : enEdition === null ? (
-                  <div className={styles.texte}>
-                    <DocumentBody
-                      document={active}
-                      selected={
-                        selection?.kind === "claim" ? selection.claim : null
-                      }
-                      onSelect={(claim) =>
-                        setSelection({ kind: "claim", claim })
-                      }
-                    />
-                  </div>
-                ) : (
-                  <div style={{ display: "grid", gap: 12 }}>
-                    <div className="banner banner-review">
-                      Vous réécrivez le texte de ce document seulement. Le
-                      dossier clinique ne changera pas : si une donnée clinique
-                      est fausse, corrigez-la plutôt à droite.
-                    </div>
-                    <Zone
-                      value={enEdition.texte}
-                      autoFocus
-                      aria-label="Texte du document"
-                      onChange={(event) =>
-                        setEdition({
-                          documentId: active.id,
-                          texte: event.target.value,
-                        })
-                      }
-                    />
-                    <Barre>
-                      <Bouton onClick={() => void enregistrerTexte(active)}>
-                        Enregistrer
-                      </Bouton>
-                      <Bouton
-                        variante="secondaire"
-                        onClick={() => setEdition(null)}
-                      >
-                        Annuler
-                      </Bouton>
-                    </Barre>
-                  </div>
-                )}
-
-                {active.generator.startsWith("practitioner") &&
-                  enEdition === null && (
-                    <p className="muted" style={{ margin: 0 }}>
-                      Texte réécrit à la main : la provenance phrase par phrase
-                      n’est plus disponible sur ce document.
-                    </p>
+                  {copyFallback !== null && (
+                    <label style={{ display: "grid", gap: 8 }}>
+                      Sélectionnez ce texte et copiez-le (Cmd+C) :
+                      <textarea
+                        readOnly
+                        rows={8}
+                        value={copyFallback}
+                        onFocus={(event) => event.currentTarget.select()}
+                        autoFocus
+                        style={{
+                          width: "100%",
+                          fontFamily: "inherit",
+                          padding: 8,
+                        }}
+                      />
+                    </label>
                   )}
 
-                {copyFallback !== null && (
-                  <label style={{ display: "grid", gap: 8 }}>
-                    Sélectionnez ce texte et copiez-le (Cmd+C) :
-                    <textarea
-                      readOnly
-                      rows={8}
-                      value={copyFallback}
-                      onFocus={(event) => event.currentTarget.select()}
-                      autoFocus
-                      style={{
-                        width: "100%",
-                        fontFamily: "inherit",
-                        padding: 8,
-                      }}
-                    />
-                  </label>
-                )}
+                  {!shadow && (
+                    <>
+                      {!estValide(active) && (
+                        <div className={styles.validation}>
+                          {criticalWarnings.length > 0 && (
+                            <label className={styles.prisConnaissance}>
+                              <input
+                                type="checkbox"
+                                checked={acknowledged}
+                                onChange={(event) =>
+                                  setAcknowledged(event.target.checked)
+                                }
+                              />
+                              J’ai pris connaissance de l’alerte critique : ce
+                              document n’est pas exhaustif.
+                            </label>
+                          )}
+                          <Bouton
+                            disabled={
+                              !active.is_current ||
+                              enEdition !== null ||
+                              (criticalWarnings.length > 0 && !acknowledged)
+                            }
+                            onClick={() =>
+                              act(
+                                `/documents/${active.id}/validate`,
+                                {
+                                  acknowledged_warning_codes: acknowledged
+                                    ? criticalWarnings.map((w) => w.code)
+                                    : [],
+                                },
+                                `${DOCUMENT_TYPE[active.document_type]} validé.`,
+                              )
+                            }
+                          >
+                            Valider :{" "}
+                            {DOCUMENT_TYPE[
+                              active.document_type
+                            ].toLocaleLowerCase("fr-FR")}
+                          </Bouton>
+                          <span className={styles.noteValidation}>
+                            Non validé, le PDF porte la mention « brouillon ».
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </EtapeParcours>
 
                 {!shadow && (
-                  <footer className={styles.feuillePied}>
+                  <EtapeParcours numero={2} teinte="documentation">
                     <Documentation
                       documentId={active.id}
                       patientId={data.patient.id}
                       encounterId={data.id}
                     />
+                  </EtapeParcours>
+                )}
+
+                {!shadow && (
+                  <EtapeParcours
+                    numero={3}
+                    teinte="envoi"
+                    fait={envoisDe(active.id).length > 0}
+                    dernier
+                  >
                     <EnvoiDocument
                       documentId={active.id}
                       version={active.version}
@@ -752,51 +818,7 @@ export default function ConsultationPage() {
                       envois={envoisDe(active.id)}
                       onChange={reloadAll}
                     />
-
-                    {!estValide(active) && (
-                      <div className={styles.validation}>
-                        {criticalWarnings.length > 0 && (
-                          <label className={styles.prisConnaissance}>
-                            <input
-                              type="checkbox"
-                              checked={acknowledged}
-                              onChange={(event) =>
-                                setAcknowledged(event.target.checked)
-                              }
-                            />
-                            J’ai pris connaissance de l’alerte critique : ce
-                            document n’est pas exhaustif.
-                          </label>
-                        )}
-                        <Bouton
-                          disabled={
-                            !active.is_current ||
-                            enEdition !== null ||
-                            (criticalWarnings.length > 0 && !acknowledged)
-                          }
-                          onClick={() =>
-                            act(
-                              `/documents/${active.id}/validate`,
-                              {
-                                acknowledged_warning_codes: acknowledged
-                                  ? criticalWarnings.map((w) => w.code)
-                                  : [],
-                              },
-                              `${DOCUMENT_TYPE[active.document_type]} validé.`,
-                            )
-                          }
-                        >
-                          Valider :{" "}
-                          {DOCUMENT_TYPE[
-                            active.document_type
-                          ].toLocaleLowerCase("fr-FR")}
-                        </Bouton>
-                        <span className={styles.noteValidation}>
-                          Non validé, le PDF porte la mention « brouillon ».
-                        </span>
-                      </div>
-                    )}
-                  </footer>
+                  </EtapeParcours>
                 )}
               </article>
             </>

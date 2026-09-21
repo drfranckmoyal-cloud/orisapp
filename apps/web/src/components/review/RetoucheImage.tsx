@@ -7,6 +7,9 @@ import { Bouton } from "@/components/ui";
 import styles from "./retouche.module.css";
 
 type Cadre = { x: number; y: number; w: number; h: number };
+/** Bords (h haut, b bas, g gauche, d droite), coins, ou le cadre entier. */
+type Prise = "h" | "b" | "g" | "d" | "hg" | "hd" | "bg" | "bd" | "deplacer";
+const POIGNEES: Prise[] = ["h", "b", "g", "d", "hg", "hd", "bg", "bd"];
 const TOUT: Cadre = { x: 0, y: 0, w: 1, h: 1 };
 
 /** Corriger une photo avant de la mettre au document : recadrer, retourner.
@@ -34,7 +37,12 @@ export function RetoucheImage({
   const [miroirH, setMiroirH] = useState(false);
   const [miroirV, setMiroirV] = useState(false);
   const [cadre, setCadre] = useState<Cadre>(TOUT);
-  const [depart, setDepart] = useState<{ x: number; y: number } | null>(null);
+  const [prise, setPrise] = useState<{
+    prise: Prise;
+    x: number;
+    y: number;
+    cadre: Cadre;
+  } | null>(null);
   const [travail, setTravail] = useState(false);
   const [legende, setLegende] = useState(legendeInitiale);
 
@@ -45,7 +53,7 @@ export function RetoucheImage({
     return () => window.removeEventListener("keydown", echap);
   }, [onAnnuler]);
 
-  function position(event: PointerEvent<HTMLDivElement>) {
+  function position(event: PointerEvent<HTMLElement>) {
     const boite = zone.current!.getBoundingClientRect();
     return {
       x: Math.min(Math.max((event.clientX - boite.left) / boite.width, 0), 1),
@@ -53,28 +61,40 @@ export function RetoucheImage({
     };
   }
 
-  function commencer(event: PointerEvent<HTMLDivElement>) {
+  /** Une poignée (bord, coin) ou le cadre entier est saisi ; on le tire. */
+  function saisir(prise: Prise, event: PointerEvent<HTMLElement>) {
+    event.stopPropagation();
     event.currentTarget.setPointerCapture(event.pointerId);
     const p = position(event);
-    setDepart(p);
-    setCadre({ x: p.x, y: p.y, w: 0, h: 0 });
+    setPrise({ prise, x: p.x, y: p.y, cadre });
   }
 
-  function tirer(event: PointerEvent<HTMLDivElement>) {
-    if (!depart) return;
+  function tirer(event: PointerEvent<HTMLElement>) {
+    if (!prise) return;
     const p = position(event);
-    setCadre({
-      x: Math.min(depart.x, p.x),
-      y: Math.min(depart.y, p.y),
-      w: Math.abs(p.x - depart.x),
-      h: Math.abs(p.y - depart.y),
-    });
-  }
-
-  function finir() {
-    setDepart(null);
-    // Un simple clic, sans tracer : on garde toute l'image.
-    setCadre((c) => (c.w < 0.03 || c.h < 0.03 ? TOUT : c));
+    const dx = p.x - prise.x;
+    const dy = p.y - prise.y;
+    const c = prise.cadre;
+    const MIN = 0.05;
+    let { x, y, w, h } = c;
+    if (prise.prise === "deplacer") {
+      x = Math.min(Math.max(c.x + dx, 0), 1 - c.w);
+      y = Math.min(Math.max(c.y + dy, 0), 1 - c.h);
+    } else {
+      if (prise.prise.includes("g")) {
+        x = Math.min(Math.max(c.x + dx, 0), c.x + c.w - MIN);
+        w = c.x + c.w - x;
+      }
+      if (prise.prise.includes("d"))
+        w = Math.min(Math.max(c.w + dx, MIN), 1 - c.x);
+      if (prise.prise.includes("h")) {
+        y = Math.min(Math.max(c.y + dy, 0), c.y + c.h - MIN);
+        h = c.y + c.h - y;
+      }
+      if (prise.prise.includes("b"))
+        h = Math.min(Math.max(c.h + dy, MIN), 1 - c.y);
+    }
+    setCadre({ x, y, w, h });
   }
 
   const change = miroirH || miroirV || cadre.w < 0.999 || cadre.h < 0.999;
@@ -127,16 +147,15 @@ export function RetoucheImage({
           <span>{nom}</span>
         </header>
         <p className={styles.aide}>
-          Tracez un cadre sur la photo pour la recadrer. Un clic sans tracer
-          garde toute l’image.
+          Tirez les bords ou les coins du cadre pour recadrer ; faites glisser le
+          cadre pour le déplacer.
         </p>
         <div className={styles.scene}>
           <div
             ref={zone}
             className={styles.zone}
-            onPointerDown={commencer}
             onPointerMove={tirer}
-            onPointerUp={finir}
+            onPointerUp={() => setPrise(null)}
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- image locale à corriger */}
             <img
@@ -156,7 +175,17 @@ export function RetoucheImage({
                 width: `${cadre.w * 100}%`,
                 height: `${cadre.h * 100}%`,
               }}
-            />
+              onPointerDown={(event) => saisir("deplacer", event)}
+            >
+              {POIGNEES.map((p) => (
+                <span
+                  key={p}
+                  className={styles.poignee}
+                  data-prise={p}
+                  onPointerDown={(event) => saisir(p, event)}
+                />
+              ))}
+            </div>
           </div>
         </div>
         <div className={styles.outils}>
