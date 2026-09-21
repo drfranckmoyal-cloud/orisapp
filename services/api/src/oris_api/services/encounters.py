@@ -364,12 +364,14 @@ def start(
     encounter: Encounter,
     settings: Settings,
     patient_informed: bool,
+    visit_kind: str = "consultation",
 ) -> Encounter:
     """Début de l'écoute. L'information du patient est une condition paramétrable (§65)."""
     if settings.patient_information_mode == "confirm" and not patient_informed:
         raise Conflict("PATIENT_INFORMATION_REQUIRED", str(encounter.id))
     transition(session, actor, encounter, "recording")
     audio.open_session(session, encounter)
+    encounter.metadata_json = {**encounter.metadata_json, "visit_kind": visit_kind}
     if patient_informed:
         encounter.metadata_json = {
             **encounter.metadata_json,

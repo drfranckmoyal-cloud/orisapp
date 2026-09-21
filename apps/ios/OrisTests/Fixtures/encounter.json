@@ -32,5 +32,6 @@
   "processing_errors": [],
   "started_at": "2026-09-17T09:00:00+00:00",
   "status": "review",
-  "synthetic_case_id": "ORIS-SYN-099"
+  "synthetic_case_id": "ORIS-SYN-099",
+  "visit_kind": "consultation"
 }

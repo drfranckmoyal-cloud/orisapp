@@ -114,7 +114,8 @@ def start(
 ) -> EncounterOut:
     encounter = encounters.get_encounter(session, actor, encounter_id)
     informed = body.patient_informed if body else False
-    encounters.start(session, actor, encounter, settings, informed)
+    kind = body.visit_kind if body else "consultation"
+    encounters.start(session, actor, encounter, settings, informed, kind)
     # L'écoute en direct est un confort : si elle ne s'ouvre pas, la consultation part
     # quand même. Rien de ce qu'elle produit n'entre dans le dossier (§14.1).
     if providers.live_speech_to_text is not None:

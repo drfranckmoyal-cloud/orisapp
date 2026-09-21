@@ -5489,6 +5489,15 @@
             },
             "type": "array",
             "title": "Documents"
+          },
+          "visit_kind": {
+            "type": "string",
+            "enum": [
+              "consultation",
+              "procedure"
+            ],
+            "title": "Visit Kind",
+            "default": "consultation"
           }
         },
         "type": "object",
@@ -5515,6 +5524,15 @@
             "type": "boolean",
             "title": "Patient Informed",
             "default": false
+          },
+          "visit_kind": {
+            "type": "string",
+            "enum": [
+              "consultation",
+              "procedure"
+            ],
+            "title": "Visit Kind",
+            "default": "consultation"
           }
         },
         "additionalProperties": false,

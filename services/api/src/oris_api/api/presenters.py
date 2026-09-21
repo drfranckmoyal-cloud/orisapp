@@ -58,6 +58,7 @@ def encounter_out(session: Session, encounter: Encounter) -> EncounterOut:
         synthetic_case_id=metadata.get("synthetic_case_id"),
         mode=encounter.mode,
         processing_errors=[ProcessingError(**e) for e in metadata.get("processing_errors", [])],
+        visit_kind=metadata.get("visit_kind", "consultation"),
         critical_warning_count=sum(1 for w in warnings if w["severity"] == "critical"),
         documents=[
             DocumentSummary(

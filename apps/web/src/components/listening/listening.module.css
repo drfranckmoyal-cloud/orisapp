@@ -186,3 +186,111 @@
   color: var(--encre-douce);
   font-style: italic;
 }
+
+/* L'écoute et son déroulé côte à côte. Le déroulé est un aide-mémoire : lisible sans
+   effort, mais plus pâle que tout ce qui sert à piloter l'écoute. */
+.ecoute {
+  display: grid;
+  grid-template-columns: minmax(0, 760px) 290px;
+  justify-content: center;
+  align-items: start;
+  gap: var(--espace-8);
+}
+
+.ecoute > .card {
+  margin: 0;
+  width: 100%;
+}
+
+.deroule {
+  position: sticky;
+  top: var(--espace-6);
+  padding: var(--espace-4) 0;
+  color: var(--encre-tres-douce);
+}
+
+.derouleTitre {
+  margin: 0 0 var(--espace-3);
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-forte);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.derouleTitre span {
+  font-weight: var(--graisse-moyenne);
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.derouleListe {
+  display: grid;
+  gap: 13px;
+  margin: 0;
+  padding: 0 0 0 var(--espace-4);
+  border-left: 2px solid var(--trait-fort);
+  list-style: none;
+  counter-reset: rubrique;
+}
+
+.derouleListe li {
+  counter-increment: rubrique;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: baseline;
+  font-size: var(--texte-md);
+  font-weight: var(--graisse-demi);
+  line-height: 1.3;
+}
+
+.derouleListe li::before {
+  content: counter(rubrique);
+  grid-row: span 2;
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-moyenne);
+  color: var(--trait-fort);
+}
+
+.derouleListe small {
+  grid-column: 2;
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-moyenne);
+}
+
+/* Le choix consultation / acte, avant l'écoute. */
+.typeVisite {
+  display: inline-flex;
+  width: fit-content;
+  padding: 4px;
+  gap: 4px;
+  border-radius: var(--rayon-bouton);
+  background: var(--surface-douce);
+}
+
+.typeVisite button {
+  padding: 8px 18px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  font: inherit;
+  font-weight: var(--graisse-demi);
+  color: var(--encre-douce);
+  cursor: pointer;
+}
+
+.typeVisite button[aria-pressed="true"] {
+  background: var(--surface);
+  border-color: var(--trait-fort);
+  color: var(--accent);
+  box-shadow: var(--lumiere);
+}
+
+@media (max-width: 1150px) {
+  .ecoute {
+    grid-template-columns: minmax(0, 760px);
+  }
+
+  .deroule {
+    display: none;
+  }
+}

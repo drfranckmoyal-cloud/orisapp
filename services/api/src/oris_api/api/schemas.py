@@ -130,6 +130,7 @@ class EncounterOut(BaseModel):
     processing_errors: list[ProcessingError]
     critical_warning_count: int
     documents: list[DocumentSummary]
+    visit_kind: VisitKind = "consultation"
 
 
 class ClaimOut(BaseModel):
@@ -309,9 +310,15 @@ class SyntheticCaseOut(BaseModel):
     segment_count: int
 
 
+VisitKind = Literal["consultation", "procedure"]
+
+
 class EncounterStart(BaseModel):
     model_config = ConfigDict(extra="forbid")
     patient_informed: bool = False
+    #: Choisi avant l'écoute : une consultation ou un acte. Il dit quel modèle de compte
+    #: rendu suivre, et quel déroulé afficher pendant l'écoute.
+    visit_kind: VisitKind = "consultation"
 
 
 class EncounterFinish(BaseModel):

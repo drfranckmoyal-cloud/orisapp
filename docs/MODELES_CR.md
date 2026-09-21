@@ -50,10 +50,20 @@ d'attention / précautions · Coordination / retour souhaité · « Bien confrat
 - **D.** Ordre : Motif · Examen clinique · Diagnostic / analyse · Proposition thérapeutique
   · Informations données au patient · Actes réalisés · Suite de la prise en charge ·
   Points d'attention / coordination.
-- **E.** Style télégraphique : plus de « Rapporté par le patient / Constaté », éléments
-  regroupés par rubrique. Numéros de dent et négations jamais raccourcis.
+- **E.** Style **rédigé** (révisé le 21/09 : d'abord télégraphique, puis Franck
+  préfère un compte rendu rédigé, en phrases). Les éléments d'une rubrique forment un
+  paragraphe lisible plutôt qu'une ligne par fait ; « Rapporté par le patient /
+  Constaté » est dit dans la phrase quand il compte. Numéros de dent et négations
+  jamais raccourcis. Calage à faire sur exemples réels.
 
 ## Points ouverts
 
 - **F. Plan de traitement** : modèle à écrire ensemble.
-- **G. Le déroulé en filigrane pendant l'écoute** : en discussion.
+- **G. Le déroulé pendant l'écoute** : niveau simple d'abord (liste fixe des rubriques),
+  choix « consultation » ou « acte » avant l'écoute. Le niveau vivant (rubriques cochées
+  quand elles sont abordées) viendra après essai.
+- **H. Trois styles de rédaction au choix** (idée de Franck, 21/09, à garder) :
+  **télégraphique**, **rédigé** (le style par défaut, point E), **exhaustif** — ce
+  dernier reprend une bonne partie de l'échange avec le patient. Vigilance pour
+  l'exhaustif : il reste bâti sur les faits du dossier clinique et ne cite que des
+  paroles réellement entendues, attribuées à qui les a dites.

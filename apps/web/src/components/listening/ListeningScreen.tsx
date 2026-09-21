@@ -2,8 +2,15 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
+import { Deroule } from "@/components/listening/Deroule";
 import { Traitement } from "@/components/listening/Traitement";
 import { TranscriptionDirecte } from "@/components/listening/TranscriptionDirecte";
 import {
@@ -23,18 +30,22 @@ import {
 import { MicrophoneSource, TestToneSource } from "@/lib/audio/sources";
 import { HttpUploadTransport } from "@/lib/audio/transport";
 import { errorMessage, formatDuration, nomPatient } from "@/lib/labels";
+import { TYPE_VISITE, type TypeVisite } from "@/lib/modeles";
 
 import styles from "./listening.module.css";
 
 type SourceKind = "microphone" | "test";
 
-function captureApi(encounterId: string): CaptureApi {
+function captureApi(
+  encounterId: string,
+  typeVisite: () => TypeVisite,
+): CaptureApi {
   return {
     async start(patientInformed) {
       try {
         await apiRequest(`/encounters/${encounterId}/start`, {
           method: "POST",
-          body: { patient_informed: patientInformed },
+          body: { patient_informed: patientInformed, visit_kind: typeVisite() },
         });
       } catch (error) {
         throw new Error(
@@ -104,6 +115,27 @@ function useOnline(): boolean {
   );
 }
 
+/** Temps écoulé depuis un instant : appelé au clic « Reprendre », jamais au rendu. */
+function dureeDepuis(instant: number): number {
+  return Math.max(0, Date.now() - instant);
+}
+
+/** L'écoute et, à côté, le déroulé du modèle choisi. */
+function AvecDeroule({
+  type,
+  children,
+}: {
+  type: TypeVisite;
+  children: ReactNode;
+}) {
+  return (
+    <div className={styles.ecoute}>
+      {children}
+      <Deroule type={type} />
+    </div>
+  );
+}
+
 const PERMISSION_LABEL: Record<string, string> = {
   granted: "Micro autorisé",
   prompt: "Autorisation du micro demandée au démarrage",
@@ -133,6 +165,16 @@ export function ListeningScreen({
   const controllerRef = useRef<CaptureController | null>(null);
   // Lu au moment d'ouvrir la source : un changement de choix après un échec est pris en compte.
   const sourceKindRef = useRef<SourceKind>("microphone");
+  // Consultation ou acte : choisi avant l'écoute, il fixe le modèle et le déroulé.
+  const [typeVisite, setTypeVisite] = useState<TypeVisite>(
+    encounter.visit_kind,
+  );
+  const typeVisiteRef = useRef<TypeVisite>(encounter.visit_kind);
+
+  function choisirType(type: TypeVisite) {
+    typeVisiteRef.current = type;
+    setTypeVisite(type);
+  }
 
   function chooseSource(kind: SourceKind) {
     sourceKindRef.current = kind;
@@ -148,7 +190,7 @@ export function ListeningScreen({
     nextTimestampMs: number;
   }) {
     const controller = new CaptureController({
-      api: captureApi(encounter.id),
+      api: captureApi(encounter.id, () => typeVisiteRef.current),
       transport: new HttpUploadTransport(encounter.id),
       createSource: () =>
         sourceKindRef.current === "test"
@@ -192,7 +234,8 @@ export function ListeningScreen({
 
   // « Marquer un point » (§11) : un signet sur l'instant écouté, rien de clinique.
   async function markMoment() {
-    const recordedMs = controllerRef.current?.state.recordedMs ?? snapshot?.recordedMs ?? 0;
+    const recordedMs =
+      controllerRef.current?.state.recordedMs ?? snapshot?.recordedMs ?? 0;
     try {
       const mark = await apiRequest<Mark>(`/encounters/${encounter.id}/marks`, {
         method: "POST",
@@ -234,8 +277,7 @@ export function ListeningScreen({
     const last = audio?.last_received_at
       ? Date.parse(audio.last_received_at)
       : null;
-    const interruptionMs =
-      last === null ? null : Math.max(0, Date.now() - last);
+    const interruptionMs = last === null ? null : dureeDepuis(last);
     await controller.resumeAfterReload(
       interruptionMs,
       encounter.status === "paused",
@@ -294,39 +336,41 @@ export function ListeningScreen({
   // --- Écoute interrompue par un rechargement -------------------------------------
   if (interrupted) {
     return (
-      <div className={styles.card}>
-        <h1>{name}</h1>
-        <div className="banner banner-critical" role="alert">
-          L’écoute a été interrompue (page fermée ou rechargée).
-          {encounter.status === "recording" &&
-            " La partie non captée sera signalée comme manquante."}
+      <AvecDeroule type={typeVisite}>
+        <div className={styles.card}>
+          <h1>{name}</h1>
+          <div className="banner banner-critical" role="alert">
+            L’écoute a été interrompue (page fermée ou rechargée).
+            {encounter.status === "recording" &&
+              " La partie non captée sera signalée comme manquante."}
+          </div>
+          <p className="muted">
+            {audio
+              ? `${formatDuration(audio.received_duration_ms)} d’audio déjà reçus par le serveur.`
+              : null}
+          </p>
+          {sourceChoice}
+          <div className={styles.actions}>
+            <button
+              type="button"
+              className="button button-large"
+              onClick={resumeInterrupted}
+            >
+              Reprendre l’écoute
+            </button>
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={finishInterrupted}
+            >
+              Terminer la consultation
+            </button>
+          </div>
+          {finishError && (
+            <div className="banner banner-critical">{finishError}</div>
+          )}
         </div>
-        <p className="muted">
-          {audio
-            ? `${formatDuration(audio.received_duration_ms)} d’audio déjà reçus par le serveur.`
-            : null}
-        </p>
-        {sourceChoice}
-        <div className={styles.actions}>
-          <button
-            type="button"
-            className="button button-large"
-            onClick={resumeInterrupted}
-          >
-            Reprendre l’écoute
-          </button>
-          <button
-            type="button"
-            className="button button-secondary"
-            onClick={finishInterrupted}
-          >
-            Terminer la consultation
-          </button>
-        </div>
-        {finishError && (
-          <div className="banner banner-critical">{finishError}</div>
-        )}
-      </div>
+      </AvecDeroule>
     );
   }
 
@@ -338,57 +382,80 @@ export function ListeningScreen({
   ) {
     const needsInformation = config.patient_information_mode === "confirm";
     return (
-      <div className={styles.card}>
-        <div>
-          <p className="subtitle">Nouvelle consultation</p>
-          <h1>{name}</h1>
-        </div>
-        <div className={styles.statusRow}>
-          <div
-            className={styles.status}
-            data-tone={permission === "denied" ? "critical" : undefined}
-          >
-            🎙{" "}
-            {sourceKind === "test"
-              ? "Son de test (sans micro)"
-              : (PERMISSION_LABEL[permission] ?? PERMISSION_LABEL.inconnue)}
+      <AvecDeroule type={typeVisite}>
+        <div className={styles.card}>
+          <div>
+            <p className="subtitle">Nouvelle consultation</p>
+            <h1>{name}</h1>
           </div>
           <div
-            className={styles.status}
-            data-tone={online ? undefined : "critical"}
+            className={styles.typeVisite}
+            role="group"
+            aria-label="Type de séance"
           >
-            {online ? "Connexion au serveur disponible" : "Hors connexion"}
+            {(["consultation", "procedure"] as const).map((type) => (
+              <button
+                key={type}
+                type="button"
+                aria-pressed={typeVisite === type}
+                disabled={phase === "starting"}
+                onClick={() => choisirType(type)}
+              >
+                {type === "procedure"
+                  ? "Acte (soins, chirurgie)"
+                  : TYPE_VISITE[type]}
+              </button>
+            ))}
+          </div>
+          <div className={styles.statusRow}>
+            <div
+              className={styles.status}
+              data-tone={permission === "denied" ? "critical" : undefined}
+            >
+              🎙{" "}
+              {sourceKind === "test"
+                ? "Son de test (sans micro)"
+                : (PERMISSION_LABEL[permission] ?? PERMISSION_LABEL.inconnue)}
+            </div>
+            <div
+              className={styles.status}
+              data-tone={online ? undefined : "critical"}
+            >
+              {online ? "Connexion au serveur disponible" : "Hors connexion"}
+            </div>
+          </div>
+          {sourceChoice}
+          {needsInformation && (
+            <label className={styles.choice}>
+              <input
+                type="checkbox"
+                checked={informed}
+                onChange={(event) => setInformed(event.target.checked)}
+              />
+              Le patient a été informé de l’enregistrement de la consultation.
+            </label>
+          )}
+          {snapshot?.errorCode && (
+            <div className="banner banner-critical" role="alert">
+              {errorMessage(snapshot.errorCode)}
+            </div>
+          )}
+          <div className={styles.actions}>
+            <button
+              type="button"
+              className="button button-large"
+              disabled={phase === "starting" || (needsInformation && !informed)}
+              onClick={() =>
+                void (controllerRef.current ?? createController()).start(
+                  informed,
+                )
+              }
+            >
+              {phase === "starting" ? "Démarrage…" : "Commencer l’écoute"}
+            </button>
           </div>
         </div>
-        {sourceChoice}
-        {needsInformation && (
-          <label className={styles.choice}>
-            <input
-              type="checkbox"
-              checked={informed}
-              onChange={(event) => setInformed(event.target.checked)}
-            />
-            Le patient a été informé de l’enregistrement de la consultation.
-          </label>
-        )}
-        {snapshot?.errorCode && (
-          <div className="banner banner-critical" role="alert">
-            {errorMessage(snapshot.errorCode)}
-          </div>
-        )}
-        <div className={styles.actions}>
-          <button
-            type="button"
-            className="button button-large"
-            disabled={phase === "starting" || (needsInformation && !informed)}
-            onClick={() =>
-              void (controllerRef.current ?? createController()).start(informed)
-            }
-          >
-            {phase === "starting" ? "Démarrage…" : "Commencer l’écoute"}
-          </button>
-        </div>
-      </div>
+      </AvecDeroule>
     );
   }
 
@@ -413,7 +480,7 @@ export function ListeningScreen({
         ? "alert"
         : "idle";
 
-  return (
+  const ecran = (
     <div className={styles.card}>
       {!enAttente && (
         <div className={styles.center}>
@@ -573,10 +640,16 @@ export function ListeningScreen({
       )}
       {!enAttente && <TranscriptionDirecte encounterId={encounter.id} />}
       {marks.length > 0 && !enAttente && (
-        <p className="muted" style={{ margin: 0, textAlign: "center" }} role="status">
-          {marks.length === 1 ? "1 point marqué" : `${marks.length} points marqués`} :{" "}
-          {marks.map((mark) => formatDuration(mark.timestamp_ms)).join(", ")}. Vous les
-          retrouverez à la relecture.
+        <p
+          className="muted"
+          style={{ margin: 0, textAlign: "center" }}
+          role="status"
+        >
+          {marks.length === 1
+            ? "1 point marqué"
+            : `${marks.length} points marqués`}{" "}
+          : {marks.map((mark) => formatDuration(mark.timestamp_ms)).join(", ")}.
+          Vous les retrouverez à la relecture.
         </p>
       )}
       {state.errorCode && state.phase !== "microphone_lost" && (
@@ -585,5 +658,11 @@ export function ListeningScreen({
         </div>
       )}
     </div>
+  );
+  // Pendant le traitement, le déroulé n'a plus d'usage : on ne garde que l'attente.
+  return enAttente ? (
+    ecran
+  ) : (
+    <AvecDeroule type={typeVisite}>{ecran}</AvecDeroule>
   );
 }

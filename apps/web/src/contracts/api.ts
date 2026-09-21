@@ -1984,6 +1984,12 @@ export interface components {
             critical_warning_count: number;
             /** Documents */
             documents: components["schemas"]["DocumentSummary"][];
+            /**
+             * Visit Kind
+             * @default consultation
+             * @enum {string}
+             */
+            visit_kind: "consultation" | "procedure";
         };
         /** EncounterStart */
         EncounterStart: {
@@ -1992,6 +1998,12 @@ export interface components {
              * @default false
              */
             patient_informed: boolean;
+            /**
+             * Visit Kind
+             * @default consultation
+             * @enum {string}
+             */
+            visit_kind: "consultation" | "procedure";
         };
         /** EncounterWarning */
         EncounterWarning: {

@@ -113,3 +113,26 @@ def test_a_draft_that_never_started_can_be_deleted(api: Any) -> None:
     patient = api.post("/patients", json={"first_name": "Test", "last_name": "Brouillon"}).json()
     created = api.post("/encounters", json={"patient_id": patient["id"]}).json()
     assert api.delete(f"/encounters/{created['id']}").status_code == 204
+
+
+def test_the_visit_kind_chosen_before_listening_is_kept(api: Any) -> None:
+    patient = api.post("/patients", json={"first_name": "Test", "last_name": "Acte"}).json()
+    created = api.post("/encounters", json={"patient_id": patient["id"]}).json()
+    assert created["visit_kind"] == "consultation"
+
+    started = api.post(
+        f"/encounters/{created['id']}/start",
+        json={"patient_informed": True, "visit_kind": "procedure"},
+    ).json()
+    assert started["visit_kind"] == "procedure"
+    assert api.get(f"/encounters/{created['id']}").json()["visit_kind"] == "procedure"
+
+
+def test_an_unknown_visit_kind_is_refused(api: Any) -> None:
+    patient = api.post("/patients", json={"first_name": "Test", "last_name": "Acte"}).json()
+    created = api.post("/encounters", json={"patient_id": patient["id"]}).json()
+    reponse = api.post(
+        f"/encounters/{created['id']}/start",
+        json={"patient_informed": True, "visit_kind": "suivi"},
+    )
+    assert reponse.status_code == 422
