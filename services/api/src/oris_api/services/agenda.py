@@ -111,16 +111,44 @@ def _jour_sur(valeur: object) -> str:
         raise JourneeInvalide("date du jour absente ou illisible") from erreur
 
 
+#: Ce que Doctolib met devant le nom, et qui n'en fait pas partie.
+CIVILITES: frozenset[str] = frozenset({"M", "Mme", "Mlle", "Mr", "Dr"})
+
+
+def separer_nom(patient: str) -> tuple[str, str]:
+    """« M. DROIT Justine » → (« Justine », « DROIT »). Doctolib écrit le nom en capitales.
+
+    Même règle que Dental Lens (`journee.separer_nom`), pour qu'un patient se coupe de la
+    même façon des deux côtés. Tout en capitales ou tout en minuscules : on ne peut pas
+    deviner, le premier mot fait le nom.
+    """
+    mots = [m for m in (patient or "").replace("\xa0", " ").split() if m]
+    while mots and mots[0].rstrip(".") in CIVILITES:
+        mots.pop(0)
+    nom = [m for m in mots if m.isupper() or (len(m) > 1 and m == m.upper())]
+    prenom = [m for m in mots if m not in nom]
+    if not nom or not prenom:
+        nom, prenom = mots[:1], mots[1:]
+    return " ".join(prenom), " ".join(nom)
+
+
 def _rendez_vous(brut: object) -> RendezVous | None:
     """Une ligne d'agenda, ou rien si elle n'a même pas de nom.
 
-    L'extension sépare déjà « M. DROIT Justine » en prénom/nom ; on ne refait pas ce
-    travail ici. Mais un agenda contient des lignes qui ne sont pas des patients (pause,
-    réunion, blocage) : sans nom exploitable, la ligne est écartée.
+    L'extension livre le nom **tel que Doctolib l'écrit**, dans `patient` : « M. DROIT
+    Justine ». C'est Dental Lens qui le coupe de son côté, et la note de reprise avait fait
+    croire qu'il arrivait déjà coupé. Oris exigeait donc un prénom ou un nom, n'en trouvait
+    jamais, et jetait toutes les lignes : chaque journée livrée arrivait vide. On accepte
+    donc les deux formes — `prenom`/`nom` s'ils sont là, sinon `patient` coupé ici.
+
+    Un agenda contient aussi des lignes qui ne sont pas des patients (pause, réunion,
+    blocage) : sans nom exploitable, la ligne est écartée.
     """
     if not isinstance(brut, dict):
         return None
     prenom, nom = _texte(brut.get("prenom")), _texte(brut.get("nom"))
+    if not nom and not prenom:
+        prenom, nom = separer_nom(_texte(brut.get("patient")))
     if not nom and not prenom:
         return None
     return RendezVous(

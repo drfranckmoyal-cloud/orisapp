@@ -424,6 +424,9 @@ class RendezVousDepot(BaseModel):
 
     model_config = ConfigDict(extra="ignore")
     heure: str = ""
+    #: Le nom tel que Doctolib l'écrit (« M. DROIT Justine ») : c'est ce que l'extension
+    #: livre. `prenom`/`nom` restent acceptés quand un expéditeur les a déjà séparés.
+    patient: str = ""
     prenom: str = ""
     nom: str = ""
     motif: str = ""

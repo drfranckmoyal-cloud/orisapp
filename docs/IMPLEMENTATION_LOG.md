@@ -1315,3 +1315,26 @@ Trois défauts corrigés, tous de mon côté :
 Pourquoi l'extension livre des journées vides pour des jours qui ne le sont pas. Cela se
 règle côté Dental Lens — l'état de la machine montrait deux onglets Doctolib ouverts en
 même temps et une tournée en cours.
+
+## La cause était dans Oris : chaque journée livrée arrivait vide (21 septembre 2026)
+
+Une fois l'extension capable de lire (0.18.0), Dental Lens recevait des journées pleines
+et Oris les mêmes journées **vides**. Le 29 : 13 rendez-vous chez Dental Lens, 0 chez Oris.
+
+L'extension livre `patient: "M. DROIT Justine"` — le nom tel que Doctolib l'écrit — sans
+`prenom` ni `nom`. C'est Dental Lens qui le coupe de son côté. La note de reprise disait
+« prénom et nom déjà séparés » : vrai du fichier que Dental Lens range, faux de ce que
+l'extension envoie. Oris exigeait l'un ou l'autre, n'en trouvait jamais, jetait toutes
+les lignes, et refusait la journée comme vide. D'où la demande qui ne se rayait jamais,
+et l'extension qui relisait le même jour chaque minute.
+
+`agenda.separer_nom()` reprend `journee.separer_nom()` de Dental Lens **à l'identique** —
+même liste de civilités, même règle pour reconnaître un nom en capitales — pour qu'un
+patient se coupe pareil des deux côtés. `prenom`/`nom` restent acceptés s'ils sont fournis.
+
+Vérifié de bout en bout sur la vraie machine : à 11:57, le 25 (6 rendez-vous) et le 29
+(13 rendez-vous) servis, plus aucune demande en attente.
+
+La leçon, trois fois aujourd'hui : un **silence** cachait une dépendance ou une erreur.
+C'est la trace des refus, ajoutée le matin même, qui a donné la réponse — « livraison
+vide » inscrite noir sur blanc à 11:53:22.

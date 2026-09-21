@@ -368,3 +368,55 @@ def test_a_request_nobody_served_within_the_hour_is_forgotten(tmp_path: Path) ->
     tmp_path.mkdir(parents=True, exist_ok=True)
     (tmp_path / "demandes.json").write_text(json.dumps({JOUR: vieille}), encoding="utf-8")
     assert agenda.demandes(reglage) == {}
+
+
+# --- Ce que l'extension livre vraiment ---------------------------------------------
+
+
+def test_the_name_is_split_as_doctolib_writes_it() -> None:
+    """Doctolib écrit la civilité, le nom en capitales, puis le prénom."""
+    assert agenda.separer_nom("M. DROIT Justine") == ("Justine", "DROIT")
+    assert agenda.separer_nom("Mme DA SILVA Maria") == ("Maria", "DA SILVA")
+    assert agenda.separer_nom("Dr MARTIN Jean-Pierre") == ("Jean-Pierre", "MARTIN")
+    assert agenda.separer_nom("") == ("", "")
+
+
+def test_a_delivery_in_the_extensions_own_shape_is_not_thrown_away(tmp_path: Path) -> None:
+    """L'extension envoie `patient`, pas `prenom`/`nom`. Oris jetait tout, faute de nom,
+    et chaque journée livrée arrivait vide — c'est ce qui a bloqué la matinée."""
+    reglage = reglages(tmp_path)
+    telle_quelle = {
+        "jour": JOUR,
+        "rendezvous": [
+            {
+                "heure": "09:30",
+                "patient": "M. DROIT Justine",
+                "motif": "Contrôle",
+                "statut": "À venir",
+                "dossier_cemedis": "",
+            },
+            {
+                "heure": "10:00",
+                "patient": "Mme DA SILVA Maria",
+                "motif": "Endodontie",
+                "statut": "À venir",
+                "dossier_cemedis": "",
+            },
+        ],
+        "diagnostic": {"lignes": 2, "retenus": 2, "entetes": True},
+    }
+    depot = agenda.deposer(reglage, telle_quelle)
+    assert (depot.rendezvous, depot.remplace) == (2, True)
+    premier, second = agenda.lire(reglage, JOUR).rendezvous
+    assert (premier.prenom, premier.nom) == ("Justine", "DROIT")
+    assert (second.prenom, second.nom) == ("Maria", "DA SILVA")
+
+
+def test_the_extensions_shape_goes_through_the_endpoint(api: Any, tmp_path: Path) -> None:
+    """Même chose de bout en bout, par la vraie route, depuis cette machine."""
+    reponse = deposer_par_api(
+        api,
+        tmp_path,
+        {"jour": JOUR, "rendezvous": [{"heure": "09:30", "patient": "M. DROIT Justine"}]},
+    )
+    assert reponse.json()["rendezvous"] == 1
