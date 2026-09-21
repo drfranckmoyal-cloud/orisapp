@@ -5,6 +5,7 @@ struct CarnetView: View {
     let client: APIClient
 
     @State private var carnet: [Correspondant] = []
+    @State private var specialites: [String] = []
     @State private var recherche = ""
     @State private var chargement = true
     @State private var erreur: String?
@@ -22,11 +23,7 @@ struct CarnetView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: OrisSpacing.s16) {
-                    HStack(alignment: .bottom) {
-                        EnTetePage(surtitre: "Carnet", titre: "Correspondants")
-                        Button("Nouveau") { creation = true }
-                            .buttonStyle(BoutonSecondaire(compact: true))
-                    }
+                    EnTetePage(surtitre: "Carnet", titre: "Correspondants")
                     ChampRecherche(texte: $recherche)
                     if let erreur {
                         Label(erreur, systemImage: "exclamationmark.triangle")
@@ -43,7 +40,7 @@ struct CarnetView: View {
                             ForEach(filtres) { c in
                                 NavigationLink(value: c) {
                                     HStack {
-                                        LigneCorrespondant(correspondant: c)
+                                        LigneCorrespondant(correspondant: c, specialites: specialites)
                                         Image(systemName: "chevron.right")
                                             .font(.system(size: 12, weight: .bold))
                                             .foregroundStyle(Teinte.traitFort)
@@ -61,9 +58,12 @@ struct CarnetView: View {
                     }
                 }
                 .padding(.horizontal, OrisSpacing.s16)
-                .padding(.bottom, OrisSpacing.s32)
+                .padding(.bottom, 90)
             }
             .pageOris()
+            .overlay(alignment: .bottomTrailing) {
+                BoutonFlottant(titre: "Nouveau correspondant", icone: "person.badge.plus") { creation = true }
+            }
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: Correspondant.self) { c in
                 FicheCorrespondantView(client: client, fiche: c) { resultat in
@@ -92,6 +92,7 @@ struct CarnetView: View {
         defer { chargement = false }
         do {
             carnet = try await client.correspondants()
+            specialites = (try? await client.specialites()) ?? specialites
             erreur = nil
         } catch {
             erreur = "Carnet indisponible. " + Connexion.pourquoi(error, adresse: client.baseURL)

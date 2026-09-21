@@ -27,14 +27,10 @@ struct NewConsultationView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: OrisSpacing.s16) {
-                    HStack(alignment: .bottom) {
-                        EnTetePage(
-                            surtitre: embedded ? "Données fictives uniquement" : "Nouvelle consultation",
-                            titre: embedded ? "Patients" : "Quel patient ?"
-                        )
-                        Button("Nouveau patient") { showCreate = true }
-                            .buttonStyle(BoutonSecondaire(compact: true))
-                    }
+                    EnTetePage(
+                        surtitre: embedded ? "Données fictives uniquement" : "Nouvelle consultation",
+                        titre: embedded ? "Patients" : "Quel patient ?"
+                    )
 
                     ChampRecherche(texte: $search)
 
@@ -73,9 +69,12 @@ struct NewConsultationView: View {
                     .carte(rembourrage: 12, fond: Teinte.surface2)
                 }
                 .padding(.horizontal, OrisSpacing.s16)
-                .padding(.bottom, OrisSpacing.s32)
+                .padding(.bottom, 90)
             }
             .pageOris()
+            .overlay(alignment: .bottomTrailing) {
+                BoutonFlottant(titre: "Nouveau patient", icone: "person.badge.plus") { showCreate = true }
+            }
             .refreshable { await load() }
             .toolbar {
                 if !embedded {

@@ -100,6 +100,7 @@ struct CorrespondantsPatient: View {
     @Binding var toast: String?
 
     @State private var liens: [Rattachement] = []
+    @State private var specialites: [String] = []
     @State private var ajout = false
     @State private var ouverte: Correspondant?
     @State private var erreur: String?
@@ -122,7 +123,7 @@ struct CorrespondantsPatient: View {
             ForEach(liens) { lien in
                 HStack(spacing: 4) {
                     Button { ouverte = lien.correspondent } label: {
-                        LigneCorrespondant(correspondant: lien.correspondent, role: lien.role)
+                        LigneCorrespondant(correspondant: lien.correspondent, role: lien.role, specialites: specialites)
                     }
                     .buttonStyle(.plain)
                     Menu {
@@ -173,6 +174,7 @@ struct CorrespondantsPatient: View {
 
     private func charger() async {
         liens = (try? await client.rattachements(patientId: patientId)) ?? liens
+        specialites = (try? await client.specialites()) ?? specialites
     }
 
     private func rattacher(_ id: String, _ role: RoleCorrespondant) async {
@@ -205,6 +207,7 @@ struct RattacherView: View {
     @Environment(\.dismiss) private var fermer
     @State private var role: RoleCorrespondant = .referredBy
     @State private var carnet: [Correspondant] = []
+    @State private var specialites: [String] = []
     @State private var recherche = ""
     @State private var creation = false
     @State private var erreur: String?
@@ -238,7 +241,7 @@ struct RattacherView: View {
                         ForEach(proposes) { c in
                             Button { Task { await rattacher(c) } } label: {
                                 HStack {
-                                    LigneCorrespondant(correspondant: c)
+                                    LigneCorrespondant(correspondant: c, specialites: specialites)
                                     Image(systemName: "plus.circle.fill")
                                         .font(.system(size: 22)).foregroundStyle(Teinte.accent)
                                 }
@@ -263,7 +266,10 @@ struct RattacherView: View {
                     if let cree { Task { await rattacher(cree) } }
                 }
             }
-            .task { carnet = (try? await client.correspondants()) ?? [] }
+            .task {
+                carnet = (try? await client.correspondants()) ?? []
+                specialites = (try? await client.specialites()) ?? []
+            }
         }
         .tint(Teinte.accent)
     }

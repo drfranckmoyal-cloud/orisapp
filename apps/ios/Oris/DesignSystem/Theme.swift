@@ -236,19 +236,86 @@ struct PastilleDocument: View {
     }
 }
 
-/// Initiales dans un rond vert pâle : patient ou praticien.
+/// Initiales dans un rond : vert pâle par défaut (patient, praticien), ou dans la teinte
+/// de la spécialité pour un correspondant.
 struct Vignette: View {
     let initiales: String
     var taille: CGFloat = 38
+    var teinte: TeinteVignette = .standard
 
     var body: some View {
         Text(initiales)
             .font(Police.interface(taille * 0.34, .heavy, relativeTo: .caption))
-            .foregroundStyle(Teinte.accent)
+            .foregroundStyle(teinte.encre)
             .frame(width: taille, height: taille)
-            .background(Teinte.accentDouce, in: Circle())
-            .overlay(Circle().strokeBorder(Teinte.accent.opacity(0.12), lineWidth: 1))
+            .background(teinte.fond, in: Circle())
+            .overlay(Circle().strokeBorder(teinte.bord, lineWidth: 1))
             .accessibilityHidden(true)
+    }
+}
+
+struct TeinteVignette: Equatable {
+    let fond: Color
+    let bord: Color
+    let encre: Color
+
+    static let standard = TeinteVignette(fond: Teinte.accentDouce, bord: Teinte.accent.opacity(0.12), encre: Teinte.accent)
+    static let neutre = TeinteVignette(fond: Teinte.surfaceDouce, bord: Teinte.traitFort, encre: Teinte.encreDouce)
+
+    /// Les teintes du carnet, les mêmes que sur le site (correspondants.module.css).
+    static let palette: [TeinteVignette] = [
+        .init(fond: Color(hex: 0xE5EFE9), bord: Color(hex: 0xC9DED4), encre: Color(hex: 0x14533B)), // vert
+        .init(fond: Color(hex: 0xE4E9F0), bord: Color(hex: 0xC9D4E2), encre: Color(hex: 0x2C4A6B)), // ardoise
+        .init(fond: Color(hex: 0xF6E6DA), bord: Color(hex: 0xE6CDB8), encre: Color(hex: 0x8A4213)), // terre
+        .init(fond: Color(hex: 0xEDE2EE), bord: Color(hex: 0xDBC8DE), encre: Color(hex: 0x5E3566)), // prune
+        .init(fond: Color(hex: 0xF5ECD4), bord: Color(hex: 0xE5D6AD), encre: Color(hex: 0x7A5A12)), // ocre
+        .init(fond: Color(hex: 0xDCEFEE), bord: Color(hex: 0xBFDEDB), encre: Color(hex: 0x1D5B58)), // lagune
+        .init(fond: Color(hex: 0xE7EEE0), bord: Color(hex: 0xD2DDC6), encre: Color(hex: 0x45602F)), // sauge
+        .init(fond: Color(hex: 0xE5E4F2), bord: Color(hex: 0xCDCAE4), encre: Color(hex: 0x403A75)), // indigo
+        .init(fond: Color(hex: 0xFADDE6), bord: Color(hex: 0xEEB8C9), encre: Color(hex: 0xA03A58)), // rose
+    ]
+
+    /// Spécialités dont la couleur est arrêtée (comme sur le site).
+    static let fixes: [String: Int] = ["Omnipraticien": 0, "ODF": 1, "CMF": 2, "Pédodontie": 8]
+
+    /// Même règle que le site : couleur fixe, sinon rang parmi les spécialités du cabinet.
+    static func specialite(_ specialite: String, connues: [String]) -> TeinteVignette {
+        guard !specialite.isEmpty else { return .neutre }
+        if let fixe = fixes[specialite] { return palette[fixe] }
+        let libres = palette.indices.filter { !fixes.values.contains($0) }.map { palette[$0] }
+        let autres = connues.filter { fixes[$0] == nil }
+        if let rang = autres.firstIndex(of: specialite) { return libres[rang % libres.count] }
+        var somme = 0
+        for lettre in specialite.unicodeScalars { somme = (somme * 31 + Int(lettre.value)) % 100_000 }
+        return libres[somme % libres.count]
+    }
+}
+
+/// Le bouton d'ajout, flottant en bas à droite, sous le pouce — comme « Nouveau
+/// message » dans Mail : on le trouve sans chercher.
+struct BoutonFlottant: View {
+    let titre: String
+    var icone = "plus"
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Label(titre, systemImage: icone)
+                .font(Police.interface(16, .heavy))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 20)
+                .frame(height: 54)
+                .background(
+                    LinearGradient(colors: [Teinte.accentVif, Teinte.accent, Teinte.accentFonce],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing),
+                    in: Capsule()
+                )
+                .overlay(Capsule().strokeBorder(.white.opacity(0.15), lineWidth: 1))
+                .shadow(color: Teinte.accentFonce.opacity(0.4), radius: 14, y: 8)
+        }
+        .buttonStyle(.plain)
+        .padding(.trailing, OrisSpacing.s16)
+        .padding(.bottom, OrisSpacing.s12)
     }
 }
 

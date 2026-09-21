@@ -23,7 +23,7 @@ struct FicheCorrespondantView: View {
             if !creation {
                 Section {
                     HStack(spacing: OrisSpacing.s12) {
-                        Vignette(initiales: fiche.initiales, taille: 50)
+                        Vignette(initiales: fiche.initiales, taille: 50, teinte: fiche.teinte(specialites))
                         VStack(alignment: .leading, spacing: 3) {
                             Text(fiche.nomCourt).font(Police.interface(19, .heavy)).foregroundStyle(Teinte.encre)
                             Text([fiche.specialty, fiche.practice].filter { !$0.isEmpty }.joined(separator: " · "))
@@ -143,10 +143,12 @@ struct FicheCorrespondantView: View {
 struct LigneCorrespondant: View {
     let correspondant: Correspondant
     var role: RoleCorrespondant? = nil
+    /// Les spécialités du cabinet, pour la couleur de la vignette (même règle que le site).
+    var specialites: [String] = []
 
     var body: some View {
         HStack(spacing: OrisSpacing.s12) {
-            Vignette(initiales: correspondant.initiales, taille: 38)
+            Vignette(initiales: correspondant.initiales, taille: 38, teinte: correspondant.teinte(specialites))
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 5) {
                     Text(correspondant.nomCourt)

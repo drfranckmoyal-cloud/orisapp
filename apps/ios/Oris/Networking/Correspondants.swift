@@ -40,6 +40,11 @@ struct Correspondant: Codable, Equatable, Sendable, Identifiable, Hashable {
         return "\(firstName.trimmingCharacters(in: .whitespaces).prefix(1))\(lastName.prefix(1))".uppercased()
     }
 
+    /// Couleur de la vignette : celle de la spécialité ; une structure reste neutre.
+    func teinte(_ specialites: [String]) -> TeinteVignette {
+        estStructure ? .neutre : .specialite(specialty, connues: specialites)
+    }
+
     /// Une fiche vide, pour la création.
     static func nouveau() -> Correspondant {
         Correspondant(id: "", kind: "practitioner", title: "Dr", lastName: "", firstName: "", specialty: "",
