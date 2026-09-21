@@ -406,7 +406,8 @@ def _nom_correspondant(fiche: Correspondent) -> str:
     """« Dr Claire Martin · ODF » ; une structure garde son seul nom."""
     if fiche.kind == "organisation":
         return fiche.last_name
-    nom = " ".join(part for part in (fiche.title, fiche.first_name, fiche.last_name) if part)
+    parts = (fiche.title, fiche.first_name, fiche.last_name)
+    nom = " ".join(part.strip() for part in parts if part.strip())
     return f"{nom} · {fiche.specialty}" if fiche.specialty else nom
 
 

@@ -49,6 +49,8 @@ FOOTER = "{page}"
 MARGIN = 20 * mm
 LOGO_HEIGHT = 9 * mm
 LOGO_MAX_WIDTH = 46 * mm
+#: Le monogramme du praticien, à côté du nom : la hauteur du nom et de ses titres.
+LOGO_ENTETE = 20 * mm
 
 
 @dataclass(frozen=True)
@@ -270,42 +272,51 @@ def draw_letterhead(
     width: float,
     top: float,
 ) -> float:
-    """En-tête du modèle : identité à gauche, coordonnées à droite, titre, bloc patient.
+    """En-tête : logo à côté du nom, titres, puis RPPS et coordonnées ; titre, bloc patient.
 
-    Pas de logo : les modèles du praticien n'en ont pas, l'identité est le nom.
+    Tout est aligné à gauche, sous le nom : l'identité se lit d'un seul regard.
     """
-    y = top - 5 * mm
+    x = MARGIN
+    logo_height = 0.0
+    if cabinet.logo is not None:
+        image = ImageReader(str(cabinet.logo))
+        w, h = image.getSize()
+        logo_height = LOGO_ENTETE
+        logo_width = logo_height * w / h
+        canvas.drawImage(
+            image, MARGIN, top - logo_height, width=logo_width, height=logo_height, mask="auto"
+        )
+        x = MARGIN + logo_width + 4 * mm
+    y = top - 6 * mm
 
     canvas.setFillColor(color("title"))
     canvas.setFont(SERIF_GRAS, 19)
-    canvas.drawString(MARGIN, y, signature(context, cabinet))
+    canvas.drawString(x, y, signature(context, cabinet))
     y -= 5.2 * mm
     canvas.setFillColor(color("body"))
     canvas.setFont(SERIF, 10)
     for line in cabinet.qualification_lines():
-        canvas.drawString(MARGIN, y, line)
+        canvas.drawString(x, y, line)
         y -= 4.2 * mm
 
-    # Coordonnées à droite : RPPS en gras, puis adresse, courriel, téléphone.
-    right = top - 3 * mm
+    # Coordonnées sous les titres : RPPS, puis le cabinet et son adresse, puis courriel
+    # et téléphone — trois lignes au plus, un champ vide ne laisse pas de trou.
+    y -= 1.5 * mm
     if cabinet.legal:
-        canvas.setFont(SERIF_GRAS, 9)
+        canvas.setFont(SERIF_GRAS, 8.5)
         canvas.setFillColor(color("body"))
         legal = cabinet.legal if ":" in cabinet.legal else f"RPPS : {cabinet.legal}"
-        canvas.drawRightString(width - MARGIN, right, legal)
-        right -= 4 * mm
-    canvas.setFont(SERIF, 9)
+        canvas.drawString(x, y, legal)
+        y -= 3.9 * mm
+    canvas.setFont(SERIF, 8.5)
     canvas.setFillColor(color("title"))
-    for line in (
-        cabinet.name if cabinet.name != "Cabinet" else "",
-        cabinet.address,
-        cabinet.email,
-        cabinet.phone,
-    ):
+    nom = cabinet.name if cabinet.name != "Cabinet" else ""
+    for parts in ((nom, cabinet.address), (cabinet.email, cabinet.phone)):
+        line = " · ".join(part for part in parts if part)
         if line:
-            canvas.drawRightString(width - MARGIN, right, line)
-            right -= 4 * mm
-
+            canvas.drawString(x, y, line)
+            y -= 3.9 * mm
+    right = top - logo_height
     y = min(y, right) - 12 * mm
     canvas.setFillColor(color("title"))
     canvas.setFont(SERIF_GRAS, 25)
