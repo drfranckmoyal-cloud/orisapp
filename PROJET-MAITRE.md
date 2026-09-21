@@ -74,6 +74,10 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 - **Noter à qui un document est parti** : le patient, un correspondant ou quelqu'un
   d'autre, par mail, courrier ou en main propre. Oris n'envoie rien lui-même ; la liste
   des consultations affiche « Envoyé à Dr Martin ».
+- **L'app iPhone tourne** (21 sept., sur simulateur) : patients, choix consultation /
+  acte avec le déroulé, écoute, consultations et comptes rendus. Pour l'installer sur
+  votre iPhone, trois gestes vous reviennent (identifiant Apple dans Xcode) et une
+  décision (ouvrir le serveur au Wi-Fi du cabinet) : voir `docs/IPHONE.md`.
 - **Vos modèles de compte rendu** (21 sept.) : le compte rendu de consultation, le
   compte rendu opératoire et le courrier d'adressage suivent les rubriques de vos
   modèles Word, **avec vos mots** (plus de libellés de liste qui trahissaient le sens).

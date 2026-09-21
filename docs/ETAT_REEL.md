@@ -31,7 +31,7 @@ trois des dix-huit ne sont atteints que « côté serveur », sans écran digne 
 
 | # | Critère | État |
 |---|---|---|
-| 1 | iPhone enregistre une consultation complète | **Non vérifié** — 4 246 lignes de Swift, jamais exécutées devant quiconque |
+| 1 | iPhone enregistre une consultation complète | **Vérifié sur simulateur le 21/09** (son de test, de bout en bout) — un défaut qui perdait chaque segment sur appareil a été trouvé et corrigé. Reste l'essai sur le vrai iPhone (docs/IPHONE.md) |
 | 2 | Web enregistre une consultation complète | Oui |
 | 3 | Perte réseau courte récupérée | Oui, testé |
 | 4 | Transcript final créé | Oui |
