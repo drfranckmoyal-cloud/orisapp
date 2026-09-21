@@ -1,5 +1,13 @@
 # Changelog
 
+## Site : colonne de gauche plus présente — 2026-09-22
+- Trois groupes titrés (Au fauteuil · Dossiers · Oris), plus d'air entre eux.
+- Une pastille de couleur par rubrique (vert, ocre, bleu, lagune, prune, terre,
+  indigo, ardoise), en relief — comme les Réglages du Mac.
+- La rubrique active devient une carte crème en relief, avec le repère argile.
+- Fond plus profond : vert éclairé en haut à gauche, assombri en bas.
+- Pastille orange sur « Consultations » : le nombre de comptes rendus à relire.
+
 ## iPhone : retouche des photos et ordre d'impression — 2026-09-22
 - Documentation clinique d'un document : toucher une photo ouvre **Retoucher** —
   recadrage par huit poignées ou en déplaçant le cadre, miroir horizontal et vertical,

@@ -6,20 +6,24 @@
 }
 
 .menu {
-  background: linear-gradient(180deg, var(--menu-haut), var(--menu-bas));
+  /* Un vert profond, éclairé d'en haut à gauche : de la matière, pas un aplat. */
+  background:
+    radial-gradient(120% 60% at 0% 0%, rgb(125 211 199 / 0.16), transparent 60%),
+    radial-gradient(90% 50% at 100% 100%, rgb(0 0 0 / 0.28), transparent 70%),
+    linear-gradient(180deg, #1a5a42 0%, var(--menu-haut) 30%, var(--menu-bas) 100%);
   color: var(--encre-inverse);
-  padding: 18px 14px 16px;
+  padding: 20px 16px 16px;
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
   height: var(--ecran-haut);
+  overflow-y: auto;
   box-shadow:
-    inset -1px 0 0 rgb(255 255 255 / 0.08),
-    6px 0 34px -20px rgb(11 47 33 / 0.9);
+    inset -1px 0 0 rgb(255 255 255 / 0.1),
+    8px 0 40px -18px rgb(11 47 33 / 0.95);
 }
 
-/* Le logo est posé SUR le vert, pas inscrit dedans : une plaque, un objet. */
 .enTeteMarque {
   margin-bottom: 26px;
 }
@@ -88,78 +92,123 @@
   opacity: 1;
 }
 
+.groupes {
+  display: grid;
+  gap: 20px;
+}
+
+.groupeTitre {
+  margin: 0 0 7px 10px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(214 232 222 / 0.55);
+}
+
 .nav {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 7px;
+  gap: 3px;
 }
 
-/* Chaque entrée a sa propre surface : du relief, pas une puce. */
 .item {
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--espace-3);
-  padding: 12px 14px;
+  gap: 12px;
+  padding: 8px 10px;
   border-radius: 13px;
   font-size: var(--texte-md);
-  font-weight: var(--graisse-moyenne);
+  font-weight: var(--graisse-demi);
   letter-spacing: -0.012em;
-  color: #c6dad0;
+  color: #e3eee8;
   text-decoration: none;
-  background: rgb(255 255 255 / 0.045);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.085),
-    0 1px 2px rgb(0 0 0 / 0.22);
   transition: background var(--transition), color var(--transition),
     transform var(--transition), box-shadow var(--transition);
 }
 
-.item svg {
-  flex: none;
-  opacity: 0.75;
-}
-
 .item:hover {
-  background: rgb(255 255 255 / 0.1);
-  color: #f2f8f5;
-  transform: translateY(-1px);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.13),
-    0 4px 10px -3px rgb(0 0 0 / 0.4);
-}
-
-.item:hover svg {
-  opacity: 1;
-}
-
-.item[aria-current="page"] {
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.22), rgb(255 255 255 / 0.13));
+  background: rgb(255 255 255 / 0.09);
   color: #ffffff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+/* La rubrique où l'on est : une carte crème en relief, posée sur le vert. */
+.item[aria-current="page"] {
+  background: linear-gradient(180deg, #fdfbf7, #efe8dc);
+  color: var(--accent-fonce);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.34),
-    0 2px 4px rgb(0 0 0 / 0.26),
-    0 10px 20px -10px rgb(0 0 0 / 0.55);
+    inset 0 1px 0 #fff,
+    0 1px 2px rgb(0 0 0 / 0.25),
+    0 12px 22px -12px rgb(0 0 0 / 0.7);
 }
 
-.item[aria-current="page"] svg {
-  opacity: 1;
-}
-
-/* Le repère argile sur le flanc : on sait où l'on est sans lire. */
 .item[aria-current="page"]::before {
   content: "";
   position: absolute;
-  left: -14px;
+  left: -16px;
   top: 50%;
   transform: translateY(-50%);
   width: 4px;
-  height: 22px;
+  height: 24px;
   border-radius: 0 4px 4px 0;
   background: var(--attention-vif);
-  box-shadow: 0 0 12px rgb(217 122 31 / 0.7);
+  box-shadow: 0 0 12px rgb(217 122 31 / 0.75);
+}
+
+.libelle {
+  flex: 1;
+}
+
+/* Une pastille de couleur par rubrique : on la retrouve sans lire. */
+.tuile {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  flex: none;
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    inset 0 -1px 0 rgb(0 0 0 / 0.15),
+    0 3px 8px -3px rgb(0 0 0 / 0.55);
+  transition: transform var(--transition);
+}
+
+.item:hover .tuile {
+  transform: scale(1.06);
+}
+
+.tuile svg {
+  opacity: 1;
+}
+
+.tuile[data-teinte="vert"] { background: linear-gradient(145deg, #3fb07e, #1d7a52); }
+.tuile[data-teinte="ocre"] { background: linear-gradient(145deg, #e6a93c, #b7791f); }
+.tuile[data-teinte="bleu"] { background: linear-gradient(145deg, #5a95d6, #2f6fb0); }
+.tuile[data-teinte="lagune"] { background: linear-gradient(145deg, #2fb3b0, #0f7c8c); }
+.tuile[data-teinte="prune"] { background: linear-gradient(145deg, #a06cb8, #6b4c9a); }
+.tuile[data-teinte="terre"] { background: linear-gradient(145deg, #d98758, #9a4a0b); }
+.tuile[data-teinte="indigo"] { background: linear-gradient(145deg, #7c78d0, #403a75); }
+.tuile[data-teinte="ardoise"] { background: linear-gradient(145deg, #8a97a6, #4a5561); }
+
+/* « 3 » à relire, sur Consultations : ce qui attend se voit depuis partout. */
+.compteur {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(180deg, #e8903a, var(--attention));
+  box-shadow: 0 2px 6px -2px rgb(168 84 10 / 0.8);
 }
 
 /* Le praticien : discret, en bas, et on en change. */

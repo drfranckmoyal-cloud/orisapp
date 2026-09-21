@@ -11,15 +11,34 @@ import { useApi } from "@/lib/useApi";
 
 import styles from "./AppShell.module.css";
 
-const NAVIGATION: { href: string; label: string; icone: NomIcone }[] = [
-  { href: "/", label: "Accueil", icone: "accueil" },
-  { href: "/journee", label: "Votre journée", icone: "journee" },
-  { href: "/patients", label: "Patients", icone: "patients" },
-  { href: "/correspondants", label: "Correspondants", icone: "correspondants" },
-  { href: "/consultations", label: "Consultations", icone: "consultations" },
-  { href: "/documents", label: "Documents", icone: "documents" },
-  { href: "/apprentissage", label: "Oris apprend", icone: "apprend" },
-  { href: "/parametres", label: "Paramètres", icone: "parametres" },
+type Entree = { href: string; label: string; icone: NomIcone; teinte: string };
+
+/** Trois groupes, du plus fréquent au plus rare. Chaque rubrique a sa teinte : on la
+ *  retrouve d'un coup d'œil, comme dans les Réglages du Mac. */
+const GROUPES: { titre: string; entrees: Entree[] }[] = [
+  {
+    titre: "Au fauteuil",
+    entrees: [
+      { href: "/", label: "Accueil", icone: "accueil", teinte: "vert" },
+      { href: "/journee", label: "Votre journée", icone: "journee", teinte: "ocre" },
+      { href: "/patients", label: "Patients", icone: "patients", teinte: "bleu" },
+      { href: "/consultations", label: "Consultations", icone: "consultations", teinte: "lagune" },
+    ],
+  },
+  {
+    titre: "Dossiers",
+    entrees: [
+      { href: "/correspondants", label: "Correspondants", icone: "correspondants", teinte: "prune" },
+      { href: "/documents", label: "Documents", icone: "documents", teinte: "terre" },
+    ],
+  },
+  {
+    titre: "Oris",
+    entrees: [
+      { href: "/apprentissage", label: "Oris apprend", icone: "apprend", teinte: "indigo" },
+      { href: "/parametres", label: "Paramètres", icone: "parametres", teinte: "ardoise" },
+    ],
+  },
 ];
 
 function estActif(pathname: string, href: string): boolean {
@@ -96,6 +115,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [cabinet] = useApi<Cabinet>("/me/cabinet");
   const [ouvert, setOuvert] = useState(false);
+  // Le nombre de comptes rendus à relire, en pastille sur « Consultations ».
+  const [aRelireListe] = useApi<unknown[]>("/encounters?status=review");
+  const aRelire = aRelireListe.state === "ready" ? aRelireListe.data.length : 0;
 
   const nom = cabinet.state === "ready" ? cabinet.data.practitioner_name : "";
   const titre = cabinet.state === "ready" ? cabinet.data.practitioner_title : "";
@@ -125,20 +147,34 @@ export function AppShell({ children }: { children: ReactNode }) {
           <span className={styles.slogan}>Vous soignez. Oris documente.</span>
         </div>
 
-        <ul className={styles.nav}>
-          {NAVIGATION.map(({ href, label, icone }) => (
-            <li key={href}>
-              <Link
-                href={href}
-                className={styles.item}
-                aria-current={estActif(pathname, href) ? "page" : undefined}
-              >
-                <Icone nom={icone} />
-                {label}
-              </Link>
-            </li>
+        <div className={styles.groupes}>
+          {GROUPES.map((groupe) => (
+            <div key={groupe.titre} className={styles.groupe}>
+              <p className={styles.groupeTitre}>{groupe.titre}</p>
+              <ul className={styles.nav}>
+                {groupe.entrees.map(({ href, label, icone, teinte }) => (
+                  <li key={href}>
+                    <Link
+                      href={href}
+                      className={styles.item}
+                      aria-current={estActif(pathname, href) ? "page" : undefined}
+                    >
+                      <span className={styles.tuile} data-teinte={teinte}>
+                        <Icone nom={icone} taille={16} />
+                      </span>
+                      <span className={styles.libelle}>{label}</span>
+                      {href === "/consultations" && aRelire > 0 && (
+                        <span className={styles.compteur} title={`${aRelire} à relire`}>
+                          {aRelire}
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </ul>
+        </div>
 
         <VoyantsConnecteurs />
 
