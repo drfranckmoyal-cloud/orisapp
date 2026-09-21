@@ -60,6 +60,8 @@ class Claim:
     text: str
     fact_ids: tuple[str, ...] = ()
     warning_codes: tuple[str, ...] = ()
+    #: Pour le plan : l'élément dont la phrase parle (retrouver son titre court).
+    item_id: str = ""
 
 
 @dataclass(frozen=True)

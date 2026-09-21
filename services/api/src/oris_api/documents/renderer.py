@@ -409,7 +409,9 @@ def render_consultation_note(
     return GeneratedDocument("consultation_note", render_content(claims), tuple(claims))
 
 
-def render_treatment_plan(encounter: ClinicalEncounter) -> GeneratedDocument:
+def render_treatment_plan(
+    encounter: ClinicalEncounter, titres: dict[str, str] | None = None
+) -> GeneratedDocument:
     """Plan de traitement : une rubrique par étape, puis la chronologie et ce qui est écarté.
 
     La forme visuelle (schéma, frise) est dessinée à partir de la même vue
@@ -417,7 +419,7 @@ def render_treatment_plan(encounter: ClinicalEncounter) -> GeneratedDocument:
     """
     from oris_api.documents.plan import entete, plan_vue
 
-    vue = plan_vue(encounter)
+    vue = plan_vue(encounter, titres)
     claims = limits_claims(encounter)
     for etape in vue.etapes:
         titre = entete(etape)
@@ -428,7 +430,9 @@ def render_treatment_plan(encounter: ClinicalEncounter) -> GeneratedDocument:
         if etape.delai:
             lignes.append(f"Délai : {etape.delai}.")
         lignes.append(f"Statut : {etape.statut}.")
-        claims += [Claim(titre, ligne, fact_ids=etape.fact_ids) for ligne in lignes]
+        claims += [
+            Claim(titre, ligne, fact_ids=etape.fact_ids, item_id=etape.item_id) for ligne in lignes
+        ]
     if any(delai for _, delai in vue.chronologie) and len(vue.etapes) > 1:
         frise = " → ".join(
             f"{titre} ({delai})" if delai else titre for titre, delai in vue.chronologie
@@ -439,7 +443,7 @@ def render_treatment_plan(encounter: ClinicalEncounter) -> GeneratedDocument:
         dents = f" ({', '.join(etape.dents)})" if etape.dents else ""
         motif = " ".join(etape.details)
         texte = f"{etape.titre}{dents} — {etape.statut}." + (f" {motif}" if motif else "")
-        claims.append(Claim("Écarté", texte, fact_ids=etape.fact_ids))
+        claims.append(Claim("Écarté", texte, fact_ids=etape.fact_ids, item_id=etape.item_id))
     return GeneratedDocument("treatment_plan_text", render_content(claims), tuple(claims))
 
 

@@ -500,7 +500,10 @@ def plan_view(encounter_id: UUID, session: SessionDep, actor: ActorDep) -> PlanV
     from oris_api.documents.plan import plan_vue
 
     encounter = encounters.get_encounter(session, actor, encounter_id)
-    vue = plan_vue(clinical_store.load_current(session, encounter))
+    vue = plan_vue(
+        clinical_store.load_current(session, encounter),
+        documents.titres_du_plan(session, encounter.id),
+    )
 
     def sortie(etape: Any) -> EtapeOut:
         return EtapeOut(

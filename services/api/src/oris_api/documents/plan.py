@@ -39,6 +39,7 @@ ABSENCES = frozenset({"missing_tooth", "agenesis", "tooth_agenesis", "edentulous
 
 @dataclass(frozen=True)
 class Etape:
+    item_id: str
     titre: str
     rang: int | None
     dents: tuple[str, ...]
@@ -62,18 +63,58 @@ class PlanVue:
         return not self.etapes and not self.ecartes
 
 
-def _titre_et_reste(action: str) -> tuple[str, str | None]:
-    """Un titre court tiré de l'action ; le reste devient une précision."""
+#: Tournures d'introduction qui n'apportent rien à un titre (« Réalisation de 2 bridges »).
+ENTREES = re.compile(
+    r"^(réalisation|mise en place|pose|port|séance|réalisation d'une|prise en charge)"
+    r"\s+(de la|de l'|des|du|de|d'une|d'un|d')\s*",
+    re.IGNORECASE,
+)
+#: Où couper : au-delà, ce sont des précisions (matériau, durée, moyen, suite).
+COUPES = (" avec ", " pendant ", " en ", " puis ", " après ", " (", ", ", " pour ", " sur ", " — ")
+MOTS_OUTILS = frozenset(
+    {
+        "de",
+        "des",
+        "du",
+        "d'",
+        "la",
+        "le",
+        "les",
+        "l'",
+        "en",
+        "avec",
+        "pour",
+        "puis",
+        "et",
+        "à",
+        "au",
+        "aux",
+        "une",
+        "un",
+        "sur",
+        "par",
+    }
+)
+MOTS_TITRE = 4
+
+
+def titre_court(action: str) -> str:
+    """Trois ou quatre mots tirés de l'action, sans en inventer aucun."""
     texte = action.strip().rstrip(".")
-    texte = texte[:1].upper() + texte[1:]
-    if len(texte) <= TITRE_MAX:
-        return texte, None
-    for coupe in (" (", " — ", " : ", ", "):
-        position = texte.find(coupe)
-        if 12 <= position <= TITRE_MAX:
-            reste = texte[position + len(coupe) :].rstrip(")").strip()
-            return texte[:position], (reste[:1].upper() + reste[1:]) if reste else None
-    return texte, None
+    sans_entree = ENTREES.sub("", texte)
+    if len(sans_entree.split()) >= 1:
+        texte = sans_entree
+    coupe = min((texte.find(c) for c in COUPES if texte.find(c) > 0), default=len(texte))
+    mots = texte[:coupe].split()[:MOTS_TITRE]
+    while mots and mots[-1].lower() in MOTS_OUTILS:
+        mots.pop()
+    titre = " ".join(mots) or action.strip()
+    return titre[:1].upper() + titre[1:]
+
+
+def _action_complete(action: str) -> str:
+    texte = action.strip().rstrip(".")
+    return f"{texte[:1].upper()}{texte[1:]}."
 
 
 def _mot(valeur: str) -> str:
@@ -87,11 +128,15 @@ def _liste(valeurs: list[str]) -> str:
     return ", ".join(_mot(v) for v in valeurs)
 
 
-def _etape(item: TreatmentPlanItem, rang: int | None, couleur: int) -> Etape:
-    titre, reste = _titre_et_reste(item.action)
+def _etape(
+    item: TreatmentPlanItem, rang: int | None, couleur: int, titre: str | None = None
+) -> Etape:
+    titre = titre or titre_court(item.action)
     details: list[str] = []
-    if reste:
-        details.append(f"{reste}.")
+    # L'action telle qu'elle a été dite vient en tête des précisions, sauf si le titre
+    # la dit déjà toute entière.
+    if titre.rstrip(".").lower() != item.action.strip().rstrip(".").lower():
+        details.append(_action_complete(item.action))
     if item.problem:
         details.append(f"Motif : {item.problem.rstrip('.')}.")
     if item.prerequisites:
@@ -102,6 +147,7 @@ def _etape(item: TreatmentPlanItem, rang: int | None, couleur: int) -> Etape:
         details.append(f"Incertitudes : {_liste(item.uncertainties)}.")
     delai = DELAI.search(item.action)
     return Etape(
+        item_id=item.item_id,
         titre=titre,
         rang=rang,
         dents=tuple(item.teeth),
@@ -113,7 +159,10 @@ def _etape(item: TreatmentPlanItem, rang: int | None, couleur: int) -> Etape:
     )
 
 
-def plan_vue(encounter: ClinicalEncounter) -> PlanVue:
+def plan_vue(encounter: ClinicalEncounter, titres: dict[str, str] | None = None) -> PlanVue:
+    """`titres` : titres courts rédigés et contrôlés (llm/redaction.py) ; à défaut, les
+    règles de `titre_court`."""
+    titres = titres or {}
     plan = encounter.treatment_plan
     items = list(plan.items) if plan else []
     retenus = [i for i in items if i.status not in ECARTES]
@@ -123,7 +172,8 @@ def plan_vue(encounter: ClinicalEncounter) -> PlanVue:
     if numerote:
         retenus.sort(key=lambda i: i.sequence or 0)
     etapes = tuple(
-        _etape(item, index + 1 if numerote else None, index) for index, item in enumerate(retenus)
+        _etape(item, index + 1 if numerote else None, index, titres.get(item.item_id))
+        for index, item in enumerate(retenus)
     )
     absentes = sorted(
         {
@@ -136,7 +186,7 @@ def plan_vue(encounter: ClinicalEncounter) -> PlanVue:
     return PlanVue(
         numerote=numerote,
         etapes=etapes,
-        ecartes=tuple(_etape(item, None, -1) for item in ecartes),
+        ecartes=tuple(_etape(item, None, -1, titres.get(item.item_id)) for item in ecartes),
         dents_absentes=tuple(absentes),
         chronologie=tuple((etape.titre, etape.delai) for etape in etapes),
     )
@@ -144,3 +194,20 @@ def plan_vue(encounter: ClinicalEncounter) -> PlanVue:
 
 def entete(etape: Etape) -> str:
     return f"Étape {etape.rang} — {etape.titre}" if etape.rang else etape.titre
+
+
+def titres_depuis(claims: list[dict[str, object]]) -> dict[str, str]:
+    """Les titres courts d'une version enregistrée du plan, élément par élément."""
+    titres: dict[str, str] = {}
+    for claim in claims:
+        item_id = str(claim.get("item_id") or "")
+        section = str(claim.get("section") or "")
+        if not item_id or item_id in titres or section == "Chronologie":
+            continue
+        if section == "Écarté":
+            # « Pose d'implants (12, 22) — refusé. » : le titre est avant les dents.
+            titre = str(claim.get("text") or "").split(" — ", 1)[0].split(" (", 1)[0]
+            titres[item_id] = titre
+            continue
+        titres[item_id] = section.split(" — ", 1)[1] if section.startswith("Étape ") else section
+    return titres

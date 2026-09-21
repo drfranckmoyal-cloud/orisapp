@@ -44,9 +44,18 @@ MAX_TOKENS = 6_000
 MAX_ATTEMPTS = 2
 TOOL_NAME = "rediger_compte_rendu"
 
-#: Documents en paragraphes : ceux-là seulement sont réécrits. Le plan et le compte rendu
-#: opératoire gardent leur forme, élément par élément.
+#: Documents en paragraphes : ceux-là seulement sont réécrits. Le plan garde sa forme,
+#: élément par élément (seuls ses titres sont proposés par Claude) ; le compte rendu
+#: opératoire garde ses emplacements.
 REDIGES: frozenset[str] = frozenset({"consultation_note", "referral_letter"})
+TITRES_TOOL = "titrer_etapes"
+TITRES_PROMPT = """Tu donnes un titre court à chaque étape d'un plan de traitement dentaire \
+français : 2 à 4 mots, au registre d'un praticien (« Greffe de conjonctif », \
+« Gouttière conformatrice », « Bridges cantilever », « Préparation puis collage »). \
+N'utilise que des mots présents dans l'action de l'étape : aucun mot, aucune dent, \
+aucun chiffre en plus. Le reste de l'action sera affiché sous le titre : ne cherche pas \
+à tout dire."""
+MOTS_TITRE_MAX = 5
 
 SYSTEM_PROMPT = """Tu rédiges des comptes rendus dentaires pour un chirurgien-dentiste \
 français, dans un registre professionnel, rédigé et précis, tel qu'il l'écrirait lui-même \
@@ -264,6 +273,8 @@ class AnthropicDocumentWriter:
         style: Style | None = None,
     ) -> GeneratedDocument:
         style = style or DEFAULT_STYLE
+        if document_type == "treatment_plan_text":
+            return await self._plan(encounter)
         base = await self._repli.generate(encounter, document_type, style)
         if document_type not in REDIGES:
             return base
@@ -309,16 +320,47 @@ class AnthropicDocumentWriter:
             return GeneratedDocument(document_type, render_content(tout), tout)
         return _avec_generateur(base, repli)
 
-    async def _appeler(self, messages: list[dict[str, Any]]) -> dict[str, Any]:
+    async def _plan(self, encounter: ClinicalEncounter) -> GeneratedDocument:
+        """Le plan garde sa forme ; Claude ne fait que proposer des titres courts."""
+        from oris_api.documents.renderer import render_treatment_plan
+
+        plan = encounter.treatment_plan
+        items = list(plan.items) if plan else []
+        if not items:
+            return render_treatment_plan(encounter)
+        demande = json.dumps(
+            {"etapes": [{"item_id": i.item_id, "action": i.action} for i in items]},
+            ensure_ascii=False,
+        )
+        try:
+            sortie = await self._appeler(
+                [{"role": "user", "content": demande}],
+                system=TITRES_PROMPT,
+                tool=(TITRES_TOOL, "Enregistre un titre court par étape.", titres_schema()),
+            )
+            titres = verifier_titres({i.item_id: i.action for i in items}, sortie)
+        except (httpx.HTTPError, RedactionRefusee, KeyError, ValueError) as error:
+            self.dernier_refus = f"titres : {error}"[:300]
+            document = render_treatment_plan(encounter)
+            return _avec_generateur(
+                document, f"{self._repli.info.name}:{self._repli.info.version} (repli)"
+            )
+        return render_treatment_plan(encounter, titres)
+
+    async def _appeler(
+        self,
+        messages: list[dict[str, Any]],
+        system: str = SYSTEM_PROMPT,
+        tool: tuple[str, str, dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        nom, description, schema = tool or (TOOL_NAME, TOOL_DESCRIPTION, tool_schema())
         body = {
             "model": self._model,
             "max_tokens": MAX_TOKENS,
-            "system": SYSTEM_PROMPT,
+            "system": system,
             "messages": messages,
-            "tools": [
-                {"name": TOOL_NAME, "description": TOOL_DESCRIPTION, "input_schema": tool_schema()}
-            ],
-            "tool_choice": {"type": "tool", "name": TOOL_NAME},
+            "tools": [{"name": nom, "description": description, "input_schema": schema}],
+            "tool_choice": {"type": "tool", "name": nom},
         }
         client = self._client or httpx.AsyncClient(timeout=self._timeout)
         try:
@@ -337,9 +379,55 @@ class AnthropicDocumentWriter:
         if response.status_code >= 400:
             raise ValueError(f"HTTP {response.status_code}")
         for block in response.json().get("content") or []:
-            if block.get("type") == "tool_use" and block.get("name") == TOOL_NAME:
+            if block.get("type") == "tool_use" and block.get("name") == nom:
                 return dict(block.get("input") or {})
         raise ValueError("pas de sortie d'outil")
+
+
+def titres_schema() -> dict[str, Any]:
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["titres"],
+        "properties": {
+            "titres": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["item_id", "titre"],
+                    "properties": {"item_id": {"type": "string"}, "titre": {"type": "string"}},
+                },
+            }
+        },
+    }
+
+
+def _racines(texte: str) -> set[str]:
+    """Les mots porteurs de sens, réduits à leurs cinq premières lettres (bridge/bridges)."""
+    mots = re.findall(r"[a-zàâäéèêëîïôöùûüç]+", texte.lower())
+    return {m[:5] for m in mots if len(m) > 3}
+
+
+def verifier_titres(actions: dict[str, str], sortie: dict[str, Any]) -> dict[str, str]:
+    """Un titre par étape, court, fait seulement de mots de l'action."""
+    titres: dict[str, str] = {}
+    for entree in sortie.get("titres") or []:
+        item_id = str(entree.get("item_id", ""))
+        titre = str(entree.get("titre", "")).strip().rstrip(".")
+        if item_id not in actions or not titre:
+            raise RedactionRefusee(f"titre sans étape connue : {item_id}")
+        if len(titre.split()) > MOTS_TITRE_MAX:
+            raise RedactionRefusee(f"titre trop long : « {titre} »")
+        action = actions[item_id]
+        if _racines(titre) - _racines(action):
+            raise RedactionRefusee(f"mot absent de l'action dans « {titre} »")
+        if _nombres(titre) - _nombres(action) or DENT.findall(titre):
+            raise RedactionRefusee(f"chiffre ou dent en plus dans « {titre} »")
+        titres[item_id] = titre[:1].upper() + titre[1:]
+    if set(titres) != set(actions):
+        raise RedactionRefusee("une étape n'a pas de titre")
+    return titres
 
 
 def _avec_generateur(document: GeneratedDocument, generateur: str) -> GeneratedDocument:

@@ -359,10 +359,10 @@ def export_document(
     photos = figures.a_imprimer(session, magasin, document.id) if magasin and fmt == "pdf" else ()
     vue_plan = None
     if document.document_type == "treatment_plan_text" and fmt == "pdf":
-        from oris_api.documents.plan import plan_vue
+        from oris_api.documents.plan import plan_vue, titres_depuis
         from oris_api.services.clinical_store import load_current
 
-        vue_plan = plan_vue(load_current(session, encounter))
+        vue_plan = plan_vue(load_current(session, encounter), titres_depuis(version.claims))
     context = ExportContext(
         plan=vue_plan,
         figures=photos,
@@ -436,3 +436,14 @@ def _correspondants_du_document(session: Session, encounter: Encounter) -> tuple
     par = next((_nom_correspondant(c) for role, c in liens if role == "referred_by"), "")
     vers = next((_nom_correspondant(c) for role, c in liens if role == "referred_to"), "")
     return par, vers
+
+
+def titres_du_plan(session: Session, encounter_id: UUID) -> dict[str, str]:
+    """Les titres courts de la dernière version du plan de traitement de la consultation."""
+    from oris_api.documents.plan import titres_depuis
+
+    for document in list_documents(session, encounter_id):
+        if document.document_type == "treatment_plan_text":
+            version = current_version(session, document)
+            return titres_depuis(version.claims) if version else {}
+    return {}

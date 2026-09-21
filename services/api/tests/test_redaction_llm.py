@@ -21,13 +21,12 @@ def writer(copies: list[dict[str, Any]]) -> tuple[AnthropicDocumentWriter, list[
     envoyes: list[dict[str, Any]] = []
 
     def repondre(request: httpx.Request) -> httpx.Response:
-        envoyes.append(json.loads(request.content))
+        corps = json.loads(request.content)
+        envoyes.append(corps)
         copie = copies[min(len(envoyes) - 1, len(copies) - 1)]
+        outil = corps["tool_choice"]["name"]
         return httpx.Response(
-            200,
-            json={
-                "content": [{"type": "tool_use", "name": "rediger_compte_rendu", "input": copie}]
-            },
+            200, json={"content": [{"type": "tool_use", "name": outil, "input": copie}]}
         )
 
     client = httpx.AsyncClient(transport=httpx.MockTransport(repondre))
@@ -110,10 +109,40 @@ def test_a_lost_refusal_is_refused() -> None:
     assert "(repli)" in asyncio.run(redacteur.generate(dictee(), "consultation_note")).generator
 
 
-def test_the_treatment_plan_is_never_sent() -> None:
-    redacteur, envoyes = writer([copie_fidele()])
-    asyncio.run(redacteur.generate(dictee(), "treatment_plan_text"))
-    assert envoyes == []
+def test_the_plan_sends_only_its_actions_and_takes_checked_titles() -> None:
+    titres = {
+        "titres": [
+            {"item_id": "pi1", "titre": "Bridges cantilever"},
+            {"item_id": "pi2", "titre": "Greffe de conjonctif"},
+            {"item_id": "pi3", "titre": "Gouttière conformatrice"},
+            {"item_id": "pi4", "titre": "Préparation puis collage"},
+            {"item_id": "pi5", "titre": "Implants"},
+        ]
+    }
+    redacteur, envoyes = writer([titres])
+    document = asyncio.run(redacteur.generate(dictee(), "treatment_plan_text"))
+    assert "Étape 4 — Préparation puis collage" in document.content
+    envoye = json.loads(envoyes[0]["messages"][0]["content"])
+    assert set(envoye) == {"etapes"} and set(envoye["etapes"][0]) == {"item_id", "action"}
+
+
+def test_a_title_with_a_word_not_said_is_refused() -> None:
+    titres = {
+        "titres": [
+            {"item_id": i, "titre": t}
+            for i, t in (
+                ("pi1", "Bridges cantilever"),
+                ("pi2", "Greffe gingivale"),  # « gingivale » n'a pas été dit
+                ("pi3", "Gouttière"),
+                ("pi4", "Préparation puis collage"),
+                ("pi5", "Implants"),
+            )
+        ]
+    }
+    redacteur, _ = writer([titres])
+    document = asyncio.run(redacteur.generate(dictee(), "treatment_plan_text"))
+    assert "(repli)" in document.generator
+    assert "gingivale" not in document.content
 
 
 def test_a_network_failure_falls_back_silently_to_the_templates() -> None:
