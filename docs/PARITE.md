@@ -13,8 +13,8 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
 - Retouche d'image (recadrage, miroir) dans la documentation clinique.
 - Pièces jointes non photo du dossier patient (PDF, radios) : liste et ouverture.
 - Votre journée (Doctolib), Oris apprend (vocabulaire, préférences).
-- Paramètres complets du site : profil, rédaction, cabinet, envoi, spécialités,
-  appareils connectés (l'iPhone a : connexion, Tester le micro, Face ID).
+- Paramètres : spécialités des correspondants, praticiens du cabinet, export des
+  apprentissages (le reste est sur les deux).
 
 ## À rattraper sur le site (existe dans l'app iPhone)
 
@@ -23,6 +23,10 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
   la liste Consultations et depuis la consultation).
 
 ## Écarts voulus (imposés par l'appareil)
+
+- Reconnecter Doctolib / SmileCloud : bouton dans la colonne de gauche du site (il ouvre
+  Chrome sur le Mac) ; l'iPhone montre l'état seulement. Autoriser un nouvel appareil :
+  depuis le Mac seulement.
 
 
 - iPhone : appareil photo, écoute écran verrouillé et pendant un appel, son gardé chiffré

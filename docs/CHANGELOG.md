@@ -1,5 +1,19 @@
 # Changelog
 
+## Voyants Doctolib et SmileCloud ; Paramètres de l'iPhone refaits — 2026-09-22
+- Site : en bas de la colonne de gauche, deux voyants **Doctolib** et **SmileCloud**,
+  mêmes états que Dental Lens (ouvert, fermé, à reconnecter, lecture en cours, Chrome
+  fermé), relus toutes les 30 s ; bouton **reconnecter / ouvrir** qui ouvre le site dans
+  Chrome via Dental Lens. SmileCloud précise qu'Oris ne s'en sert pas encore.
+- Serveur : `GET /connecteurs` (état lu chez Dental Lens, 127.0.0.1:8765) et
+  `POST /connecteurs/ouvrir` (depuis ce Mac seulement).
+- iPhone : **Paramètres** rangés comme l'app Réglages — carte du praticien en tête, puis
+  rubriques groupées avec pastille de couleur (Vous, Cabinet, Consultation, Connexions,
+  Oris), chacune ouvrant sa page : Mon profil, Rédaction, Cabinet et en-tête (aperçu de
+  l'en-tête), Envoi des documents, Écoute et micro (Tester le micro), Connexion à Oris,
+  Appareils connectés (déconnecter), Doctolib et SmileCloud, Sécurité (Face ID),
+  À propos.
+
 ## Paramètres du site refaits ; iPhone : couleurs et boutons d'ajout — 2026-09-22
 - Site, **Paramètres** rangés comme les Réglages du Mac : sommaire à gauche (Vous ·
   Cabinet · Consultation · Connexions · Oris), une carte en relief par rubrique, chacune

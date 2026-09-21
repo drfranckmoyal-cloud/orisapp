@@ -363,12 +363,8 @@ enum ApparenceOris {
         barre.backgroundColor = UIColor(Teinte.fond)
         barre.shadowColor = .clear
         let encre = UIColor(Teinte.encre)
-        if let grand = UIFont(name: "Manrope", size: 32) {
-            barre.largeTitleTextAttributes = [.font: grand.avecGraisse(.heavy), .foregroundColor: encre]
-        }
-        if let petit = UIFont(name: "Manrope", size: 17) {
-            barre.titleTextAttributes = [.font: petit.avecGraisse(.bold), .foregroundColor: encre]
-        }
+        barre.largeTitleTextAttributes = [.font: UIFont.manrope(32, .heavy), .foregroundColor: encre]
+        barre.titleTextAttributes = [.font: UIFont.manrope(17, .bold), .foregroundColor: encre]
         UINavigationBar.appearance().standardAppearance = barre
         UINavigationBar.appearance().scrollEdgeAppearance = barre
         UINavigationBar.appearance().compactAppearance = barre
@@ -377,12 +373,15 @@ enum ApparenceOris {
 }
 
 private extension UIFont {
-    /// Manrope est une police variable : on règle sa graisse par son axe.
-    func avecGraisse(_ graisse: UIFont.Weight) -> UIFont {
-        let descripteur = fontDescriptor.addingAttributes([
+    /// Manrope à la graisse voulue, par sa famille : la police est variable, on laisse iOS
+    /// choisir la bonne instance. Repli sur la police système si Manrope manque.
+    static func manrope(_ taille: CGFloat, _ graisse: UIFont.Weight) -> UIFont {
+        let descripteur = UIFontDescriptor(fontAttributes: [
+            .family: "Manrope",
             .traits: [UIFontDescriptor.TraitKey.weight: graisse],
         ])
-        return UIFont(descriptor: descripteur, size: pointSize)
+        let police = UIFont(descriptor: descripteur, size: taille)
+        return police.familyName == "Manrope" ? police : .systemFont(ofSize: taille, weight: graisse)
     }
 }
 
