@@ -8,13 +8,13 @@ from dataclasses import replace
 from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from oris_api.config import Settings
 from oris_api.contracts import ClinicalEncounter
 from oris_api.contracts.generated import ClinicalEncounterStatus
-from oris_api.db.models import Encounter, EncounterMarkRow
+from oris_api.db.models import Encounter, EncounterMarkRow, LearningEventRow
 from oris_api.domain.lifecycle import TransitionError, ensure_transition
 from oris_api.domain.resolver import resolve
 from oris_api.domain.speaker_roles import apply_roles
@@ -126,6 +126,38 @@ def transition(
         previous=previous,
         current=target,
     )
+    session.flush()
+
+
+#: Pendant l'écoute ou le traitement, un autre fil de travail écrit dans la consultation :
+#: la supprimer sous ses pieds le ferait échouer à mi-chemin.
+EN_COURS = frozenset({"recording", "paused", "finalizing", "processing"})
+
+
+def delete_encounter(session: Session, actor: Actor, encounter: Encounter, sink: AudioSink) -> None:
+    """Supprime une consultation et tout ce qu'Oris en a tiré.
+
+    Partent avec elle : le son s'il en reste, la transcription, le dossier clinique, les
+    documents et leurs envois, et les corrections qu'elle a apprises à Oris — elles citent
+    son contenu. Restent : les pièces jointes, qui appartiennent au patient, et une ligne
+    du journal d'audit qui dit qu'une consultation a été supprimée, sans rien en dire.
+    """
+    if encounter.status in EN_COURS:
+        raise Conflict("ENCOUNTER_IN_PROGRESS", str(encounter.id), [encounter.status])
+    audio_session = audio.get_session_row(session, encounter)
+    if audio_session is not None:
+        sink.purge(audio_session.id)
+    session.execute(delete(LearningEventRow).where(LearningEventRow.encounter_id == encounter.id))
+    audit.record(
+        session,
+        actor,
+        "encounter.deleted",
+        "encounter",
+        encounter.id,
+        patient_id=str(encounter.patient_id),
+        status=encounter.status,
+    )
+    session.delete(encounter)
     session.flush()
 
 

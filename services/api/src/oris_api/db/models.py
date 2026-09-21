@@ -828,3 +828,38 @@ class PatientCorrespondent(Base):
     #: `also_follows` (il le suit aussi, sans que personne n'ait adressé personne).
     role: Mapped[str] = mapped_column(String(20))
     created_at: Mapped[datetime] = created_at()
+
+
+class DocumentDelivery(Base):
+    """Un document parti chez quelqu'un : à qui, par quel moyen, quand.
+
+    Oris n'envoie rien lui-même : le praticien **note** l'envoi, fait par mail, courrier
+    ou remis en main propre. Le nom du destinataire est recopié au moment du geste — un
+    correspondant supprimé plus tard ne doit pas effacer la trace de ce qui a été envoyé.
+    """
+
+    __tablename__ = "document_deliveries"
+    __table_args__ = (
+        CheckConstraint(
+            "recipient_kind in ('patient', 'correspondent', 'other')",
+            name="document_delivery_recipient_kind",
+        ),
+        CheckConstraint(
+            "channel in ('email', 'mail', 'hand', 'secure_messaging', 'other')",
+            name="document_delivery_channel",
+        ),
+    )
+
+    id: Mapped[UUID] = uuid_pk()
+    organization_id: Mapped[UUID] = mapped_column(ForeignKey("organizations.id"), index=True)
+    document_id: Mapped[UUID] = mapped_column(
+        ForeignKey("documents.id", ondelete="CASCADE"), index=True
+    )
+    recipient_kind: Mapped[str] = mapped_column(String(20))
+    correspondent_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("correspondents.id", ondelete="SET NULL"), index=True
+    )
+    recipient_label: Mapped[str] = mapped_column(String(200))
+    channel: Mapped[str] = mapped_column(String(20))
+    created_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"))
+    sent_at: Mapped[datetime] = created_at()

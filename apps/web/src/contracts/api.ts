@@ -415,7 +415,11 @@ export interface paths {
         get: operations["get_encounter_encounters__encounter_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Delete Encounter
+         * @description Supprimer une consultation. 409 ENCOUNTER_IN_PROGRESS pendant l'écoute ou le traitement.
+         */
+        delete: operations["delete_encounter_encounters__encounter_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -813,6 +817,57 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/encounters/{encounter_id}/deliveries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Deliveries */
+        get: operations["list_deliveries_encounters__encounter_id__deliveries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/documents/{document_id}/deliveries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Note Delivery */
+        post: operations["note_delivery_documents__document_id__deliveries_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/deliveries/{delivery_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Delivery */
+        delete: operations["remove_delivery_deliveries__delivery_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1693,6 +1748,61 @@ export interface components {
             /** Favorite */
             favorite?: boolean | null;
         };
+        /**
+         * DeliveryIn
+         * @description Noter un envoi. Oris n'envoie rien : il retient ce que le praticien a envoyé.
+         */
+        DeliveryIn: {
+            /**
+             * Recipient Kind
+             * @enum {string}
+             */
+            recipient_kind: "patient" | "correspondent" | "other";
+            /**
+             * Channel
+             * @enum {string}
+             */
+            channel: "email" | "mail" | "hand" | "secure_messaging" | "other";
+            /** Correspondent Id */
+            correspondent_id?: string | null;
+            /**
+             * Recipient Label
+             * @default
+             */
+            recipient_label: string;
+        };
+        /** DeliveryOut */
+        DeliveryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Document Id
+             * Format: uuid
+             */
+            document_id: string;
+            /**
+             * Recipient Kind
+             * @enum {string}
+             */
+            recipient_kind: "patient" | "correspondent" | "other";
+            /** Correspondent Id */
+            correspondent_id: string | null;
+            /** Recipient Label */
+            recipient_label: string;
+            /**
+             * Channel
+             * @enum {string}
+             */
+            channel: "email" | "mail" | "hand" | "secure_messaging" | "other";
+            /**
+             * Sent At
+             * Format: date-time
+             */
+            sent_at: string;
+        };
         /** DemandeIn */
         DemandeIn: {
             /** Jour */
@@ -1790,6 +1900,11 @@ export interface components {
              * @enum {string}
              */
             status: "draft_ai" | "needs_review" | "validated" | "exported" | "superseded" | "outdated";
+            /**
+             * Sent To
+             * @default []
+             */
+            sent_to: string[];
         };
         /**
          * DocumentTextEdit
@@ -2562,6 +2677,11 @@ export interface components {
              * @default
              */
             heure: string;
+            /**
+             * Patient
+             * @default
+             */
+            patient: string;
             /**
              * Prenom
              * @default
@@ -3813,6 +3933,35 @@ export interface operations {
             };
         };
     };
+    delete_encounter_encounters__encounter_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     start_encounters__encounter_id__start_post: {
         parameters: {
             query?: never;
@@ -4554,6 +4703,101 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["LearningEventOut"][];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_deliveries_encounters__encounter_id__deliveries_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    note_delivery_documents__document_id__deliveries_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeliveryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_delivery_deliveries__delivery_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                delivery_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

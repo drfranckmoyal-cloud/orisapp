@@ -6,6 +6,7 @@
       {
         "document_type": "consultation_note",
         "id": "00000000-0000-4000-8000-000000000001",
+        "sent_to": [],
         "status": "draft_ai"
       }
     ],

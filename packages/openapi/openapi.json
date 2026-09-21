@@ -1419,6 +1419,41 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Delete Encounter",
+        "description": "Supprimer une consultation. 409 ENCOUNTER_IN_PROGRESS pendant l'écoute ou le traitement.",
+        "operationId": "delete_encounter_encounters__encounter_id__delete",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/encounters/{encounter_id}/start": {
@@ -2565,6 +2600,142 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/deliveries": {
+      "get": {
+        "tags": [
+          "deliveries"
+        ],
+        "summary": "List Deliveries",
+        "operationId": "list_deliveries_encounters__encounter_id__deliveries_get",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryOut"
+                  },
+                  "title": "Response List Deliveries Encounters  Encounter Id  Deliveries Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/{document_id}/deliveries": {
+      "post": {
+        "tags": [
+          "deliveries"
+        ],
+        "summary": "Note Delivery",
+        "operationId": "note_delivery_documents__document_id__deliveries_post",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeliveryIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/deliveries/{delivery_id}": {
+      "delete": {
+        "tags": [
+          "deliveries"
+        ],
+        "summary": "Remove Delivery",
+        "operationId": "remove_delivery_deliveries__delivery_id__delete",
+        "parameters": [
+          {
+            "name": "delivery_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Delivery Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",
@@ -4761,6 +4932,122 @@
         "type": "object",
         "title": "CorrespondentUpdate"
       },
+      "DeliveryIn": {
+        "properties": {
+          "recipient_kind": {
+            "type": "string",
+            "enum": [
+              "patient",
+              "correspondent",
+              "other"
+            ],
+            "title": "Recipient Kind"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "email",
+              "mail",
+              "hand",
+              "secure_messaging",
+              "other"
+            ],
+            "title": "Channel"
+          },
+          "correspondent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correspondent Id"
+          },
+          "recipient_label": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Recipient Label",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "recipient_kind",
+          "channel"
+        ],
+        "title": "DeliveryIn",
+        "description": "Noter un envoi. Oris n'envoie rien : il retient ce que le praticien a envoyé."
+      },
+      "DeliveryOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          },
+          "recipient_kind": {
+            "type": "string",
+            "enum": [
+              "patient",
+              "correspondent",
+              "other"
+            ],
+            "title": "Recipient Kind"
+          },
+          "correspondent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correspondent Id"
+          },
+          "recipient_label": {
+            "type": "string",
+            "title": "Recipient Label"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "email",
+              "mail",
+              "hand",
+              "secure_messaging",
+              "other"
+            ],
+            "title": "Channel"
+          },
+          "sent_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Sent At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "document_id",
+          "recipient_kind",
+          "correspondent_id",
+          "recipient_label",
+          "channel",
+          "sent_at"
+        ],
+        "title": "DeliveryOut"
+      },
       "DemandeIn": {
         "properties": {
           "jour": {
@@ -4988,6 +5275,14 @@
               "outdated"
             ],
             "title": "Status"
+          },
+          "sent_to": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sent To",
+            "default": []
           }
         },
         "type": "object",
@@ -6964,6 +7259,11 @@
           "heure": {
             "type": "string",
             "title": "Heure",
+            "default": ""
+          },
+          "patient": {
+            "type": "string",
+            "title": "Patient",
             "default": ""
           },
           "prenom": {

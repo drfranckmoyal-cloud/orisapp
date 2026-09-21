@@ -85,6 +85,15 @@ def get_encounter(encounter_id: UUID, session: SessionDep, actor: ActorDep) -> E
     return encounter_out(session, encounters.get_encounter(session, actor, encounter_id))
 
 
+@router.delete("/encounters/{encounter_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_encounter(
+    encounter_id: UUID, session: SessionDep, actor: ActorDep, sink: SinkDep
+) -> None:
+    """Supprimer une consultation. 409 ENCOUNTER_IN_PROGRESS pendant l'écoute ou le traitement."""
+    encounter = encounters.get_encounter(session, actor, encounter_id)
+    encounters.delete_encounter(session, actor, encounter, sink)
+
+
 def _transition(
     encounter_id: UUID, target: ClinicalEncounterStatus, session: SessionDep, actor: ActorDep
 ) -> EncounterOut:

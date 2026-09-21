@@ -25,7 +25,7 @@ from oris_api.db.models import (
     Patient,
     User,
 )
-from oris_api.services import documents
+from oris_api.services import deliveries, documents
 
 
 def encounter_out(session: Session, encounter: Encounter) -> EncounterOut:
@@ -41,6 +41,7 @@ def encounter_out(session: Session, encounter: Encounter) -> EncounterOut:
     )
     warnings: list[dict[str, Any]] = snapshot.clinical_object["warnings"] if snapshot else []
     metadata = encounter.metadata_json
+    envois = deliveries.envois_de(session, encounter.id)
     return EncounterOut(
         id=encounter.id,
         patient=PatientOut.model_validate(patient),
@@ -59,7 +60,14 @@ def encounter_out(session: Session, encounter: Encounter) -> EncounterOut:
         processing_errors=[ProcessingError(**e) for e in metadata.get("processing_errors", [])],
         critical_warning_count=sum(1 for w in warnings if w["severity"] == "critical"),
         documents=[
-            DocumentSummary(id=d.id, document_type=d.document_type, status=d.status)
+            DocumentSummary(
+                id=d.id,
+                document_type=d.document_type,
+                status=d.status,
+                sent_to=list(
+                    dict.fromkeys(e.recipient_label for e in envois if e.document_id == d.id)
+                ),
+            )
             for d in documents.list_documents(session, encounter.id)
         ],
     )

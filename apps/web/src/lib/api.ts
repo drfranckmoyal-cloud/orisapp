@@ -212,3 +212,4 @@ export type Correspondant = Schemas["CorrespondentOut"];
 
 /** Le lien entre un patient et un correspondant, et ce qu'il veut dire. */
 export type Rattachement = Schemas["RattachementOut"];
+export type Envoi = Schemas["DeliveryOut"];

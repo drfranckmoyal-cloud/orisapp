@@ -104,6 +104,8 @@ class DocumentSummary(BaseModel):
     id: UUID
     document_type: DocumentDocumentType
     status: DocumentStatus
+    #: À qui ce document a été envoyé, d'après ce que le praticien a noté (sans doublon).
+    sent_to: list[str] = []
 
 
 class PractitionerOut(BaseModel):
@@ -541,3 +543,28 @@ class RattachementIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     correspondent_id: UUID
     role: CorrespondentRole
+
+
+DeliveryChannel = Literal["email", "mail", "hand", "secure_messaging", "other"]
+DeliveryRecipient = Literal["patient", "correspondent", "other"]
+
+
+class DeliveryIn(BaseModel):
+    """Noter un envoi. Oris n'envoie rien : il retient ce que le praticien a envoyé."""
+
+    model_config = ConfigDict(extra="forbid")
+    recipient_kind: DeliveryRecipient
+    channel: DeliveryChannel
+    correspondent_id: UUID | None = None
+    recipient_label: Annotated[str, Field(max_length=200)] = ""
+
+
+class DeliveryOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    document_id: UUID
+    recipient_kind: DeliveryRecipient
+    correspondent_id: UUID | None
+    recipient_label: str
+    channel: DeliveryChannel
+    sent_at: datetime
