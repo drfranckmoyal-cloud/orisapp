@@ -500,3 +500,34 @@
 .enPlus:hover {
   text-decoration: underline;
 }
+
+/* L'étiquette d'un champ qu'on peut refermer : son nom à gauche, « retirer » à droite. */
+.entete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espace-2);
+}
+
+.enMoins {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--encre-tres-douce);
+  font: inherit;
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-moyenne);
+  cursor: pointer;
+}
+
+.enMoins:hover {
+  color: var(--alerte);
+  text-decoration: underline;
+}
+
+/* Un champ et son second, l'un sous l'autre dans la même case de la grille. */
+.pile {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}

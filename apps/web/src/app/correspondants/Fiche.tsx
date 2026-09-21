@@ -187,61 +187,85 @@ export function Fiche({
         </label>
       )}
 
-      <label className={`field ${styles.large}`}>
-        Adresse électronique
-        <Champ
-          type="email"
-          value={brouillon.email}
-          onChange={(event) => poser("email", event.target.value)}
-        />
-        {!secondCourriel && (
-          <button
-            type="button"
-            className={styles.enPlus}
-            onClick={() => setSecondCourriel(true)}
-          >
+      {/* Le second contact est empilé **sous** celui qu'il complète, dans la même case :
+          la grille l'aurait sinon renvoyé à la ligne suivante, loin de son champ. */}
+      <div className={`${styles.large} ${styles.pile}`}>
+        <label className="field">
+          Adresse électronique
+          <Champ
+            type="email"
+            value={brouillon.email}
+            onChange={(event) => poser("email", event.target.value)}
+          />
+        </label>
+        {secondCourriel ? (
+          <label className="field">
+            <span className={styles.entete}>
+              Autre adresse électronique
+              {/* Retirer vide le champ **et** le referme : le laisser vide à l'écran
+                  laisserait croire qu'il reste quelque chose à remplir. */}
+              <button
+                type="button"
+                className={styles.enMoins}
+                onClick={() => {
+                  poser("secondary_email", "");
+                  setSecondCourriel(false);
+                }}
+              >
+                retirer
+              </button>
+            </span>
+            <Champ
+              type="email"
+              value={brouillon.secondary_email}
+              placeholder="secrétariat, adresse personnelle…"
+              onChange={(event) => poser("secondary_email", event.target.value)}
+            />
+          </label>
+        ) : (
+          <button type="button" className={styles.enPlus} onClick={() => setSecondCourriel(true)}>
             + une autre adresse
           </button>
         )}
-      </label>
+      </div>
 
-      {secondCourriel && (
-        <label className={`field ${styles.large}`}>
-          Autre adresse électronique
+      <div className={styles.pile}>
+        <label className="field">
+          Téléphone
           <Champ
-            type="email"
-            value={brouillon.secondary_email}
-            placeholder="secrétariat, adresse personnelle…"
-            onChange={(event) => poser("secondary_email", event.target.value)}
+            type="tel"
+            value={brouillon.phone}
+            onChange={(event) => poser("phone", event.target.value)}
           />
         </label>
-      )}
-
-      <label className="field">
-        Téléphone
-        <Champ
-          type="tel"
-          value={brouillon.phone}
-          onChange={(event) => poser("phone", event.target.value)}
-        />
-        {!secondNumero && (
+        {secondNumero ? (
+          <label className="field">
+            <span className={styles.entete}>
+              Autre téléphone
+              <button
+                type="button"
+                className={styles.enMoins}
+                onClick={() => {
+                  poser("secondary_phone", "");
+                  setSecondNumero(false);
+                }}
+              >
+                retirer
+              </button>
+            </span>
+            <Champ
+              type="tel"
+              value={brouillon.secondary_phone}
+              placeholder="portable, ligne directe…"
+              onChange={(event) => poser("secondary_phone", event.target.value)}
+            />
+          </label>
+        ) : (
           <button type="button" className={styles.enPlus} onClick={() => setSecondNumero(true)}>
             + un autre numéro
           </button>
         )}
-      </label>
-
-      {secondNumero && (
-        <label className="field">
-          Autre téléphone
-          <Champ
-            type="tel"
-            value={brouillon.secondary_phone}
-            placeholder="portable, ligne directe…"
-            onChange={(event) => poser("secondary_phone", event.target.value)}
-          />
-        </label>
-      )}
+      </div>
 
       <label className={`field ${styles.pleineLargeur}`}>
         Adresse postale

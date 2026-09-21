@@ -1243,6 +1243,13 @@ rempli, il s'affiche d'emblée — le cacher le perdrait. La fiche en lecture ne
 que s'il existe : une ligne « non renseigné » de plus ferait croire qu'il manque quelque
 chose.
 
+Un « retirer » discret au bout de l'étiquette **vide le champ et le referme** : le
+laisser vide à l'écran laisserait croire qu'il reste quelque chose à remplir.
+
+Chaque second champ est empilé **dans la même case de grille** que celui qu'il complète.
+Posé comme une case de plus, la grille le renvoyait à la ligne suivante, sous un champ
+sans rapport.
+
 ### Note d'outillage
 
 Deux comportements que je n'arrivais pas à vérifier — la touche Entrée dans un
