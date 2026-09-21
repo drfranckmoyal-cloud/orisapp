@@ -510,9 +510,20 @@
 
 /* --- Documentation clinique -------------------------------------------------------- */
 
+/* Un cadre à part, bien visible : c'est une page entière du document. */
 .documentation {
   display: grid;
   gap: var(--espace-3);
+  padding: var(--espace-4) var(--espace-4) var(--espace-4);
+  border: 1.5px solid var(--accent);
+  border-radius: 14px;
+  background: var(--accent-douce);
+  transition: box-shadow var(--transition), background var(--transition);
+}
+
+.documentation[data-survol="true"] {
+  box-shadow: var(--anneau-focus);
+  background: var(--surface);
 }
 
 .documentationTete {
@@ -522,14 +533,43 @@
   flex-wrap: wrap;
 }
 
-.documentationTete span {
-  font-size: var(--texte-xs);
-  color: var(--encre-tres-douce);
+.documentationTete h3 {
+  margin: 0;
+  font-size: var(--texte-lg);
+  color: var(--accent);
 }
 
+.documentationTete span {
+  font-size: var(--texte-xs);
+  color: var(--encre-douce);
+}
+
+.depot {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-2) var(--espace-3);
+  flex-wrap: wrap;
+}
+
+.depot span {
+  font-size: var(--texte-xs);
+  font-style: italic;
+  color: var(--encre-douce);
+}
+
+.corriger {
+  width: auto !important;
+  padding: 0 8px;
+  font-size: var(--texte-xs) !important;
+  font-weight: var(--graisse-demi);
+  color: var(--accent) !important;
+}
+
+/* Une carte par photo : l'image, puis sa légende en dessous, comme à l'impression. */
 .figures {
   display: grid;
-  gap: var(--espace-2);
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: var(--espace-3);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -537,25 +577,29 @@
 
 .figure {
   display: grid;
-  grid-template-columns: 84px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--espace-3);
-  padding: 6px;
-  border: 1px solid var(--trait);
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--trait-fort);
   border-radius: 12px;
-  background: var(--surface-2);
+  background: var(--surface);
 }
 
 .figure img {
-  width: 84px;
-  height: 60px;
+  width: 100%;
+  height: 150px;
   object-fit: cover;
   border-radius: 8px;
+  background: var(--surface-douce);
 }
 
 .figureTexte {
   display: grid;
   gap: 4px;
+  min-width: 0;
+}
+
+.figureTexte input {
+  width: 100%;
   min-width: 0;
 }
 
@@ -567,6 +611,7 @@
 
 .figureOutils {
   display: flex;
+  justify-content: flex-end;
   gap: 2px;
 }
 
@@ -755,4 +800,32 @@
 
 .resultats li[data-ok="false"] {
   color: var(--alerte);
+}
+
+.autresAdresses {
+  display: grid;
+  gap: 6px;
+}
+
+.autreAdresse {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ajouterAdresse {
+  justify-self: start;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-size: var(--texte-sm);
+  font-weight: var(--graisse-demi);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.ajouterAdresse:hover {
+  background: var(--accent-douce);
 }

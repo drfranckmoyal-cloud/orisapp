@@ -732,6 +732,7 @@ export default function ConsultationPage() {
                     <Documentation
                       documentId={active.id}
                       patientId={data.patient.id}
+                      encounterId={data.id}
                     />
                     <EnvoiDocument
                       documentId={active.id}

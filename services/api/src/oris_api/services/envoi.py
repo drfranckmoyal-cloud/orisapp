@@ -139,7 +139,7 @@ def preparer(
     qui = f"{patient.first_name} {patient.last_name.upper()}"
     objet = f"{titre} — {qui} — {moment.strftime('%d/%m/%Y')}"
     message = (
-        "Cher confrère,\n\n"
+        "Cher confrère, chère consœur,\n\n"
         f"Veuillez trouver ci-joint le {titre[:1].lower() + titre[1:]} de {qui}, "
         f"établi à la suite de la consultation du {moment.strftime('%d/%m/%Y')}.\n\n"
         "Je reste à votre disposition pour tout complément.\n\n"

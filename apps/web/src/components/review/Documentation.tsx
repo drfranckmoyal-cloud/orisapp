@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { type DragEvent, useRef, useState } from "react";
 
 import { Bouton } from "@/components/ui";
 import {
@@ -13,6 +13,7 @@ import {
 import { errorMessage } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
+import { RetoucheImage } from "./RetoucheImage";
 import styles from "./consultation.module.css";
 
 /** Ce qu'un PDF sait poser. Une photo HEIC de l'iPhone doit d'abord être convertie. */
@@ -22,25 +23,46 @@ function vignette(id: string): string {
   return `${API_BASE_URL}/patients/attachments/${id}/contenu`;
 }
 
+type Figure = { attachment_id: string; caption: string };
+
+/** Ce qui est en cours de correction : une photo déposée, ou une pièce déjà rangée. */
+type Retouche = {
+  source: string;
+  nom: string;
+  fichier?: File;
+  pieceId?: string;
+  legende?: string | undefined;
+  remplace?: string | undefined; // la figure dont la photo est remplacée par sa version corrigée
+};
+
 /** « Documentation clinique » : les photos du document, légendées, sur la dernière page.
  *
- * On choisit parmi les pièces jointes du patient ; la première s'imprime en grand, les
- * suivantes deux par ligne. Oris ne regarde pas les photos : il les place.
+ * Deux sens : une photo déposée ici rejoint les pièces jointes du patient (rattachée à
+ * la consultation) ; une pièce jointe déjà rangée peut être choisie ici. Toute photo
+ * passe par une correction possible — recadrer, retourner — avant d'être posée.
  */
 export function Documentation({
   documentId,
   patientId,
+  encounterId,
 }: {
   documentId: string;
   patientId: string;
+  encounterId: string;
 }) {
   const [figures, recharger] = useApi<FigureDocument[]>(
     `/documents/${documentId}/figures`,
   );
-  const [pieces] = useApi<Attachment[]>(`/patients/${patientId}/attachments`);
-  const [choix, setChoix] = useState(false);
+  const [pieces, rechargerPieces] = useApi<Attachment[]>(
+    `/patients/${patientId}/attachments`,
+  );
+  const [galerie, setGalerie] = useState(false);
+  const [retouche, setRetouche] = useState<Retouche | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [travail, setTravail] = useState(false);
+  const [survol, setSurvol] = useState(false);
   const [brouillons, setBrouillons] = useState<Record<string, string>>({});
+  const champ = useRef<HTMLInputElement>(null);
 
   const posees = figures.state === "ready" ? figures.data : [];
   const photos =
@@ -50,11 +72,14 @@ export function Documentation({
   const disponibles = photos.filter(
     (p) => !posees.some((f) => f.attachment_id === p.id),
   );
-  const nonImprimables = disponibles.filter(
-    (p) => !IMPRIMABLES.has(p.media_type),
-  ).length;
 
-  async function poser(liste: { attachment_id: string; caption: string }[]) {
+  const actuelles = (): Figure[] =>
+    posees.map((f) => ({
+      attachment_id: f.attachment_id,
+      caption: brouillons[f.attachment_id] ?? f.caption,
+    }));
+
+  async function poser(liste: Figure[]) {
     setErreur(null);
     try {
       await apiRequest(`/documents/${documentId}/figures`, {
@@ -69,11 +94,104 @@ export function Documentation({
     }
   }
 
-  const actuelles = () =>
-    posees.map((f) => ({
-      attachment_id: f.attachment_id,
-      caption: brouillons[f.attachment_id] ?? f.caption,
-    }));
+  /** Range une image dans les pièces jointes du patient, rattachée à la consultation. */
+  async function ranger(image: Blob, nom: string): Promise<string> {
+    const corps = new FormData();
+    corps.append("files", image, nom);
+    corps.append("encounter_id", encounterId);
+    const reponse = await fetch(
+      `${API_BASE_URL}/patients/${patientId}/attachments`,
+      {
+        method: "POST",
+        body: corps,
+      },
+    );
+    const donnees: unknown = await reponse.json().catch(() => null);
+    if (!reponse.ok || !Array.isArray(donnees) || donnees.length === 0) {
+      const code =
+        typeof donnees === "object" && donnees !== null && "code" in donnees
+          ? String((donnees as { code: unknown }).code)
+          : "UNKNOWN";
+      throw new ApiError(reponse.status, code);
+    }
+    return String((donnees[0] as { id: string }).id);
+  }
+
+  function ouvrirFichier(fichier: File) {
+    if (!fichier.type.startsWith("image/")) {
+      setErreur(
+        "Seules les photos se posent ici ; les autres fichiers vont dans les pièces jointes.",
+      );
+      return;
+    }
+    setRetouche({
+      source: URL.createObjectURL(fichier),
+      nom: fichier.name,
+      fichier,
+    });
+  }
+
+  async function ouvrirPiece(
+    piece: { id: string; filename: string },
+    remplace?: string,
+  ) {
+    setErreur(null);
+    try {
+      // Par un blob local : une image venue d'une autre adresse ne se redessine pas.
+      const reponse = await fetch(vignette(piece.id));
+      const image = await reponse.blob();
+      setRetouche({
+        source: URL.createObjectURL(image),
+        nom: piece.filename,
+        pieceId: piece.id,
+        remplace,
+        legende: remplace
+          ? (brouillons[remplace] ??
+            posees.find((f) => f.attachment_id === remplace)?.caption)
+          : undefined,
+      });
+    } catch {
+      setErreur(errorMessage("NETWORK_UNREACHABLE"));
+    }
+  }
+
+  async function terminer(image: Blob | null, legende: string) {
+    const en_cours = retouche;
+    setRetouche(null);
+    if (!en_cours) return;
+    URL.revokeObjectURL(en_cours.source);
+    setTravail(true);
+    setErreur(null);
+    try {
+      let id = en_cours.pieceId;
+      if (image) {
+        const base = en_cours.nom.replace(/\.[^.]+$/, "");
+        id = await ranger(image, `${base}-corrigee.jpg`);
+      } else if (en_cours.fichier) {
+        id = await ranger(en_cours.fichier, en_cours.fichier.name);
+      }
+      if (!id) return;
+      const liste = actuelles();
+      if (en_cours.remplace) {
+        const nouvelle = liste.map((f) =>
+          f.attachment_id === en_cours.remplace
+            ? { attachment_id: id, caption: legende || f.caption }
+            : f,
+        );
+        await poser(nouvelle);
+      } else if (!liste.some((f) => f.attachment_id === id)) {
+        await poser([...liste, { attachment_id: id, caption: legende }]);
+      }
+      rechargerPieces();
+      setGalerie(false);
+    } catch (caught) {
+      setErreur(
+        errorMessage(caught instanceof ApiError ? caught.code : "UNKNOWN"),
+      );
+    } finally {
+      setTravail(false);
+    }
+  }
 
   function deplacer(index: number, pas: number) {
     const liste = actuelles();
@@ -84,16 +202,33 @@ export function Documentation({
     void poser(liste);
   }
 
+  function deposer(event: DragEvent<HTMLElement>) {
+    event.preventDefault();
+    setSurvol(false);
+    const fichier = event.dataTransfer.files[0];
+    if (fichier) ouvrirFichier(fichier);
+  }
+
   return (
-    <div className={styles.documentation}>
-      <div className={styles.documentationTete}>
-        <strong>Documentation clinique</strong>
+    <section
+      className={styles.documentation}
+      data-survol={survol}
+      aria-label="Documentation clinique"
+      onDragOver={(event) => {
+        event.preventDefault();
+        setSurvol(true);
+      }}
+      onDragLeave={() => setSurvol(false)}
+      onDrop={deposer}
+    >
+      <header className={styles.documentationTete}>
+        <h3>Documentation clinique</h3>
         <span>
           {posees.length === 0
             ? "Aucune photo : la page n’est pas imprimée."
-            : `${posees.length} photo${posees.length > 1 ? "s" : ""}, sur une page à part en fin de document.`}
+            : `${posees.length} photo${posees.length > 1 ? "s" : ""} · page à part, en fin de document.`}
         </span>
-      </div>
+      </header>
 
       {posees.length > 0 && (
         <ol className={styles.figures}>
@@ -109,7 +244,8 @@ export function Documentation({
                 <input
                   className={styles.choix}
                   value={brouillons[figure.attachment_id] ?? figure.caption}
-                  placeholder="Légende"
+                  placeholder="Légende sous la photo"
+                  aria-label={`Légende de la figure ${index + 1}`}
                   maxLength={300}
                   onChange={(event) =>
                     setBrouillons((b) => ({
@@ -121,6 +257,18 @@ export function Documentation({
                 />
               </div>
               <div className={styles.figureOutils}>
+                <button
+                  type="button"
+                  className={styles.corriger}
+                  onClick={() =>
+                    void ouvrirPiece(
+                      { id: figure.attachment_id, filename: figure.filename },
+                      figure.attachment_id,
+                    )
+                  }
+                >
+                  Corriger
+                </button>
                 <button
                   type="button"
                   aria-label="Monter"
@@ -156,11 +304,28 @@ export function Documentation({
         </ol>
       )}
 
-      {!choix ? (
-        <Bouton variante="discret" onClick={() => setChoix(true)}>
-          + Ajouter des photos
+      <div className={styles.depot}>
+        <Bouton disabled={travail} onClick={() => champ.current?.click()}>
+          {travail ? "Enregistrement…" : "+ Déposer une photo"}
         </Bouton>
-      ) : (
+        <Bouton variante="secondaire" onClick={() => setGalerie((v) => !v)}>
+          Choisir dans les pièces jointes
+        </Bouton>
+        <span>ou glissez une photo dans ce cadre</span>
+        <input
+          ref={champ}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={(event) => {
+            const fichier = event.target.files?.[0];
+            if (fichier) ouvrirFichier(fichier);
+            event.target.value = "";
+          }}
+        />
+      </div>
+
+      {galerie && (
         <div className={styles.galerie}>
           {disponibles.length === 0 && (
             <span className={styles.envoiRien}>
@@ -180,34 +345,30 @@ export function Documentation({
                     ? `Ajouter ${piece.filename}`
                     : "Format HEIC : pas encore imprimable"
                 }
-                onClick={() =>
-                  void poser([
-                    ...actuelles(),
-                    { attachment_id: piece.id, caption: "" },
-                  ])
-                }
+                onClick={() => void ouvrirPiece(piece)}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- fichier servi par l'API */}
                 <img src={vignette(piece.id)} alt={piece.filename} />
               </button>
             );
           })}
-          <div className={styles.galerieFin}>
-            {nonImprimables > 0 && (
-              <span className={styles.envoiRien}>
-                {nonImprimables} photo{nonImprimables > 1 ? "s" : ""} HEIC
-                grisée
-                {nonImprimables > 1 ? "s" : ""} : pas encore imprimable
-                {nonImprimables > 1 ? "s" : ""}.
-              </span>
-            )}
-            <Bouton variante="secondaire" onClick={() => setChoix(false)}>
-              Fermer
-            </Bouton>
-          </div>
         </div>
       )}
+
       {erreur && <p className={styles.erreur}>{erreur}</p>}
-    </div>
+
+      {retouche && (
+        <RetoucheImage
+          source={retouche.source}
+          nom={retouche.nom}
+          legendeInitiale={retouche.legende ?? ""}
+          onValider={(image, legende) => void terminer(image, legende)}
+          onAnnuler={() => {
+            URL.revokeObjectURL(retouche.source);
+            setRetouche(null);
+          }}
+        />
+      )}
+    </section>
   );
 }

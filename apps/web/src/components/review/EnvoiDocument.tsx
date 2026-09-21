@@ -42,7 +42,8 @@ export function EnvoiDocument({
     `/documents/${documentId}/envoi?v=${version}`,
   );
   const [coches, setCoches] = useState<Record<string, boolean> | null>(null);
-  const [autres, setAutres] = useState("");
+  // Une adresse par champ ; « + » en ajoute un.
+  const [autres, setAutres] = useState<string[]>([""]);
   const [objet, setObjet] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState<"repos" | "en_cours">("repos");
@@ -57,10 +58,7 @@ export function EnvoiDocument({
   const choisis = donnees.candidats
     .filter((c) => etat[c.cle])
     .map((c) => c.cle);
-  const libres = autres
-    .split(/[,;\s]+/)
-    .map((a) => a.trim())
-    .filter(Boolean);
+  const libres = autres.map((a) => a.trim()).filter(Boolean);
   const nombre = choisis.length + libres.length;
 
   async function envoyer() {
@@ -81,7 +79,7 @@ export function EnvoiDocument({
         },
       );
       setResultats(retour);
-      setAutres("");
+      setAutres([""]);
       onEnvoye();
     } catch (caught) {
       setErreur(
@@ -157,12 +155,41 @@ export function EnvoiDocument({
             </span>
           </label>
         ))}
-        <input
-          className={styles.choix}
-          value={autres}
-          placeholder="Autre adresse (plusieurs : séparées par une virgule)"
-          onChange={(event) => setAutres(event.target.value)}
-        />
+        <div className={styles.autresAdresses}>
+          {autres.map((adresse, rang) => (
+            <div key={rang} className={styles.autreAdresse}>
+              <input
+                className={styles.choix}
+                type="email"
+                value={adresse}
+                placeholder="Autre adresse"
+                aria-label={`Autre adresse ${rang + 1}`}
+                onChange={(event) =>
+                  setAutres(
+                    autres.map((a, i) => (i === rang ? event.target.value : a)),
+                  )
+                }
+              />
+              {autres.length > 1 && (
+                <button
+                  type="button"
+                  className={styles.retirer}
+                  aria-label="Retirer cette adresse"
+                  onClick={() => setAutres(autres.filter((_, i) => i !== rang))}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            type="button"
+            className={styles.ajouterAdresse}
+            onClick={() => setAutres([...autres, ""])}
+          >
+            + Ajouter une adresse
+          </button>
+        </div>
       </fieldset>
 
       <label className={styles.champEnvoi}>
