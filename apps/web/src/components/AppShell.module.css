@@ -1,7 +1,7 @@
 .shell {
   display: grid;
   grid-template-columns: var(--largeur-menu) 1fr;
-  min-height: 100vh;
+  min-height: var(--ecran-haut);
   background: var(--fond);
 }
 
@@ -13,7 +13,7 @@
   flex-direction: column;
   position: sticky;
   top: 0;
-  height: 100vh;
+  height: var(--ecran-haut);
   box-shadow:
     inset -1px 0 0 rgb(255 255 255 / 0.08),
     6px 0 34px -20px rgb(11 47 33 / 0.9);

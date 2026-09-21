@@ -7,6 +7,28 @@
   box-sizing: border-box;
 }
 
+/* Densité de l'interface.
+ *
+ * 1 = l'échelle d'origine. En dessous, tout rapetisse ensemble — polices, cadres,
+ * espaces, ombres, arrondis — sans qu'aucune proportion ne bouge : c'est un zoom, pas
+ * une refonte du système. Les jetons de `theme.css` continuent donc de dire la vérité
+ * sur les tailles dessinées ; seul l'affichage est plus dense.
+ *
+ * Effet voulu : plus de lignes visibles sans faire défiler. Les filets de 1 px ne
+ * disparaissent pas, l'écran du Mac ayant deux pixels physiques par pixel CSS. */
+:root {
+  --densite: 0.87;
+  /* Le zoom divise aussi les unités de fenêtre : `100vh` ne ferait plus la hauteur de
+     l'écran mais 87 % de celle-ci, et la barre de gauche s'arrêterait avant le bas.
+     Toute hauteur qui doit valoir « tout l'écran » passe par ces deux jetons. */
+  --ecran-haut: calc(100vh / var(--densite));
+  --ecran-large: calc(100vw / var(--densite));
+}
+
+html {
+  zoom: var(--densite);
+}
+
 html,
 body {
   margin: 0;

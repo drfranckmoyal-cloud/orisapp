@@ -125,3 +125,31 @@ plan de traitement : il appartient à la consultation.
   impression. Les PNG n'exportent donc que le symbole.
 - Le logo du cabinet ne remplace pas encore celui d'Oris sur les documents.
 - Les écrans iPhone n'ont pas été repris sur cette direction.
+
+## Densité de l'interface
+
+`--densite`, dans `app/globals.css`, est le seul réglage d'échelle de tout le site :
+
+```css
+:root { --densite: 0.87; }
+html   { zoom: var(--densite); }
+```
+
+`1` rend l'échelle d'origine ; en dessous, **tout** rapetisse ensemble — polices,
+cadres, espaces, ombres, arrondis, épaisseurs de filets. Aucune proportion ne bouge,
+parce que rien n'est retouché : c'est l'affichage qui est plus dense, pas le dessin.
+
+C'est délibérément un seul nombre plutôt qu'une réécriture des jetons. Les jetons de
+`theme.css` continuent donc de dire la vérité sur les tailles dessinées : un cadre à
+`--rayon-carte: 20px` est bien dessiné à 20 px, et s'affiche à 17,4. Changer d'avis sur
+la densité ne demande pas de repasser sur quinze feuilles de style.
+
+**Une seule chose à savoir en écrivant du style** : le zoom divise aussi les unités de
+fenêtre. `100vh` ne vaut plus la hauteur de l'écran mais 87 % de celle-ci. Toute hauteur
+ou largeur qui doit valoir « tout l'écran » passe donc par `--ecran-haut` /
+`--ecran-large`, et une fraction d'écran se divise par `--densite` :
+
+```css
+height: var(--ecran-haut);              /* et non 100vh */
+max-height: calc(62vh / var(--densite));
+```
