@@ -1539,7 +1539,7 @@
           "smilecloud"
         ],
         "summary": "Recevoir Fichier",
-        "description": "Un original lu dans SmileCloud, rangé dans le dossier du patient. Refus dits.",
+        "description": "L'image plein écran lue dans SmileCloud (≈ 2 000 px, JPEG — pas le fichier\nd'origine de l'appareil), rangée dans le dossier du patient. Refus dits.",
         "operationId": "recevoir_fichier_smilecloud_fichier_post",
         "parameters": [
           {
@@ -7467,6 +7467,17 @@
           "rapatriable": {
             "type": "boolean",
             "title": "Rapatriable"
+          },
+          "pourquoi": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pourquoi"
           }
         },
         "type": "object",

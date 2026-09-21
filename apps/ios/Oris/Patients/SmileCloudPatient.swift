@@ -21,9 +21,10 @@ struct EtatSmileCloud: Codable, Equatable, Sendable {
         let nom: String
         let nature: String
         let rapatriable: Bool
+        var pourquoi: String? = nil
         var id: String { resId }
         enum CodingKeys: String, CodingKey {
-            case nom, nature, rapatriable
+            case nom, nature, rapatriable, pourquoi
             case resId = "res_id"
         }
     }
@@ -230,7 +231,8 @@ struct CarteSmileCloud: View {
                                     .foregroundStyle(f.rapatriable ? Teinte.encre : Teinte.encreTresDouce)
                                     .lineLimit(1)
                                 Spacer()
-                                Text(Self.natures[f.nature] ?? f.nature)
+                                Text(f.rapatriable ? (Self.natures[f.nature] ?? f.nature)
+                                     : "\(Self.natures[f.nature] ?? f.nature) · \(f.pourquoi ?? "non repris")")
                                     .font(Police.interface(11.5, .bold)).foregroundStyle(Teinte.document(.treatmentPlanText).encre)
                             }
                             .padding(.leading, 22)

@@ -217,6 +217,12 @@ et CBCT **sans les télécharger** (D87) : Oris ne les demandera jamais. Sert la
 
 ### 4. Livrer un fichier — `POST /smilecloud/fichier`
 
+> **22/09/2026, extension 0.22.0** : ce qui part est l'**image plein écran** du visualiseur
+> (`/resized/full/<res_id>.jpg`, ≈ 2 000 px, JPEG), pas le fichier d'origine de l'appareil
+> (≈ 6 000 px) — celui-ci ne s'obtient que par un téléchargement, exclu par D88. À Franck
+> de décider plus tard s'il le veut. Seules les **photos** sont livrées pour l'instant :
+> Oris affiche les autres natures « pas encore », non cochables.
+
 Corps : les octets de l'original (`Content-Type: application/octet-stream`). En-têtes :
 `X-Demande: <id>`, `X-Res-Id: <res_id>`, `X-Nom: <nom de fichier avec extension>`.
 Réponse : `{"recu": true, "termine": false}` ou `{"recu": false, "raison":

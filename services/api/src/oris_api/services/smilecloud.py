@@ -29,6 +29,9 @@ MOTIF_CASE_ID = re.compile(r"^[0-9a-fA-F-]{8,64}$")
 #: Ce qui ne se rapatrie pas (arbitrage de Franck) : trop lourd, rien à faire dans un CR.
 NATURES_EXCLUES = frozenset({"video", "cbct"})
 NATURES = frozenset({"photo", "radio", "scan3d", "pdf", "video", "cbct", "autre"})
+#: Ce que l'extension sait livrer aujourd'hui (0.22.0, 22/09/2026) : les photos. Le reste
+#: est affiché, non cochable, « pas encore » — plutôt qu'un refus après coup.
+NATURES_LIVREES = frozenset({"photo"})
 #: Une demande que l'extension n'a pas servie en douze heures est oubliée.
 DUREE_DEMANDE = timedelta(hours=12)
 

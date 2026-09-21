@@ -514,7 +514,8 @@ export interface paths {
         put?: never;
         /**
          * Recevoir Fichier
-         * @description Un original lu dans SmileCloud, rangé dans le dossier du patient. Refus dits.
+         * @description L'image plein écran lue dans SmileCloud (≈ 2 000 px, JPEG — pas le fichier
+         *     d'origine de l'appareil), rangée dans le dossier du patient. Refus dits.
          */
         post: operations["recevoir_fichier_smilecloud_fichier_post"];
         delete?: never;
@@ -2669,6 +2670,8 @@ export interface components {
             nature: string;
             /** Rapatriable */
             rapatriable: boolean;
+            /** Pourquoi */
+            pourquoi?: string | null;
         };
         /** FigureIn */
         FigureIn: {

@@ -141,7 +141,8 @@ def recevoir_fichier(
     x_nom: Annotated[str, Header(max_length=200)],
     authorization: str | None = Header(default=None),
 ) -> dict[str, Any]:
-    """Un original lu dans SmileCloud, rangé dans le dossier du patient. Refus dits."""
+    """L'image plein écran lue dans SmileCloud (≈ 2 000 px, JPEG — pas le fichier
+    d'origine de l'appareil), rangée dans le dossier du patient. Refus dits."""
     _extension(request, settings, authorization)
     d = smilecloud.demande(settings, x_demande)
     if d is None or d["type"] != "fichiers":
@@ -192,6 +193,9 @@ class FichierOut(BaseModel):
     nom: str
     nature: str
     rapatriable: bool
+    #: Pourquoi il ne l'est pas : « non repris » (vidéo, CBCT), « pas encore » (l'extension
+    #: ne sait pas encore le livrer).
+    pourquoi: str | None = None
 
 
 class GalerieOut(BaseModel):
@@ -264,7 +268,12 @@ def _vue(settings: Settings, patient: Any) -> SmileCloudPatientOut:
                         res_id=f["res_id"],
                         nom=f["nom"],
                         nature=f["nature"],
-                        rapatriable=f["nature"] not in smilecloud.NATURES_EXCLUES,
+                        rapatriable=f["nature"] in smilecloud.NATURES_LIVREES,
+                        pourquoi=None
+                        if f["nature"] in smilecloud.NATURES_LIVREES
+                        else "non repris"
+                        if f["nature"] in smilecloud.NATURES_EXCLUES
+                        else "pas encore",
                     )
                     for f in g["fichiers"]
                 ],

@@ -14,6 +14,7 @@ type Fichier = {
   nom: string;
   nature: string;
   rapatriable: boolean;
+  pourquoi?: string | null;
 };
 type Galerie = { id: string; nom: string; date: string; fichiers: Fichier[] };
 type Recuperation = {
@@ -279,7 +280,10 @@ export function SmileCloud({
                               {NATURE[f.nature] ?? f.nature}
                             </span>
                             {!f.rapatriable && (
-                              <span className={styles.aide}> — non repris</span>
+                              <span className={styles.aide}>
+                                {" "}
+                                — {f.pourquoi ?? "non repris"}
+                              </span>
                             )}
                           </label>
                         </li>
@@ -333,7 +337,8 @@ export function SmileCloud({
               {!e.recuperation.termine && (
                 <span className={styles.aide}>
                   {" "}
-                  — l’extension lit les originaux dans SmileCloud, un par un.
+                  — l’extension lit les images plein écran dans SmileCloud, une
+                  par une.
                 </span>
               )}
               {e.recuperation.ecartes.length > 0 && (
