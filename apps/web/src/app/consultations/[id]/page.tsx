@@ -285,7 +285,7 @@ export default function ConsultationPage() {
     active && edition?.documentId === active.id ? edition : null;
 
   return (
-    <div className="page">
+    <div className="page" data-pleine-largeur>
       <header className={styles.entete}>
         <Link href="/consultations" className={styles.retour}>
           <Icone nom="retour" taille={15} /> Consultations
@@ -799,25 +799,20 @@ export default function ConsultationPage() {
             </Carte>
           )}
 
-          {/* Les pièces du patient, sous la main pendant qu'on rédige : on s'y réfère
-              en écrivant. Une pièce déposée ici est rattachée à cette consultation. */}
-          <Carte
-            titre="Pièces jointes"
-            action={
-              <Link
-                href={`/patients/${data.patient.id}`}
-                className="link-button"
-              >
+          {/* Les pièces du patient : utiles pour s'y référer, pas à chaque consultation.
+              Repliées, elles ne prennent qu'une ligne. Une pièce déposée ici est
+              rattachée à cette consultation. */}
+          <details className={styles.replie}>
+            <summary>
+              Pièces jointes
+              <Link href={`/patients/${data.patient.id}`} className="link-button">
                 fiche patient
               </Link>
-            }
-          >
-            <PiecesJointes
-              patientId={data.patient.id}
-              encounterId={data.id}
-              compact
-            />
-          </Carte>
+            </summary>
+            <div className={styles.replieContenu}>
+              <PiecesJointes patientId={data.patient.id} encounterId={data.id} compact />
+            </div>
+          </details>
 
           {audio.state === "ready" && (
             <p className={styles.audio}>

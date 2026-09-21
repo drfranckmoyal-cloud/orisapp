@@ -123,7 +123,9 @@
 
 .disposition {
   display: grid;
-  grid-template-columns: minmax(0, 64fr) minmax(0, 36fr);
+  /* Le document d'abord : le rail garde une largeur fixe, étroite, et tout le reste va
+     à la feuille. */
+  grid-template-columns: minmax(0, 1fr) 330px;
   gap: var(--espace-6);
   align-items: start;
 }
@@ -270,7 +272,7 @@
   --teinte: var(--doc-compte-rendu);
   display: grid;
   gap: var(--espace-4);
-  padding: var(--espace-6);
+  padding: var(--espace-6) var(--espace-8) var(--espace-8);
   border: 1px solid var(--trait-fort);
   border-radius: 16px;
   background: var(--surface);
@@ -323,7 +325,30 @@
 }
 
 .texte {
-  font-size: var(--texte-md);
+  font-size: 16.5px;
+}
+
+/* --- Rail : ce qui sert moins se replie ------------------------------------------ */
+
+.replie {
+  border: 1px solid var(--trait-fort);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--lumiere);
+}
+
+.replie summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espace-3);
+  padding: 12px var(--espace-4);
+  font-weight: var(--graisse-demi);
+  cursor: pointer;
+}
+
+.replieContenu {
+  padding: 0 var(--espace-4) var(--espace-4);
 }
 
 .feuillePied {
@@ -456,4 +481,16 @@
   margin: 0;
   font-size: var(--texte-sm);
   color: var(--alerte);
+}
+
+/* Le rail est étroit : ses onglets se serrent sur une seule ligne au lieu de s'empiler. */
+.rail [role="tablist"] {
+  flex-wrap: nowrap;
+}
+
+.rail [role="tablist"] > * {
+  flex: 1 1 auto;
+  padding: 7px 9px;
+  font-size: var(--texte-xs);
+  white-space: nowrap;
 }

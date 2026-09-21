@@ -38,18 +38,34 @@
   background: var(--surface-douce);
 }
 
+/* Le texte d'un document : de l'air entre les rubriques, un interligne de lecture, et
+   une longueur de ligne qui reste confortable même sur un grand écran. */
 .document {
   display: grid;
-  gap: var(--space-16);
-  font-size: 16px;
-  line-height: 1.5;
+  gap: 22px;
+  max-width: 92ch;
+  font-size: inherit;
+  line-height: 1.7;
+  color: var(--encre);
 }
 
 .sectionTitle {
-  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: var(--espace-3);
+  margin: 0 0 6px;
+  font-size: 12.5px;
+  font-weight: var(--graisse-forte);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: var(--space-4);
+  letter-spacing: 0.08em;
+  color: var(--teinte, var(--accent));
+}
+
+.sectionTitle::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--trait);
 }
 
 .claim {
@@ -57,12 +73,13 @@
   width: 100%;
   text-align: left;
   font: inherit;
-  color: var(--encre-douce);
+  line-height: inherit;
+  color: var(--encre);
   background: none;
   border: none;
   border-radius: 6px;
-  padding: 2px 6px;
-  margin-left: -6px;
+  padding: 3px 8px;
+  margin-left: -8px;
   cursor: pointer;
 }
 
@@ -71,7 +88,7 @@
 }
 
 .claim[data-selected="true"] {
-  background: #dcebf7;
+  background: var(--accent-douce);
   outline: 2px solid var(--accent);
 }
 

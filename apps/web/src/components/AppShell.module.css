@@ -303,6 +303,12 @@
   padding: var(--espace-8) var(--espace-12) var(--espace-12);
 }
 
+/* Un écran de lecture (la consultation) prend toute la largeur : un compte rendu ne se
+   lit pas dans une colonne étroite. */
+.main:has([data-pleine-largeur]) {
+  max-width: 1720px;
+}
+
 @media (max-width: 900px) {
   .shell {
     grid-template-columns: 1fr;
