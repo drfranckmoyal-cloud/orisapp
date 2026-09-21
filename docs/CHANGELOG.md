@@ -1,5 +1,16 @@
 # Changelog
 
+## Compte rendu opératoire et courrier d'adressage au modèle — 2026-09-21
+- **Compte rendu opératoire** rangé dans les rubriques du modèle 02 (Indication ·
+  Situation pré-opératoire · Intervention réalisée · Protocole / éléments techniques ·
+  Résultat immédiat · Suites et consignes · Coordination / prochaine étape).
+- **Courrier d'adressage** (modèle 04), nouveau : à la demande, depuis l'intercalaire
+  « + Courrier d'adressage » de la consultation. Bâti sur les faits de la consultation,
+  rangés dans les rubriques du courrier ; « Demande / objectifs » n'apparaît que si elle a
+  été dite — sinon le praticien l'écrit en éditant. Destinataire tiré des correspondants
+  « adressé à » de la fiche. Une fois demandé, il suit les corrections.
+- La fusion des doublons est commune au compte rendu et au courrier.
+
 ## PDF au modèle du praticien — 2026-09-21
 - **Mise en page des modèles Word du Dr Moyal** : nom en grand, titres dessous, RPPS et
   coordonnées à droite ; grand titre du document ; bloc patient sur fond gris (patient,

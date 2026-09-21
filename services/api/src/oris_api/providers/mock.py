@@ -16,6 +16,7 @@ from oris_api.documents.renderer import (
     Style,
     render_consultation_note,
     render_operative_note,
+    render_referral_letter,
     render_treatment_plan,
 )
 from oris_api.domain.factual_validator import validate_document
@@ -149,6 +150,8 @@ class MockDocumentGenerationProvider:
                 return render_treatment_plan(encounter)
             case "operative_note":
                 return render_operative_note(encounter)
+            case "referral_letter":
+                return render_referral_letter(encounter)
         raise NotImplementedError(document_type)
 
 

@@ -110,3 +110,19 @@ def test_a_denied_fact_whose_words_do_not_deny_is_flagged_for_review() -> None:
     note = render_consultation_note(encounter)
     codes = [issue.code for issue in validate_document(note, encounter)]
     assert "negation_unclear" in codes
+
+
+def test_a_referral_letter_is_built_from_the_same_facts_in_the_letter_rubrics() -> None:
+    from oris_api.documents.renderer import RUBRIQUES_COURRIER, render_referral_letter
+
+    encounter = dictee()
+    lettre = render_referral_letter(encounter)
+    titres = [ligne for ligne in lettre.content.splitlines() if ligne in RUBRIQUES_COURRIER]
+    assert titres == [t for t in RUBRIQUES_COURRIER if t in titres]
+    assert "Agénésie de 12 et 22" in rubrique(lettre.content, "Contexte clinique")
+    assert "Radiographie panoramique" in rubrique(
+        lettre.content, "Examens disponibles / pièces jointes"
+    )
+    # Rien n'a été dit sur ce qu'on demande au confrère : la rubrique n'existe pas.
+    assert "Demande / objectifs" not in titres
+    assert validate_document(lettre, encounter) == []

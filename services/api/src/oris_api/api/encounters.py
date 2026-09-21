@@ -472,6 +472,25 @@ def generate_operative_note(
     return list_documents(encounter_id, session, actor)
 
 
+@router.post(
+    "/encounters/{encounter_id}/documents/referral-letter", response_model=list[DocumentOut]
+)
+def generate_referral_letter(
+    encounter_id: UUID, session: SessionDep, actor: ActorDep, providers: ProvidersDep
+) -> list[DocumentOut]:
+    """Courrier d'adressage, à la demande : bâti sur les faits, jamais d'office."""
+    encounter = encounters.get_encounter(session, actor, encounter_id)
+    if encounter.status not in {"review", "validated", "exported"}:
+        raise Conflict("ENCOUNTER_NOT_PROCESSED", str(encounter.id))
+    obj = clinical_store.load_current(session, encounter)
+    if not obj.facts:
+        raise Conflict("NOTHING_TO_REFER", str(encounter.id))
+    documents.generate(session, encounter, obj, providers, include=["referral_letter"])
+    if encounter.status != "review":
+        encounters.transition(session, actor, encounter, "review")
+    return list_documents(encounter_id, session, actor)
+
+
 @router.post("/documents/{document_id}/text", response_model=DocumentOut)
 def edit_document_text(
     document_id: UUID, body: DocumentTextEdit, session: SessionDep, actor: ActorDep

@@ -56,6 +56,10 @@ def document_types_for(
         types.append("treatment_plan_text")
     if "operative_note" in existing and operative_note_available(obj):
         types.append("operative_note")
+    # Le courrier d'adressage, lui aussi, n'existe que demandé ; il suit ensuite les
+    # corrections comme les autres.
+    if "referral_letter" in existing and obj.facts:
+        types.append("referral_letter")
     return types
 
 

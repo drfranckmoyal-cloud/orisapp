@@ -2361,6 +2361,54 @@
         }
       }
     },
+    "/encounters/{encounter_id}/documents/referral-letter": {
+      "post": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Generate Referral Letter",
+        "description": "Courrier d'adressage, à la demande : bâti sur les faits, jamais d'office.",
+        "operationId": "generate_referral_letter_encounters__encounter_id__documents_referral_letter_post",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentOut"
+                  },
+                  "title": "Response Generate Referral Letter Encounters  Encounter Id  Documents Referral Letter Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/documents/{document_id}/text": {
       "post": {
         "tags": [

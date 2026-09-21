@@ -14,7 +14,7 @@ Les sections vides ne sont pas affichées (§32.1).
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 
 from oris_api.contracts import ClinicalEncounter, ClinicalFact, Procedure, TreatmentPlanItem
@@ -360,18 +360,21 @@ def _cle(texte: str) -> str:
     return re.sub(r"[^a-z0-9àâäéèêëîïôöùûüç]+", " ", texte.lower()).strip()
 
 
-def render_consultation_note(
-    encounter: ClinicalEncounter, style: Style = DEFAULT_STYLE
-) -> GeneratedDocument:
-    """Compte rendu de consultation dans les rubriques du modèle, avec les mots dits.
+def ranger(
+    encounter: ClinicalEncounter,
+    rubriques: tuple[str, ...],
+    rubrique_de_fait: Callable[[ClinicalFact], str],
+    style: Style = DEFAULT_STYLE,
+) -> list[Claim]:
+    """Range chaque fait dans sa rubrique, avec les mots dits, sans doublon.
 
-    Une rubrique sans contenu n'existe pas. Deux faits qui disent la même chose dans la
-    même rubrique (« 2 bridges cantilever » et le détail des deux bridges) ne font
-    qu'une phrase, la plus complète, qui cite les deux faits.
+    Deux faits qui disent la même chose dans la même rubrique (« 2 bridges cantilever »
+    et le détail des deux bridges) ne font qu'une phrase, la plus complète, qui cite les
+    deux faits.
     """
-    par_rubrique: dict[str, list[Claim]] = {rubrique: [] for rubrique in RUBRIQUES_CONSULTATION}
+    par_rubrique: dict[str, list[Claim]] = {rubrique: [] for rubrique in rubriques}
     for fact in encounter.facts:
-        rubrique = rubrique_de(fact)
+        rubrique = rubrique_de_fait(fact)
         texte = phrase_redigee(fact, style)
         if style.length == "concise":
             texte = shorten(rubrique, texte)
@@ -400,9 +403,19 @@ def render_consultation_note(
             )
             continue
         claims.append(Claim(rubrique, texte, fact_ids=(fact.fact_id,)))
-    claims = limits_claims(encounter)
-    for rubrique in RUBRIQUES_CONSULTATION:
-        claims += par_rubrique[rubrique]
+    return [claim for rubrique in rubriques for claim in par_rubrique[rubrique]]
+
+
+def render_consultation_note(
+    encounter: ClinicalEncounter, style: Style = DEFAULT_STYLE
+) -> GeneratedDocument:
+    """Compte rendu de consultation dans les rubriques du modèle, avec les mots dits.
+
+    Une rubrique sans contenu n'existe pas.
+    """
+    claims = limits_claims(encounter) + ranger(
+        encounter, RUBRIQUES_CONSULTATION, rubrique_de, style
+    )
     return GeneratedDocument("consultation_note", render_content(claims), tuple(claims))
 
 
@@ -587,3 +600,70 @@ def render_operative_note(encounter: ClinicalEncounter) -> GeneratedDocument:
                 )
             )
     return GeneratedDocument("operative_note", render_content(claims), tuple(claims))
+
+
+# --- Courrier d'adressage, modèle 04 du Dr Moyal ---------------------------------------
+
+RUBRIQUES_COURRIER = (
+    "Motif de l’adressage",
+    "Contexte clinique",
+    "Éléments pertinents",
+    "Examens disponibles / pièces jointes",
+    "Demande / objectifs",
+    "Points d’attention / précautions",
+    "Coordination / retour souhaité",
+)
+ADRESSAGE_SORTANT = re.compile(
+    r"\b(adress\w* (à|au|aux|vers|chez)|orient\w* (vers|chez)|avis (de|du|d[’'])|"
+    r"envoy\w* (à|au|chez)|consultation (de|chez) )",
+    re.IGNORECASE,
+)
+# Ce que le praticien demande au confrère — pas la demande du patient (« demande
+# esthétique », « souhaiterait une solution fixe »), qui relève du contexte.
+DEMANDE = re.compile(
+    r"\b(merci de|pour avis|je vous (demande|remercie)|vous serait-il possible)", re.IGNORECASE
+)
+EXAMENS = frozenset(
+    {
+        "panoramic_radiograph",
+        "clinical_photographs",
+        "scan",
+        "cbct",
+        "retroalveolar_radiograph",
+        "bitewing_radiograph",
+        "radiograph",
+        "aesthetic_simulation",
+    }
+)
+
+
+def rubrique_courrier(fact: ClinicalFact) -> str:
+    """Où va un fait dans un courrier à un confrère. Rien n'est ajouté : on range."""
+    value = fact.value if isinstance(fact.value, str) else ""
+    if ADRESSAGE_SORTANT.search(value):
+        return "Motif de l’adressage"
+    if DEMANDE.search(value):
+        return "Demande / objectifs"
+    if fact.concept in EXAMENS or fact.category == "radiographic_finding":
+        return "Examens disponibles / pièces jointes"
+    rubrique = rubrique_de(fact)
+    return {
+        MOTIF: "Contexte clinique",
+        EXAMEN: "Contexte clinique",
+        DIAGNOSTIC: "Contexte clinique",
+        PROPOSITION: "Éléments pertinents",
+        INFORMATIONS: "Éléments pertinents",
+        ACTES: "Éléments pertinents",
+        SUITE: "Coordination / retour souhaité",
+        ATTENTION: "Points d’attention / précautions",
+    }[rubrique]
+
+
+def render_referral_letter(encounter: ClinicalEncounter) -> GeneratedDocument:
+    """Courrier d'adressage bâti sur les faits de la consultation.
+
+    Il ne dit que ce qui a été dit : une rubrique que rien n'appuie (souvent « Demande /
+    objectifs ») disparaît, et le praticien l'écrit lui-même en éditant le texte.
+    """
+    claims = limits_claims(encounter) + ranger(encounter, RUBRIQUES_COURRIER, rubrique_courrier)
+    return GeneratedDocument("referral_letter", render_content(claims), tuple(claims))

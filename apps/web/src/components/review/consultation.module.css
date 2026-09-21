@@ -243,6 +243,10 @@
   opacity: 1;
 }
 
+.intercalaireCourrier {
+  color: var(--doc-courrier);
+}
+
 .intercalaireAjout:hover {
   background: var(--doc-operatoire-douce);
 }

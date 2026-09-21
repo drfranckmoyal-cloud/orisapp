@@ -204,3 +204,12 @@ def test_a_letter_names_its_recipient_instead_of_the_referrer() -> None:
     rows = patient_rows(lettre, layout_for("referral_letter"))
     assert ("Destinataire", "Dr B") in rows
     assert all(label != "Adressé(e) par" for label, _ in rows)
+
+
+def test_the_title_is_never_printed_twice() -> None:
+    from oris_api.documents.export import signature
+    from oris_api.documents.theme import Cabinet
+
+    cabinet = Cabinet(practitioner_title="Dr")
+    assert signature(context(practitioner="Franck Moyal"), cabinet) == "Dr Franck Moyal"
+    assert signature(context(practitioner="Dr Franck Moyal"), cabinet) == "Dr Franck Moyal"

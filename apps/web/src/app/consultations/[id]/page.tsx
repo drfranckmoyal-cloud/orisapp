@@ -526,6 +526,28 @@ export default function ConsultationPage() {
                     </span>
                   </button>
                 )}
+                {!shadow &&
+                  !docs.some(
+                    (doc) => doc.document_type === "referral_letter",
+                  ) && (
+                    <button
+                      type="button"
+                      className={`${styles.intercalaireAjout} ${styles.intercalaireCourrier}`}
+                      title="Rédigé à partir de ce qui a été dit ; vous le complétez en éditant le texte."
+                      onClick={() =>
+                        act(
+                          `/encounters/${id}/documents/referral-letter`,
+                          undefined,
+                          "Courrier d’adressage rédigé : complétez la demande au confrère en éditant le texte.",
+                        )
+                      }
+                    >
+                      + Courrier d’adressage
+                      <span className={styles.intercalaireEtat}>
+                        à un confrère
+                      </span>
+                    </button>
+                  )}
               </div>
 
               <article

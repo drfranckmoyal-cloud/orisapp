@@ -731,6 +731,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/encounters/{encounter_id}/documents/referral-letter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate Referral Letter
+         * @description Courrier d'adressage, à la demande : bâti sur les faits, jamais d'office.
+         */
+        post: operations["generate_referral_letter_encounters__encounter_id__documents_referral_letter_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/documents/{document_id}/text": {
         parameters: {
             query?: never;
@@ -4538,6 +4558,37 @@ export interface operations {
         };
     };
     generate_operative_note_encounters__encounter_id__documents_operative_note_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_referral_letter_encounters__encounter_id__documents_referral_letter_post: {
         parameters: {
             query?: never;
             header?: never;

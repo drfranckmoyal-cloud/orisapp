@@ -23,6 +23,7 @@ from oris_api.documents.operative_templates import SECTIONS as OPERATIVE_SECTION
 from oris_api.documents.renderer import (
     LIMITS_SECTION,
     RUBRIQUES_CONSULTATION,
+    RUBRIQUES_COURRIER,
     RUBRIQUES_OPERATOIRE,
     SECTION_ORDER,
 )
@@ -34,6 +35,7 @@ SECTION_TITLES = frozenset(
     {section for section, _ in SECTION_ORDER}
     | set(RUBRIQUES_CONSULTATION)
     | set(RUBRIQUES_OPERATOIRE)
+    | set(RUBRIQUES_COURRIER)
     | set(OPERATIVE_SECTIONS)
     | {LIMITS_SECTION, "Plan de traitement", "Acte réalisé", "Acte prévu"}
 )
@@ -74,6 +76,7 @@ LAYOUTS: dict[str, Layout] = {
         title="Courrier d’adressage",
         letter=True,
         salutation="Cher confrère,",
+        paragraphs=True,
         closing="Bien confraternellement,",
         date_label="Date du courrier",
     ),
@@ -235,7 +238,11 @@ SERIF_ITALIQUE = "Times-Italic"
 
 
 def signature(context: ExportContext, cabinet: Cabinet) -> str:
-    return f"{cabinet.practitioner_title} {context.practitioner}".strip()
+    """« Dr Franck Moyal » — sans doubler le titre s'il est déjà dans le nom."""
+    titre = cabinet.practitioner_title.strip()
+    if not titre or context.practitioner.startswith(f"{titre} "):
+        return context.practitioner
+    return f"{titre} {context.practitioner}"
 
 
 def patient_rows(context: ExportContext, layout: Layout) -> list[tuple[str, str]]:

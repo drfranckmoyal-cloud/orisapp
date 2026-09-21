@@ -136,3 +136,18 @@ def test_an_unknown_visit_kind_is_refused(api: Any) -> None:
         json={"patient_informed": True, "visit_kind": "suivi"},
     )
     assert reponse.status_code == 422
+
+
+def test_a_referral_letter_is_written_only_when_asked(api: Any) -> None:
+    encounter = consultation_traitee(api)
+    assert "referral_letter" not in documents_by_type(api, encounter["id"])
+
+    cree = api.post(f"/encounters/{encounter['id']}/documents/referral-letter")
+    assert cree.status_code == 200, cree.text
+    lettre = documents_by_type(api, encounter["id"])["referral_letter"]
+    pdf = api.get(f"/documents/{lettre['id']}/export", params={"format": "pdf"})
+    assert pdf.status_code == 200 and pdf.content.startswith(b"%PDF")
+
+    # Une fois demandé, il suit les corrections comme les autres documents.
+    api.post(f"/encounters/{encounter['id']}/documents/generate")
+    assert "referral_letter" in documents_by_type(api, encounter["id"])
