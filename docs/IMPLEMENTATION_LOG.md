@@ -995,3 +995,18 @@ dossier jamais vu le dit en toutes lettres plutôt que de laisser un blanc.
 **Les correspondants n'ont pas été mis** : rien n'existe en base pour les porter
 (l'écran dédié est un chantier à venir). Une mention « aucun correspondant » sur chaque
 ligne aurait été du bruit, pas de l'information.
+
+## L'app iPhone recompile : elle appelait encore la palette bleue (21 septembre 2026)
+
+Cause des courriels d'échec de GitHub. Le 20/09, la direction visuelle est passée du
+bleu technologique aux neutres chauds et au vert profond. `design/tokens.json` a changé,
+`Tokens.swift` a été régénéré — et les écrans SwiftUI ont continué d'appeler
+`OrisColor.deepBlue`, `.orisBlue`, `.cloud`, `.graphite`, `.mistyTeal`, qui n'existaient
+plus. L'app ne **compilait** plus ; les tests étaient annulés avant de commencer.
+
+Correspondance appliquée, d'après ce que chaque couleur faisait dans l'ancienne palette :
+`deepBlue → deepGreen`, `orisBlue → orisGreen`, `mistyTeal → brightGreen` (l'accent vif,
+sur fond clair), `cloud → sand`, `graphite → ink`. 39 tests iOS repassent.
+
+L'app iPhone n'est pas redessinée pour autant : elle a la nouvelle palette, pas la
+nouvelle mise en page. C'est un chantier à part.

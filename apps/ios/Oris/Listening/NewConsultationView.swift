@@ -41,7 +41,7 @@ struct NewConsultationView: View {
                         Button(patient.displayName) {
                             Task { await prepare(patientId: patient.id) }
                         }
-                        .foregroundStyle(OrisColor.deepBlue)
+                        .foregroundStyle(OrisColor.deepGreen)
                     }
                 }
             }

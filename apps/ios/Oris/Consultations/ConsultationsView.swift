@@ -53,7 +53,7 @@ struct EncounterRow: View {
         VStack(alignment: .leading, spacing: OrisSpacing.s4) {
             Text(encounter.patient.displayName)
                 .font(.headline)
-                .foregroundStyle(OrisColor.deepBlue)
+                .foregroundStyle(OrisColor.deepGreen)
             HStack(spacing: OrisSpacing.s8) {
                 Text(Labels.encounterStatus(encounter.status))
                 if encounter.criticalWarningCount > 0 {

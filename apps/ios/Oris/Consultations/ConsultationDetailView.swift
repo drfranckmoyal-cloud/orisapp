@@ -21,7 +21,7 @@ struct ConsultationDetailView: View {
                 loaded(content)
             }
         }
-        .background(OrisColor.cloud)
+        .background(OrisColor.sand)
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await model.refresh() }
         .task { await model.refresh() }
@@ -34,7 +34,7 @@ struct ConsultationDetailView: View {
                 VStack(alignment: .leading, spacing: OrisSpacing.s4) {
                     Text(content.encounter.patient.displayName)
                         .font(.title2.bold())
-                        .foregroundStyle(OrisColor.deepBlue)
+                        .foregroundStyle(OrisColor.deepGreen)
                     Text("\(Labels.encounterStatus(content.encounter.status)) · dossier clinique v\(content.encounter.objectVersion)")
                         .font(.subheadline)
                 }
@@ -95,7 +95,7 @@ private struct DocumentCard: View {
                     .font(.caption.bold())
                     .padding(.horizontal, OrisSpacing.s8)
                     .padding(.vertical, OrisSpacing.s4)
-                    .background(OrisColor.cloud, in: Capsule())
+                    .background(OrisColor.sand, in: Capsule())
                 Text("Version \(document.version)")
                     .font(.caption)
             }
@@ -108,11 +108,11 @@ private struct DocumentCard: View {
                 VStack(alignment: .leading, spacing: OrisSpacing.s4) {
                     Text(section.title.uppercased())
                         .font(.caption.bold())
-                        .foregroundStyle(OrisColor.deepBlue)
+                        .foregroundStyle(OrisColor.deepGreen)
                     ForEach(Array(section.claims.enumerated()), id: \.offset) { _, claim in
                         Text(claim.text)
                             .font(.body)
-                            .foregroundStyle(OrisColor.graphite)
+                            .foregroundStyle(OrisColor.ink)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -144,7 +144,7 @@ private struct ReviewCard: View {
 
             Text("Faits cliniques (\(content.clinicalObject.facts.count))")
                 .font(.headline)
-                .foregroundStyle(OrisColor.deepBlue)
+                .foregroundStyle(OrisColor.deepGreen)
             ForEach(content.clinicalObject.facts, id: \.factId) { fact in
                 VStack(alignment: .leading, spacing: OrisSpacing.s4) {
                     Text(fact.concept + (fact.teeth.isEmpty ? "" : " — dent \(fact.teeth.joined(separator: ", "))"))

@@ -28,14 +28,14 @@ struct ActiveListeningView: View {
     var body: some View {
         VStack(spacing: OrisSpacing.s16) {
             HStack {
-                Text(patientName).font(.headline).foregroundStyle(OrisColor.deepBlue)
+                Text(patientName).font(.headline).foregroundStyle(OrisColor.deepGreen)
                 Spacer()
                 Label(
                     connectionText,
                     systemImage: controller.reconnecting || !isOnline ? "wifi.exclamationmark" : "wifi"
                 )
                 .font(.caption.bold())
-                .foregroundStyle(controller.reconnecting || !isOnline ? OrisColor.warning : OrisColor.deepBlue)
+                .foregroundStyle(controller.reconnecting || !isOnline ? OrisColor.warning : OrisColor.deepGreen)
             }
 
             banners
@@ -44,29 +44,29 @@ struct ActiveListeningView: View {
 
             ZStack {
                 Circle()
-                    .fill(controller.phase == .recording ? OrisColor.orisBlue : OrisColor.white)
+                    .fill(controller.phase == .recording ? OrisColor.orisGreen : OrisColor.white)
                     .frame(width: 140, height: 140)
                     .scaleEffect(pulse && controller.phase == .recording && !reduceMotion ? 1.06 : 1)
                     .animation(reduceMotion ? nil : .easeInOut(duration: 0.9).repeatForever(autoreverses: true), value: pulse)
                 Image(systemName: symbol)
                     .font(.system(size: 52, weight: .semibold))
-                    .foregroundStyle(controller.phase == .recording ? OrisColor.white : OrisColor.deepBlue)
+                    .foregroundStyle(controller.phase == .recording ? OrisColor.white : OrisColor.deepGreen)
             }
             .accessibilityHidden(true)
             .onAppear { pulse = true }
 
             Text(stateText)
                 .font(.title2.bold())
-                .foregroundStyle(controller.phase == .microphoneLost || controller.phase == .interrupted ? OrisColor.danger : OrisColor.deepBlue)
+                .foregroundStyle(controller.phase == .microphoneLost || controller.phase == .interrupted ? OrisColor.danger : OrisColor.deepGreen)
                 .accessibilityAddTraits(.updatesFrequently)
 
             Text(formatDuration(controller.recordedMs))
                 .font(.system(size: 48, weight: .semibold).monospacedDigit())
-                .foregroundStyle(OrisColor.deepBlue)
+                .foregroundStyle(OrisColor.deepGreen)
                 .accessibilityLabel("Durée écoutée \(formatDuration(controller.recordedMs))")
 
             ProgressView(value: controller.level)
-                .tint(OrisColor.mistyTeal)
+                .tint(OrisColor.brightGreen)
                 .frame(width: 200)
                 .accessibilityHidden(true)
 
@@ -152,9 +152,9 @@ struct ActiveListeningView: View {
                     Text("Terminer").font(.title3.bold()).frame(maxWidth: .infinity, minHeight: 56)
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(OrisColor.deepBlue)
+                .tint(OrisColor.deepGreen)
             }
-            .tint(OrisColor.deepBlue)
+            .tint(OrisColor.deepGreen)
         }
     }
 }

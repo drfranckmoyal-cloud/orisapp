@@ -19,7 +19,7 @@ struct RootView: View {
                 PlaceholderView(title: "Paramètres")
             }
         }
-        .tint(OrisColor.orisBlue)
+        .tint(OrisColor.orisGreen)
     }
 }
 

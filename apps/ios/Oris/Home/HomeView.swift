@@ -13,10 +13,10 @@ struct HomeView: View {
                     VStack(alignment: .leading, spacing: OrisSpacing.s8) {
                         Text("Oris")
                             .font(.headline)
-                            .foregroundStyle(OrisColor.deepBlue)
+                            .foregroundStyle(OrisColor.deepGreen)
                         Text("Bonjour")
                             .font(.largeTitle.bold())
-                            .foregroundStyle(OrisColor.deepBlue)
+                            .foregroundStyle(OrisColor.deepGreen)
                     }
 
                     VStack(alignment: .leading, spacing: OrisSpacing.s8) {
@@ -28,19 +28,19 @@ struct HomeView: View {
                                 .frame(maxWidth: .infinity, minHeight: 56)
                         }
                         .buttonStyle(.borderedProminent)
-                        .tint(OrisColor.orisBlue)
+                        .tint(OrisColor.orisGreen)
                         .clipShape(RoundedRectangle(cornerRadius: OrisRadius.button))
 
                         Text("La transcription automatique arrive à l’étape M4 : l’audio est capté et contrôlé, sans compte rendu pour l’instant.")
                             .font(.footnote)
-                            .foregroundStyle(OrisColor.graphite)
+                            .foregroundStyle(OrisColor.ink)
                     }
 
                     ServerStatusCard(state: model.serverState)
                 }
                 .padding(OrisSpacing.s16)
             }
-            .background(OrisColor.cloud)
+            .background(OrisColor.sand)
             .refreshable { await model.refresh() }
             .task { await model.refresh() }
             .fullScreenCover(isPresented: $showNewConsultation) {
@@ -57,7 +57,7 @@ private struct ServerStatusCard: View {
         VStack(alignment: .leading, spacing: OrisSpacing.s12) {
             Text("État du service")
                 .font(.headline)
-                .foregroundStyle(OrisColor.deepBlue)
+                .foregroundStyle(OrisColor.deepGreen)
 
             // L'état est écrit en toutes lettres, jamais porté par la seule couleur.
             switch state {
@@ -72,7 +72,7 @@ private struct ServerStatusCard: View {
                 if health.providers.allMock {
                     Text("Mode démonstration : aucun moteur d’IA réel n’est branché.")
                         .font(.footnote)
-                        .foregroundStyle(OrisColor.graphite)
+                        .foregroundStyle(OrisColor.ink)
                 }
             }
         }

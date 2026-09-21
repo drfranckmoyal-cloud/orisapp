@@ -42,7 +42,7 @@ struct ListeningView: View {
                 preScreen
             }
         }
-        .background(OrisColor.cloud)
+        .background(OrisColor.sand)
         .navigationBarBackButtonHidden(controller.map { [.recording, .paused, .interrupted, .microphoneLost, .finishing].contains($0.phase) } ?? false)
         .navigationDestination(item: $finishedEncounterId) { id in
             ConsultationDetailView(model: ConsultationDetailViewModel(encounterId: id, client: client))
@@ -66,7 +66,7 @@ struct ListeningView: View {
                 VStack(alignment: .leading, spacing: OrisSpacing.s4) {
                     Text(encounter.patient.displayName)
                         .font(.title.bold())
-                        .foregroundStyle(OrisColor.deepBlue)
+                        .foregroundStyle(OrisColor.deepGreen)
                     Text("Praticien de démonstration").font(.subheadline)
                 }
 
@@ -111,7 +111,7 @@ struct ListeningView: View {
                         .frame(maxWidth: .infinity, minHeight: 56)
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(OrisColor.orisBlue)
+                .tint(OrisColor.orisGreen)
                 .disabled(controller?.phase == .starting || (config?.patientInformationMode != "none" && !patientInformed))
             }
             .padding(OrisSpacing.s16)
@@ -132,7 +132,7 @@ struct ListeningView: View {
 
     private var relaunchView: some View {
         VStack(alignment: .leading, spacing: OrisSpacing.s16) {
-            Text(encounter.patient.displayName).font(.title.bold()).foregroundStyle(OrisColor.deepBlue)
+            Text(encounter.patient.displayName).font(.title.bold()).foregroundStyle(OrisColor.deepGreen)
             Label(
                 encounter.status == .recording
                     ? "L’écoute a été interrompue (app fermée). La partie non captée sera signalée comme manquante."
@@ -152,7 +152,7 @@ struct ListeningView: View {
                 Text("Reprendre l’écoute").font(.title3.bold()).frame(maxWidth: .infinity, minHeight: 56)
             }
             .buttonStyle(.borderedProminent)
-            .tint(OrisColor.orisBlue)
+            .tint(OrisColor.orisGreen)
             Button("Terminer la consultation") {
                 Task { await finishAfterRelaunch() }
             }
@@ -278,7 +278,7 @@ struct StatusLine: View {
     var body: some View {
         Label(text, systemImage: icon)
             .font(.subheadline)
-            .foregroundStyle(tone == .critical ? OrisColor.danger : tone == .warning ? OrisColor.warning : OrisColor.deepBlue)
+            .foregroundStyle(tone == .critical ? OrisColor.danger : tone == .warning ? OrisColor.warning : OrisColor.deepGreen)
             .padding(OrisSpacing.s12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(OrisColor.white, in: RoundedRectangle(cornerRadius: 12))
