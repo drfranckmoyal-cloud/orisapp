@@ -53,7 +53,7 @@ struct ChunkStore: Sendable {
 
     func load(encounterId: String, sequence: Int) throws -> PcmChunk? {
         let url = file(encounterId, sequence)
-        guard FileManager.default.fileExists(atPath: url.path()) else { return nil }
+        guard FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) else { return nil }
         let box = try AES.GCM.SealedBox(combined: Data(contentsOf: url))
         let plaintext = try AES.GCM.open(box, using: key)
         guard plaintext.count >= 12 else { throw CocoaError(.fileReadCorruptFile) }
@@ -68,7 +68,7 @@ struct ChunkStore: Sendable {
     }
 
     func pendingSequences(encounterId: String) -> [Int] {
-        let names = (try? FileManager.default.contentsOfDirectory(atPath: directory(encounterId).path())) ?? []
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: directory(encounterId).path(percentEncoded: false))) ?? []
         return names.compactMap { name in
             name.hasSuffix(".chunk") ? Int(name.dropLast(6)) : nil
         }.sorted()
@@ -83,7 +83,7 @@ struct ChunkStore: Sendable {
     }
 
     func encountersWithPendingAudio() -> [String] {
-        let names = (try? FileManager.default.contentsOfDirectory(atPath: root.path())) ?? []
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: root.path(percentEncoded: false))) ?? []
         return names.filter { !pendingSequences(encounterId: $0).isEmpty }.sorted()
     }
 }

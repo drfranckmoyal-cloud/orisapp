@@ -98,8 +98,14 @@ struct APIClient: Sendable {
         try await send("encounters", method: "POST", body: ["patient_id": patientId])
     }
 
-    func startEncounter(id: String, patientInformed: Bool) async throws -> EncounterSummary {
-        try await send("encounters/\(id)/start", method: "POST", body: ["patient_informed": patientInformed])
+    func startEncounter(
+        id: String, patientInformed: Bool, visitKind: VisitKind = .consultation
+    ) async throws -> EncounterSummary {
+        try await send(
+            "encounters/\(id)/start",
+            method: "POST",
+            body: ["patient_informed": patientInformed, "visit_kind": visitKind.rawValue]
+        )
     }
 
     func finishEncounter(id: String, finalSequence: Int?, recordedMs: Int?, acceptGaps: Bool) async throws -> EncounterSummary {

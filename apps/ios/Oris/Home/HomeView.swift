@@ -31,7 +31,7 @@ struct HomeView: View {
                         .tint(OrisColor.orisGreen)
                         .clipShape(RoundedRectangle(cornerRadius: OrisRadius.button))
 
-                        Text("La transcription automatique arrive à l’étape M4 : l’audio est capté et contrôlé, sans compte rendu pour l’instant.")
+                        Text("Oris écoute ; le compte rendu vous attend ensuite dans « Consultations », ici ou sur l’ordinateur.")
                             .font(.footnote)
                             .foregroundStyle(OrisColor.ink)
                     }
@@ -50,7 +50,7 @@ struct HomeView: View {
     }
 }
 
-private struct ServerStatusCard: View {
+struct ServerStatusCard: View {
     let state: HomeViewModel.ServerState
 
     var body: some View {

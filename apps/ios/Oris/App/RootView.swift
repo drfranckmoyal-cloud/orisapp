@@ -1,8 +1,10 @@
 import SwiftUI
 
-/// Navigation principale iPhone (docs/UI_SCREEN_SPEC.md) : seul l'accueil existe en M0.
+/// Navigation principale iPhone (docs/UI_SCREEN_SPEC.md).
 struct RootView: View {
     let client: APIClient
+    /// Après un changement de serveur ou de jeton dans Paramètres.
+    var reconnect: () -> Void = {}
 
     var body: some View {
         TabView {
@@ -10,30 +12,15 @@ struct RootView: View {
                 HomeView(model: HomeViewModel(client: client), client: client)
             }
             Tab("Patients", systemImage: "person.2") {
-                PlaceholderView(title: "Patients")
+                NewConsultationView(client: client, onClose: {}, embedded: true)
             }
             Tab("Consultations", systemImage: "waveform") {
                 ConsultationsView(model: ConsultationsViewModel(client: client), client: client)
             }
             Tab("Paramètres", systemImage: "gearshape") {
-                PlaceholderView(title: "Paramètres")
+                SettingsView(model: HomeViewModel(client: client), apiURL: client.baseURL, reconnect: reconnect)
             }
         }
         .tint(OrisColor.orisGreen)
-    }
-}
-
-private struct PlaceholderView: View {
-    let title: String
-
-    var body: some View {
-        NavigationStack {
-            ContentUnavailableView(
-                title,
-                systemImage: "hammer",
-                description: Text("Disponible à une prochaine étape du développement.")
-            )
-            .navigationTitle(title)
-        }
     }
 }

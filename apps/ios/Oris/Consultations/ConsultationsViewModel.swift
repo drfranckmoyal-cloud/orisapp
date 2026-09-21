@@ -32,15 +32,20 @@ final class ConsultationDetailViewModel {
     struct Content: Equatable {
         let encounter: EncounterSummary
         let documents: [DocumentDetail]
-        let clinicalObject: ClinicalEncounter
+        /// Absent quand la transcription a échoué : la consultation existe quand même,
+        /// et l'écran doit dire pourquoi il n'y a pas de compte rendu.
+        let clinicalObject: ClinicalEncounter?
+
+        var warnings: [EncounterWarning] { clinicalObject?.warnings ?? [] }
+        var facts: [ClinicalFact] { clinicalObject?.facts ?? [] }
 
         var criticalWarnings: [EncounterWarning] {
-            clinicalObject.warnings.filter { $0.severity == .critical }
+            warnings.filter { $0.severity == .critical }
         }
 
         /// Points « À vérifier » : alertes de la consultation et problèmes des documents.
         var reviewItemCount: Int {
-            clinicalObject.warnings.count + documents.reduce(0) { $0 + $1.validationIssues.count }
+            warnings.count + documents.reduce(0) { $0 + $1.validationIssues.count }
         }
     }
 
@@ -63,8 +68,8 @@ final class ConsultationDetailViewModel {
         do {
             async let encounter = client.encounter(id: encounterId)
             async let documents = client.documents(encounterId: encounterId)
-            async let object = client.clinicalObject(encounterId: encounterId)
-            state = .loaded(Content(encounter: try await encounter, documents: try await documents, clinicalObject: try await object))
+            async let object = try? client.clinicalObject(encounterId: encounterId)
+            state = .loaded(Content(encounter: try await encounter, documents: try await documents, clinicalObject: await object))
         } catch {
             state = .failed
         }

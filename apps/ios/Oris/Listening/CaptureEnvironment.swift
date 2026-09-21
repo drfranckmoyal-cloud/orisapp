@@ -10,6 +10,7 @@ enum CaptureEnvironment {
         encounterId: String,
         useTestTone: Bool,
         config: ClientConfig?,
+        visitKind: VisitKind = .consultation,
         resumeFrom: (nextSequence: Int, nextTimestampMs: Int)? = nil
     ) throws -> CaptureController {
         let store = try ChunkStore.production()
@@ -20,7 +21,7 @@ enum CaptureEnvironment {
             limits.warnSessionMs = config.warnSessionMinutes * 60_000
         }
         return CaptureController(
-            api: APICaptureBridge(client: client, encounterId: encounterId),
+            api: APICaptureBridge(client: client, encounterId: encounterId, visitKind: visitKind),
             uploaderFactory: { onStatus in
                 Uploader(encounterId: encounterId, store: store, transport: transport, onStatus: onStatus)
             },

@@ -3,6 +3,7 @@ import SwiftUI
 /// S04 — écoute active : symbole, chronomètre, activité vocale, Pause / Terminer.
 struct ActiveListeningView: View {
     let patientName: String
+    var visitKind: VisitKind = .consultation
     let controller: CaptureController
     let isOnline: Bool
     let missing: [String]?
@@ -71,6 +72,9 @@ struct ActiveListeningView: View {
                 .accessibilityHidden(true)
 
             Spacer()
+
+            DerouleView(kind: visitKind, compact: true)
+                .padding(.horizontal, OrisSpacing.s8)
 
             actions
         }

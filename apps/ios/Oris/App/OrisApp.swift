@@ -2,21 +2,17 @@ import SwiftUI
 
 @main
 struct OrisApp: App {
+    @State private var client = Connexion.client()
+    /// Change à chaque reconnexion : toute l'interface repart avec le nouveau client.
+    @State private var generation = 0
+
     var body: some Scene {
         WindowGroup {
-            RootView(client: APIClient(baseURL: AppConfiguration.apiBaseURL))
+            RootView(client: client) {
+                client = Connexion.client()
+                generation += 1
+            }
+            .id(generation)
         }
-    }
-}
-
-enum AppConfiguration {
-    /// Adresse de l'API. Sur simulateur, `localhost` désigne le Mac.
-    /// Surchargée par la variable d'environnement `ORIS_API_URL` (schéma Xcode).
-    static var apiBaseURL: URL {
-        if let override = ProcessInfo.processInfo.environment["ORIS_API_URL"],
-           let url = URL(string: override) {
-            return url
-        }
-        return URL(string: "http://localhost:8000")!
     }
 }

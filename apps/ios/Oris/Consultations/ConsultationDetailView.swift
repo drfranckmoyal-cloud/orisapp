@@ -51,6 +51,10 @@ struct ConsultationDetailView: View {
                     .background(OrisColor.white, in: RoundedRectangle(cornerRadius: OrisRadius.card))
                 }
 
+                if content.documents.isEmpty {
+                    NoDocumentCard(encounter: content.encounter)
+                }
+
                 Picker("Vue", selection: $tab) {
                     ForEach(content.documents) { document in
                         Text(Labels.documentType(document.documentType)).tag(Tab.document(document.documentType))
@@ -133,7 +137,7 @@ private struct ReviewCard: View {
                 Text("Aucun point signalé. La validation reste une action du praticien.")
                     .font(.subheadline)
             }
-            ForEach(content.clinicalObject.warnings, id: \.code) { warning in
+            ForEach(content.warnings, id: \.code) { warning in
                 Label(warning.message, systemImage: warning.severity == .critical ? "exclamationmark.octagon" : "exclamationmark.triangle")
             }
             ForEach(content.documents) { document in
@@ -142,10 +146,10 @@ private struct ReviewCard: View {
                 }
             }
 
-            Text("Faits cliniques (\(content.clinicalObject.facts.count))")
+            Text("Faits cliniques (\(content.facts.count))")
                 .font(.headline)
                 .foregroundStyle(OrisColor.deepGreen)
-            ForEach(content.clinicalObject.facts, id: \.factId) { fact in
+            ForEach(content.facts, id: \.factId) { fact in
                 VStack(alignment: .leading, spacing: OrisSpacing.s4) {
                     Text(fact.concept + (fact.teeth.isEmpty ? "" : " — dent \(fact.teeth.joined(separator: ", "))"))
                         .font(.subheadline.bold())
@@ -158,5 +162,33 @@ private struct ReviewCard: View {
         .padding(OrisSpacing.s16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(OrisColor.white, in: RoundedRectangle(cornerRadius: OrisRadius.card))
+    }
+}
+
+
+/// Pas de compte rendu : on dit pourquoi, et ce qu'on peut faire.
+private struct NoDocumentCard: View {
+    let encounter: EncounterSummary
+
+    private var reason: String {
+        let rules = Set(encounter.processingErrors.map(\.rule))
+        if rules.contains("NO_TRANSCRIPT") {
+            return "Aucune parole n’a été entendue dans l’enregistrement : il n’y a rien à rédiger."
+        }
+        if rules.contains("STT_UNAVAILABLE") {
+            return "La transcription était indisponible. Relancez le traitement depuis l’ordinateur, dans la consultation."
+        }
+        if encounter.status == .processing || encounter.status == .finalizing {
+            return "Oris prépare le dossier… Tirez vers le bas pour actualiser."
+        }
+        return "Oris n’a pas pu préparer le dossier de cette consultation. Le détail est sur l’ordinateur."
+    }
+
+    var body: some View {
+        Label(reason, systemImage: "doc.questionmark")
+            .foregroundStyle(OrisColor.ink)
+            .padding(OrisSpacing.s12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(OrisColor.white, in: RoundedRectangle(cornerRadius: OrisRadius.card))
     }
 }

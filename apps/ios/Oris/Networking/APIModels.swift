@@ -174,9 +174,12 @@ struct ClientConfig: Codable, Equatable, Sendable {
 struct APICaptureBridge: CaptureAPI {
     let client: APIClient
     let encounterId: String
+    var visitKind: VisitKind = .consultation
 
     func start(patientInformed: Bool) async throws {
-        _ = try await client.startEncounter(id: encounterId, patientInformed: patientInformed)
+        _ = try await client.startEncounter(
+            id: encounterId, patientInformed: patientInformed, visitKind: visitKind
+        )
     }
 
     func finish(finalSequence: Int, recordedMs: Int, acceptGaps: Bool) async throws -> FinishOutcome {

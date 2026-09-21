@@ -12,6 +12,7 @@ struct ListeningView: View {
     @State private var controller: CaptureController?
     @State private var network = NetworkMonitor()
     @State private var patientInformed = false
+    @State private var visitKind: VisitKind = .consultation
     @State private var useTestTone = false
     @State private var missing: [String]?
     @State private var errorText: String?
@@ -29,6 +30,7 @@ struct ListeningView: View {
             } else if let controller, controller.phase != .ready, controller.phase != .starting, controller.phase != .error {
                 ActiveListeningView(
                     patientName: encounter.patient.displayName,
+                    visitKind: visitKind,
                     controller: controller,
                     isOnline: network.isOnline,
                     missing: missing,
@@ -43,6 +45,8 @@ struct ListeningView: View {
             }
         }
         .background(OrisColor.sand)
+        // Pendant l'écoute, rien ne doit pouvoir faire quitter l'écran par erreur.
+        .toolbar(.hidden, for: .tabBar)
         .navigationBarBackButtonHidden(controller.map { [.recording, .paused, .interrupted, .microphoneLost, .finishing].contains($0.phase) } ?? false)
         .navigationDestination(item: $finishedEncounterId) { id in
             ConsultationDetailView(model: ConsultationDetailViewModel(encounterId: id, client: client))
@@ -67,8 +71,18 @@ struct ListeningView: View {
                     Text(encounter.patient.displayName)
                         .font(.title.bold())
                         .foregroundStyle(OrisColor.deepGreen)
-                    Text("Praticien de démonstration").font(.subheadline)
                 }
+
+                // Consultation ou acte : fixe le modèle de compte rendu et le déroulé.
+                Picker("Type de séance", selection: $visitKind) {
+                    ForEach(VisitKind.allCases) { kind in
+                        Text(kind.label).tag(kind)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .disabled(controller?.phase == .starting)
+
+                DerouleView(kind: visitKind)
 
                 VStack(alignment: .leading, spacing: OrisSpacing.s12) {
                     StatusLine(
@@ -176,7 +190,8 @@ struct ListeningView: View {
     private func start() async {
         do {
             let controller = try self.controller ?? CaptureEnvironment.makeController(
-                client: client, encounterId: encounter.id, useTestTone: useTestTone, config: config
+                client: client, encounterId: encounter.id, useTestTone: useTestTone, config: config,
+                visitKind: visitKind
             )
             self.controller = controller
             connectNetwork(controller)

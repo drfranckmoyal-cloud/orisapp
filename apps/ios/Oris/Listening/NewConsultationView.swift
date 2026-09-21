@@ -4,6 +4,9 @@ import SwiftUI
 struct NewConsultationView: View {
     let client: APIClient
     let onClose: () -> Void
+    /// Onglet « Patients » : même liste, sans bouton Fermer ; finir une consultation
+    /// ramène à la liste au lieu de fermer l'écran.
+    var embedded = false
 
     @State private var patients: [PatientSummary] = []
     @State private var search = ""
@@ -46,15 +49,19 @@ struct NewConsultationView: View {
                 }
             }
             .searchable(text: $search, prompt: "Rechercher un patient")
-            .navigationTitle("Nouvelle consultation")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(embedded ? "Patients" : "Nouvelle consultation")
+            .navigationBarTitleDisplayMode(embedded ? .large : .inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Fermer", action: onClose)
+                if !embedded {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Fermer", action: onClose)
+                    }
                 }
             }
             .navigationDestination(item: $encounter) { encounter in
-                ListeningView(client: client, encounter: encounter, onClose: onClose)
+                ListeningView(client: client, encounter: encounter) {
+                    if embedded { self.encounter = nil } else { onClose() }
+                }
             }
             .alert("Nouveau patient", isPresented: $showCreate) {
                 TextField("Prénom", text: $firstName)

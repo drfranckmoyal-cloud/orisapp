@@ -7,5 +7,14 @@
 	<array>
 		<string>audio</string>
 	</array>
+	<!-- Le serveur Oris tourne sur le Mac du cabinet, joint en HTTP sur le réseau local.
+	     Seules les adresses locales sont permises en clair ; tout le reste reste HTTPS. -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Oris envoie l’écoute au serveur Oris du Mac du cabinet, sur le Wi-Fi local.</string>
 </dict>
 </plist>

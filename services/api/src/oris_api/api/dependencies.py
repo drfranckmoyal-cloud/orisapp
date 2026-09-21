@@ -38,17 +38,31 @@ def current_actor(
 ) -> Actor:
     """Praticien de la requête.
 
-    En développement (`local`, `test`), l'identité de démonstration suffit tant qu'aucun
-    jeton n'est présenté. Partout ailleurs, un jeton valide est exigé : il n'y a pas de
-    mode « ouvert » en production (docs/SECURITY.md).
+    En test, et en local **depuis ce Mac seulement**, l'identité de démonstration suffit
+    tant qu'aucun jeton n'est présenté. Partout ailleurs, un jeton valide est exigé : il
+    n'y a pas de mode « ouvert » en production (docs/SECURITY.md).
     """
     header = request.headers.get("authorization", "")
     presented = header[7:].strip() if header.lower().startswith("bearer ") else ""
     if presented:
         return authentication.actor_for(session, presented)
-    if settings.app_env in {"local", "test"}:
+    if settings.app_env == "test":
+        return demo_actor(session, settings)
+    # En local, l'identité de démonstration ne sert qu'à ce Mac. Un iPhone sur le Wi-Fi
+    # du cabinet présente un jeton : ouvrir le serveur au réseau ne doit jamais ouvrir
+    # les dossiers à tout appareil connecté.
+    if settings.app_env == "local" and depuis_cette_machine(request):
         return demo_actor(session, settings)
     raise Forbidden("AUTHENTICATION_REQUIRED")
+
+
+#: « testclient » est l'hôte du client de test de FastAPI : un vrai appel réseau porte
+#: toujours une adresse IP, ce nom ne peut donc pas venir d'un autre appareil.
+BOUCLE_LOCALE = frozenset({"127.0.0.1", "::1", "localhost", "testclient"})
+
+
+def depuis_cette_machine(request: Request) -> bool:
+    return request.client is not None and request.client.host in BOUCLE_LOCALE
 
 
 def providers(request: Request) -> ProviderSet:

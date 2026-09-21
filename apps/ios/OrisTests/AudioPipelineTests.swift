@@ -5,7 +5,9 @@ import XCTest
 @testable import Oris
 
 func temporaryStore(key: SymmetricKey = SymmetricKey(size: .bits256)) -> ChunkStore {
-    let root = FileManager.default.temporaryDirectory.appending(path: "oris-tests-\(UUID().uuidString)")
+    // Un espace dans le chemin, comme « Application Support » sur l'iPhone : sans lui,
+    // un chemin encodé (« %20 ») passait inaperçu et chaque segment était perdu.
+    let root = FileManager.default.temporaryDirectory.appending(path: "oris tests \(UUID().uuidString)")
     return ChunkStore(root: root, key: key)
 }
 
