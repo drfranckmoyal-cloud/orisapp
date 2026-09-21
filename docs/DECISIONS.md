@@ -29,3 +29,4 @@
 | D025 | Pas de type « compte rendu de suivi » : une consultation de suivi est une consultation, avec rubrique « Actes réalisés » | Frozen (21/09/2026) — à confirmer, point ouvert B |
 | D026 | Documents modifiables dans Oris, sortie en PDF ; pas de fichier Word | Frozen (21/09/2026) |
 | D027 | Un seul serveur Oris hébergé (HDS), le site et l'app iPhone en sont deux fenêtres indépendantes sur les mêmes données ; pas de copie synchronisée par appareil | Frozen (21/09/2026) — voir docs/FEUILLE_DE_ROUTE_COMMERCIALISATION.md |
+| D028 | Parité site ↔ app iPhone : toute correction ou fonction de l'un est portée sur l'autre dans le même lot ; écarts imposés par l'appareil listés dans docs/PARITE.md | Frozen (21/09/2026) |

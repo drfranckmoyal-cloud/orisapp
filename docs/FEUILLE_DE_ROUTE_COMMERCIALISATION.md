@@ -1,5 +1,8 @@
 # Feuille de route — Oris commercialisable
 
+> **En attente depuis le 21/09/2026** (choix de Franck) : on avance d'abord fonctions et
+> corrections. Rien de cette feuille n'est commencé.
+
 *Écrite le 21 septembre 2026, à la demande de Franck : « rendre l'app commercialisable,
 les clients passent du téléphone à l'ordinateur sans souci, avec les mêmes données ».*
 

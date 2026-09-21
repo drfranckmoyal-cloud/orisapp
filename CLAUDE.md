@@ -47,6 +47,14 @@ You are implementing a clinical documentation product. Optimize for correctness,
 - Prefer a modular monolith over premature microservices.
 - Use feature flags for incomplete/high-risk functionality.
 
+## Parité site ↔ app iPhone (règle de Franck, 21/09/2026)
+
+Toute correction ou fonction ajoutée au site (Mac) l'est aussi dans l'app iPhone, et
+inversement, **dans le même lot de travail**. Une différence n'est admise que si l'appareil
+l'impose (ex. appareil photo, écoute écran verrouillé) ; elle est alors écrite dans
+`docs/PARITE.md`. Avant de déclarer un travail fini : vérifier l'autre client, et mettre
+à jour `docs/PARITE.md`.
+
 ## Workflow
 
 Before implementing a milestone:
