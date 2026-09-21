@@ -67,6 +67,15 @@
   color: var(--encre-douce);
 }
 
+.brute {
+  font-style: italic;
+  color: var(--encre-tres-douce);
+}
+
+.brute:hover {
+  color: var(--accent);
+}
+
 .actionsConsultation {
   display: flex;
   align-items: center;

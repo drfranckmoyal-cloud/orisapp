@@ -307,6 +307,14 @@ export default function ConsultationPage() {
               Consultation du {quand(data.started_at ?? data.created_at)}
               {data.synthetic_case_id &&
                 ` · cas fictif ${data.synthetic_case_id}`}
+              <span aria-hidden="true">·</span>
+              {/* Ce qui a été entendu, mot pour mot : le recours en cas de doute. */}
+              <Link
+                href={`/consultations/${id}/transcription`}
+                className={styles.brute}
+              >
+                transcription brute
+              </Link>
             </p>
           </div>
           <div className={styles.actionsConsultation}>
@@ -779,10 +787,13 @@ export default function ConsultationPage() {
           {object && !shadow && (
             <details className={styles.replie}>
               <summary>Corriger le dossier clinique</summary>
-              <div className={styles.replieContenu} style={{ display: "grid", gap: 12 }}>
+              <div
+                className={styles.replieContenu}
+                style={{ display: "grid", gap: 12 }}
+              >
                 <p className="muted" style={{ margin: 0 }}>
-                  Une correction modifie d’abord le dossier clinique ; Oris réécrit ensuite tous
-                  les documents.
+                  Une correction modifie d’abord le dossier clinique ; Oris
+                  réécrit ensuite tous les documents.
                 </p>
                 <SpokenCorrectionPanel
                   encounter={data}
@@ -809,12 +820,19 @@ export default function ConsultationPage() {
           <details className={styles.replie}>
             <summary>
               Pièces jointes
-              <Link href={`/patients/${data.patient.id}`} className="link-button">
+              <Link
+                href={`/patients/${data.patient.id}`}
+                className="link-button"
+              >
                 fiche patient
               </Link>
             </summary>
             <div className={styles.replieContenu}>
-              <PiecesJointes patientId={data.patient.id} encounterId={data.id} compact />
+              <PiecesJointes
+                patientId={data.patient.id}
+                encounterId={data.id}
+                compact
+              />
             </div>
           </details>
 
