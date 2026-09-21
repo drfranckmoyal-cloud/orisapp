@@ -159,6 +159,11 @@ extension APIClient {
         try await sansReponse("encounters/\(id)", method: "DELETE")
     }
 
+    /// Rédige à nouveau ce seul document ; les autres ne bougent pas.
+    func redigerANouveau(documentId: String) async throws -> [DocumentDetail] {
+        try await send("documents/\(documentId)/rediger", method: "POST", body: [:])
+    }
+
     /// Supprime un document ; le dossier clinique de la consultation reste.
     func supprimerDocument(id: String) async throws {
         try await sansReponse("documents/\(id)", method: "DELETE")

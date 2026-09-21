@@ -185,3 +185,18 @@ def test_asking_for_a_letter_leaves_the_validated_report_alone(api: Any) -> None
     assert apres["consultation_note"]["status"] == "validated"
     assert apres["consultation_note"]["version"] == note["version"]
     assert api.get(f"/encounters/{encounter['id']}").json()["status"] == "validated"
+
+
+def test_a_single_document_can_be_redrafted_without_touching_the_others(api: Any) -> None:
+    encounter = consultation_traitee(api)
+    docs = documents_by_type(api, encounter["id"])
+    api.post(
+        f"/documents/{docs['treatment_plan_text']['id']}/validate",
+        json={"acknowledged_warning_codes": []},
+    )
+    note = docs["consultation_note"]
+    reponse = api.post(f"/documents/{note['id']}/rediger")
+    assert reponse.status_code == 200
+    apres = documents_by_type(api, encounter["id"])
+    assert apres["consultation_note"]["version"] == note["version"] + 1
+    assert apres["treatment_plan_text"]["status"] == "validated"

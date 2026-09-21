@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import hashlib
-from typing import Annotated, Any
+from typing import Annotated, Any, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Body, Header, Response, status
@@ -42,7 +42,7 @@ from oris_api.api.schemas import (
     SpokenCorrectionRequest,
     TranscriptOut,
 )
-from oris_api.contracts.generated import ClinicalEncounterStatus
+from oris_api.contracts.generated import ClinicalEncounterStatus, DocumentDocumentType
 from oris_api.db.models import ClinicalFactRow, DocumentRow, TranscriptSegmentRow
 from oris_api.domain.correction_intent import interpret
 from oris_api.domain.types import AudioChunk
@@ -576,6 +576,30 @@ def export_document(
         media_type=exported.media_type,
         headers={"content-disposition": f'attachment; filename="{exported.filename}"'},
     )
+
+
+@router.post("/documents/{document_id}/rediger", response_model=list[DocumentOut])
+def redraft_document(
+    document_id: UUID, session: SessionDep, actor: ActorDep, providers: ProvidersDep
+) -> list[DocumentOut]:
+    """Rédiger à nouveau un seul document (ex. sorti en version simplifiée) : les autres
+    documents, peut-être validés, ne bougent pas."""
+    document = session.get(DocumentRow, document_id)
+    if document is None:
+        raise NotFound("DOCUMENT_NOT_FOUND", str(document_id))
+    encounter = encounters.get_encounter(session, actor, document.encounter_id)
+    if encounter.status not in {"review", "validated", "exported"}:
+        raise Conflict("ENCOUNTER_NOT_PROCESSED", str(encounter.id))
+    obj = clinical_store.load_current(session, encounter)
+    documents.generate(
+        session,
+        encounter,
+        obj,
+        providers,
+        include=[cast(DocumentDocumentType, document.document_type)],
+        seulement=True,
+    )
+    return list_documents(encounter.id, session, actor)
 
 
 @router.delete("/documents/{document_id}", status_code=status.HTTP_204_NO_CONTENT)

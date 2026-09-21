@@ -17,6 +17,7 @@ struct TraitementDocument: View {
     @State private var envoiOuvert = false
     @State private var editionOuverte = false
     @State private var confirmerSuppression = false
+    @State private var redaction = false
 
     private var valide: Bool { [.validated, .exported].contains(document.status) }
     private var critiques: [EncounterWarning] { content.criticalWarnings }
@@ -52,6 +53,24 @@ struct TraitementDocument: View {
                 }
                 .buttonStyle(BoutonPrincipal())
                 .disabled(enCours || (!critiques.isEmpty && !alerteLue))
+            }
+
+            if document.versionSimplifiee {
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("Version simplifiée : la rédaction par Claude n’a pas abouti pour ce document. Oris a posé sa version de secours, fidèle mais télégraphique.",
+                          systemImage: "text.badge.xmark")
+                        .font(Police.interface(13.5, .semibold))
+                        .foregroundStyle(Teinte.attention)
+                    Button {
+                        Task { await redigerANouveau() }
+                    } label: {
+                        Label(redaction ? "Rédaction en cours…" : "Rédiger à nouveau", systemImage: "arrow.clockwise")
+                    }
+                    .buttonStyle(BoutonSecondaire())
+                    .disabled(redaction)
+                }
+                .padding(12)
+                .background(Teinte.attentionDouce, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
 
             HStack(spacing: 8) {
@@ -115,6 +134,19 @@ struct TraitementDocument: View {
             _ = try await client.valider(documentId: document.id,
                                          alertesLues: alerteLue ? critiques.map(\.code) : [])
             toast = "\(Labels.documentType(document.documentType)) validé."
+            await recharger()
+        } catch {
+            erreur = Labels.erreur(error)
+        }
+    }
+
+    private func redigerANouveau() async {
+        redaction = true
+        erreur = nil
+        defer { redaction = false }
+        do {
+            _ = try await client.redigerANouveau(documentId: document.id)
+            toast = "Document rédigé à nouveau."
             await recharger()
         } catch {
             erreur = Labels.erreur(error)

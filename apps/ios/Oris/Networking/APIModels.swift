@@ -117,9 +117,13 @@ struct DocumentDetail: Codable, Equatable, Sendable, Identifiable {
     let content: String
     let claims: [DocumentClaim]
     let validationIssues: [DocumentValidationIssue]
+    /// Qui a rédigé : « anthropic:… », ou « mock:… (repli) » pour la version simplifiée.
+    var generator: String? = nil
+
+    var versionSimplifiee: Bool { generator?.contains("(repli)") ?? false }
 
     enum CodingKeys: String, CodingKey {
-        case id, status, version, content, claims
+        case id, status, version, content, claims, generator
         case documentType = "document_type"
         case generatedFromObjectVersion = "generated_from_object_version"
         case isCurrent = "is_current"

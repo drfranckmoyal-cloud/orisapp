@@ -827,6 +827,28 @@ export default function ConsultationPage() {
                     </div>
                   )}
 
+                  {/* Claude n'a pas pu rédiger : Oris a posé sa version simplifiée. On le dit,
+                      et on propose de réessayer — ce document seul, les autres ne bougent pas. */}
+                  {active.generator.includes("(repli)") && !shadow && (
+                    <div className="banner banner-review" role="status">
+                      <strong>Version simplifiée.</strong> La rédaction par Claude n’a pas
+                      abouti pour ce document ; Oris a posé sa version de secours, fidèle mais
+                      télégraphique.{" "}
+                      <Bouton
+                        variante="secondaire"
+                        onClick={() =>
+                          act(
+                            `/documents/${active.id}/rediger`,
+                            undefined,
+                            "Document rédigé à nouveau.",
+                          )
+                        }
+                      >
+                        Rédiger à nouveau
+                      </Bouton>
+                    </div>
+                  )}
+
                   {active.generator.startsWith("practitioner") &&
                     enEdition === null && (
                       <p className="muted" style={{ margin: 0 }}>

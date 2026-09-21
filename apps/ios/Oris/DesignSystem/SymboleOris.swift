@@ -6,7 +6,9 @@ struct SymboleOris: View {
     var couleur: Color = Teinte.accent
     var anime = false
 
-    @Environment(\.accessibilityReduceMotion) private var sansMouvement
+    /// Choix de Franck (21/09/2026) : le symbole reste animé même avec « Réduire les
+    /// animations » — le mouvement est lent et reste sur place, sans défilement.
+    private let sansMouvement = false
 
     /// x, y, hauteur des cinq barres dans un carré de 120.
     private static let barres: [(x: CGFloat, y: CGFloat, h: CGFloat)] = [

@@ -17,7 +17,9 @@ Le partage des rôles est strict :
 
 from __future__ import annotations
 
+import asyncio
 import json
+import logging
 import re
 from dataclasses import dataclass
 from typing import Any
@@ -37,11 +39,15 @@ from oris_api.documents.renderer import (
 from oris_api.domain.types import Claim, GeneratedDocument
 from oris_api.providers.base import DocumentGenerationProvider, ProviderInfo
 
+logger = logging.getLogger("oris.redaction")
+
 API_URL = "https://api.anthropic.com/v1/messages"
 API_VERSION = "2023-06-01"
 PROMPT_VERSION = "redaction-fr-3"
 MAX_TOKENS = 6_000
-MAX_ATTEMPTS = 2
+MAX_ATTEMPTS = 3
+#: Un appel qui échoue (réseau, surcharge, délai) se retente, après une courte pause.
+PAUSES_APPEL = (2.0, 6.0)
 TOOL_NAME = "rediger_compte_rendu"
 
 #: Documents en paragraphes : ceux-là seulement sont réécrits. Le plan garde sa forme,
@@ -189,6 +195,15 @@ def _nombres(texte: str) -> set[str]:
     return {n.replace(",", ".") for n in NOMBRE.findall(texte)}
 
 
+def _noter_repli(document_type: str, motif: str) -> None:
+    """Le journal dit pourquoi la version simplifiée est partie — le motif seulement, sans
+    la phrase citée (elle contient du texte clinique)."""
+    logger.warning(
+        "redaction.repli",
+        extra={"document_type": document_type, "motif": motif.split("«")[0].strip()[:120]},
+    )
+
+
 def verifier(
     rubriques: list[Rubrique],
     sortie: dict[str, Any],
@@ -325,15 +340,17 @@ class AnthropicDocumentWriter:
         ]
         for essai in range(MAX_ATTEMPTS):
             try:
-                sortie = await self._appeler(messages)
+                sortie = await self._appeler_avec_reprise(messages)
             except (httpx.HTTPError, RedactionRefusee, KeyError, ValueError) as error:
                 self.dernier_refus = f"appel : {error}"[:300]
+                _noter_repli(document_type, self.dernier_refus)
                 return _avec_generateur(base, repli)
             try:
                 claims = verifier(rubriques, sortie, facts)
             except RedactionRefusee as refus:
                 self.dernier_refus = str(refus)[:300]
                 if essai == MAX_ATTEMPTS - 1:
+                    _noter_repli(document_type, self.dernier_refus)
                     return _avec_generateur(base, repli)
                 messages += [
                     {
@@ -356,6 +373,18 @@ class AnthropicDocumentWriter:
             self.dernier_refus = None
             return GeneratedDocument(document_type, render_content(tout), tout)
         return _avec_generateur(base, repli)
+
+    async def _appeler_avec_reprise(self, messages: list[dict[str, Any]]) -> dict[str, Any]:
+        """Un appel qui tombe (réseau, surcharge, délai dépassé) n'est pas un refus : on
+        réessaie avant de se rabattre sur la version simplifiée."""
+        for pause in (*PAUSES_APPEL, None):
+            try:
+                return await self._appeler(messages)
+            except (httpx.HTTPError, ValueError) as error:
+                if pause is None or "sortie d'outil" in str(error):
+                    raise
+                await asyncio.sleep(pause)
+        raise ValueError("appel impossible")
 
     async def _plan(self, encounter: ClinicalEncounter) -> GeneratedDocument:
         """Le plan garde sa forme ; Claude ne fait que proposer des titres courts."""

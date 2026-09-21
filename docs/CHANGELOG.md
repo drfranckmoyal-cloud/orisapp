@@ -1,5 +1,16 @@
 # Changelog
 
+## Rédaction plus robuste, « Rédiger à nouveau » — 2026-09-21
+- Constat : le compte rendu d'une consultation est parti en version simplifiée (repli)
+  alors que Claude le rédige sans faute quand on le rejoue : panne passagère.
+- La rédaction retente un appel qui tombe (réseau, surcharge, délai) après 2 puis 6 s,
+  et accorde trois copies au lieu de deux avant de se rabattre. Le journal note le
+  motif du repli, sans texte clinique.
+- Nouveau `POST /documents/{id}/rediger` : rédige à nouveau ce seul document. Site et
+  iPhone affichent « Version simplifiée » avec le bouton **Rédiger à nouveau**.
+- iPhone : écran d'ouverture porté à 2,3 s ; le symbole et le bouton de l'accueil
+  restent animés même avec « Réduire les animations » (mouvement lent, sur place).
+
 ## Accueil : « À relire » en tiroir — 2026-09-21
 - iPhone : l'accueil tient sur un écran. « À relire » est un tiroir posé en bas, toujours
   visible (nombre en pastille, premiers noms) ; un toucher ou un geste vers le haut le

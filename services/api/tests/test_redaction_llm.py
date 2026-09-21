@@ -72,7 +72,7 @@ def test_an_invented_tooth_is_refused_then_falls_back() -> None:
     document = asyncio.run(redacteur.generate(dictee(), "consultation_note"))
     assert "(repli)" in document.generator
     assert "36" not in document.content
-    assert len(envoyes) == 2  # un nouvel essai, expliqué
+    assert len(envoyes) == 3  # deux nouveaux essais, expliqués
     assert "dent absente" in envoyes[1]["messages"][-1]["content"]
 
 
@@ -145,7 +145,9 @@ def test_a_title_with_a_word_not_said_is_refused() -> None:
     assert "gingivale" not in document.content
 
 
-def test_a_network_failure_falls_back_silently_to_the_templates() -> None:
+def test_a_network_failure_falls_back_silently_to_the_templates(monkeypatch: Any) -> None:
+    monkeypatch.setattr("oris_api.llm.redaction.PAUSES_APPEL", (0.0, 0.0))
+
     def panne(request: httpx.Request) -> httpx.Response:
         raise httpx.ConnectError("hors ligne")
 
@@ -202,3 +204,25 @@ def test_bold_markers_never_reach_the_text_copied_to_the_record() -> None:
     # Un passage en gras coupé en fin de ligne est refermé puis rouvert.
     lignes = wrap_riche("Une **agénésie bilatérale de 12 et 22** constatée.", 10, 60)
     assert all(ligne.count("**") % 2 == 0 for ligne in lignes)
+
+
+def test_a_momentary_overload_is_retried_before_falling_back(monkeypatch: Any) -> None:
+    """21/09/2026 : un compte rendu parti en version simplifiée pour une panne passagère."""
+    monkeypatch.setattr("oris_api.llm.redaction.PAUSES_APPEL", (0.0, 0.0))
+    appels = {"n": 0}
+    bonne = copie_fidele()
+
+    def surcharge_puis_reponse(request: httpx.Request) -> httpx.Response:
+        appels["n"] += 1
+        if appels["n"] == 1:
+            return httpx.Response(529, json={"type": "error"})
+        nom = json.loads(request.content)["tool_choice"]["name"]
+        return httpx.Response(
+            200, json={"content": [{"type": "tool_use", "name": nom, "input": bonne}]}
+        )
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(surcharge_puis_reponse))
+    redacteur = AnthropicDocumentWriter("cle", "modele", MockDocumentGenerationProvider(), client)
+    document = asyncio.run(redacteur.generate(dictee(), "consultation_note"))
+    assert "(repli)" not in document.generator
+    assert appels["n"] == 2

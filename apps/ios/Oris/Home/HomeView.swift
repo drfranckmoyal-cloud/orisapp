@@ -150,7 +150,9 @@ struct PanneauARelire: View {
 struct BoutonEcoute: View {
     let action: () -> Void
     @State private var appuye = false
-    @Environment(\.accessibilityReduceMotion) private var sansMouvement
+    /// Le bouton respire même avec « Réduire les animations » (choix de Franck) : un
+    /// mouvement lent, sur place.
+    private let sansMouvement = false
 
     var body: some View {
         Button(action: action) {

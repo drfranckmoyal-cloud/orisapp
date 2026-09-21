@@ -2658,7 +2658,90 @@
         }
       }
     },
+    "/documents/{document_id}/rediger": {
+      "post": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Redraft Document",
+        "description": "Rédiger à nouveau un seul document (ex. sorti en version simplifiée) : les autres\ndocuments, peut-être validés, ne bougent pas.",
+        "operationId": "redraft_document_documents__document_id__rediger_post",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentOut"
+                  },
+                  "title": "Response Redraft Document Documents  Document Id  Rediger Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/documents/{document_id}": {
+      "delete": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Delete Document",
+        "description": "Retirer un courrier d'adressage ou un compte rendu opératoire demandé par erreur.\nTout document se supprime ; le dossier clinique, lui, reste.",
+        "operationId": "delete_document_documents__document_id__delete",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "tags": [
           "encounters"
@@ -6360,6 +6443,21 @@
             "maxLength": 300,
             "title": "Caption",
             "default": ""
+          },
+          "format": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "large",
+                  "demi"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format"
           }
         },
         "additionalProperties": false,
@@ -6384,6 +6482,14 @@
             "type": "integer",
             "title": "Position"
           },
+          "format": {
+            "type": "string",
+            "enum": [
+              "large",
+              "demi"
+            ],
+            "title": "Format"
+          },
           "filename": {
             "type": "string",
             "title": "Filename"
@@ -6398,6 +6504,7 @@
           "attachment_id",
           "caption",
           "position",
+          "format",
           "filename",
           "media_type"
         ],
