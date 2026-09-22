@@ -31,6 +31,14 @@ def niveau(pcm: bytes) -> dict[str, float]:
     return {"crete": round(crete, 4), "moyen": round(moyen, 5)}
 
 
+def est_une_note(volume: dict[str, float]) -> bool:
+    """Un son au volume presque constant : une note pure (le son de test de l'app), pas
+    une voix. Une voix alterne pics et silences : sa moyenne reste loin de sa crête
+    (rapport < 0,35), un bruit uniforme est à 0,58, une sinusoïde à 0,71. On tranche à
+    0,65 : seule la note est visée."""
+    return volume["crete"] > 0 and volume["moyen"] / volume["crete"] > 0.65
+
+
 #: En dessous, l'enregistrement est muet : le micro n'a rien capté (≈ -50 dBFS de crête).
 SEUIL_SILENCE = 0.003
 

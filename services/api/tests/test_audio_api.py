@@ -399,3 +399,20 @@ def test_the_microphone_test_says_what_it_heard_and_keeps_nothing(api: Any) -> N
     )
     assert trop_long.status_code == 422
     assert api.get("/encounters").json() == []
+
+
+def test_the_test_tone_is_named_not_mistaken_for_a_failure(api: Any) -> None:
+    """CLAVERIE, 22/09 : 16 min de son de test enregistrées au lieu de la consultation."""
+    import math
+    import struct
+
+    note = b"".join(
+        struct.pack("<h", int(0.05 * 32767 * math.sin(2 * math.pi * 220 * i / 16000)))
+        for i in range(32000)
+    )
+    eid = new_encounter(api)
+    put_chunk(api, eid, 0, note)
+    finished = api.post(
+        f"/encounters/{eid}/finish", json={"final_sequence": 0, "client_recorded_ms": 2000}
+    ).json()
+    assert finished["processing_errors"][0]["rule"] == "AUDIO_TEST_TONE"

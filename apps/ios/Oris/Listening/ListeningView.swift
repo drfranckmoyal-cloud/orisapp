@@ -19,6 +19,17 @@ struct ListeningView: View {
     @State private var finishedEncounterId: String?
     @State private var loaded = false
 
+    /// Le son de test (développement) n'existe que dans le simulateur : sur un vrai
+    /// iPhone, un interrupteur de trop a fait enregistrer une note au lieu d'une
+    /// consultation (CLAVERIE, 22/09/2026).
+    private var sonDeTestPermis: Bool {
+        #if targetEnvironment(simulator)
+        config?.testAudioSourceEnabled == true
+        #else
+        false
+        #endif
+    }
+
     private var interruptedByRelaunch: Bool {
         controller == nil && [.recording, .paused].contains(encounter.status)
     }
@@ -101,7 +112,7 @@ struct ListeningView: View {
                 }
 
                 VStack(spacing: OrisSpacing.s12) {
-                    if config?.testAudioSourceEnabled == true {
+                    if sonDeTestPermis {
                         Toggle("Son de test, sans micro (développement)", isOn: $useTestTone)
                     }
                     if config?.patientInformationMode != "none" {
@@ -168,7 +179,7 @@ struct ListeningView: View {
                 Text("Audio déjà reçu : \(formatDuration(audio.receivedDurationMs)).")
                     .font(Police.note).foregroundStyle(Teinte.encreDouce)
             }
-            if config?.testAudioSourceEnabled == true {
+            if sonDeTestPermis {
                 Toggle("Son de test, sans micro (développement)", isOn: $useTestTone)
             }
             Button {

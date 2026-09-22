@@ -157,6 +157,11 @@ export function ListeningScreen({
   const permission = useMicrophonePermission();
   const online = useOnline();
   const [sourceKind, setSourceKind] = useState<SourceKind>("microphone");
+  const sonDeTestDemande = useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).has("son-de-test"),
+    () => false,
+  );
   const [informed, setInformed] = useState(false);
   const [snapshot, setSnapshot] = useState<CaptureSnapshot | null>(null);
   const [missing, setMissing] = useState<string[] | null>(null);
@@ -309,7 +314,9 @@ export function ListeningScreen({
   const phase = snapshot?.phase ?? "ready";
   const name = nomPatient(encounter.patient);
 
-  const sourceChoice = config.test_audio_source_enabled ? (
+  // Le son de test (développement) ne s'affiche que sur demande (?son-de-test) :
+  // visible par défaut, il a fait enregistrer une note au lieu d'une consultation.
+  const sourceChoice = config.test_audio_source_enabled && sonDeTestDemande ? (
     <fieldset
       className={styles.choices}
       style={{ border: "none", padding: 0, margin: 0 }}

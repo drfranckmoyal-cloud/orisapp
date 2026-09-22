@@ -33,7 +33,7 @@ from oris_api.services.clinical_store import replace_segments, save_version
 from oris_api.services.errors import Conflict, NotFound
 from oris_api.services.identity import Actor
 from oris_api.services.patients import get_patient
-from oris_api.stt.audio import SEUIL_SILENCE, concatenate, niveau
+from oris_api.stt.audio import SEUIL_SILENCE, concatenate, est_une_note, niveau
 from oris_api.synthetic.corpus import SYNTHETIC_PAYLOAD_PREFIX
 
 logger = logging.getLogger("oris.pipeline")
@@ -257,7 +257,12 @@ def process(
         # trace doit le dire, sinon la panne se lira comme une réussite. Le volume
         # mesuré départage « micro muet » et « personne n'a parlé ».
         volume = niveau_audio
-        regle = "AUDIO_SILENT" if chunks and volume["crete"] < SEUIL_SILENCE else "NO_TRANSCRIPT"
+        if chunks and volume["crete"] < SEUIL_SILENCE:
+            regle = "AUDIO_SILENT"
+        elif chunks and est_une_note(volume):
+            regle = "AUDIO_TEST_TONE"
+        else:
+            regle = "NO_TRANSCRIPT"
         registry.finish_run(
             session,
             stt_timer,

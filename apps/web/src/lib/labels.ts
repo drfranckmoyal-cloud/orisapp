@@ -193,6 +193,8 @@ const ERRORS: Record<string, string> = {
 export const PROCESSING_RULE: Record<string, string> = {
   STT_UNAVAILABLE:
     "Le service de transcription n’a pas répondu. L’audio est conservé : relancez le traitement plus tard.",
+  AUDIO_TEST_TONE:
+    "Ce n’est pas la consultation qui a été enregistrée, mais le son de test d’Oris (une note continue) : l’interrupteur « Son de test » était activé. Rien n’a pu être rédigé.",
   AUDIO_SILENT:
     "Le micro n’a capté aucun son : l’enregistrement est muet. Vérifiez que le micro n’est pas couvert ou coupé, puis refaites un essai.",
   NO_TRANSCRIPT:

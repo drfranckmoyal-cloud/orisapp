@@ -291,9 +291,14 @@ private struct NoDocumentCard: View {
 
     private var rules: Set<String> { Set(encounter.processingErrors.map(\.rule)) }
 
-    private var rienEntendu: Bool { rules.contains("NO_TRANSCRIPT") || rules.contains("AUDIO_SILENT") }
+    private var rienEntendu: Bool {
+        rules.contains("NO_TRANSCRIPT") || rules.contains("AUDIO_SILENT") || rules.contains("AUDIO_TEST_TONE")
+    }
 
     private var reason: String {
+        if rules.contains("AUDIO_TEST_TONE") {
+            return "Ce n’est pas la consultation qui a été enregistrée, mais le son de test d’Oris (une note continue). Rien n’a pu être rédigé."
+        }
         if rules.contains("AUDIO_SILENT") {
             return "Le micro n’a capté aucun son : l’enregistrement est muet. Vérifiez que le micro n’est pas couvert ou coupé, puis refaites un essai."
         }

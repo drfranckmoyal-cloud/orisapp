@@ -420,7 +420,10 @@ export default function ConsultationPage() {
             .join(" ")}
           {/* Rien n'a été entendu : rien à perdre, la consultation s'efface d'un geste. */}
           {data.processing_errors.some(
-            (e) => e.rule === "NO_TRANSCRIPT" || e.rule === "AUDIO_SILENT",
+            (e) =>
+              e.rule === "NO_TRANSCRIPT" ||
+              e.rule === "AUDIO_SILENT" ||
+              e.rule === "AUDIO_TEST_TONE",
           ) && (
             <div>
               <button
@@ -429,7 +432,8 @@ export default function ConsultationPage() {
                 disabled={suppression === "en_cours"}
                 onClick={() => void supprimer()}
               >
-                <Icone nom="corbeille" taille={15} /> Supprimer cette consultation
+                <Icone nom="corbeille" taille={15} /> Supprimer cette
+                consultation
               </button>
             </div>
           )}
@@ -831,9 +835,9 @@ export default function ConsultationPage() {
                       et on propose de réessayer — ce document seul, les autres ne bougent pas. */}
                   {active.generator.includes("(repli)") && !shadow && (
                     <div className="banner banner-review" role="status">
-                      <strong>Version simplifiée.</strong> La rédaction par Claude n’a pas
-                      abouti pour ce document ; Oris a posé sa version de secours, fidèle mais
-                      télégraphique.{" "}
+                      <strong>Version simplifiée.</strong> La rédaction par
+                      Claude n’a pas abouti pour ce document ; Oris a posé sa
+                      version de secours, fidèle mais télégraphique.{" "}
                       <Bouton
                         variante="secondaire"
                         onClick={() =>

@@ -1,5 +1,16 @@
 # Changelog
 
+## Son de test retiré de l'iPhone — 2026-09-22
+- Constat : la consultation CLAVERIE (15 min 50, iPhone) a enregistré le **son de test**
+  d'Oris (note continue : crête 0,05, moyenne 0,035 — la signature exacte de la note),
+  l'interrupteur « Son de test, sans micro (développement) » étant activé à côté de
+  « Le patient a été informé ». Consultation perdue.
+- iPhone : l'interrupteur n'existe plus que dans le simulateur. Site : seulement avec
+  `?son-de-test` dans l'adresse.
+- Serveur : un enregistrement au volume presque constant (rapport moyenne/crête > 0,65)
+  est reconnu comme une note, règle `AUDIO_TEST_TONE`, et le dit en clair au lieu de
+  « transcription impossible ».
+
 ## « Documents » devient « Envois » ; « Oris apprend » passe dans les Paramètres — 2026-09-22
 - Choix de Franck. **Envois** (site) : trois compteurs colorés et trois volets — à
   envoyer (validés, jamais partis, bouton Envoyer qui ouvre le formulaire sur place),
