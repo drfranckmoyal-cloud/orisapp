@@ -102,7 +102,7 @@ enum Connexion {
         let hote = adresse.host() ?? ""
         let essai = "Adresse essayée : \(adresse.absoluteString)."
         if ["localhost", "127.0.0.1", "::1"].contains(hote) {
-            return essai + " « localhost » désigne l’iPhone lui-même : saisissez l’adresse du Mac (par exemple 10.0.0.7:8000), puis « Enregistrer et se reconnecter »."
+            return essai + " « localhost » désigne l’iPhone lui-même : saisissez le nom du Mac (par exemple MacBook-Pro-3.local:8000), puis « Enregistrer et se reconnecter »."
         }
         if case .httpStatus(let code)? = error as? APIError {
             return essai + " Le serveur a répondu, mais refuse (code \(code)) : vérifiez le jeton."
@@ -121,7 +121,7 @@ enum Connexion {
         case NSURLErrorCannotConnectToHost:
             return essai + " Le Mac répond mais Oris n’écoute pas : relancez Oris sur le Mac."
         case NSURLErrorCannotFindHost, NSURLErrorDNSLookupFailed:
-            return essai + " Ce nom d’ordinateur est introuvable : utilisez plutôt l’adresse chiffrée du Mac (10.0.0.7:8000)."
+            return essai + " Ce nom d’ordinateur est introuvable : vérifiez que l’iPhone et le Mac sont sur le même Wi-Fi, ou utilisez l’adresse chiffrée du Mac (Réglages du Mac › Wi-Fi › Détails)."
         case NSURLErrorNotConnectedToInternet:
             return essai + " L’iPhone n’a pas accès au réseau local : Wi-Fi activé, même réseau que le Mac, et Oris autorisé dans Réglages › Confidentialité et sécurité › Réseau local."
         default:

@@ -69,3 +69,15 @@ Ce qui a bloqué, pour la prochaine fois :
 
 - En cas d'échec, l'écran Paramètres dit l'adresse essayée et la cause en clair.
 - Si l'adresse du Mac change (autre Wi-Fi), relancer la commande avec la nouvelle.
+
+## Adresse du Mac : son nom, pas son adresse chiffrée — 22/09/2026
+
+Le Mac a changé de Wi-Fi (10.0.0.7 → 192.168.100.13) et l'iPhone, réglé sur l'ancienne
+adresse chiffrée, ne le trouvait plus. L'iPhone désigne désormais le Mac par son nom sur
+le réseau local, **`MacBook-Pro-3.local:8000`**, qui ne change pas d'un Wi-Fi à l'autre
+(vérifié : l'iPhone joint le Mac par ce nom). Pour le reposer depuis le Mac :
+
+```
+xcrun devicectl device process launch --device <id> --terminate-existing \
+  --environment-variables '{"ORIS_REGLER_SERVEUR":"MacBook-Pro-3.local:8000"}' fr.oris.app
+```

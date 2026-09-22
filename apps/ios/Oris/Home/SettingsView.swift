@@ -434,7 +434,7 @@ private struct ConnexionView: View {
             } header: {
                 Text("Adresse du Mac et jeton")
             } footer: {
-                Text("L’adresse du Mac sur le Wi-Fi du cabinet (par exemple 10.0.0.7:8000) et le jeton de cet iPhone. Serveur utilisé : \(client.baseURL.absoluteString)")
+                Text("Le nom du Mac sur le réseau (par exemple MacBook-Pro-3.local:8000) : il ne change pas d’un Wi-Fi à l’autre, contrairement à une adresse chiffrée. Et le jeton de cet iPhone. Serveur utilisé : \(client.baseURL.absoluteString)")
             }
         }
         .task { await model.refresh() }
