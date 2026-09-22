@@ -55,6 +55,8 @@ struct ConsultationDetailView: View {
                 if content.documents.isEmpty {
                     NoDocumentCard(encounter: content.encounter) {
                         Task { await supprimerConsultation(content) }
+                    } relancer: {
+                        Task { await relancer(content) }
                     }
                 }
 
@@ -103,6 +105,18 @@ extension ConsultationDetailView {
         do {
             try await model.client.supprimerConsultation(id: content.encounter.id)
             fermer()
+        } catch {
+            erreur = Labels.erreur(error)
+        }
+    }
+
+    /// Un traitement coupé net (Mac en veille) : on le reprend là où il s'était arrêté.
+    fileprivate func relancer(_ content: ConsultationDetailViewModel.Content) async {
+        erreur = nil
+        do {
+            _ = try await model.client.relancerTraitement(id: content.encounter.id)
+            toast = "Traitement relancé."
+            await model.refresh()
         } catch {
             erreur = Labels.erreur(error)
         }
@@ -288,6 +302,7 @@ private struct ReviewCard: View {
 private struct NoDocumentCard: View {
     let encounter: EncounterSummary
     var supprimer: () -> Void = {}
+    var relancer: () -> Void = {}
 
     private var rules: Set<String> { Set(encounter.processingErrors.map(\.rule)) }
 
@@ -319,6 +334,14 @@ private struct NoDocumentCard: View {
             Label(reason, systemImage: rules.contains("AUDIO_SILENT") ? "mic.slash" : "doc.questionmark")
                 .font(Police.interface(15, .medium))
                 .foregroundStyle(Teinte.encreDouce)
+            if encounter.status == .processing || encounter.status == .finalizing {
+                Text("Si rien ne bouge après quelques minutes (Mac en veille, serveur arrêté), relancez : Oris reprend là où il s’était arrêté.")
+                    .font(Police.note).foregroundStyle(Teinte.encreTresDouce)
+                Button(action: relancer) {
+                    Label("Relancer le traitement", systemImage: "arrow.clockwise")
+                }
+                .buttonStyle(BoutonSecondaire())
+            }
             if rienEntendu {
                 Button(role: .destructive, action: supprimer) {
                     Label("Supprimer cette consultation", systemImage: "trash")

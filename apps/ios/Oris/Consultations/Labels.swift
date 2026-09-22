@@ -68,6 +68,7 @@ enum Labels {
         "INVALID_TRANSITION": "Cette action n’est pas possible dans l’état actuel de la consultation.",
         "PATIENT_INFORMATION_REQUIRED": "Confirmez d’abord que le patient a été informé de l’enregistrement.",
         "AUDIO_CHUNKS_MISSING": "Des segments audio ne sont pas arrivés au serveur.",
+        "PROCESSING_IN_PROGRESS": "Le traitement est encore en cours (moins de 5 minutes) : patientez, il se termine tout seul.",
         "SMILECLOUD_NON_RELIE": "Reliez d’abord ce patient à son dossier SmileCloud.",
         "SMILECLOUD_INVALIDE": "Identifiant de dossier SmileCloud non reconnu.",
         "INVALID_TOKEN": "Jeton refusé : il a pu être désactivé. Créez-en un nouveau sur le Mac.",

@@ -379,3 +379,107 @@ def test_the_note_can_be_dictated_and_the_sound_is_never_kept(api: Any) -> None:
     # Le son n'est pas devenu une note : c'est le praticien qui enregistre.
     assert api.get(f"/patients/{patient['id']}").json()["note"] == ""
     assert hashlib.sha256(pcm).hexdigest()  # le condensé n'a servi qu'au transport
+
+
+def test_a_processing_cut_short_resumes_from_the_saved_transcript(
+    api: Any, migrated_engine: Any
+) -> None:
+    """ZEKRI, 22/09 : le Mac s'est mis en veille pendant la rédaction ; la consultation
+    restait « en traitement », son effacé, et « relancer » répondait « action impossible »."""
+    import dataclasses
+
+    import pytest
+
+    from oris_api.main import app
+    from oris_api.providers.base import ProviderInfo
+
+    class Coupure:
+        info = ProviderInfo(name="test", version="coupure-1")
+
+        async def extract(self, segments: Any, glossary: Any) -> Any:
+            raise RuntimeError("le Mac s'endort")
+
+    patient = api.post("/patients", json={"first_name": "Test", "last_name": "Veille"}).json()
+    eid = api.post(
+        "/encounters", json={"patient_id": patient["id"], "synthetic_case_id": "ORIS-SYN-092"}
+    ).json()["id"]
+    api.post(f"/encounters/{eid}/start", json={"patient_informed": True})
+    original = app.state.providers
+    app.state.providers = dataclasses.replace(original, clinical_extraction=Coupure())
+    try:
+        with pytest.raises(RuntimeError):
+            api.post(f"/encounters/{eid}/finish")
+    finally:
+        app.state.providers = original
+
+    coupee = api.get(f"/encounters/{eid}").json()
+    assert coupee["status"] == "processing"
+    assert len(api.get(f"/encounters/{eid}/transcript").json()["segments"]) > 0
+    # Tout de suite, on ne relance pas : le traitement pourrait être encore en cours.
+    trop_tot = api.post(f"/encounters/{eid}/process")
+    assert trop_tot.status_code == 409 and trop_tot.json()["code"] == "PROCESSING_IN_PROGRESS"
+    _vieillir(migrated_engine, eid)
+
+    reprise = api.post(f"/encounters/{eid}/process").json()
+    assert reprise["status"] == "review"
+    assert api.get(f"/encounters/{eid}/documents").json() != []
+
+
+def test_a_cut_during_document_writing_resumes_with_the_saved_record(
+    api: Any, migrated_engine: Any
+) -> None:
+    """Coupé encore plus tard : le dossier clinique est enregistré, la rédaction manque."""
+    import dataclasses
+
+    import pytest
+
+    from oris_api.main import app
+    from oris_api.providers.base import ProviderInfo
+
+    class RedactionCoupee:
+        info = ProviderInfo(name="test", version="coupure-2")
+
+        async def generate(self, encounter: Any, document_type: Any, style: Any = None) -> Any:
+            raise RuntimeError("le Mac s'endort")
+
+    patient = api.post("/patients", json={"first_name": "Test", "last_name": "Veille2"}).json()
+    eid = api.post(
+        "/encounters", json={"patient_id": patient["id"], "synthetic_case_id": "ORIS-SYN-092"}
+    ).json()["id"]
+    api.post(f"/encounters/{eid}/start", json={"patient_informed": True})
+    original = app.state.providers
+    app.state.providers = dataclasses.replace(
+        original,
+        document_generation=RedactionCoupee(),
+        synthetic_document_generation=RedactionCoupee(),
+    )
+    try:
+        with pytest.raises(RuntimeError):
+            api.post(f"/encounters/{eid}/finish")
+    finally:
+        app.state.providers = original
+
+    assert api.get(f"/encounters/{eid}").json()["status"] == "processing"
+    _vieillir(migrated_engine, eid)
+    reprise = api.post(f"/encounters/{eid}/process").json()
+    assert reprise["status"] == "review"
+    assert api.get(f"/encounters/{eid}/documents").json() != []
+
+
+def _vieillir(engine: Any, eid: str) -> None:
+    """Fait comme si le traitement avait commencé il y a dix minutes."""
+    from datetime import UTC, datetime, timedelta
+    from uuid import UUID
+
+    from sqlalchemy.orm import Session
+
+    from oris_api.db.models import Encounter
+
+    with Session(engine) as session:
+        enc = session.get(Encounter, UUID(eid))
+        assert enc is not None
+        enc.metadata_json = {
+            **enc.metadata_json,
+            "traitement_commence_le": (datetime.now(UTC) - timedelta(minutes=10)).isoformat(),
+        }
+        session.commit()

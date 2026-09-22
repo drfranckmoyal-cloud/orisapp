@@ -266,6 +266,13 @@ struct ListeningView: View {
                 missing = sequences
             }
         } catch {
+            // Le serveur a peut-être avancé sans que la réponse arrive (délai, Mac en
+            // veille) : si la consultation n'est plus en écoute, on ouvre sa fiche.
+            if let actuel = try? await client.encounter(id: encounter.id),
+               ![.draft, .recording, .paused].contains(actuel.status) {
+                finishedEncounterId = encounter.id
+                return
+            }
             errorText = Self.message(for: (error as? APIError)?.code ?? "FINISH_FAILED")
         }
     }
@@ -290,6 +297,7 @@ struct ListeningView: View {
         case "microphone_lost": "Le micro a été coupé. La partie non captée sera signalée."
         case "PATIENT_INFORMATION_REQUIRED": "Confirmez d’abord que le patient a été informé."
         case "LOCAL_STORAGE_FAILED": "Écriture locale impossible : une partie de l’audio sera signalée comme manquante."
+        case "FINISH_FAILED": "Le serveur Oris n’a pas répondu. Vérifiez que le Mac est allumé et sur le même Wi-Fi, puis touchez « Terminer » à nouveau : rien n’est perdu, le son reste sur l’iPhone."
         default: "Action impossible (\(code))."
         }
     }

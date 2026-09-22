@@ -174,3 +174,10 @@ extension APIClient {
         try await sansReponse("documents/\(id)", method: "DELETE")
     }
 }
+
+extension APIClient {
+    /// Reprend un traitement coupé ; le serveur refuse s'il travaille encore (< 5 min).
+    func relancerTraitement(id: String) async throws -> EncounterSummary {
+        try await send("encounters/\(id)/process", method: "POST", body: [:], delai: 240)
+    }
+}

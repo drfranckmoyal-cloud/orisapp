@@ -1,5 +1,20 @@
 # Changelog
 
+## Traitement coupé : reprise au lieu de blocage — 2026-09-22
+- Constat : ZEKRI (iPhone) — le Mac s'est fermé pendant la rédaction ; la consultation
+  restait « en traitement », son effacé, et l'iPhone affichait « Action impossible ».
+  Autre cause trouvée : l'iPhone abandonnait l'attente de « Terminer » au bout de 30 s,
+  alors que le serveur transcrit et rédige avant de répondre (≈ 1 min 30).
+- Serveur : `process` reprend où il s'était arrêté — depuis la transcription gardée, ou
+  directement à la rédaction si le dossier clinique est enregistré. Refus
+  `PROCESSING_IN_PROGRESS` pendant les 5 premières minutes (pas deux traitements à la
+  fois). ZEKRI repris : compte rendu et plan rédigés par Claude.
+- iPhone : « Terminer » attend jusqu'à 4 min ; en cas d'erreur, l'app regarde où en est
+  la consultation et ouvre sa fiche si elle est déjà traitée ; message clair si le Mac
+  ne répond pas.
+- Site et iPhone : bouton **Relancer le traitement** sur une consultation restée « en
+  traitement ».
+
 ## Son de test retiré de l'iPhone — 2026-09-22
 - Constat : la consultation CLAVERIE (15 min 50, iPhone) a enregistré le **son de test**
   d'Oris (note continue : crête 0,05, moyenne 0,035 — la signature exacte de la note),

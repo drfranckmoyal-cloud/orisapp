@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import logging
 from dataclasses import replace
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from sqlalchemy import delete, select
@@ -14,11 +14,16 @@ from sqlalchemy.orm import Session
 from oris_api.config import Settings
 from oris_api.contracts import ClinicalEncounter
 from oris_api.contracts.generated import ClinicalEncounterStatus
-from oris_api.db.models import Encounter, EncounterMarkRow, LearningEventRow
+from oris_api.db.models import (
+    Encounter,
+    EncounterMarkRow,
+    EncounterObjectVersion,
+    LearningEventRow,
+)
 from oris_api.domain.lifecycle import TransitionError, ensure_transition
 from oris_api.domain.resolver import resolve
 from oris_api.domain.speaker_roles import apply_roles
-from oris_api.domain.types import AudioChunk, AudioGap
+from oris_api.domain.types import AudioChunk, AudioGap, TranscriptionResult
 from oris_api.domain.warnings import compute_warnings
 from oris_api.llm.prompt import PROMPT_VERSION, SYSTEM_PROMPT
 from oris_api.providers import ProviderSet
@@ -29,7 +34,12 @@ from oris_api.providers.base import (
 )
 from oris_api.services import async_bridge, audio, audit, documents, personalization, registry
 from oris_api.services.audio_sink import AudioSink
-from oris_api.services.clinical_store import replace_segments, save_version
+from oris_api.services.clinical_store import (
+    load_current,
+    load_segments,
+    replace_segments,
+    save_version,
+)
 from oris_api.services.errors import Conflict, NotFound
 from oris_api.services.identity import Actor
 from oris_api.services.patients import get_patient
@@ -39,6 +49,8 @@ from oris_api.synthetic.corpus import SYNTHETIC_PAYLOAD_PREFIX
 logger = logging.getLogger("oris.pipeline")
 LOCALE = "fr-FR"
 ALREADY_PROCESSED = frozenset({"review", "validated", "exported", "archived"})
+#: Un traitement sans nouvelles depuis ce délai a été coupé (Mac en veille…) : on reprend.
+REPRISE_APRES = timedelta(minutes=5)
 
 
 def get_encounter(session: Session, actor: Actor, encounter_id: UUID) -> Encounter:
@@ -204,85 +216,124 @@ def process(
     """Transcript → faits → résolveur → objet v1 → documents. Rejouable sans doublon."""
     if encounter.status in ALREADY_PROCESSED:
         return encounter
-    transition(session, actor, encounter, "processing")
+    # Reprise : un traitement coupé net (Mac en veille, serveur arrêté) laisse la
+    # consultation « en traitement ». Si la transcription était déjà faite — le son est
+    # alors effacé — on repart de là, au lieu de rester bloqué pour toujours.
+    if encounter.status == "processing":
+        # Un traitement en cours ne se relance pas : deux à la fois se marcheraient
+        # dessus. Au-delà de cinq minutes sans fin, il a été coupé net : on reprend.
+        commence = encounter.metadata_json.get("traitement_commence_le")
+        if commence and datetime.now(UTC) - datetime.fromisoformat(commence) < REPRISE_APRES:
+            raise Conflict("PROCESSING_IN_PROGRESS", str(encounter.id))
+    encounter.metadata_json = {
+        **encounter.metadata_json,
+        "traitement_commence_le": datetime.now(UTC).isoformat(),
+    }
+    if encounter.status != "processing":
+        transition(session, actor, encounter, "processing")
+    elif session.scalar(
+        select(EncounterObjectVersion.version)
+        .where(EncounterObjectVersion.encounter_id == encounter.id)
+        .limit(1)
+    ):
+        # Coupé plus tard encore : le dossier clinique était enregistré, seule la
+        # rédaction des documents manquait. On la refait, rien d'autre.
+        logger.info("pipeline.resumed", extra={"encounter_id": str(encounter.id)})
+        documents.generate(session, encounter, load_current(session, encounter), providers)
+        transition(session, actor, encounter, "review")
+        return encounter
     started = datetime.now(UTC)
 
     # Dictionnaire du praticien : il aide la machine à entendre et à nommer ; il
     # n'ajoute jamais un fait (invariants d'apprentissage).
     hints = personalization.hints_for(session, encounter.practitioner_id)
     chunks, capture_gaps = audio_input(session, sink, encounter)
-    # Vrai micro → fournisseur configuré ; consultation fictive → fournisseur factice.
-    stt = (
-        providers.synthetic_speech_to_text if is_synthetic(encounter) else providers.speech_to_text
-    )
-    stt_model = registry.model_version(session, "speech_to_text", stt.info.name, stt.info.version)
-    stt_timer = registry.start_run("speech_to_text", encounter.id)
-    try:
-        transcription = async_bridge.run(lambda: stt.transcribe(chunks, LOCALE, hints))
-    except TranscriptionUnavailable as error:
+    segments_gardes = load_segments(session, encounter.id) if not chunks else []
+    if segments_gardes:
+        # La transcription a déjà abouti (son effacé, phrases rangées) : on la reprend.
+        logger.info("pipeline.resumed", extra={"encounter_id": str(encounter.id)})
+        transcription = TranscriptionResult(segments=segments_gardes)
+    else:
+        # Vrai micro → fournisseur configuré ; consultation fictive → fournisseur factice.
+        stt = (
+            providers.synthetic_speech_to_text
+            if is_synthetic(encounter)
+            else providers.speech_to_text
+        )
+        stt_model = registry.model_version(
+            session, "speech_to_text", stt.info.name, stt.info.version
+        )
+        stt_timer = registry.start_run("speech_to_text", encounter.id)
+        try:
+            transcription = async_bridge.run(lambda: stt.transcribe(chunks, LOCALE, hints))
+        except TranscriptionUnavailable as error:
+            registry.finish_run(
+                session,
+                stt_timer,
+                status="failed",
+                error_code=error.code,
+                model_version_id=stt_model.id,
+                counters={"chunks": len(chunks)},
+            )
+            # Panne du fournisseur : l'audio est conservé pour relancer le traitement.
+            set_processing_errors(
+                encounter, [{"rule": "STT_UNAVAILABLE", "subject_id": error.code}]
+            )
+            transition(session, actor, encounter, "transcription_failed")
+            logger.warning(
+                "pipeline.stt_unavailable",
+                extra={
+                    "encounter_id": str(encounter.id),
+                    "provider": stt.info.name,
+                    "error_code": error.code,
+                },
+            )
+            return encounter
+        # Le volume, mesuré avant la purge : un nombre, jamais le son.
+        niveau_audio = (
+            {"crete": 1.0, "moyen": 1.0} if is_synthetic(encounter) else niveau(concatenate(chunks))
+        )
+        encounter.metadata_json = {**encounter.metadata_json, "niveau_audio": niveau_audio}
+        # D010 : l'audio est éphémère ; purgé dès que la transcription a abouti.
+        audio.purge(session, sink, encounter)
+        if transcription.speaker_labels:
+            transcription = replace(
+                transcription,
+                segments=apply_roles(transcription.segments, transcription.speaker_labels),
+            )
+        if not transcription.segments:
+            # Le fournisseur n'est pas tombé, mais rien d'exploitable n'est revenu : la
+            # trace doit le dire, sinon la panne se lira comme une réussite. Le volume
+            # mesuré départage « micro muet » et « personne n'a parlé ».
+            volume = niveau_audio
+            if chunks and volume["crete"] < SEUIL_SILENCE:
+                regle = "AUDIO_SILENT"
+            elif chunks and est_une_note(volume):
+                regle = "AUDIO_TEST_TONE"
+            else:
+                regle = "NO_TRANSCRIPT"
+            registry.finish_run(
+                session,
+                stt_timer,
+                status="failed",
+                error_code=regle,
+                model_version_id=stt_model.id,
+                counters={"chunks": len(chunks), "segments": 0},
+            )
+            set_processing_errors(encounter, [{"rule": regle, "subject_id": str(encounter.id)}])
+            transition(session, actor, encounter, "transcription_failed")
+            logger.warning(
+                "pipeline.transcription_failed", extra={"encounter_id": str(encounter.id)}
+            )
+            return encounter
         registry.finish_run(
             session,
             stt_timer,
-            status="failed",
-            error_code=error.code,
             model_version_id=stt_model.id,
-            counters={"chunks": len(chunks)},
+            counters={"chunks": len(chunks), "segments": len(transcription.segments)},
         )
-        # Panne du fournisseur : l'audio est conservé pour relancer le traitement.
-        set_processing_errors(encounter, [{"rule": "STT_UNAVAILABLE", "subject_id": error.code}])
-        transition(session, actor, encounter, "transcription_failed")
-        logger.warning(
-            "pipeline.stt_unavailable",
-            extra={
-                "encounter_id": str(encounter.id),
-                "provider": stt.info.name,
-                "error_code": error.code,
-            },
-        )
-        return encounter
-    # Le volume, mesuré avant la purge : un nombre, jamais le son.
-    niveau_audio = (
-        {"crete": 1.0, "moyen": 1.0} if is_synthetic(encounter) else niveau(concatenate(chunks))
-    )
-    encounter.metadata_json = {**encounter.metadata_json, "niveau_audio": niveau_audio}
-    # D010 : l'audio est éphémère ; purgé dès que la transcription a abouti.
-    audio.purge(session, sink, encounter)
-    if transcription.speaker_labels:
-        transcription = replace(
-            transcription,
-            segments=apply_roles(transcription.segments, transcription.speaker_labels),
-        )
-    if not transcription.segments:
-        # Le fournisseur n'est pas tombé, mais rien d'exploitable n'est revenu : la
-        # trace doit le dire, sinon la panne se lira comme une réussite. Le volume
-        # mesuré départage « micro muet » et « personne n'a parlé ».
-        volume = niveau_audio
-        if chunks and volume["crete"] < SEUIL_SILENCE:
-            regle = "AUDIO_SILENT"
-        elif chunks and est_une_note(volume):
-            regle = "AUDIO_TEST_TONE"
-        else:
-            regle = "NO_TRANSCRIPT"
-        registry.finish_run(
-            session,
-            stt_timer,
-            status="failed",
-            error_code=regle,
-            model_version_id=stt_model.id,
-            counters={"chunks": len(chunks), "segments": 0},
-        )
-        set_processing_errors(encounter, [{"rule": regle, "subject_id": str(encounter.id)}])
-        transition(session, actor, encounter, "transcription_failed")
-        logger.warning("pipeline.transcription_failed", extra={"encounter_id": str(encounter.id)})
-        return encounter
-    registry.finish_run(
-        session,
-        stt_timer,
-        model_version_id=stt_model.id,
-        counters={"chunks": len(chunks), "segments": len(transcription.segments)},
-    )
-    replace_segments(session, encounter.id, transcription.segments)
-    session.commit()  # étape 1 visible : la transcription existe
+        replace_segments(session, encounter.id, transcription.segments)
+        session.commit()  # étape 1 visible : la transcription existe
 
     extractor = providers.clinical_extraction
     extraction_model = registry.model_version(

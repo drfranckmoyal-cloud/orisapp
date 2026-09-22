@@ -140,6 +140,8 @@ export const LEARNING_EVENT: Record<string, string> = {
 };
 
 const ERRORS: Record<string, string> = {
+  PROCESSING_IN_PROGRESS:
+    "Le traitement est encore en cours (moins de 5 minutes) : patientez, il se termine tout seul.",
   SMILECLOUD_NON_RELIE: "Reliez d’abord ce patient à son dossier SmileCloud.",
   SMILECLOUD_INVALIDE: "Identifiant de dossier SmileCloud non reconnu.",
   DEVICE_FROM_THIS_MAC_ONLY: "Un nouvel appareil s’autorise depuis le Mac du cabinet uniquement.",

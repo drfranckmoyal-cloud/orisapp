@@ -412,6 +412,24 @@ export default function ConsultationPage() {
         </div>
       )}
 
+      {/* Traitement coupé net (Mac en veille) : la consultation resterait « en
+          traitement » pour toujours. On propose de reprendre ; le serveur refuse s'il
+          travaille encore (moins de 5 min). */}
+      {data.status === "processing" && (
+        <div className="banner banner-info" role="status">
+          Oris prépare le dossier… Si rien ne bouge après quelques minutes (Mac
+          mis en veille, serveur arrêté), relancez : Oris reprend là où il
+          s’était arrêté.{" "}
+          <Bouton
+            variante="secondaire"
+            onClick={() =>
+              act(`/encounters/${id}/process`, undefined, "Traitement relancé.")
+            }
+          >
+            Relancer le traitement
+          </Bouton>
+        </div>
+      )}
       {data.processing_errors.some((e) => PROCESSING_RULE[e.rule]) && (
         <div className="banner banner-review" role="alert">
           {data.processing_errors

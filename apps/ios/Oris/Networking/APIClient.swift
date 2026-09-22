@@ -112,7 +112,9 @@ struct APIClient: Sendable {
         var body: [String: Any] = ["accept_gaps": acceptGaps]
         body["final_sequence"] = finalSequence ?? NSNull()
         body["client_recorded_ms"] = recordedMs ?? NSNull()
-        return try await send("encounters/\(id)/finish", method: "POST", body: body)
+        // Le serveur transcrit et rédige avant de répondre (≈ 1 min 30 avec Claude) :
+        // on l'attend, au lieu d'abandonner à 30 s et d'afficher « action impossible ».
+        return try await send("encounters/\(id)/finish", method: "POST", body: body, delai: 240)
     }
 
     func reportGap(encounterId: String, reason: GapReason, durationMs: Int?) async throws -> AudioSessionState {
@@ -140,12 +142,13 @@ struct APIClient: Sendable {
         return try await perform(request)
     }
 
-    func send<Response: Decodable>(_ path: String, method: String, body: [String: Any]) async throws -> Response {
+    func send<Response: Decodable>(_ path: String, method: String, body: [String: Any],
+                                   delai: TimeInterval = 30) async throws -> Response {
         var request = URLRequest(url: baseURL.appending(path: path))
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
-        request.timeoutInterval = 30
+        request.timeoutInterval = delai
         return try await perform(request)
     }
 
