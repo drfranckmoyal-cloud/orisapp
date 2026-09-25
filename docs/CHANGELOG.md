@@ -1,5 +1,22 @@
 # Changelog
 
+## Concurrence et qualité d'interprétation : deux études — 2026-09-26
+- `docs/CONCURRENCE.md` : les acteurs français (Askara, Doctolib, Allisone, DentalCall,
+  Nabla, Praxy…) et étrangers (Bola AI, Kiroku, Denti.AI, Curve, Abridge, Overjet,
+  Pearl, VideaHealth), un tableau de comparaison fonction par fonction avec Oris, les
+  prix affichés du marché (43 à 199 €/$ par mois) et le cadre RGPD / HDS / AI Act / MDR.
+  Ce qu'Oris a en propre : l'objet clinique source de vérité, la preuve par segment, les
+  règles déterministes, les photos SmileCloud, la parité iPhone ↔ Mac. Ce qui manque :
+  l'écriture dans le logiciel du cabinet, l'ordonnance, le consentement, la trame du
+  praticien, l'HDS.
+- `docs/QUALITE_INTERPRETATION.md` : ce que mesure la recherche 2025-2026 (31 % de notes
+  avec hallucination, 26,3 % d'éléments cliniques omis, WER qui double au fauteuil), ce
+  qu'Oris applique déjà, et neuf leviers classés — passe de complétude contre les
+  omissions, auto-cohérence sur les dents et les chiffres, preuve visible et audible,
+  glossaire contextuel et rôles des locuteurs, contexte patient en lecture seule, ton
+  calibré, banc d'essai d'extraction, nomenclature, modèle en dernier.
+- Aucune ligne de code modifiée : ce sont deux documents de décision.
+
 ## Traitement coupé : reprise au lieu de blocage — 2026-09-22
 - Constat : ZEKRI (iPhone) — le Mac s'est fermé pendant la rédaction ; la consultation
   restait « en traitement », son effacé, et l'iPhone affichait « Action impossible ».

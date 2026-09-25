@@ -238,6 +238,8 @@ Détails, tests et banc d'essai : `docs/DEVELOPMENT.md` et `benchmarks/README.md
 | `docs/JOURNEE_DOCTOLIB.md` | Comment la journée Doctolib arrive dans Oris |
 | `docs/PIECES_JOINTES_SMILECLOUD.md` | **Récupérer les photos d'un patient depuis SmileCloud** : ce qui est décidé, ce qui reste à construire |
 | `docs/DEVELOPMENT.md` | Comment lancer et vérifier le projet |
+| `docs/CONCURRENCE.md` | **Les produits concurrents en France et à l'étranger**, ce qu'ils savent faire, ce qu'Oris a en plus et en moins, les prix du marché |
+| `docs/QUALITE_INTERPRETATION.md` | **Comment rendre la lecture de la consultation plus juste** : ce que mesure la recherche, les neuf leviers, l'ordre de marche |
 | `benchmarks/README.md` | Banc d'essai des services de transcription |
 | `services/api` · `apps/web` · `apps/ios` | Le serveur, le site, l'app iPhone |
 
