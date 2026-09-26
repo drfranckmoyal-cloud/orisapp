@@ -5,7 +5,8 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
 
 ## À rattraper dans l'app iPhone (existe sur le site)
 
-- Transcription brute d'une consultation.
+- Transcription brute d'une consultation (l'iPhone montre les paroles d'une phrase,
+  pas encore la transcription entière).
 - Correction du dossier clinique (à la voix et au clavier : « remplace 26 par 27 »).
 - Plan de traitement visuel (schéma dentaire, étapes colorées, chronologie).
 - Compte rendu de soins à la demande quand un acte a été dit ; suppression d'un
@@ -20,6 +21,14 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
 - Boutons Appeler / Écrire sur la fiche d'un correspondant (lien `tel:` / `mailto:`).
 - Supprimer une consultation depuis la liste du **dossier patient** (sur le site : depuis
   la liste Consultations et depuis la consultation).
+
+## Acquis des deux côtés
+
+- **« D'où vient cette phrase ? »** (26/09/2026) : sur le site, la phrase s'ouvre dans le
+  rail de révision ; sur l'iPhone, dans une feuille. Les deux appellent la même route
+  `GET /documents/{id}/preuve`, qui fait la jointure phrase → faits → paroles côté
+  serveur. Nuance : le site lit le dossier clinique **courant**, l'iPhone celui de la
+  version qui a servi à écrire le document — à aligner sur le site quand on y touchera.
 
 ## Écarts voulus (imposés par l'appareil)
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## « D'où vient cette phrase ? » sur l'iPhone aussi — 2026-09-26
+- Serveur : nouvelle route `GET /documents/{id}/preuve`. Elle fait la jointure
+  phrase → faits d'appui → paroles prononcées (qui parlait, à quelle minute), depuis le
+  dossier clinique **de la version qui a servi à écrire le document**. Une phrase sans
+  parole retrouvable le dit (`sans_preuve`) au lieu de faire semblant : fait saisi à la
+  main, phrase d'alerte, ou transcription effacée.
+- iPhone : toucher une phrase d'un document ouvre « D'où vient cette phrase ? » — les
+  faits retenus avec leurs étiquettes (dent, présent/absent, rapporté/constaté, certain)
+  puis les paroles sources. Chargé au premier toucher seulement.
+- Site : la fonction existait déjà dans le rail de révision ; il y manquait de le dire —
+  « Cliquez une phrase pour voir d'où elle vient » s'affiche au-dessus du texte.
+- Tests : 5 côté serveur (dédoublonnage et ordre des passages, phrase sans appui, fait
+  inconnu ignoré, route sur un document réel, 404), 4 côté iPhone.
+
 ## Concurrence et qualité d'interprétation : deux études — 2026-09-26
 - `docs/CONCURRENCE.md` : les acteurs français (Askara, Doctolib, Allisone, DentalCall,
   Nabla, Praxy…) et étrangers (Bola AI, Kiroku, Denti.AI, Curve, Abridge, Overjet,

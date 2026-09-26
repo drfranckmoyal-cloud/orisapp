@@ -166,6 +166,57 @@ class DocumentOut(BaseModel):
     validated_at: datetime | None
 
 
+class PassageOut(BaseModel):
+    """Une parole de la consultation, telle qu'elle a été transcrite."""
+
+    segment_id: str
+    start_ms: int
+    speaker_role: str
+    text: str
+
+
+class FaitAppuiOut(BaseModel):
+    fact_id: str
+    concept: str
+    libelle: str
+    valeur: str
+    teeth: list[str]
+    assertion: str
+    clinical_status: str
+    certainty: str
+    temporality: str
+    speaker_role: str
+    source_type: str
+    manually_validated: bool
+
+
+class AlerteOut(BaseModel):
+    code: str
+    message: str
+    severity: str
+
+
+class PhrasePreuveOut(BaseModel):
+    index: int
+    section: str
+    text: str
+    faits: list[FaitAppuiOut]
+    passages: list[PassageOut]
+    alertes: list[AlerteOut]
+    sans_preuve: bool
+    saisi_a_la_main: bool
+
+
+class PreuveOut(BaseModel):
+    """« D'où vient cette phrase ? » : la jointure phrase → faits → paroles (§30)."""
+
+    document_id: UUID
+    version: int
+    object_version: int
+    transcription_disponible: bool
+    phrases: list[PhrasePreuveOut]
+
+
 class DocumentValidate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     acknowledged_warning_codes: list[str] = []

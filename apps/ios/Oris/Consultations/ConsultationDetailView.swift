@@ -85,7 +85,7 @@ struct ConsultationDetailView: View {
                         TraitementDocument(client: model.client, content: content, document: document,
                                            recharger: { await model.refresh() }, toast: $toast,
                                            supprime: { tab = .document(.consultationNote) })
-                        DocumentCard(document: document)
+                        DocumentCard(client: model.client, document: document)
                         DocumentationClinique(client: model.client, patientId: content.encounter.patient.id,
                                               encounterId: content.encounter.id, document: document, toast: $toast)
                     }
@@ -204,18 +204,45 @@ func texteRiche(_ brut: String) -> AttributedString {
 }
 
 private struct DocumentCard: View {
+    let client: APIClient
     let document: DocumentDetail
+    /// Chargée au premier toucher seulement : lire un document ne coûte pas un appel.
+    @State private var preuve: DocumentPreuve?
+    @State private var choisie: PreuvePhrase?
+    @State private var enCours: Int?
+    @State private var erreur: String?
 
-    private var sections: [(title: String, claims: [DocumentClaim])] {
-        var result: [(title: String, claims: [DocumentClaim])] = []
-        for claim in document.claims {
+    /// Les phrases gardent leur rang dans le document : c'est lui qui retrouve la preuve.
+    private var sections: [(title: String, claims: [(index: Int, claim: DocumentClaim)])] {
+        var result: [(title: String, claims: [(index: Int, claim: DocumentClaim)])] = []
+        for (index, claim) in document.claims.enumerated() {
             if let last = result.last, last.title == claim.section {
-                result[result.count - 1].claims.append(claim)
+                result[result.count - 1].claims.append((index, claim))
             } else {
-                result.append((claim.section, [claim]))
+                result.append((claim.section, [(index, claim)]))
             }
         }
         return result
+    }
+
+    /// « D'où vient cette phrase ? » : la même réponse que sur le Mac (spec §30).
+    private func ouvrir(_ index: Int) {
+        erreur = nil
+        if let phrase = preuve?.phrase(index) {
+            choisie = phrase
+            return
+        }
+        enCours = index
+        Task {
+            defer { enCours = nil }
+            do {
+                let rendu = try await client.preuve(documentId: document.id)
+                preuve = rendu
+                choisie = rendu.phrase(index)
+            } catch {
+                erreur = Labels.erreur(error)
+            }
+        }
     }
 
     var body: some View {
@@ -232,6 +259,12 @@ private struct DocumentCard: View {
                     .font(Police.note)
                     .foregroundStyle(Teinte.attention)
             }
+            Label("Touchez une phrase pour voir d’où elle vient.", systemImage: "quote.opening")
+                .font(Police.note)
+                .foregroundStyle(Teinte.encreTresDouce)
+            if let erreur {
+                Text(erreur).font(Police.note).foregroundStyle(Teinte.alerte)
+            }
             ForEach(sections, id: \.title) { section in
                 VStack(alignment: .leading, spacing: 6) {
                     Text(section.title)
@@ -242,18 +275,34 @@ private struct DocumentCard: View {
                             Rectangle().fill(Teinte.document(document.documentType).encre.opacity(0.25))
                                 .frame(height: 1.5).offset(y: 2)
                         }
-                    ForEach(Array(section.claims.enumerated()), id: \.offset) { _, claim in
-                        Text(texteRiche(claim.text))
-                            .font(Police.interface(15.5, .regular))
-                            .lineSpacing(4)
-                            .foregroundStyle(Teinte.encre)
-                            .fixedSize(horizontal: false, vertical: true)
+                    ForEach(section.claims, id: \.index) { ligne in
+                        Button { ouvrir(ligne.index) } label: {
+                            HStack(alignment: .top, spacing: 6) {
+                                Text(texteRiche(ligne.claim.text))
+                                    .font(Police.interface(15.5, .regular))
+                                    .lineSpacing(4)
+                                    .foregroundStyle(Teinte.encre)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                Image(systemName: enCours == ligne.index ? "ellipsis" : "quote.opening")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(Teinte.encreTresDouce)
+                                    .padding(.top, 4)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityHint("Voir d’où vient cette phrase")
                     }
                 }
                 .padding(.top, 4)
             }
         }
         .carte(rembourrage: 20)
+        .sheet(item: $choisie) { phrase in
+            PreuveView(phrase: phrase,
+                       transcriptionDisponible: preuve?.transcriptionDisponible ?? false)
+        }
     }
 }
 

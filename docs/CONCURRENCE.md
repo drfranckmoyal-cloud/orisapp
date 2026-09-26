@@ -149,8 +149,9 @@ Légende : ● présent · ◐ partiel · ○ absent · — sans objet.
 | Charting parodontal à la voix | ○ | ○ | ◐ (sélecteur de dents) | ● | ○ | — |
 | Numérotation dentaire FDI contrôlée | ● | ? | ◐ | ● | — | — |
 | Trames personnalisables par le praticien | ◐ (modèles d'actes) | ◐ | ● (50+, import de la vôtre) | ◐ | ◐ | ● |
-| **Preuve : chaque fait cite le passage source** | ● (moteur) | ? | ? | ? | ? | ● (**et montré au praticien**) |
-| **Réécoute de l'audio au clic sur une phrase** | ○ | ? | ? | ? | ? | ● |
+| **Preuve : chaque fait cite le passage source** | ● | ? | ? | ? | ? | ● |
+| **Cliquer une phrase et voir les paroles sources** | ● (site et iPhone, 26/09/2026) | ? | ? | ? | ? | ● |
+| **Réécoute de l'audio au clic sur une phrase** | ○ (son effacé après traitement) | ? | ? | ? | ? | ● |
 | Objet clinique unique, documents = projections | ● | ? | ○ | ○ | ? | ◐ |
 | Règles déterministes (négation, temporalité, statut) | ● | ? | ○ | ○ | ? | ◐ |
 | Refus explicite plutôt que réparation silencieuse | ● | ? | ? | ? | ? | ? |
@@ -188,8 +189,9 @@ Légende : ● présent · ◐ partiel · ○ absent · — sans objet.
    fréquent après le compte rendu.
 3. **La trame du praticien.** Kiroku laisse importer sa propre trame et la convertit en
    cinq minutes. Oris impose ses modèles d'actes.
-4. **La réécoute de l'audio au clic** (Linked Evidence). Nous avons la donnée, pas
-   l'affichage.
+4. **La réécoute de l'audio** au clic (Linked Evidence) : impossible chez nous, le son
+   est effacé dès la fin du traitement. Le texte de ce qui a été dit, lui, s'affiche
+   désormais sur les deux clients.
 5. **Le consentement éclairé**, le **devis**, la **fiche labo** : trois documents
    quotidiens que nous ne produisons pas.
 6. **L'HDS.** Askara, Doctolib et Praxy l'annoncent. C'est la première question que
@@ -250,9 +252,10 @@ Par ordre de rapport valeur / effort.
 
 **À faire d'abord (petit effort, effet immédiat sur la démonstration)**
 
-1. **Rendre la preuve visible** — cliquer une phrase du compte rendu et voir le passage
-   de la transcription qui la justifie, puis réécouter. La donnée existe déjà
-   (`evidence_segment_ids`). C'est *le* argument qu'aucun concurrent français n'affiche.
+1. ~~**Rendre la preuve visible**~~ — **fait le 26/09/2026** : le site l'avait déjà dans
+   son rail de révision ; l'iPhone l'a maintenant aussi, et les deux lisent la même
+   route. Reste à le *dire* : c'est l'argument qu'aucun concurrent français n'affiche,
+   il doit figurer sur la plaquette et dans la démonstration.
 2. **L'ordonnance** comme nouveau type de document, avec les mêmes garde-fous.
 3. **Le consentement éclairé** généré depuis le plan de traitement.
 

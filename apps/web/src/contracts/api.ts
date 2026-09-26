@@ -1090,6 +1090,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/documents/{document_id}/preuve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Document Preuve
+         * @description « D'où vient cette phrase ? » — faits d'appui et paroles sources, phrase par phrase.
+         *
+         *     Même réponse pour le site et pour l'iPhone : la jointure est faite une fois ici.
+         */
+        get: operations["document_preuve_documents__document_id__preuve_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters/{encounter_id}/learning-events": {
         parameters: {
             query?: never;
@@ -1693,6 +1715,15 @@ export interface components {
             status: "discussed" | "proposed" | "accepted" | "refused" | "deferred" | "planned" | "completed";
             /** Problem */
             problem?: string | null;
+        };
+        /** AlerteOut */
+        AlerteOut: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+            /** Severity */
+            severity: string;
         };
         /** AppareilCreeOut */
         AppareilCreeOut: {
@@ -2645,6 +2676,33 @@ export interface components {
             /** Value */
             value?: unknown;
         };
+        /** FaitAppuiOut */
+        FaitAppuiOut: {
+            /** Fact Id */
+            fact_id: string;
+            /** Concept */
+            concept: string;
+            /** Libelle */
+            libelle: string;
+            /** Valeur */
+            valeur: string;
+            /** Teeth */
+            teeth: string[];
+            /** Assertion */
+            assertion: string;
+            /** Clinical Status */
+            clinical_status: string;
+            /** Certainty */
+            certainty: string;
+            /** Temporality */
+            temporality: string;
+            /** Speaker Role */
+            speaker_role: string;
+            /** Source Type */
+            source_type: string;
+            /** Manually Validated */
+            manually_validated: boolean;
+        };
         /** FichierGalerieIn */
         FichierGalerieIn: {
             /** Res Id */
@@ -3074,6 +3132,20 @@ export interface components {
              */
             site: "doctolib" | "smilecloud";
         };
+        /**
+         * PassageOut
+         * @description Une parole de la consultation, telle qu'elle a été transcrite.
+         */
+        PassageOut: {
+            /** Segment Id */
+            segment_id: string;
+            /** Start Ms */
+            start_ms: number;
+            /** Speaker Role */
+            speaker_role: string;
+            /** Text */
+            text: string;
+        };
         /** PatientCreate */
         PatientCreate: {
             /** First Name */
@@ -3185,6 +3257,25 @@ export interface components {
             /** Smilecloud Case Id */
             smilecloud_case_id?: string | null;
         };
+        /** PhrasePreuveOut */
+        PhrasePreuveOut: {
+            /** Index */
+            index: number;
+            /** Section */
+            section: string;
+            /** Text */
+            text: string;
+            /** Faits */
+            faits: components["schemas"]["FaitAppuiOut"][];
+            /** Passages */
+            passages: components["schemas"]["PassageOut"][];
+            /** Alertes */
+            alertes: components["schemas"]["AlerteOut"][];
+            /** Sans Preuve */
+            sans_preuve: boolean;
+            /** Saisi A La Main */
+            saisi_a_la_main: boolean;
+        };
         /**
          * PlanVueOut
          * @description Le plan mis en forme : étapes, chronologie, écartés, dents absentes du schéma.
@@ -3278,6 +3369,25 @@ export interface components {
             terminology?: {
                 [key: string]: string;
             } | null;
+        };
+        /**
+         * PreuveOut
+         * @description « D'où vient cette phrase ? » : la jointure phrase → faits → paroles (§30).
+         */
+        PreuveOut: {
+            /**
+             * Document Id
+             * Format: uuid
+             */
+            document_id: string;
+            /** Version */
+            version: number;
+            /** Object Version */
+            object_version: number;
+            /** Transcription Disponible */
+            transcription_disponible: boolean;
+            /** Phrases */
+            phrases: components["schemas"]["PhrasePreuveOut"][];
         };
         /** Procedure */
         Procedure: {
@@ -6020,6 +6130,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_preuve_documents__document_id__preuve_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreuveOut"];
+                };
             };
             /** @description Validation Error */
             422: {

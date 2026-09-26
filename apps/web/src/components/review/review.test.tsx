@@ -145,6 +145,7 @@ describe("texte rédigé", () => {
     expect(container.querySelector("strong")?.textContent).toBe(
       "agénésie de 12",
     );
-    expect(container.querySelectorAll("p")).toHaveLength(2);
+    // Les paragraphes du document, sans l'indice « cliquez une phrase ».
+    expect(container.querySelectorAll("section p")).toHaveLength(2);
   });
 });

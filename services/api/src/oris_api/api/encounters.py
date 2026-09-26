@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+from dataclasses import asdict
 from typing import Annotated, Any, cast
 from uuid import UUID
 
@@ -37,6 +38,7 @@ from oris_api.api.schemas import (
     MarkOut,
     ObjectVersionOut,
     PlanVueOut,
+    PreuveOut,
     ProgressOut,
     SpokenCorrectionOut,
     SpokenCorrectionRequest,
@@ -57,6 +59,9 @@ from oris_api.services import (
     personalization,
 )
 from oris_api.services import audio as audio_service
+from oris_api.services import (
+    preuve as preuve_service,
+)
 from oris_api.services.documents import ExportFormat
 from oris_api.services.errors import Conflict, NotFound, Unprocessable
 from oris_api.services.live import FENETRE as LIVE_WINDOW
@@ -619,6 +624,24 @@ def get_document(document_id: UUID, session: SessionDep, actor: ActorDep) -> Doc
     if version is None:
         raise NotFound("DOCUMENT_NOT_FOUND", str(document_id))
     return document_out(document, version, encounter.object_version)
+
+
+@router.get("/documents/{document_id}/preuve", response_model=PreuveOut)
+def document_preuve(document_id: UUID, session: SessionDep, actor: ActorDep) -> PreuveOut:
+    """« D'où vient cette phrase ? » — faits d'appui et paroles sources, phrase par phrase.
+
+    Même réponse pour le site et pour l'iPhone : la jointure est faite une fois ici.
+    """
+    document = session.get(DocumentRow, document_id)
+    if document is None:
+        raise NotFound("DOCUMENT_NOT_FOUND", str(document_id))
+    encounter = encounters.get_encounter(session, actor, document.encounter_id)
+    version = documents.current_version(session, document)
+    if version is None:
+        raise NotFound("DOCUMENT_NOT_FOUND", str(document_id))
+    return PreuveOut.model_validate(
+        asdict(preuve_service.pour_document(session, encounter, document, version))
+    )
 
 
 @router.get("/encounters/{encounter_id}/learning-events", response_model=list[LearningEventOut])

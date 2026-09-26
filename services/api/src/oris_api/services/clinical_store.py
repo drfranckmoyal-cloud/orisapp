@@ -77,6 +77,21 @@ def load_current(session: Session, encounter: Encounter) -> ClinicalEncounter:
     return current.model_copy(update={"status": encounter.status})
 
 
+def load_version(session: Session, encounter_id: UUID, version: int) -> ClinicalEncounter | None:
+    """L'objet tel qu'il était à cette version — celle qui a servi à écrire un document.
+
+    Un document rédigé avant une correction doit montrer les faits de *son* époque :
+    sinon la preuve ne correspond plus à la phrase (§30).
+    """
+    row = session.scalar(
+        select(EncounterObjectVersion).where(
+            EncounterObjectVersion.encounter_id == encounter_id,
+            EncounterObjectVersion.version == version,
+        )
+    )
+    return None if row is None else ClinicalEncounter.model_validate(row.clinical_object)
+
+
 def list_versions(session: Session, encounter_id: UUID) -> list[EncounterObjectVersion]:
     return list(
         session.scalars(

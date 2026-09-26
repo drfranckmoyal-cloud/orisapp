@@ -139,6 +139,18 @@ enum Labels {
         }
     }
 
+    /// Qui parlait, dans les mêmes mots que le site.
+    static func locuteur(_ role: String) -> String {
+        switch role {
+        case "practitioner": "Praticien"
+        case "patient": "Patient"
+        case "assistant": "Assistante"
+        case "companion": "Accompagnant"
+        case "manual": "Saisie manuelle"
+        default: "Locuteur inconnu"
+        }
+    }
+
     static func certainty(_ value: ClinicalFactCertainty) -> String {
         switch value {
         case .certain: "certain"

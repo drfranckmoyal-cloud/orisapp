@@ -3372,6 +3372,50 @@
         }
       }
     },
+    "/documents/{document_id}/preuve": {
+      "get": {
+        "tags": [
+          "encounters"
+        ],
+        "summary": "Document Preuve",
+        "description": "« D'où vient cette phrase ? » — faits d'appui et paroles sources, phrase par phrase.\n\nMême réponse pour le site et pour l'iPhone : la jointure est faite une fois ici.",
+        "operationId": "document_preuve_documents__document_id__preuve_get",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreuveOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters/{encounter_id}/learning-events": {
       "get": {
         "tags": [
@@ -4838,6 +4882,29 @@
         ],
         "title": "AddPlanItem",
         "description": "Ajout manuel d'un élément de plan (§34).\n\nLe praticien décide : l'élément est marqué comme le sien, sans fait d'appui\nextrait — c'est sa décision qui en tient lieu."
+      },
+      "AlerteOut": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "severity"
+        ],
+        "title": "AlerteOut"
       },
       "AppareilCreeOut": {
         "properties": {
@@ -7424,6 +7491,77 @@
         "type": "object",
         "title": "FactChanges"
       },
+      "FaitAppuiOut": {
+        "properties": {
+          "fact_id": {
+            "type": "string",
+            "title": "Fact Id"
+          },
+          "concept": {
+            "type": "string",
+            "title": "Concept"
+          },
+          "libelle": {
+            "type": "string",
+            "title": "Libelle"
+          },
+          "valeur": {
+            "type": "string",
+            "title": "Valeur"
+          },
+          "teeth": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Teeth"
+          },
+          "assertion": {
+            "type": "string",
+            "title": "Assertion"
+          },
+          "clinical_status": {
+            "type": "string",
+            "title": "Clinical Status"
+          },
+          "certainty": {
+            "type": "string",
+            "title": "Certainty"
+          },
+          "temporality": {
+            "type": "string",
+            "title": "Temporality"
+          },
+          "speaker_role": {
+            "type": "string",
+            "title": "Speaker Role"
+          },
+          "source_type": {
+            "type": "string",
+            "title": "Source Type"
+          },
+          "manually_validated": {
+            "type": "boolean",
+            "title": "Manually Validated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fact_id",
+          "concept",
+          "libelle",
+          "valeur",
+          "teeth",
+          "assertion",
+          "clinical_status",
+          "certainty",
+          "temporality",
+          "speaker_role",
+          "source_type",
+          "manually_validated"
+        ],
+        "title": "FaitAppuiOut"
+      },
       "FichierGalerieIn": {
         "properties": {
           "res_id": {
@@ -8470,6 +8608,35 @@
         ],
         "title": "OuvrirIn"
       },
+      "PassageOut": {
+        "properties": {
+          "segment_id": {
+            "type": "string",
+            "title": "Segment Id"
+          },
+          "start_ms": {
+            "type": "integer",
+            "title": "Start Ms"
+          },
+          "speaker_role": {
+            "type": "string",
+            "title": "Speaker Role"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "segment_id",
+          "start_ms",
+          "speaker_role",
+          "text"
+        ],
+        "title": "PassageOut",
+        "description": "Une parole de la consultation, telle qu'elle a été transcrite."
+      },
       "PatientCreate": {
         "properties": {
           "first_name": {
@@ -8797,6 +8964,63 @@
         "type": "object",
         "title": "PatientUpdate"
       },
+      "PhrasePreuveOut": {
+        "properties": {
+          "index": {
+            "type": "integer",
+            "title": "Index"
+          },
+          "section": {
+            "type": "string",
+            "title": "Section"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "faits": {
+            "items": {
+              "$ref": "#/components/schemas/FaitAppuiOut"
+            },
+            "type": "array",
+            "title": "Faits"
+          },
+          "passages": {
+            "items": {
+              "$ref": "#/components/schemas/PassageOut"
+            },
+            "type": "array",
+            "title": "Passages"
+          },
+          "alertes": {
+            "items": {
+              "$ref": "#/components/schemas/AlerteOut"
+            },
+            "type": "array",
+            "title": "Alertes"
+          },
+          "sans_preuve": {
+            "type": "boolean",
+            "title": "Sans Preuve"
+          },
+          "saisi_a_la_main": {
+            "type": "boolean",
+            "title": "Saisi A La Main"
+          }
+        },
+        "type": "object",
+        "required": [
+          "index",
+          "section",
+          "text",
+          "faits",
+          "passages",
+          "alertes",
+          "sans_preuve",
+          "saisi_a_la_main"
+        ],
+        "title": "PhrasePreuveOut"
+      },
       "PlanVueOut": {
         "properties": {
           "numerote": {
@@ -9009,6 +9233,44 @@
         "type": "object",
         "title": "PreferencesPatch",
         "description": "Modification partielle : seuls les champs fournis changent."
+      },
+      "PreuveOut": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "object_version": {
+            "type": "integer",
+            "title": "Object Version"
+          },
+          "transcription_disponible": {
+            "type": "boolean",
+            "title": "Transcription Disponible"
+          },
+          "phrases": {
+            "items": {
+              "$ref": "#/components/schemas/PhrasePreuveOut"
+            },
+            "type": "array",
+            "title": "Phrases"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id",
+          "version",
+          "object_version",
+          "transcription_disponible",
+          "phrases"
+        ],
+        "title": "PreuveOut",
+        "description": "« D'où vient cette phrase ? » : la jointure phrase → faits → paroles (§30)."
       },
       "Procedure": {
         "properties": {

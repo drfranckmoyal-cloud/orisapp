@@ -58,7 +58,7 @@ refaire.
 | **Détection des omissions** | ○ **rien** | — |
 | **Auto-cohérence (plusieurs tirages)** | ○ | — |
 | **Contexte du patient (antériorité)** | ○ | — |
-| **Preuve montrée au praticien** | ○ (la donnée existe, l'écran non) | — |
+| **Preuve montrée au praticien** | ● site et iPhone (26/09/2026), même route `/documents/{id}/preuve` | `services/preuve.py` |
 | **Mesure chiffrée de la qualité d'extraction** | ○ pas de score fait-par-fait | — |
 
 **En clair : Oris est déjà du bon côté sur la non-invention. Il est nu sur l'omission et
@@ -98,10 +98,11 @@ Oris impose déjà la citation du segment source. Abridge en a fait son argument
 le nom *Linked Evidence* : cliquer une phrase du compte rendu montre le passage de la
 transcription et permet de réécouter l'audio.
 
-Chez nous : la donnée est là (`evidence_segment_ids`, horodatage des segments). Il
-manque l'écran — côté site **et** côté iPhone (règle de parité). L'audio n'est conservé
-que le temps du traitement : on peut donc offrir la transcription au clic tout de suite,
-et l'audio seulement si la politique de conservation évolue.
+**Fait le 26 septembre 2026.** Le site le montrait déjà dans son rail de révision ;
+l'iPhone le montre maintenant dans une feuille, et les deux appellent la même route
+`GET /documents/{id}/preuve`, qui fait la jointure côté serveur. Reste hors de portée :
+la réécoute du son, effacé dès la fin du traitement — on montre le texte de ce qui a
+été dit, pas l'audio.
 
 Gain : double. Le praticien relit **plus vite** (il vérifie au lieu de relire tout), et
 c'est un argument commercial qu'aucun concurrent français n'affiche.
@@ -213,7 +214,7 @@ mesuré sur *nos* cas, jamais sur les chiffres marketing d'un éditeur.
 |---|---|---|
 | **A** | Levier 7 (banc d'extraction + corpus annoté + métriques) | Sans lui, rien n'est mesurable. C'est le socle. |
 | **B** | Levier 1 (passe de complétude) + levier 3 (auto-cohérence sur dents et chiffres) | Attaque directement les deux erreurs graves : omission et numéro de dent faux. |
-| **C** | Levier 2 (preuve visible, site + iPhone) | Relecture plus rapide, argument commercial unique. |
+| ~~**C**~~ | ~~Levier 2 (preuve visible, site + iPhone)~~ — **fait le 26/09/2026** | Relecture plus rapide, argument commercial unique. |
 | **D** | Levier 4 (glossaire contextuel, rôles des locuteurs) et levier 6 (ton) | Moins d'erreurs en amont, moins de corrections en aval. |
 | **E** | Levier 5 (contexte patient) puis levier 8 (CCAM) | Ouvre le devis et la continuité des soins. |
 

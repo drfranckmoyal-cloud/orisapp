@@ -83,6 +83,12 @@
 }
 
 /* Une phrase dans le paragraphe : cliquable, sans casser la ligne. */
+.indicePreuve {
+  margin: 0 0 var(--space-12);
+  font-size: var(--texte-sm);
+  color: var(--encre-tres-douce);
+}
+
 .claim {
   display: inline;
   font: inherit;

@@ -56,6 +56,11 @@ export function DocumentBody({
   }
   return (
     <div className={styles.document}>
+      {/* Le rail montre déjà la source au clic — encore faut-il savoir que c'est
+          cliquable : le même mot que sur l'iPhone. */}
+      <p className={styles.indicePreuve}>
+        Cliquez une phrase pour voir d’où elle vient.
+      </p>
       {sections.map((section) => (
         <section key={section.title} className={styles.rubrique}>
           <h3 className={styles.sectionTitle}>{section.title}</h3>

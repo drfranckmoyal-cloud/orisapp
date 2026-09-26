@@ -194,3 +194,99 @@ extension APIClient {
         return Fichier(donnees: data, nom: nom)
     }
 }
+
+// MARK: - « D'où vient cette phrase ? »
+
+/// Une parole de la consultation, telle qu'elle a été transcrite.
+struct PreuvePassage: Codable, Equatable, Sendable, Identifiable {
+    let segmentId: String
+    let startMs: Int
+    let speakerRole: String
+    let text: String
+
+    var id: String { segmentId }
+
+    /// Le moment de la consultation, en minutes et secondes depuis le début.
+    static func horloge(_ ms: Int) -> String {
+        let secondes = max(0, ms) / 1_000
+        return String(format: "%d:%02d", secondes / 60, secondes % 60)
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case text
+        case segmentId = "segment_id"
+        case startMs = "start_ms"
+        case speakerRole = "speaker_role"
+    }
+}
+
+/// Un fait clinique d'appui, déjà rendu dans les mots du praticien par le serveur.
+struct PreuveFait: Codable, Equatable, Sendable, Identifiable {
+    let factId: String
+    let libelle: String
+    let valeur: String
+    let teeth: [String]
+    let assertion: ClinicalFactAssertion
+    let clinicalStatus: ClinicalFactClinicalStatus
+    let certainty: ClinicalFactCertainty
+    let manuallyValidated: Bool
+
+    var id: String { factId }
+
+    enum CodingKeys: String, CodingKey {
+        case libelle, valeur, teeth, assertion, certainty
+        case factId = "fact_id"
+        case clinicalStatus = "clinical_status"
+        case manuallyValidated = "manually_validated"
+    }
+}
+
+struct PreuveAlerte: Codable, Equatable, Sendable, Identifiable {
+    let code: String
+    let message: String
+
+    var id: String { code }
+}
+
+/// Une phrase du document et ce qui l'appuie.
+struct PreuvePhrase: Codable, Equatable, Sendable, Identifiable {
+    let index: Int
+    let section: String
+    let text: String
+    let faits: [PreuveFait]
+    let passages: [PreuvePassage]
+    let alertes: [PreuveAlerte]
+    let sansPreuve: Bool
+    let saisiALaMain: Bool
+
+    var id: Int { index }
+
+    enum CodingKeys: String, CodingKey {
+        case index, section, text, faits, passages, alertes
+        case sansPreuve = "sans_preuve"
+        case saisiALaMain = "saisi_a_la_main"
+    }
+}
+
+struct DocumentPreuve: Codable, Equatable, Sendable {
+    let documentId: String
+    let version: Int
+    let transcriptionDisponible: Bool
+    let phrases: [PreuvePhrase]
+
+    /// La preuve d'une phrase, retrouvée par son rang dans le document.
+    func phrase(_ index: Int) -> PreuvePhrase? { phrases.first { $0.index == index } }
+
+    enum CodingKeys: String, CodingKey {
+        case version, phrases
+        case documentId = "document_id"
+        case transcriptionDisponible = "transcription_disponible"
+    }
+}
+
+extension APIClient {
+    /// « D'où vient cette phrase ? » : la même route que le site (spec §30).
+    func preuve(documentId: String) async throws -> DocumentPreuve {
+        try await get("documents/\(documentId)/preuve")
+    }
+}
