@@ -51,7 +51,7 @@ refaire.
 | Deuxième passe corrective avec l'erreur en retour | ● 3 essais maximum, l'erreur exacte est renvoyée au modèle | `llm/anthropic_extraction.py` |
 | Refus plutôt que réparation silencieuse | ● une sortie non conforme est rejetée, jamais corrigée en douce | idem |
 | Vocabulaire métier poussé à la reconnaissance vocale | ● `keyterm` chez Deepgram, `phraseList` chez Azure, glossaire dentaire + glossaire du praticien | `stt/common.py`, `stt/deepgram.py`, `stt/azure_speech.py` |
-| Diarisation (qui parle) | ◐ activée chez les deux fournisseurs, mais les rôles ne sont pas encore attribués finement | `stt/*.py` |
+| Diarisation (qui parle) | ◐ demandée aux deux fournisseurs, mais sans effet au fauteuil ; les rôles se décident sur les mots | `stt/*.py`, `llm/speaker_roles.py` |
 | Documents = projections des faits, jamais du texte libre | ● | `services/documents.py` |
 | Validateur factuel à la rédaction | ● chaque énoncé doit s'appuyer sur un identifiant de fait | `FactualValidator` |
 | Corpus de cas et non-régression | ◐ 100 consultations synthétiques, cas critiques, banc STT | `corpus/`, `evals/`, `scripts/stt_benchmark.py` |
@@ -136,11 +136,17 @@ Tout ce qui est mal entendu est définitivement perdu. Trois actions, par ordre 
    prononcés deviennent des distracteurs) — donc : glossaire **contextuel**, pas
    exhaustif. Les termes du praticien d'abord, puis les termes de l'acte prévu, puis le
    fonds dentaire commun.
-2. **Attribuer les rôles**, pas seulement les locuteurs : la diarisation dit « locuteur
-   1 / locuteur 2 », pas « praticien / patient / assistante ». Une règle simple (qui
-   parle le plus, qui emploie le vocabulaire technique, qui a lancé l'écoute) suffit à
-   fiabiliser le `speaker_role`, dont dépendent les statuts `patient_reported` vs
-   `observed` — invariant clinique n°5.
+2. ~~**Attribuer les rôles**~~ — **fait le 26 septembre 2026**, et la cause était pire
+   que prévu : sur les vraies consultations, la transcription ne sépare **aucune** voix
+   (ZEKRI, BENSOUSSAN, ADJEL : une seule voix, ou aucune), alors qu'elle en sépare deux
+   proprement sur le banc synthétique. Les règles d'Oris, qui attendaient des voix
+   séparées, laissaient donc tout en « inconnu ».
+   Oris décide désormais **passage par passage**, à partir de l'enchaînement des tours de
+   parole : règles d'abord, modèle ensuite, « inconnu » en dernier recours. Mesuré sur les
+   deux vraies consultations gardées : **13 passages nommés sur 100 → 63** (ZEKRI),
+   **1 sur 59 → 50** (BENSOUSSAN). Une fenêtre de réponse mal formée est abandonnée
+   entière — une réponse décalée d'un cran attribuerait chaque parole au mauvais
+   locuteur.
 3. **Comparer deux moteurs sur le corpus** (le banc existe déjà :
    `scripts/stt_benchmark.py`, 46+ fichiers synthétiques) et mesurer le WER **sur le
    vocabulaire dentaire seul**, pas sur tous les mots : une erreur sur « donc » ne coûte

@@ -9,6 +9,7 @@ from oris_api.providers.base import (
     ClinicalExtractionProvider,
     ClinicalValidationProvider,
     DocumentGenerationProvider,
+    SpeakerRoleProvider,
     SpeechToTextProvider,
     StreamingSpeechToTextProvider,
 )
@@ -16,6 +17,7 @@ from oris_api.providers.mock import (
     MockClinicalExtractionProvider,
     MockClinicalValidationProvider,
     MockDocumentGenerationProvider,
+    MockSpeakerRoleProvider,
     MockSpeechToTextProvider,
     MockStreamingProvider,
 )
@@ -42,6 +44,8 @@ class ProviderSet:
     # Écoute en direct (§14.1) : confort d'écran, jamais source du dossier.
     # `None` quand le direct est éteint : la consultation se déroule sans lui.
     live_speech_to_text: StreamingSpeechToTextProvider | None = None
+    # Qui parle, quand les règles ne tranchent pas (§15). Jamais un fait clinique.
+    speaker_roles: SpeakerRoleProvider = field(default_factory=MockSpeakerRoleProvider)
 
 
 def build_providers(settings: Settings, corpus: SyntheticCorpus | None = None) -> ProviderSet:
@@ -62,6 +66,27 @@ def build_providers(settings: Settings, corpus: SyntheticCorpus | None = None) -
         synthetic_document_generation=MockDocumentGenerationProvider(),
         clinical_validation=MockClinicalValidationProvider(),
         live_speech_to_text=build_live_speech_to_text(settings, corpus),
+        speaker_roles=build_speaker_roles(settings),
+    )
+
+
+def build_speaker_roles(settings: Settings) -> SpeakerRoleProvider:
+    """Claude quand il est configuré ; sinon les règles seules, donc `unknown` assumé.
+
+    Des extraits de paroles sortent d'Oris : le même accord explicite que pour
+    l'extraction est exigé (`ALLOW_EXTERNAL_LLM`), jamais moins.
+    """
+    from oris_api.llm.speaker_roles import AnthropicSpeakerRoleProvider
+
+    if (
+        settings.clinical_extraction_provider != "anthropic"
+        or not settings.allow_external_llm
+        or settings.anthropic_api_key is None
+    ):
+        return MockSpeakerRoleProvider()
+    return AnthropicSpeakerRoleProvider(
+        settings.anthropic_api_key.get_secret_value(),
+        settings.anthropic_model,
     )
 
 

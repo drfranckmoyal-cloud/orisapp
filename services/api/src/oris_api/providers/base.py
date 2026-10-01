@@ -14,6 +14,7 @@ from typing import Literal, Protocol, runtime_checkable
 from oris_api.contracts import ClinicalEncounter, TranscriptSegment
 from oris_api.contracts.generated import DocumentDocumentType
 from oris_api.documents.renderer import Style
+from oris_api.domain.speaker_roles import Parole, Voix
 from oris_api.domain.types import (
     AudioChunk,
     ExtractionResult,
@@ -93,6 +94,33 @@ class StreamingSpeechToTextProvider(Protocol):
         self, chunks: AsyncIterator[AudioChunk], locale: str, glossary: list[GlossaryHint]
     ) -> AsyncIterator[StreamEvent]:
         """Transcription progressive. Un trou (reconnexion) est émis, jamais masqué."""
+        ...
+
+
+class SpeakerRolesUnavailable(RuntimeError):
+    """L'attribution des voix a échoué ou a rendu une sortie refusée.
+
+    Ce n'est pas un échec de consultation : les rôles restent `unknown` et l'alerte
+    « voix non attribuées » prévient le praticien.
+    """
+
+    def __init__(self, code: str) -> None:
+        self.code = code
+        super().__init__(code)
+
+
+@runtime_checkable
+class SpeakerRoleProvider(Protocol):
+    """Qui parle, voix par voix — jamais un fait clinique (docs/AI_ARCHITECTURE.md)."""
+
+    info: ProviderInfo
+
+    async def attribuer(self, voix: list[Voix]) -> dict[str, str]:
+        """Rôle sûr de chaque voix ; une voix douteuse n'est pas rendue."""
+        ...
+
+    async def attribuer_paroles(self, paroles: list[Parole]) -> dict[str, str]:
+        """Rôle sûr de chaque passage, quand aucune voix n'a été séparée."""
         ...
 
 

@@ -39,6 +39,25 @@ juridique.
 | Comportement en cas de panne | Extraction refusée, consultation en échec explicite, relançable |
 | Suppression | à documenter |
 
+## Anthropic (Claude) — attribution des voix
+
+Ajouté le 26/09/2026. Même fournisseur, même clé, même accord (`ALLOW_EXTERNAL_LLM`) que
+l'extraction : sans cet accord, Oris s'en tient à ses règles et laisse « inconnu ».
+
+| Question | Réponse |
+|---|---|
+| Finalité | Dire qui parle (praticien, patient, assistante, accompagnant) dans chaque passage |
+| Données envoyées | Les passages de la consultation, ou des extraits groupés par voix |
+| Données **non** envoyées | Identité du patient, audio, dossier clinique, documents |
+| Région de traitement | à documenter |
+| Conservation | à documenter |
+| Usage pour l'entraînement | à documenter (doit être exclu) |
+| Sous-traitants | à documenter |
+| Contrat / DPA | à documenter |
+| Pertinence HDS | à documenter |
+| Comportement en cas de panne | Les rôles restent « inconnu », la consultation porte son alerte, le reste du traitement continue |
+| Suppression | à documenter |
+
 ## Azure AI Speech — transcription (comparaison)
 
 | Question | Réponse |

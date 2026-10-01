@@ -50,17 +50,37 @@ def load_segments(session: Session, encounter_id: UUID) -> list[TranscriptSegmen
 
 
 def replace_segments(
-    session: Session, encounter_id: UUID, segments: list[TranscriptSegment]
+    session: Session,
+    encounter_id: UUID,
+    segments: list[TranscriptSegment],
+    speaker_labels: dict[str, str] | None = None,
 ) -> None:
-    """Idempotent : un nouveau traitement remplace le transcript précédent."""
+    """Idempotent : un nouveau traitement remplace le transcript précédent.
+
+    La voix d'origine (« 0 », « 1 »…) est gardée à côté du rôle : sans elle, une
+    attribution ratée ne peut plus être rejugée, l'audio étant effacé.
+    """
+    labels = speaker_labels or {}
     session.execute(
         delete(TranscriptSegmentRow).where(TranscriptSegmentRow.encounter_id == encounter_id)
     )
     session.add_all(
-        TranscriptSegmentRow(encounter_id=encounter_id, **segment.model_dump())
+        TranscriptSegmentRow(
+            encounter_id=encounter_id,
+            speaker_label=labels.get(segment.segment_id, ""),
+            **segment.model_dump(),
+        )
         for segment in segments
     )
     session.flush()
+
+
+def load_speaker_labels(session: Session, encounter_id: UUID) -> dict[str, str]:
+    """Les voix gardées, par passage. Vide quand la transcription n'en a séparé aucune."""
+    rows = session.scalars(
+        select(TranscriptSegmentRow).where(TranscriptSegmentRow.encounter_id == encounter_id)
+    )
+    return {row.segment_id: row.speaker_label for row in rows if row.speaker_label}
 
 
 def load_current(session: Session, encounter: Encounter) -> ClinicalEncounter:

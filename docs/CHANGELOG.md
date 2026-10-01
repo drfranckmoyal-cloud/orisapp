@@ -1,5 +1,33 @@
 # Changelog
 
+## Qui parle : praticien et patient attribués passage par passage — 2026-09-26
+- Constat : sur les vraies consultations, la transcription ne sépare **aucune voix**
+  (ZEKRI : aucune ; BENSOUSSAN et ADJEL : une seule), alors qu'elle en sépare deux sur le
+  banc synthétique. Les règles d'Oris attendaient des voix séparées : elles laissaient
+  donc « locuteur inconnu » partout, et la preuve d'une phrase ne disait pas qui l'avait
+  dite.
+- Quand la transcription sépare des voix, un rôle est décidé **par voix** (extraits
+  groupés) ; quand elle n'en sépare aucune — le cas réel — il est décidé **passage par
+  passage**, d'après l'enchaînement des tours de parole.
+- Les règles d'Oris passent toujours en premier et font foi ; le modèle complète ce
+  qu'elles laissent inconnu. Un rôle rendu sans assurance (< 0,8) n'est pas posé, et
+  « inconnu » garde son alerte. Une fenêtre de réponse mal formée est abandonnée entière,
+  après un second essai : une réponse décalée d'un cran attribuerait chaque parole au
+  mauvais locuteur. Une panne du modèle ne coûte que les rôles, jamais la consultation.
+- Les paroles ne partent chez le fournisseur que sous le même accord explicite que
+  l'extraction (`ALLOW_EXTERNAL_LLM`) ; sans lui, Oris s'en tient à ses règles
+  (`docs/VENDORS.md` mis à jour).
+- La voix d'origine de chaque passage est désormais gardée en base (migration 0021) :
+  une attribution peut être rejugée sans refaire la transcription, l'audio étant effacé.
+  Relancer le traitement d'une consultation rattrape ainsi ses rôles inconnus.
+- Mesuré sur les deux vraies consultations gardées : **13 passages nommés sur 100 → 63**
+  (ZEKRI), **1 sur 59 → 50** (BENSOUSSAN). Aucun rôle posé à tort sur l'échantillon du
+  banc synthétique.
+- Les consultations transcrites avant ce jour gardent leurs rôles inconnus : leurs voix
+  n'avaient pas été conservées.
+- Tests : 17 nouveaux (résumé des voix, refus d'une voix inventée ou d'un rôle hors
+  liste, fenêtre abandonnée, panne, accord externe exigé, branchement du pipeline).
+
 ## « D'où vient cette phrase ? » sur l'iPhone aussi — 2026-09-26
 - Serveur : nouvelle route `GET /documents/{id}/preuve`. Elle fait la jointure
   phrase → faits d'appui → paroles prononcées (qui parlait, à quelle minute), depuis le

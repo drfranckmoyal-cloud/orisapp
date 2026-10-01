@@ -21,6 +21,7 @@ from oris_api.documents.renderer import (
 )
 from oris_api.domain.factual_validator import validate_document
 from oris_api.domain.resolver import is_gap_marker
+from oris_api.domain.speaker_roles import Parole, Voix
 from oris_api.domain.types import (
     AudioChunk,
     AudioGap,
@@ -34,6 +35,22 @@ from oris_api.providers.base import ProviderInfo, StreamEvent
 from oris_api.synthetic.corpus import SYNTHETIC_PAYLOAD_PREFIX, SyntheticCorpus
 
 MOCK_VERSION = "mock-0.2"
+
+
+class MockSpeakerRoleProvider:
+    """Hors ligne : on s'en tient aux règles, qui préfèrent `unknown` à une supposition.
+
+    Sert en développement, en test, et dès qu'aucun modèle n'est configuré — le
+    comportement d'Oris avant le 26/09/2026.
+    """
+
+    info = ProviderInfo(name="mock", version=MOCK_VERSION, capabilities=["speaker_roles"])
+
+    async def attribuer(self, voix: list[Voix]) -> dict[str, str]:
+        return {}
+
+    async def attribuer_paroles(self, paroles: list[Parole]) -> dict[str, str]:
+        return {}
 
 
 class MockSpeechToTextProvider:

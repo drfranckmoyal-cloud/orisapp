@@ -142,3 +142,19 @@
 - Activer l'extraction réelle dans `services/api/.env` rend payante chaque consultation
   lancée depuis le site ; les tests, eux, sont forcés en mode factice.
 
+
+## Séparation des voix (2026-09-26)
+
+- **La transcription ne sépare aucune voix sur les vraies consultations.** Constaté sur
+  trois enregistrements au fauteuil (ZEKRI, BENSOUSSAN, ADJEL) : Deepgram rend une seule
+  voix, ou aucune, là où il en sépare deux proprement sur le banc d'essai synthétique
+  (87 % de temps de parole bien séparé). Micro unique du téléphone, voix proches, bruit
+  de cabinet.
+- Conséquence : Oris décide « qui parle » **passage par passage**, à partir de
+  l'enchaînement des tours de parole, et non voix par voix. Un passage dont le rôle n'est
+  pas sûr reste « inconnu » et la consultation porte son alerte.
+- Un rôle attribué n'est pas corrigeable par le praticien dans l'interface : il faudrait
+  aussi rejouer l'extraction, puisque c'est le rôle qui décide « rapporté par le patient »
+  ou « constaté ». À faire si le besoin se confirme.
+- Les consultations transcrites **avant** cette date gardent leurs rôles inconnus : les
+  voix d'origine n'étaient pas conservées, et l'audio est effacé.

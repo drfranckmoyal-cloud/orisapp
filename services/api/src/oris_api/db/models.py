@@ -197,6 +197,9 @@ class TranscriptSegmentRow(Base):
     speaker_role: Mapped[str] = mapped_column(
         contract_enum(TranscriptSegmentSpeakerRole, "segment_speaker_role")
     )
+    #: La voix telle que la transcription l'a séparée (« 0 », « 1 »…), avant tout rôle :
+    #: elle permet de rejuger l'attribution sans refaire la transcription.
+    speaker_label: Mapped[str] = mapped_column(String(32), default="")
     text: Mapped[str] = mapped_column(Text)
     confidence: Mapped[float] = mapped_column(Float)
     is_final: Mapped[bool] = mapped_column(default=False)

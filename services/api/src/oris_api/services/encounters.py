@@ -12,7 +12,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from oris_api.config import Settings
-from oris_api.contracts import ClinicalEncounter
+from oris_api.contracts import ClinicalEncounter, TranscriptSegment
 from oris_api.contracts.generated import ClinicalEncounterStatus
 from oris_api.db.models import (
     Encounter,
@@ -22,13 +22,21 @@ from oris_api.db.models import (
 )
 from oris_api.domain.lifecycle import TransitionError, ensure_transition
 from oris_api.domain.resolver import resolve
-from oris_api.domain.speaker_roles import apply_roles
+from oris_api.domain.speaker_roles import (
+    appliquer,
+    apply_roles,
+    assign_roles,
+    paroles,
+    sans_role,
+    voix,
+)
 from oris_api.domain.types import AudioChunk, AudioGap, TranscriptionResult
 from oris_api.domain.warnings import compute_warnings
 from oris_api.llm.prompt import PROMPT_VERSION, SYSTEM_PROMPT
 from oris_api.providers import ProviderSet
 from oris_api.providers.base import (
     ExtractionUnavailable,
+    SpeakerRolesUnavailable,
     TranscriptionUnavailable,
     rule_codes,
 )
@@ -37,6 +45,7 @@ from oris_api.services.audio_sink import AudioSink
 from oris_api.services.clinical_store import (
     load_current,
     load_segments,
+    load_speaker_labels,
     replace_segments,
     save_version,
 )
@@ -174,6 +183,63 @@ def delete_encounter(session: Session, actor: Actor, encounter: Encounter, sink:
     session.flush()
 
 
+def attribuer_les_voix(
+    segments: list[TranscriptSegment],
+    speaker_labels: dict[str, str],
+    providers: ProviderSet,
+    encounter_id: UUID,
+) -> list[TranscriptSegment]:
+    """Qui parle : les règles d'abord, le modèle ensuite, `unknown` en dernier recours.
+
+    Les règles d'Oris (`domain/speaker_roles.py`) tranchent sur un enregistrement net ;
+    au fauteuil, elles laissent presque tout en `unknown`. Le modèle est alors appelé sur
+    les **seuls extraits de paroles**, voix par voix : il ne voit pas le dossier, ne rend
+    qu'un rôle, et ce qu'il n'assume pas reste inconnu — avec l'alerte qui va avec.
+
+    Un échec du modèle n'est jamais un échec de consultation : on garde ce que les règles
+    avaient trouvé.
+    """
+    # Rien à rejuger : des rôles déjà posés (reprise d'un traitement) sont gardés tels
+    # quels — ni rappel du modèle, ni retour en arrière sur une attribution acquise.
+    if not sans_role(segments):
+        return segments
+    poses = apply_roles(segments, speaker_labels)
+    if not sans_role(poses):
+        return poses
+    voix_connues = voix(segments, speaker_labels)
+    try:
+        if len(voix_connues) >= 2:
+            roles = async_bridge.run(lambda: providers.speaker_roles.attribuer(voix_connues))
+            if not roles:
+                return poses
+            # Ce que les règles ont tranché fait foi : le modèle complète, il ne corrige pas.
+            deja = assign_roles(segments, speaker_labels)
+            return appliquer(segments, speaker_labels, {**roles, **deja.roles})
+        # Aucune voix séparée — le cas de toutes les vraies consultations jusqu'ici :
+        # c'est l'enchaînement des tours de parole qui dit qui parle.
+        par_passage = async_bridge.run(
+            lambda: providers.speaker_roles.attribuer_paroles(paroles(segments))
+        )
+    except SpeakerRolesUnavailable as error:
+        logger.warning(
+            "pipeline.speaker_roles_unavailable",
+            extra={
+                "encounter_id": str(encounter_id),
+                "provider": providers.speaker_roles.info.name,
+                "error_code": error.code,
+            },
+        )
+        return poses
+    return [
+        segment
+        if segment.speaker_role != "unknown"
+        else segment.model_copy(
+            update={"speaker_role": par_passage.get(segment.segment_id, "unknown")}
+        )
+        for segment in poses
+    ]
+
+
 def is_synthetic(encounter: Encounter) -> bool:
     return isinstance(encounter.metadata_json.get("synthetic_case_id"), str)
 
@@ -252,7 +318,13 @@ def process(
     if segments_gardes:
         # La transcription a déjà abouti (son effacé, phrases rangées) : on la reprend.
         logger.info("pipeline.resumed", extra={"encounter_id": str(encounter.id)})
-        transcription = TranscriptionResult(segments=segments_gardes)
+        # Les voix gardées permettent de rejuger « qui parle » sans refaire l'écoute :
+        # relancer le traitement rattrape une attribution restée inconnue.
+        labels_gardes = load_speaker_labels(session, encounter.id)
+        transcription = TranscriptionResult(
+            segments=attribuer_les_voix(segments_gardes, labels_gardes, providers, encounter.id),
+            speaker_labels=labels_gardes,
+        )
     else:
         # Vrai micro → fournisseur configuré ; consultation fictive → fournisseur factice.
         stt = (
@@ -299,7 +371,9 @@ def process(
         if transcription.speaker_labels:
             transcription = replace(
                 transcription,
-                segments=apply_roles(transcription.segments, transcription.speaker_labels),
+                segments=attribuer_les_voix(
+                    transcription.segments, transcription.speaker_labels, providers, encounter.id
+                ),
             )
         if not transcription.segments:
             # Le fournisseur n'est pas tombé, mais rien d'exploitable n'est revenu : la
@@ -332,7 +406,9 @@ def process(
             model_version_id=stt_model.id,
             counters={"chunks": len(chunks), "segments": len(transcription.segments)},
         )
-        replace_segments(session, encounter.id, transcription.segments)
+        replace_segments(
+            session, encounter.id, transcription.segments, transcription.speaker_labels
+        )
         session.commit()  # étape 1 visible : la transcription existe
 
     extractor = providers.clinical_extraction
