@@ -1,5 +1,18 @@
 # Changelog
 
+## Les contraintes pour vendre Oris, rassemblées — 2026-10-04
+- `docs/CONTRAINTES_COMMERCIALISATION.md` : ce qu'impose la vente d'Oris à des cabinets.
+  Hébergement HDS (qui doit être certifié, et le piège de l'infogérance : activités 5 et
+  6), partage de responsabilité RGPD, transferts vers les États-Unis fragilisés depuis
+  juin 2026, obligation de messagerie sécurisée MSSanté, ligne à ne pas franchir du
+  dispositif médical, calendrier de l'AI Act (transparence au 2 août 2026, haut risque
+  repoussé au 2 décembre 2027), guide HAS/CNIL de février 2026, Ségur vague 2 qui inclut
+  désormais les chirurgiens-dentistes, et les obligations d'entreprise.
+- La liste honnête de ce qui, aujourd'hui, empêche la vente : envoi par Gmail, jeton
+  collé à la main, données sur le Mac, IA aux États-Unis, pas de société ni d'assurance.
+- Rien de ce document n'est un avis juridique : trois points demandent un spécialiste
+  (statut de dispositif médical, montage HDS, contrats de sous-traitance).
+
 ## Qui parle : praticien et patient attribués passage par passage — 2026-09-26
 - Constat : sur les vraies consultations, la transcription ne sépare **aucune voix**
   (ZEKRI : aucune ; BENSOUSSAN et ADJEL : une seule), alors qu'elle en sépare deux sur le
