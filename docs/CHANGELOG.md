@@ -1,5 +1,25 @@
 # Changelog
 
+## Oris passé au crible du guide HAS/CNIL — 2026-10-04
+- `docs/AUDIT_HAS_CNIL.md` : les 12 chapitres et 48 recommandations du guide « IA en
+  contexte de soins » (février 2026) confrontés au code d'Oris.
+- Le guide classe explicitement les outils d'aide à la rédaction de comptes rendus en
+  **risque limité** au sens de l'AI Act, et hors du champ du dispositif médical : Oris
+  n'a donc ni marquage CE ni obligations « haut risque » à prévoir, mais des obligations
+  de transparence.
+- Conforme et en avance : supervision humaine (rien n'est validé tout seul), traçabilité
+  des usages, journaux sans donnée patient, résultats conservés et versionnés.
+- Deux manques nets au chapitre 7 : **aucune mention d'IA dans les documents produits**
+  (le guide en donne le modèle de phrase, et l'article 50 de l'AI Act l'exige), et
+  **« patient informé » n'est pas un consentement** — or l'enregistrement de la voix y
+  est soumis au titre du code civil.
+- Manquent aussi : notice d'utilisation, dossier fournisseur (performances, biais, flux
+  de données, incidents), routine de contrôle qualité, export de sortie d'un cabinet,
+  plan de continuité.
+- Trois choses à faire côté praticien dès maintenant : vérifier la couverture RC
+  professionnelle, afficher l'information en salle d'attente, demander le consentement à
+  l'enregistrement.
+
 ## Les contraintes pour vendre Oris, rassemblées — 2026-10-04
 - `docs/CONTRAINTES_COMMERCIALISATION.md` : ce qu'impose la vente d'Oris à des cabinets.
   Hébergement HDS (qui doit être certifié, et le piège de l'infogérance : activités 5 et
