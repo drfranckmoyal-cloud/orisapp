@@ -1,5 +1,19 @@
 # Changelog
 
+## Une icône « Oris » dans le Dock — 2026-10-04
+- Constat de Franck : « je ne trouve même plus comment ouvrir Oris sur mon Mac ». C'est un
+  défaut d'Oris, pas une distraction.
+- `scripts/icone-dock.command` fabrique une application « Oris » (icône de la marque) dans
+  `/Applications` et la pose dans le Dock. Un clic : si Oris tourne déjà, la fenêtre
+  s'ouvre ; sinon tout démarre puis le navigateur s'ouvre.
+- Le démarrage passe par le Terminal et non par l'app elle-même : macOS interdit à une
+  application de `/Applications` de lire le dossier Bureau, où vit le projet
+  (« Operation not permitted », constaté au premier essai).
+- `lancer-oris.command` attend désormais jusqu'à 150 s au lieu de 40 : au premier
+  démarrage le site se compile, et le navigateur s'ouvrait sur une page d'erreur.
+- Essayé des deux côtés : Oris déjà en marche (fenêtre immédiate) et Oris éteint
+  (prêt en ~1 min 20).
+
 ## Oris passé au crible du guide HAS/CNIL — 2026-10-04
 - `docs/AUDIT_HAS_CNIL.md` : les 12 chapitres et 48 recommandations du guide « IA en
   contexte de soins » (février 2026) confrontés au code d'Oris.

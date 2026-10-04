@@ -201,7 +201,7 @@ Liste complète : `docs/KNOWN_LIMITATIONS.md`. Les quatre plus importantes :
 
 ## 7. Lancer Oris sur le Mac
 
-**Double-cliquez `lancer-oris.command`** : base de données, serveur, site, navigateur.
+**Cliquez l'icône verte « Oris » dans le Dock** : base de données, serveur, site, navigateur. Deux minutes au premier démarrage, immédiat ensuite. L'icône se refait avec `scripts/icone-dock.command`. Sans elle : double-cliquez `lancer-oris.command`.
 Pour arrêter : `arreter-oris.command`. Le mode d'emploi de l'essai est dans
 `docs/UTILISER_ORIS.md`.
 

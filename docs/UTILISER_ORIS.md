@@ -2,7 +2,15 @@
 
 ## 1. Lancer
 
-Double-cliquez **`lancer-oris.command`** dans le dossier du projet. Une fenêtre noire
+**Cliquez l'icône verte « Oris » dans le Dock.** Si Oris tourne déjà, la fenêtre s'ouvre
+aussitôt ; sinon tout démarre (comptez deux minutes la première fois), puis le navigateur
+s'ouvre tout seul.
+
+L'icône se refait à tout moment, et après un déplacement du dossier, avec
+`scripts/icone-dock.command`.
+
+Autre chemin, si l'icône a disparu : double-cliquez **`lancer-oris.command`** dans le
+dossier du projet. Une fenêtre noire
 s'ouvre, annonce quatre étapes, puis le navigateur s'ouvre sur Oris. Laissez la fenêtre
 noire ouverte : c'est Oris qui tourne.
 

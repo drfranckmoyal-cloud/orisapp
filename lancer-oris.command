@@ -45,7 +45,9 @@ pkill -f "next dev" 2>/dev/null
 (nohup npm --prefix apps/web run dev >> logs/web.log 2>&1 &)
 
 printf "     attente"
-for _ in $(seq 1 40); do
+# Au premier démarrage, le site se compile : il faut lui laisser deux bonnes minutes,
+# sinon le navigateur s'ouvre sur une page d'erreur.
+for _ in $(seq 1 150); do
   if curl -fs http://localhost:8000/health >/dev/null 2>&1 \
      && curl -fs http://localhost:3000 >/dev/null 2>&1; then
     echo " — prêt."
