@@ -8,7 +8,7 @@ des paroles réellement prononcées, et ne prétend jamais en avoir quand elle n
 from __future__ import annotations
 
 from typing import Any
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from oris_api.contracts import ClinicalEncounter, TranscriptSegment
 from oris_api.services import preuve
@@ -149,3 +149,46 @@ def test_the_preuve_of_an_unknown_document_is_a_404(api: Any) -> None:
     response = api.get(f"/documents/{uuid4()}/preuve")
     assert response.status_code == 404
     assert response.json()["code"] == "DOCUMENT_NOT_FOUND"
+
+
+# --- Les alertes d'un document sont celles des règles d'aujourd'hui ------------------
+
+
+def test_a_rule_corrected_since_the_writing_unblocks_the_document(
+    api: Any, migrated_engine: Any
+) -> None:
+    """Le 04/10/2026, un compte rendu restait bloqué par trois alertes fausses (« score
+    BEWE à 16 » lu comme la dent 16). Corriger la règle doit suffire : un document
+    déjà rédigé ne se réécrit pas pour être validé."""
+    from sqlalchemy.orm import Session
+
+    from oris_api.db.models import DocumentRow, DocumentVersion
+
+    encounter = run_synthetic(api, "ORIS-SYN-092")
+    document = documents_by_type(api, encounter["id"])["consultation_note"]
+
+    # Une alerte d'un autre temps, figée dans le document.
+    with Session(migrated_engine) as session:
+        row = session.get(DocumentRow, UUID(document["id"]))
+        version = session.get(DocumentVersion, row.current_version_id)
+        version.validation_issues = [
+            {
+                "code": "tooth_not_supported",
+                "severity": "critical",
+                "fact_id": None,
+                "claim_index": 0,
+            }
+        ]
+        row.status = "needs_review"
+        session.commit()
+
+    assert api.get(f"/documents/{document['id']}").json()["status"] == "needs_review"
+
+    valide = api.post(
+        f"/documents/{document['id']}/validate", json={"acknowledged_warning_codes": []}
+    )
+
+    assert valide.status_code == 200, valide.json()
+    assert valide.json()["status"] == "validated"
+    # L'alerte périmée a disparu, elle n'est pas seulement ignorée.
+    assert valide.json()["validation_issues"] == []

@@ -1,5 +1,21 @@
 # Changelog
 
+## Un âge n'est pas une dent — 2026-10-04
+- Constat : le compte rendu d'Olivia MOYAL était impossible à valider, « le document
+  contient une phrase non justifiée ». Les trois phrases en cause ne citaient aucune
+  dent : « un score **BEWE à 16** », « entre **17** et 20 ans », « depuis l'âge de
+  **18** ans ». Le contrôle lisait tout nombre à deux chiffres comme un numéro FDI.
+- `domain/dental_numbers.dents_citees()` décide maintenant d'après le contexte : un
+  nombre suivi d'une unité (« 18 ans », « 10 cigarettes »), ou précédé d'une échelle
+  (« score BEWE à »), n'est pas une dent. L'énumération est comprise : dans « entre 17 et
+  20 ans », l'unité du second vaut pour le premier. Le contrôle reste large par ailleurs —
+  une dent écrite sans appui est un risque clinique, il faut la signaler.
+- Les alertes sont **recalculées au moment de la validation**, avec les règles du jour :
+  une règle corrigée depuis la rédaction débloque un document sans le réécrire. Les cinq
+  alertes d'Olivia MOYAL ont disparu sans toucher au texte.
+- Tests : 3 nouveaux (âge, score et quantité jamais pris pour des dents ; dent réellement
+  citée toujours signalée ; document débloqué par une règle corrigée).
+
 ## Une icône « Oris » dans le Dock — 2026-10-04
 - Constat de Franck : « je ne trouve même plus comment ouvrir Oris sur mon Mac ». C'est un
   défaut d'Oris, pas une distraction.

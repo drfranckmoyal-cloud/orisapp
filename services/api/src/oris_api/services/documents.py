@@ -27,8 +27,9 @@ from oris_api.db.models import (
 from oris_api.documents.export import ExportContext, render_pdf, render_text
 from oris_api.documents.renderer import Style
 from oris_api.documents.theme import Cabinet
+from oris_api.domain.factual_validator import validate_document
 from oris_api.domain.preferences import PractitionerPreferences
-from oris_api.domain.types import GeneratedDocument, ValidationIssue
+from oris_api.domain.types import Claim, GeneratedDocument, ValidationIssue
 from oris_api.providers import ProviderSet
 from oris_api.services import async_bridge, audit, figures, learning
 from oris_api.services.attachments import Magasin
@@ -74,6 +75,33 @@ async def generate_and_check(
     writer = providers.synthetic_document_generation if synthetic else providers.document_generation
     generated = await writer.generate(obj, document_type, style)
     return generated, await providers.clinical_validation.validate(generated, obj)
+
+
+def relire(
+    document: DocumentRow, version: DocumentVersion, obj: ClinicalEncounter
+) -> list[ValidationIssue]:
+    """Repasse le contrôle factuel sur un document déjà rédigé.
+
+    Rien n'est réécrit : seules les alertes sont recalculées, à partir des phrases
+    enregistrées et des faits de l'objet dont elles sont issues.
+    """
+    rendu = GeneratedDocument(
+        document_type=document.document_type,
+        content=version.content,
+        claims=tuple(
+            Claim(
+                section=claim.get("section", ""),
+                text=claim.get("text", ""),
+                fact_ids=tuple(claim.get("fact_ids", [])),
+                warning_codes=tuple(claim.get("warning_codes", [])),
+                item_id=claim.get("item_id", ""),
+                paragraphe=claim.get("paragraphe", -1),
+            )
+            for claim in version.claims
+        ),
+        generator=version.generator,
+    )
+    return validate_document(rendu, obj)
 
 
 def list_documents(session: Session, encounter_id: UUID) -> list[DocumentRow]:
@@ -269,6 +297,11 @@ def validate(
         or version.generated_from_object_version != obj.object_version
     ):
         raise Conflict("DOCUMENT_OUTDATED", str(document_id))
+    # Les alertes sont recalculées ici, avec les règles d'aujourd'hui : un contrôle
+    # corrigé depuis la rédaction doit débloquer le document sans le réécrire. Le
+    # document a été rédigé depuis cette version de l'objet (vérifié juste au-dessus),
+    # les faits sont donc bien les siens.
+    version.validation_issues = [asdict(issue) for issue in relire(document, version, obj)]
     if any(issue["severity"] == "critical" for issue in version.validation_issues):
         raise Conflict("DOCUMENT_HAS_CRITICAL_ISSUES", str(document_id))
     critical = sorted({w.code for w in obj.warnings if w.severity == "critical"})

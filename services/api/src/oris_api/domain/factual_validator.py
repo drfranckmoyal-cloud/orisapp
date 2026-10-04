@@ -6,18 +6,14 @@ aucun fait ; il signale. Un problème critique bloque la validation du document.
 
 from __future__ import annotations
 
-import re
-
 from oris_api.contracts import ClinicalEncounter
 from oris_api.documents.renderer import (
     UNRENDERED_PREFIX,
     missing_important_slots,
     negation_ecrite,
 )
+from oris_api.domain.dental_numbers import dents_citees
 from oris_api.domain.types import GeneratedDocument, ValidationIssue
-
-# Numéros FDI permanents et temporaires isolés dans le texte.
-TOOTH_IN_TEXT = re.compile(r"(?<![\d,.])([1-4][1-8]|[5-8][1-5])(?![\d,.]\d)")
 
 
 def validate_document(
@@ -41,7 +37,7 @@ def validate_document(
         support = [facts[fid] for fid in claim.fact_ids if fid in facts]
 
         # Une dent écrite doit être portée par un fait d'appui (ex. 26 corrigé en 27).
-        cited_teeth = set(TOOTH_IN_TEXT.findall(claim.text))
+        cited_teeth = dents_citees(claim.text)
         supported_teeth = {tooth for fact in support for tooth in fact.teeth}
         if cited_teeth - supported_teeth:
             issues.append(ValidationIssue("tooth_not_supported", "critical", claim_index=index))

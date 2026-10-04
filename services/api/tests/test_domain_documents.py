@@ -76,6 +76,40 @@ def test_no_gap_no_warning() -> None:
     assert compute_warnings([]) == []
 
 
+def test_an_age_a_score_or_a_quantity_is_never_read_as_a_tooth() -> None:
+    """Constaté le 04/10/2026 : « score BEWE à 16 », « entre 17 et 20 ans » et « l'âge de
+    18 ans » bloquaient la validation d'un compte rendu qui ne citait aucune dent."""
+    obj = encounter("ORIS-SYN-091")
+    rendu = GeneratedDocument(
+        "consultation_note",
+        "",
+        (
+            Claim("Examen clinique", "Érosion généralisée, score BEWE à 16.", ("f1",)),
+            Claim("Antécédents", "Crises pendant 3 ans entre 17 et 20 ans.", ("f1",)),
+            Claim(
+                "Antécédents", "Tabagisme à 10 cigarettes par jour depuis l'âge de 18 ans.", ("f1",)
+            ),
+        ),
+    )
+
+    # (le document n'étant qu'un extrait, les autres contrôles ne sont pas le sujet)
+    assert "tooth_not_supported" not in [i.code for i in validate_document(rendu, obj)]
+
+
+def test_a_tooth_really_cited_is_still_caught() -> None:
+    """Le contrôle reste large : une dent écrite sans appui est un risque clinique."""
+    obj = encounter("ORIS-SYN-091")
+    for phrase in (
+        "Composite réalisé sur les 14 et 24.",
+        "Agénésie de 12, confirmée à la radiographie.",
+        "Sur 23 et 11, une asymétrie de forme.",
+    ):
+        rendu = GeneratedDocument(
+            "consultation_note", "", (Claim("Examen clinique", phrase, ("f1",)),)
+        )
+        assert "tooth_not_supported" in [i.code for i in validate_document(rendu, obj)], phrase
+
+
 def test_validator_catches_tooth_not_in_facts() -> None:
     obj = encounter("ORIS-SYN-091")
     forged = GeneratedDocument(
