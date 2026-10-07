@@ -1,5 +1,24 @@
 # Changelog
 
+## Oris en ligne, sur son propre serveur — 2026-10-08
+- Demande de Franck : se servir de l'app iPhone sans que le Mac soit allumé.
+- Serveur Scaleway dédié (projet **Oris**, séparé de DFM), Paris 2, Ubuntu 24.04,
+  2 processeurs / 3,8 Go / 36 Go. Adresse : **https://51-159-130-158.nip.io**.
+- Installé : PostgreSQL 16, le serveur clinique et le site en services systemd qui
+  repartent au redémarrage, nginx en façade, certificat https renouvelé tout seul,
+  pare-feu.
+- Le serveur tourne en **mode production** : aucune confiance à la machine locale, tout
+  appel exige un jeton. Trois entrées — le site et ses appels derrière un mot de passe
+  (nginx présente le jeton du praticien à la place du navigateur), et `/mobile/` pour
+  l'app iPhone, qui présente le sien.
+- `deployer-en-ligne.command` met le serveur à jour depuis le Mac en une commande ;
+  `docs/EN_LIGNE.md` décrit le montage et ce qui manque encore.
+- **Aucune donnée n'y a été transportée** : la base est vide. Les consultations réelles
+  attendent la décision de Franck sur le contrat HDS (voir
+  `docs/CONTRAINTES_COMMERCIALISATION.md`).
+- Reste à faire : sauvegardes, surveillance, et TestFlight pour que l'iPhone se passe
+  vraiment du Mac.
+
 ## Le lancement ne casse plus ce qui marchait — 2026-10-07
 - Constat de Franck : « Oris ne se lance pas ». En réalité il se lançait, mais en deux
   minutes, sans rien dire — et pour rien.

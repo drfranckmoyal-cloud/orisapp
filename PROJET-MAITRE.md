@@ -238,6 +238,7 @@ Détails, tests et banc d'essai : `docs/DEVELOPMENT.md` et `benchmarks/README.md
 | `docs/JOURNEE_DOCTOLIB.md` | Comment la journée Doctolib arrive dans Oris |
 | `docs/PIECES_JOINTES_SMILECLOUD.md` | **Récupérer les photos d'un patient depuis SmileCloud** : ce qui est décidé, ce qui reste à construire |
 | `docs/DEVELOPMENT.md` | Comment lancer et vérifier le projet |
+| `docs/EN_LIGNE.md` | **Oris sur un serveur, accessible de partout** : l'adresse, la machine, les trois entrées, comment mettre à jour |
 | `docs/AUDIT_HAS_CNIL.md` | **Oris passé au crible du guide HAS/CNIL de février 2026** : ce qui est conforme, ce qui manque, et les sept chantiers qui en sortent |
 | `docs/CONTRAINTES_COMMERCIALISATION.md` | **Tout ce qu'il faut respecter pour vendre Oris** : hébergement HDS, RGPD, messagerie sécurisée, dispositif médical, AI Act, Ségur, société |
 | `docs/CONCURRENCE.md` | **Les produits concurrents en France et à l'étranger**, ce qu'ils savent faire, ce qu'Oris a en plus et en moins, les prix du marché |
