@@ -64,15 +64,35 @@ Il envoie le code, refait l'environnement Python, applique les migrations, refab
 site et relance les deux services. Comptez deux à trois minutes. Les réglages (`.env`) et
 les données du serveur ne sont jamais écrasés.
 
+## Les sauvegardes
+
+Chaque nuit à 2 h 30, le serveur sauvegarde la base et les pièces jointes dans
+`/var/backups/oris`, et garde 30 jours. C'est un minuteur systemd
+(`oris-sauvegarde.timer`) ; une sauvegarde anormalement petite est signalée au journal
+(`journalctl -t oris-sauvegarde`).
+
+**Une sauvegarde qui ne vit que sur la machine qu'elle protège ne protège de rien** :
+`rapatrier-sauvegarde.command`, double-cliqué depuis le Mac, déclenche une sauvegarde
+fraîche et la descend dans `~/Library/Application Support/Oris/sauvegardes` (les douze
+dernières sont gardées). À faire avant toute opération risquée.
+
+**Restauration essayée le 08/10/2026** sur une base jetable : 37 tables retrouvées. Une
+sauvegarde non essayée ne compte pas.
+
 ## Ce qui n'est pas en place
 
-- **Aucune sauvegarde.** À faire avant d'y mettre quoi que ce soit d'important.
-- **Pas de contrat HDS** avec Scaleway : tant qu'il n'est pas signé, ce serveur ne doit
-  porter que des consultations fictives (voir `docs/CONTRAINTES_COMMERCIALISATION.md`).
+- **Pas de contrat HDS** avec Scaleway, alors que le serveur porte désormais de vraies
+  consultations : décision explicite de Franck du 08/10/2026 (D029), à régulariser.
 - **Pas de surveillance** : si un service tombe, personne n'est prévenu (systemd le
   relance tout seul, mais sans le dire).
 - Le certificat https se renouvelle seul (certbot), échéance visible avec
   `certbot certificates`.
+
+## Ce qu'il y a dedans
+
+Les données du Mac y ont été transportées le 08/10/2026 : 49 patients, 4 consultations,
+6 documents, 401 passages de transcription, et les pièces jointes (12 Mo de photos). Le
+Mac garde sa copie — les deux bases vivent désormais leur vie séparément.
 
 ## Et l'iPhone
 

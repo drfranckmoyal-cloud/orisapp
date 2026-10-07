@@ -1,5 +1,19 @@
 # Changelog
 
+## Les consultations réelles transportées en ligne, et les sauvegardes — 2026-10-08
+- **Sauvegardes d'abord** : minuteur systemd chaque nuit à 2 h 30 (base + pièces
+  jointes, 30 jours gardés), alerte au journal si une sauvegarde est anormalement petite,
+  et `rapatrier-sauvegarde.command` pour descendre une copie fraîche sur le Mac — une
+  sauvegarde qui ne vit que sur la machine qu'elle protège ne protège de rien.
+  **Restauration essayée** sur une base jetable : 37 tables retrouvées.
+- Données transportées depuis le Mac : 49 patients, 4 consultations, 6 documents,
+  401 passages, 12 Mo de pièces jointes. Vérifié en ligne : les quatre consultations
+  s'affichent avec leurs documents, un PDF se fabrique, l'app iPhone voit la même chose.
+- **D029** : ce transport précède le contrat HDS. Décision explicite de Franck du
+  08/10/2026, prise après avertissement — risque assumé, à régulariser.
+- Les jetons du Mac ayant remplacé ceux du serveur lors de la restauration, deux
+  nouveaux ont été créés (site et iPhone) et le fichier d'accès du Mac mis à jour.
+
 ## Oris en ligne, sur son propre serveur — 2026-10-08
 - Demande de Franck : se servir de l'app iPhone sans que le Mac soit allumé.
 - Serveur Scaleway dédié (projet **Oris**, séparé de DFM), Paris 2, Ubuntu 24.04,
