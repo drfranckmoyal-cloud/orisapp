@@ -14,6 +14,11 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<!-- Chiffrement : Oris n'utilise que du standard — HTTPS pour parler au serveur, et
+	     AES du système pour protéger le son en attente sur le téléphone. C'est le cas
+	     d'exemption prévu par Apple ; sans cette clé, la question est reposée à chaque envoi. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Manrope.ttf</string>
