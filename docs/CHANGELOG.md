@@ -1,5 +1,17 @@
 # Changelog
 
+## L'app iPhone distribuée par TestFlight — 2026-10-08
+- L'app ne dépend plus du Mac : elle s'installe depuis TestFlight, sans câble, et
+  n'expire plus au bout de 7 jours.
+- Chemin suivi : équipe Apple retrouvée dans les réglages de Xcode et certificat de
+  distribution créé (le Mac n'avait que ceux de l'ancien compte gratuit), équipe
+  `A7H8D53DKZ` inscrite dans le projet, identifiant `fr.oris.app` enregistré chez Apple,
+  fiche « Oris » créée dans App Store Connect, archive signée envoyée.
+- Groupe de testeurs **Cabinet** (interne) avec distribution automatique : les prochaines
+  versions arrivent sur le téléphone toutes seules, sans revue d'Apple.
+- La déclaration de chiffrement posée la veille a évité la question de conformité.
+- Version 0.1.0 (build 1), prête à installer.
+
 ## Les consultations réelles transportées en ligne, et les sauvegardes — 2026-10-08
 - **Sauvegardes d'abord** : minuteur systemd chaque nuit à 2 h 30 (base + pièces
   jointes, 30 jours gardés), alerte au journal si une sauvegarde est anormalement petite,

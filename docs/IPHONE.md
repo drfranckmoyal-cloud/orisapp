@@ -81,3 +81,35 @@ le réseau local, **`MacBook-Pro-3.local:8000`**, qui ne change pas d'un Wi-Fi �
 xcrun devicectl device process launch --device <id> --terminate-existing \
   --environment-variables '{"ORIS_REGLER_SERVEUR":"MacBook-Pro-3.local:8000"}' fr.oris.app
 ```
+
+
+## TestFlight — installé sans câble depuis le 08/10/2026
+
+L'app est distribuée par **TestFlight** : elle s'installe sur l'iPhone depuis l'app
+TestFlight, sans câble, sans Mac, et **n'expire plus au bout de 7 jours**.
+
+| | |
+|---|---|
+| Équipe Apple | FRANCK JOSEPH MOYAL — `A7H8D53DKZ` (inscrite dans le projet) |
+| Identifiant | `fr.oris.app`, enregistré chez Apple le 08/10/2026 |
+| Fiche App Store Connect | « Oris », créée le 08/10/2026 |
+| Groupe de testeurs | **Cabinet** (interne), distribution automatique des nouvelles versions |
+
+**Envoyer une nouvelle version**, depuis `apps/ios` :
+
+```
+xcodebuild -project Oris.xcodeproj -scheme Oris -configuration Release \
+  -destination 'generic/platform=iOS' -archivePath /tmp/Oris.xcarchive archive \
+  -allowProvisioningUpdates
+xcodebuild -exportArchive -archivePath /tmp/Oris.xcarchive \
+  -exportOptionsPlist export.plist -exportPath envoi -allowProvisioningUpdates
+```
+
+`export.plist` : méthode `app-store-connect`, destination `upload`, équipe `A7H8D53DKZ`,
+`manageAppVersionAndBuildNumber` à `true` (le numéro de version monte tout seul).
+Un test interne ne passe **pas** par la revue d'Apple : la version est disponible dès que
+le traitement est fini, en quelques minutes.
+
+**À la première installation**, l'app ne connaît pas encore le serveur : Paramètres ›
+Connexion à Oris, recopier l'adresse et le jeton depuis
+`~/Library/Application Support/Oris/acces-en-ligne.txt`.
