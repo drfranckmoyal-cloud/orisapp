@@ -1,5 +1,20 @@
 # Changelog
 
+## Le lancement ne casse plus ce qui marchait — 2026-10-07
+- Constat de Franck : « Oris ne se lance pas ». En réalité il se lançait, mais en deux
+  minutes, sans rien dire — et pour rien.
+- Cause : la vérification « est-ce que ça tourne ? » ne laissait que 2 secondes au site
+  pour répondre. Le site tournait, mais occupé à recompiler une page, il a dépassé ce
+  délai. Oris en a conclu que rien ne tournait, a **tué un serveur en parfait état** et
+  tout rechargé — d'où l'attente, pendant laquelle rien ne s'affiche.
+- `lancer-oris.command` ne tue plus un service qui répond : il relance **seulement** ce
+  qui ne répond pas, et le dit (« déjà en marche, conservé »). Les délais d'attente
+  passent à 8 s pour le serveur et 15 s pour le site : un service lent n'est pas un
+  service en panne.
+- L'icône du Dock applique les mêmes délais.
+- Vérifié : Oris en marche, un clic sur l'icône ouvre la fenêtre sans interrompre le
+  serveur (même numéro de processus avant et après).
+
 ## Un âge n'est pas une dent — 2026-10-04
 - Constat : le compte rendu d'Olivia MOYAL était impossible à valider, « le document
   contient une phrase non justifiée ». Les trois phrases en cause ne citaient aucune

@@ -31,7 +31,8 @@ cat > "$APP/Contents/MacOS/Oris" <<SCRIPT
 # noire qui s'ouvre est celle que Franck connaît déjà, avec ses quatre étapes.
 PROJET="$PROJET"
 
-pret() { curl -fs -m 2 http://localhost:3000 >/dev/null 2>&1 && curl -fs -m 2 http://localhost:8000/health >/dev/null 2>&1; }
+# Délais larges : un site qui met trois secondes à répondre n'est pas un site en panne.
+pret() { curl -fs -m 8 http://localhost:8000/health >/dev/null 2>&1 && curl -fs -m 15 http://localhost:3000 >/dev/null 2>&1; }
 
 # Déjà en marche : on ouvre simplement la fenêtre, sans rien relancer.
 if pret; then
