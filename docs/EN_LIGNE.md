@@ -44,9 +44,21 @@ confiance à la machine locale, donc **tout appel exige un jeton**. D'où trois 
 
 | Chemin | Qui passe | Comment il prouve qui il est |
 |---|---|---|
-| `/` | le navigateur | mot de passe du site |
-| `/api/` | le navigateur (appels du site) | mot de passe du site ; **nginx ajoute le jeton du praticien**, que le navigateur ne voit jamais |
+| `/` | le navigateur | mot de passe personnel (un compte par praticien) |
+| `/api/` | le navigateur (appels du site) | même mot de passe ; **nginx ajoute le jeton de ce praticien-là**, choisi par une carte `map $remote_user`, que le navigateur ne voit jamais |
 | `/mobile/` | l'app iPhone | **son propre jeton**, vérifié par le serveur |
+
+### Les praticiens du cabinet
+
+| Compte du site | Praticien | Accès remis dans |
+|---|---|---|
+| `franck` | Franck Moyal | `~/Library/Application Support/Oris/acces-en-ligne.txt` |
+| `charlotte` | Dr Charlotte Lee | `~/Library/Application Support/Oris/acces-charlotte.txt` |
+
+Chacun a **son** mot de passe de site et **son** jeton d'app : une action faite par l'un
+porte son nom dans le journal d'audit, jamais celui de l'autre. Ajouter un praticien :
+créer l'utilisateur en base, lui délivrer ses deux jetons (`scripts/issue_token.py`),
+l'ajouter au fichier `.oris-htpasswd` et à la carte `map` de nginx.
 
 C'est un montage d'essai, pas une authentification de produit : il n'y a qu'un seul
 compte et un mot de passe partagé. La vraie connexion (compte, mot de passe, second

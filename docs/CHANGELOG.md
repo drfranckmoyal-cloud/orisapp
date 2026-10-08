@@ -1,5 +1,21 @@
 # Changelog
 
+## Une collaboratrice sur le serveur, et l'app qui se connecte toute seule — 2026-10-08
+- Constat de Franck après installation par TestFlight : « serveur Oris injoignable ».
+  Cause : une adresse saisie sans `https://` partait **en clair**, et iOS refuse le clair
+  hors réseau local — le serveur répondait très bien. L'app suppose désormais `https`
+  pour une adresse publique, et ne garde `http` que pour une machine du cabinet (`.local`,
+  `localhost`, IP privée). Son adresse par défaut est le serveur en ligne : une
+  installation fraîche se connecte sans rien saisir. Trois tests.
+- **Dr Charlotte Lee** ajoutée au cabinet « CDS Saint-Georges » : son compte de site, son
+  jeton d'app, les mêmes dossiers que Franck.
+- nginx choisit le jeton d'après le compte connecté (`map $remote_user`) : une action
+  faite par l'une porte son nom dans le journal, jamais celui de l'autre. Vérifié : les
+  deux voient les 4 consultations, un mot de passe inconnu est refusé.
+- Version 2 de l'app envoyée à TestFlight (distribution automatique au groupe Cabinet).
+- Reste : l'accès TestFlight de Charlotte, qui demande une décision (testeuse interne,
+  avec un compte limité sur le compte développeur, ou externe avec revue d'Apple).
+
 ## L'app iPhone distribuée par TestFlight — 2026-10-08
 - L'app ne dépend plus du Mac : elle s'installe depuis TestFlight, sans câble, et
   n'expire plus au bout de 7 jours.

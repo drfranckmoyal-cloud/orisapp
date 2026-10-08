@@ -39,3 +39,27 @@ final class ConnexionTests: XCTestCase {
         XCTAssertTrue(refus.contains("jeton"))
     }
 }
+
+extension ConnexionTests {
+    /// Le 08/10/2026 : une adresse publique saisie sans « https:// » partait en clair,
+    /// iOS la bloquait, et l'app annonçait « serveur injoignable » à tort.
+    func testAPublicAddressTypedWithoutSchemeGoesOverHTTPS() {
+        XCTAssertEqual(
+            Connexion.adresse("51-159-130-158.nip.io/mobile")?.scheme, "https")
+        XCTAssertEqual(Connexion.adresse("oris.exemple.fr")?.scheme, "https")
+    }
+
+    /// Le serveur du cabinet, lui, reste joignable en clair : c'est le réseau local.
+    func testAMachineOnTheLocalNetworkKeepsPlainHTTP() {
+        for locale in ["MacBook-Pro-3.local:8000", "localhost:8000", "192.168.1.20:8000",
+                       "10.0.0.7:8000", "172.16.4.2:8000"] {
+            XCTAssertEqual(Connexion.adresse(locale)?.scheme, "http", locale)
+        }
+    }
+
+    /// Ce que le praticien écrit en entier n'est jamais réécrit.
+    func testAnAddressTypedInFullIsLeftAlone() {
+        XCTAssertEqual(Connexion.adresse("http://10.0.0.7:8000")?.scheme, "http")
+        XCTAssertEqual(Connexion.adresse("https://oris.exemple.fr/mobile")?.path, "/mobile")
+    }
+}

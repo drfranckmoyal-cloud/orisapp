@@ -24,7 +24,9 @@ enum Connexion {
     private static let serveurKey = "oris.serveur"
     private static let service = "fr.oris.app.jeton"
 
-    static let serveurParDefaut = URL(string: "http://localhost:8000")!
+    /// Le serveur en ligne : une app fraîchement installée depuis TestFlight n'a aucun
+    /// réglage, et doit pouvoir joindre Oris sans qu'on lui dicte une adresse.
+    static let serveurParDefaut = URL(string: "https://51-159-130-158.nip.io/mobile")!
 
     /// Variable d'environnement (schéma Xcode) > réglage de l'app > localhost.
     static var serveur: URL {
@@ -38,14 +40,31 @@ enum Connexion {
         return serveurParDefaut
     }
 
-    /// « 192.168.1.20:8000 » ou « http://mac.local:8000 » ; nil si ce n'est pas une adresse.
+    /// « 192.168.1.20:8000 », « mac.local:8000 » ou « https://oris.exemple.fr/mobile » ;
+    /// nil si ce n'est pas une adresse.
+    ///
+    /// Sans « https:// » devant, une adresse publique partait en clair — et iOS refuse le
+    /// clair hors réseau local : l'app disait « serveur injoignable » alors que le serveur
+    /// répondait très bien (constaté le 08/10/2026). On ne suppose donc le clair que pour
+    /// une machine du cabinet.
     static func adresse(_ texte: String) -> URL? {
         let brut = texte.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !brut.isEmpty else { return nil }
-        let complet = brut.contains("://") ? brut : "http://\(brut)"
+        let complet = brut.contains("://") ? brut : "\(surLeReseauLocal(brut) ? "http" : "https")://\(brut)"
         guard let url = URL(string: complet), url.host() != nil,
               ["http", "https"].contains(url.scheme ?? "") else { return nil }
         return url
+    }
+
+    /// Une machine du cabinet : nom en `.local`, `localhost`, ou adresse IP privée.
+    static func surLeReseauLocal(_ adresse: String) -> Bool {
+        let hote = adresse.split(separator: "/").first.map(String.init) ?? adresse
+        let nom = hote.split(separator: ":").first.map(String.init)?.lowercased() ?? ""
+        if nom == "localhost" || nom.hasSuffix(".local") { return true }
+        let morceaux = nom.split(separator: ".").compactMap { Int($0) }
+        guard morceaux.count == 4 else { return false }
+        if morceaux[0] == 10 || (morceaux[0] == 192 && morceaux[1] == 168) { return true }
+        return morceaux[0] == 172 && (16...31).contains(morceaux[1])
     }
 
     static func enregistrer(serveur: String) {
