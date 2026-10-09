@@ -158,3 +158,23 @@
   ou « constaté ». À faire si le besoin se confirme.
 - Les consultations transcrites **avant** cette date gardent leurs rôles inconnus : les
   voix d'origine n'étaient pas conservées, et l'audio est effacé.
+
+
+## Vraies consultations longues (2026-10-09)
+
+- **Ce qu'une demi-heure de parole trouve, un corpus propre ne le trouve pas.** Les 100
+  consultations fictives sont courtes et leurs voix bien séparées : aucune n'a jamais
+  atteint le plafond de sortie du modèle, aucune n'a jamais fait refuser l'attribution
+  des voix. Une consultation réelle de trente-trois minutes a fait les deux le même jour.
+  Le banc d'essai ne remplace pas une vraie journée de cabinet.
+- **Le plafond de sortie reste une limite finie.** Porté de 8 000 à 16 000 jetons, avec
+  détection de la troncature : au-delà, une consultation très longue tombera en échec
+  explicite (`ANTHROPIC_OUTPUT_TRUNCATED`) au lieu de rendre un dossier amputé. Il
+  faudra alors découper la consultation en tranches — non fait.
+- **Un refus des règles cliniques reste un refus.** Oris explique maintenant au modèle ce
+  qu'il lui reproche, mais rien ne garantit que trois essais suffisent : une consultation
+  peut encore finir en `generation_failed`. Le praticien a le bouton pour relancer ; il
+  n'a pas d'autre recours que de recommencer.
+- **Les rôles d'une consultation déjà traitée ne sont rejugés qu'en relançant** le
+  traitement entier (qui refait aussi l'extraction et les documents). Pas de reprise de
+  la seule attribution des voix.
