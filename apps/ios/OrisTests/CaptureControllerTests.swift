@@ -8,6 +8,7 @@ final class FakeInput: AudioInput {
     var failure: CaptureFailure?
     private(set) var continuation: AsyncStream<AudioInputEvent>.Continuation?
     private(set) var stopped = false
+    private(set) var suspendu = false
 
     init(failure: CaptureFailure? = nil) {
         self.failure = failure
@@ -18,6 +19,15 @@ final class FakeInput: AudioInput {
         let (stream, continuation) = AsyncStream.makeStream(of: AudioInputEvent.self)
         self.continuation = continuation
         return stream
+    }
+
+    /// En veille, l'entrée ne capte plus mais garde son flux : c'est par lui qu'arrive
+    /// la fin de l'appel.
+    func suspendre() { suspendu = true }
+
+    func reprendre() throws {
+        if let failure { throw failure }
+        suspendu = false
     }
 
     func stop() {
@@ -68,6 +78,7 @@ final class CaptureControllerTests: XCTestCase {
     private var transport = FakeTransport()
     private var api = FakeCaptureAPI()
     private var nextFailure: CaptureFailure?
+    private var alerte = AlerteMuette()
 
     private func makeController(limits: CaptureLimits = CaptureLimits(), resumeFrom: (Int, Int)? = nil) -> CaptureController {
         let store = temporaryStore()
@@ -82,6 +93,7 @@ final class CaptureControllerTests: XCTestCase {
                 self.inputs.append(input)
                 return input
             },
+            alerte: alerte,
             limits: limits,
             resumeFrom: resumeFrom.map { (nextSequence: $0.0, nextTimestampMs: $0.1) },
             now: { [unowned self] in self.clock }
@@ -163,24 +175,45 @@ final class CaptureControllerTests: XCTestCase {
         XCTAssertEqual(api.started, [])
     }
 
-    func testPhoneCallIsNeverResumedSilentlyAndBecomesAGap() async throws {
+    /// Un appel coupe l'écoute : Oris le signale tout de suite, et reprend dès que l'appel
+    /// est fini. Jusqu'au 09/10/2026 il attendait qu'on le relance — Franck a perdu la
+    /// moitié d'une consultation parce que son téléphone avait sonné sans qu'il le voie.
+    /// Le silence reste un trou déclaré : reprendre tout seul n'efface rien.
+    func testAPhoneCallIsAnnouncedAtOnceAndTheListeningResumesByItself() async throws {
         let controller = makeController()
         await controller.start(patientInformed: true)
+        XCTAssertTrue(alerte.preparee, "l'autorisation d'avertir se demande avant la coupure")
         inputs[0].emit(seconds: 2)
         inputs[0].emit(.interruptionBegan)
         await settle()
         XCTAssertEqual(controller.phase, .interrupted)
+        XCTAssertEqual(alerte.coupures, [.interruption], "le praticien est prévenu sans délai")
 
         clock.addTimeInterval(45)
         inputs[0].emit(.interruptionEnded)
-        await settle()
-        XCTAssertEqual(controller.phase, .interrupted, "pas de reprise automatique")
+        await waitUntil { controller.phase == .recording }
+        XCTAssertEqual(controller.phase, .recording, "l'écoute repart seule après l'appel")
+        XCTAssertEqual(alerte.tues, 1, "l'alerte cesse quand l'écoute a repris")
 
-        await controller.resume()
-        XCTAssertEqual(controller.phase, .recording)
         _ = try await controller.finish()
         let items = await sent()
-        XCTAssertEqual(items, ["chunk0", "gap:audio_interruption:45000"])
+        XCTAssertEqual(items, ["chunk0", "gap:audio_interruption:45000"], "le silence reste déclaré")
+    }
+
+    /// Une reprise qui échoue ne fait pas taire l'alerte : sinon le praticien croirait
+    /// qu'Oris écoute de nouveau, alors que plus rien n'est enregistré.
+    func testAFailedResumeKeepsRingingAndSaysTheMicrophoneIsGone() async throws {
+        let controller = makeController()
+        await controller.start(patientInformed: true)
+        inputs[0].emit(.stopped)
+        await settle()
+        XCTAssertEqual(controller.phase, .microphoneLost)
+        XCTAssertEqual(alerte.coupures, [.microPerdu])
+
+        nextFailure = .noMicrophone
+        await controller.resume()
+        XCTAssertEqual(controller.phase, .microphoneLost)
+        XCTAssertEqual(alerte.tues, 0, "rien ne doit laisser croire que l'écoute a repris")
     }
 
     func testShortRouteChangeRestartsCaptureWithoutGap() async throws {

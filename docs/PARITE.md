@@ -24,6 +24,14 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
 
 ## Acquis des deux côtés
 
+- **Le son d'une écoute coupée** (09/10/2026) : trois notes qui descendent, répétées
+  toutes les 5 secondes, douze fois au plus. Le même motif des deux côtés — fichier
+  `Oris/Resources/ecoute-coupee.wav` sur l'iPhone, fabriqué à la volée par
+  `lib/audio/alerte.ts` sur le site. S'y ajoutent, selon l'appareil : vibration et avis
+  sur l'écran verrouillé (iPhone), titre d'onglet et notification (site). Et des deux
+  côtés, l'écoute **reprend d'elle-même** dès que le micro revient, le silence restant
+  déclaré comme trou dans le dossier.
+
 - **« Relancer le traitement » quand il n'y a rien à relire** (09/10/2026) : un dossier
   rangé « à relire » mais sans un seul fait, ou une relecture refusée, affiche la même
   phrase et le même bouton — bandeau sur le site, carte sur l'iPhone. Les deux appellent

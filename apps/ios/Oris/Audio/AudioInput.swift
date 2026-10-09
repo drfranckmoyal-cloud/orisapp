@@ -26,6 +26,15 @@ enum MicrophonePermission: Sendable {
 protocol AudioInput: AnyObject {
     /// Démarre et renvoie le flux d'événements ; lève `CaptureFailure`.
     func start() async throws -> AsyncStream<AudioInputEvent>
+    /// Cesse de capter, **sans cesser d'écouter le système**.
+    ///
+    /// Pendant un appel, Oris fermait l'entrée tout entière — et perdait du même coup
+    /// l'avis qui annonce la fin de l'appel. Il ne pouvait donc pas reprendre seul
+    /// (09/10/2026). En veille, le micro est rendu, les oreilles restent ouvertes.
+    func suspendre()
+    /// Reprend la capture d'une entrée en veille ; lève `CaptureFailure` si le système
+    /// ne rend pas le micro (appel toujours en cours, micro parti ailleurs).
+    func reprendre() throws
     func stop()
 }
 
@@ -64,6 +73,10 @@ final class MicrophoneInput: AudioInput {
             // la transcription n'y reconnaissait rien. Mode d'enregistrement standard ;
             // capture poursuivie écran verrouillé (mode audio d'arrière-plan).
             try session.setCategory(.record, mode: .default, options: [])
+            // Les avis du système (notifications, rappels) ne coupent plus l'écoute.
+            // Un appel entrant, lui, la coupe quand même : aucune app ne peut l'en
+            // empêcher — seul un mode de concentration le peut, côté réglages.
+            try? session.setPrefersNoInterruptionsFromSystemAlerts(true)
             try session.setActive(true)
             if let interne = session.availableInputs?.first(where: { $0.portType == .builtInMic }) {
                 try? session.setPreferredInput(interne)
@@ -83,6 +96,25 @@ final class MicrophoneInput: AudioInput {
             throw CaptureFailure.captureFailed
         }
         return stream
+    }
+
+    func suspendre() {
+        engine.inputNode.removeTap(onBus: 0)
+        engine.stop()
+        // Les observateurs restent en place : c'est l'un d'eux qui dira que l'appel est
+        // fini. Les retirer ici revenait à raccrocher avant la fin de la phrase.
+    }
+
+    func reprendre() throws {
+        guard let continuation else { throw CaptureFailure.captureFailed }
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setActive(true)
+        } catch {
+            throw CaptureFailure.captureFailed
+        }
+        guard session.isInputAvailable else { throw CaptureFailure.noMicrophone }
+        try installTapAndStart(continuation: continuation)
     }
 
     func stop() {
@@ -162,6 +194,9 @@ final class TestToneInput: AudioInput {
         }
         return stream
     }
+
+    func suspendre() {}
+    func reprendre() throws {}
 
     func stop() {
         task?.cancel()

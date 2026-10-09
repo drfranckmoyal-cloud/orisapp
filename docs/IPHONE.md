@@ -113,3 +113,22 @@ le traitement est fini, en quelques minutes.
 **À la première installation**, l'app ne connaît pas encore le serveur : Paramètres ›
 Connexion à Oris, recopier l'adresse et le jeton depuis
 `~/Library/Application Support/Oris/acces-en-ligne.txt`.
+
+## Pour que les appels ne coupent plus les consultations
+
+Aucune application ne peut empêcher un appel de sonner et de prendre le micro : c'est
+iOS qui décide. Oris rend la coupure indolore — il sonne, vibre, affiche un avis, et
+reprend l'écoute dès que l'appel est fini, le silence restant déclaré dans le dossier.
+Pour qu'elle n'arrive plus du tout, il faut la régler sur le téléphone, une fois :
+
+1. **Réglages › Concentration › Ne pas déranger**, puis l'activer pendant les
+   consultations (volet de contrôle, en haut à droite de l'écran).
+2. Pour ne plus y penser : dans ce même mode, **Définir un programme › Application**, et
+   choisir **Oris**. Le mode s'allume tout seul quand Oris est ouvert.
+3. Laisser « Autoriser les appels de » sur les contacts à ne jamais manquer : les autres
+   ne feront plus sonner le téléphone.
+
+**À la première consultation**, Oris demande l'autorisation d'envoyer des avis : elle
+sert uniquement à prévenir que l'écoute s'est arrêtée. Refusée, il reste la vibration et
+le bandeau à l'écran. Le son de l'avis ne se fait pas entendre si le téléphone est en
+silencieux — la vibration, elle, passe toujours.

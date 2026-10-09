@@ -178,3 +178,21 @@
 - **Les rôles d'une consultation déjà traitée ne sont rejugés qu'en relançant** le
   traitement entier (qui refait aussi l'extraction et les documents). Pas de reprise de
   la seule attribution des voix.
+
+
+## Écoute coupée par un appel (2026-10-10)
+
+- **Aucune application ne peut empêcher un appel entrant de couper le micro.** iOS rend
+  le micro à la téléphonie, point. Oris rend la coupure indolore (alerte immédiate,
+  reprise automatique, trou déclaré) ; il ne peut pas l'empêcher. La seule prévention est
+  un **mode de concentration** activé par le praticien, ou « Silence Unknown Callers ».
+- **Le son de l'alerte ne joue pas quand le téléphone est en silencieux** : ce sont la
+  vibration et l'avis qui restent. Les « alertes critiques », qui sonnent malgré le
+  silencieux, demandent une autorisation particulière d'Apple, non demandée.
+- **Si le praticien refuse les notifications**, il ne reste que la vibration et le
+  bandeau à l'écran. L'autorisation est demandée au début de la consultation.
+- **Pendant qu'un appel sonne, Oris ne peut pas jouer son propre son** : le système le
+  lui interdit. C'est l'avis, joué par le système, qui porte le motif à ce moment-là.
+- **Sur le site**, un navigateur n'a pas la notion d'interruption système : seule la
+  perte du micro est détectée (onglet sans autorisation, micro pris par une autre app).
+  Le son peut aussi être refusé par le navigateur si l'onglet n'a jamais reçu de clic.

@@ -5,6 +5,7 @@
  * trou masqué. Une perte de micro ou un rechargement de page devient un trou signalé.
  */
 
+import { type AlerteCapture, AlerteMuette } from "./alerte";
 import { Chunker } from "./chunker";
 import { Resampler, level as signalLevel, toInt16 } from "./pcm";
 import { type AudioSource, CaptureError, type CaptureErrorCode } from "./sources";
@@ -52,6 +53,8 @@ export interface ControllerOptions {
   uploader?: Uploader;
   /** Reprise d'une écoute existante (page rechargée). */
   resumeFrom?: { nextSequence: number; nextTimestampMs: number };
+  /** De quoi prévenir le praticien quand l'écoute s'arrête toute seule. */
+  alerte?: AlerteCapture;
 }
 
 export class CaptureController {
@@ -65,9 +68,11 @@ export class CaptureController {
   private listeners = new Set<(snapshot: CaptureSnapshot) => void>();
   private snapshot: CaptureSnapshot;
   private readonly now: () => number;
+  private readonly alerte: AlerteCapture;
 
   constructor(private readonly options: ControllerOptions) {
     this.now = options.now ?? (() => Date.now());
+    this.alerte = options.alerte ?? new AlerteMuette();
     this.uploader = options.uploader ?? new Uploader(options.transport);
     this.chunker = new Chunker(
       undefined,
@@ -102,6 +107,9 @@ export class CaptureController {
   async start(patientInformed: boolean): Promise<void> {
     if (this.snapshot.phase !== "ready" && this.snapshot.phase !== "error") return;
     this.update({ phase: "starting", errorCode: null });
+    // Demander l'autorisation d'avertir maintenant : au moment de la coupure, il est
+    // trop tard — personne ne répond à une demande qu'il n'a pas vue.
+    this.alerte.preparer();
     if (!(await this.openSource())) return;
     try {
       await this.options.api.start(patientInformed);
@@ -137,6 +145,7 @@ export class CaptureController {
     if (phase !== "paused" && phase !== "microphone_lost") return;
     if (this.snapshot.maxDurationReached) return;
     if (!(await this.openSource())) return;
+    this.alerte.taire();
     if (phase === "paused") {
       this.uploader.enqueue({ kind: "resume" });
     } else {
@@ -164,6 +173,7 @@ export class CaptureController {
   }
 
   private async completeFinish(): Promise<FinishOutcome> {
+    this.alerte.taire();
     if (this.snapshot.phase !== "finishing") {
       this.flushChunk();
       this.closeSource();
@@ -235,6 +245,10 @@ export class CaptureController {
     this.closeSource();
     this.microphoneLostAt = this.now();
     this.update({ phase: "microphone_lost", errorCode: "microphone_lost", level: 0 });
+    // Le praticien est souvent ailleurs — autre onglet, patient au fauteuil : on le
+    // prévient, et on tente de reprendre le micro sans attendre qu'il le voie.
+    this.alerte.couper("micro_perdu");
+    void this.resume();
   }
 
   private reportMicrophoneGap(): void {

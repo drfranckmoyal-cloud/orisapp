@@ -57,6 +57,7 @@ final class CaptureController {
     let uploader: Uploader
     private let api: any CaptureAPI
     private let makeInput: @MainActor () -> any AudioInput
+    private let alerte: any AlerteCapture
     private let limits: CaptureLimits
     private let now: @MainActor () -> Date
 
@@ -74,12 +75,14 @@ final class CaptureController {
         api: any CaptureAPI,
         uploaderFactory: (@escaping @Sendable (UploadStatus) -> Void) -> Uploader,
         makeInput: @escaping @MainActor () -> any AudioInput,
+        alerte: any AlerteCapture = AlerteSysteme(),
         limits: CaptureLimits = CaptureLimits(),
         resumeFrom: (nextSequence: Int, nextTimestampMs: Int)? = nil,
         now: @escaping @MainActor () -> Date = { Date() }
     ) {
         self.api = api
         self.makeInput = makeInput
+        self.alerte = alerte
         self.limits = limits
         self.now = now
         self.chunker = Chunker(
@@ -101,6 +104,9 @@ final class CaptureController {
         guard phase == .ready || phase == .error else { return }
         phase = .starting
         errorCode = nil
+        // Demander l'autorisation d'avertir maintenant : au moment de la coupure, il est
+        // trop tard — personne ne répond à une demande qu'il n'a pas vue.
+        alerte.preparer()
         guard await openInput() else { return }
         do {
             try await api.start(patientInformed: patientInformed)
@@ -140,7 +146,8 @@ final class CaptureController {
     func resume() async {
         let previous = phase
         guard [.paused, .interrupted, .microphoneLost].contains(previous), !maxDurationReached else { return }
-        guard await openInput() else { return }
+        guard await rouvrirEntree(depuis: previous) else { return }
+        alerte.taire()
         switch previous {
         case .paused:
             await uploader.enqueue(.resume)
@@ -169,6 +176,7 @@ final class CaptureController {
     // MARK: Interne
 
     private func completeFinish() async throws -> FinishOutcome {
+        alerte.taire()
         if phase != .finishing {
             await flushChunk()
             closeInput()
@@ -192,6 +200,21 @@ final class CaptureController {
             errorCode = (error as? APIError)?.code ?? "FINISH_FAILED"
             throw error
         }
+    }
+
+    /// Rend le micro à l'écoute : l'entrée mise en veille se réveille, sinon on en ouvre
+    /// une neuve. Un appel encore en cours fait échouer les deux, et l'alerte continue.
+    private func rouvrirEntree(depuis precedente: CapturePhase) async -> Bool {
+        if precedente == .interrupted, let input {
+            do {
+                try input.reprendre()
+                return true
+            } catch {
+                errorCode = (error as? CaptureFailure)?.rawValue ?? CaptureFailure.captureFailed.rawValue
+            }
+        }
+        closeInput()
+        return await openInput()
     }
 
     private func openInput() async -> Bool {
@@ -232,13 +255,21 @@ final class CaptureController {
         case .interruptionBegan:
             guard phase == .recording else { return }
             await flushChunk()
-            closeInput()
+            // En veille, pas fermée : fermer l'entrée, c'était perdre l'avis qui annonce
+            // la fin de l'appel, et donc ne jamais pouvoir reprendre seul.
+            input?.suspendre()
             interruptedAt = now()
             phase = .interrupted
             level = 0
+            alerte.couper(.interruption)
         case .interruptionEnded:
-            // Pas de reprise automatique : le praticien décide (écoute jamais relancée à son insu).
-            break
+            // L'appel est fini : on reprend sans attendre. Franck a perdu la moitié d'une
+            // consultation parce que son téléphone avait sonné et que l'écoute attendait
+            // qu'on la relance (09/10/2026). Le silence, lui, reste signalé dans le
+            // dossier : reprendre tout seul n'efface rien, ça évite seulement de perdre
+            // la suite. Si la reprise échoue, l'alerte continue de sonner.
+            guard phase == .interrupted else { return }
+            await resume()
         case .routeChanged:
             guard phase == .recording else { return }
             await flushChunk()
@@ -248,6 +279,7 @@ final class CaptureController {
                 microphoneLostAt = routeChangedAt
                 routeChangedAt = nil
                 phase = .microphoneLost
+                alerte.couper(.microPerdu)
             }
         case .stopped:
             guard phase == .recording else { return }
@@ -257,6 +289,7 @@ final class CaptureController {
             phase = .microphoneLost
             errorCode = "microphone_lost"
             level = 0
+            alerte.couper(.microPerdu)
         }
     }
 

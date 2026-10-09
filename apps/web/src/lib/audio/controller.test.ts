@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { AlerteMuette } from "./alerte";
 import { CHUNK_SAMPLES } from "./chunker";
 import { type CaptureApi, CaptureController, type FinishOutcome } from "./controller";
 import { type AudioSource, CaptureError } from "./sources";
@@ -27,9 +28,17 @@ class FakeSource implements AudioSource {
   }
 }
 
-function setup(options: { sourceFailure?: CaptureError; online?: () => boolean } = {}) {
+function setup(
+  options: {
+    sourceFailure?: CaptureError;
+    online?: () => boolean;
+    /** Panne appliquée aux sources suivantes : le micro ne revient pas. */
+    echecDesSuivantes?: CaptureError;
+  } = {},
+) {
   const sent: QueueItem[] = [];
   const sources: FakeSource[] = [];
+  const alerte = new AlerteMuette();
   let clock = 1_000_000;
   const transport = {
     async send(item: QueueItem): Promise<SendResult> {
@@ -51,12 +60,14 @@ function setup(options: { sourceFailure?: CaptureError; online?: () => boolean }
     transport,
     uploader: new Uploader(transport, [1], (callback) => setTimeout(callback, 1)),
     createSource: () => {
-      const source = new FakeSource(options.sourceFailure ?? null);
+      const panne = sources.length === 0 ? options.sourceFailure : options.echecDesSuivantes;
+      const source = new FakeSource(panne ?? null);
       sources.push(source);
       return source;
     },
     maxSessionMs: 60_000,
     warnSessionMs: 50_000,
+    alerte,
     now: () => clock,
   });
   return {
@@ -64,6 +75,7 @@ function setup(options: { sourceFailure?: CaptureError; online?: () => boolean }
     api,
     sent,
     sources,
+    alerte,
     finishCalls,
     advance: (ms: number) => {
       clock += ms;
@@ -105,18 +117,49 @@ describe("CaptureController", () => {
     expect(api.start).not.toHaveBeenCalled();
   });
 
-  it("turns a lost microphone into a reported gap with its duration", async () => {
-    const { controller, sent, sources, advance } = setup();
+  it("announces a lost microphone, takes it back by itself, and still reports the gap", async () => {
+    // Une écoute coupée que personne ne voit, c'est une consultation perdue : Oris le
+    // dit tout de suite et reprend le micro sans attendre un clic (09/10/2026).
+    const { controller, sent, sources, alerte, advance } = setup();
+    await controller.start(true);
+    expect(alerte.preparee).toBe(true);
+    sources[0]!.emit(2);
+    advance(1_200);
+    sources[0]!.onEnded?.();
+    expect(controller.state.phase).toBe("microphone_lost");
+    expect(alerte.coupures).toEqual(["micro_perdu"]);
+
+    await vi.waitFor(() => expect(controller.state.phase).toBe("recording"));
+    expect(alerte.tues).toBe(1);
+    sources[1]!.emit(2);
+    await controller.finish();
+    // Le silence reste déclaré : reprendre tout seul n'efface rien.
+    expect(sent.find((item) => item.kind === "gap")).toEqual({
+      kind: "gap",
+      reason: "microphone_lost",
+      durationMs: 0,
+    });
+  });
+
+  it("keeps ringing when the microphone does not come back", async () => {
+    const { controller, sent, sources, alerte, advance } = setup({
+      echecDesSuivantes: new CaptureError("no_microphone"),
+    });
     await controller.start(true);
     sources[0]!.emit(2);
     sources[0]!.onEnded?.();
+    await vi.waitFor(() => expect(sources.length).toBe(2));
     expect(controller.state.phase).toBe("microphone_lost");
+    // Rien ne doit laisser croire que l'écoute a repris.
+    expect(alerte.tues).toBe(0);
+
     advance(12_000);
-    await controller.resume();
-    sources[1]!.emit(2);
     await controller.finish();
-    const gap = sent.find((item) => item.kind === "gap");
-    expect(gap).toEqual({ kind: "gap", reason: "microphone_lost", durationMs: 12_000 });
+    expect(sent.find((item) => item.kind === "gap")).toEqual({
+      kind: "gap",
+      reason: "microphone_lost",
+      durationMs: 12_000,
+    });
   });
 
   it("keeps capturing during a network outage and sends everything once back online", async () => {

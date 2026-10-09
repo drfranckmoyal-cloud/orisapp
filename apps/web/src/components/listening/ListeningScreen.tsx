@@ -22,6 +22,7 @@ import {
   type Encounter,
   type Mark,
 } from "@/lib/api";
+import { AlerteNavigateur } from "@/lib/audio/alerte";
 import {
   type CaptureApi,
   CaptureController,
@@ -204,6 +205,7 @@ export function ListeningScreen({
           : new MicrophoneSource(),
       maxSessionMs: config.max_session_minutes * 60_000,
       warnSessionMs: config.warn_session_minutes * 60_000,
+      alerte: new AlerteNavigateur(),
       ...(resumeFrom ? { resumeFrom } : {}),
     });
     controllerRef.current = controller;

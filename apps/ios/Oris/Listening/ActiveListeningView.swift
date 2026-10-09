@@ -18,7 +18,7 @@ struct ActiveListeningView: View {
         switch controller.phase {
         case .recording: "Écoute en cours"
         case .paused: "En pause — micro coupé"
-        case .interrupted: "Interrompue par un appel ou Siri"
+        case .interrupted: "Coupée par un appel — reprise dès que possible"
         case .microphoneLost: "Micro perdu"
         case .finishing: controller.pendingUploads > 0 ? "Envoi des derniers segments…" : "Oris prépare le dossier…"
         case .finished: "Oris prépare le dossier…"
@@ -114,8 +114,15 @@ struct ActiveListeningView: View {
         if controller.phase == .recording && controller.microMuet {
             Banner(text: "Le micro ne capte aucun son. Vérifiez qu’il n’est pas couvert, que les AirPods ne sont pas rangés, puis parlez : ce bandeau disparaît dès qu’Oris vous entend.", critical: true)
         }
-        if controller.phase == .microphoneLost || controller.phase == .interrupted {
-            Banner(text: "Aucun son n’est capté. Touchez Reprendre quand la consultation reprend : l’interruption sera signalée dans le dossier.", critical: true)
+        if controller.phase == .interrupted {
+            Banner(text: "Un appel ou une alarme a coupé l’écoute. Oris reprend tout seul dès que c’est fini — et vous pouvez toucher Reprendre sans attendre. Le silence sera signalé dans le dossier.", critical: true)
+            // Aucune app ne peut empêcher un appel de sonner : seul un mode de
+            // concentration le peut. On le dit ici, au moment où ça vient d'arriver,
+            // plutôt que de le répéter avant chaque consultation.
+            Banner(text: "Pour que cela n’arrive plus : Réglages › Concentration › Ne pas déranger, à activer pendant vos consultations.", critical: false)
+        }
+        if controller.phase == .microphoneLost {
+            Banner(text: "Aucun son n’est capté : le micro n’est plus disponible. Touchez Reprendre quand la consultation reprend ; l’interruption sera signalée dans le dossier.", critical: true)
         }
         if controller.lostUploads > 0 {
             Banner(text: "\(controller.lostUploads) segment(s) audio refusé(s) : ils seront signalés comme manquants.", critical: true)

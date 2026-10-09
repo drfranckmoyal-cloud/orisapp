@@ -1,5 +1,27 @@
 # Changelog
 
+## Une écoute coupée s'entend, et repart toute seule — 2026-10-10
+- Demande de Franck : « pendant une consultation active, quand la consultation se coupe,
+  émettre un son très distinctif » et « mes consultations sont coupées par les appels
+  reçus sur mon téléphone, il faut trouver un moyen que ça n'interrompe plus ».
+- **Le son.** Trois notes qui descendent, répétées toutes les 5 secondes (douze fois au
+  plus) : rien dans l'iPhone ni dans un navigateur ne sonne comme ça, et c'est le but.
+  Sur l'iPhone s'y ajoutent une **vibration** — le seul signal qui traverse le mode
+  silencieux et un appel en cours — et un **avis sur l'écran verrouillé**, porté par le
+  système, donc audible même pendant qu'un appel sonne. Sur le site, le **titre de
+  l'onglet** change et une notification part, pour l'écran qu'on ne regarde pas.
+- **La reprise.** Oris reprenait l'écoute seulement si on le lui demandait. La cause
+  profonde : en se coupant, il fermait l'entrée audio **et perdait du même coup l'avis
+  qui annonce la fin de l'appel** — il ne pouvait donc pas savoir que c'était fini. Elle
+  se met maintenant en veille sans devenir sourde, et l'écoute repart d'elle-même. Le
+  silence reste un **trou déclaré** dans le dossier : reprendre tout seul n'efface rien,
+  ça évite seulement de perdre la suite de la consultation.
+- Les avis du système (notifications, rappels) ne coupent plus l'écoute
+  (`setPrefersNoInterruptionsFromSystemAlerts`). **Un appel entrant, lui, la coupe
+  toujours** : aucune app ne peut l'en empêcher. Seul un mode de concentration le peut,
+  et Oris le dit au praticien au moment où ça vient d'arriver.
+- Six tests ajoutés (iPhone et site) ; 63 tests iPhone et 73 tests site au vert.
+
 ## Deux consultations en échec : une relecture tronquée, et un dossier vide sans issue — 2026-10-09
 - Constat de Franck : « les 2 derniers consultations ont échoué — une me dit qu'il n'y a
   pas d'informations alors que 30 minutes d'enregistrement (patient BENTALEB), l'autre

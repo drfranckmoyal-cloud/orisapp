@@ -32,6 +32,10 @@ xcuserdata/
 *.m4a
 *.mp3
 *.caf
+# Exception : le bip d'alerte de l'app, fabriqué par scripts/fabriquer-son-alerte.py.
+# Ce n'est pas de l'audio de consultation — aucune voix, aucun patient : c'est une pièce
+# de l'interface, et l'app ne se construit pas sans lui.
+!apps/ios/Oris/Resources/ecoute-coupee.wav
 
 # macOS
 .DS_Store
