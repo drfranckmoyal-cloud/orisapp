@@ -38,7 +38,17 @@
   toutes, et chaque refus porte de quoi s'y conformer (prompt `redaction-fr-5`). Un test
   garde l'invariant : **aucun mot ne peut être exigé d'une copie sans avoir été demandé
   dans la consigne.**
-- Treize tests ajoutés (pipeline, extraction, délai, voix, règles, rédaction) ; 489 au vert.
+- **Deux refus sur six ne citaient pas la phrase refusée** — dans une rubrique de dix
+  phrases, le modèle ne pouvait pas savoir laquelle reprendre. Et **les titres du plan
+  n'avaient droit qu'à un essai, leur repli ne laissant aucune trace au journal** : un
+  plan sortait en version simplifiée sans que rien ne le dise. Les deux corrigés.
+- **La vérification automatique de GitHub est de nouveau verte.** Elle était rouge à
+  chaque envoi depuis que la date du 22 septembre, écrite dans deux tests d'agenda, a eu
+  plus de sept jours — et derrière, un vrai défaut : Oris effaçait la trace d'une
+  livraison *au moment même où il l'écrivait*, si la journée livrée était ancienne.
+- **BENTALEB est rendue au praticien** : 61 faits, 2 actes, compte rendu et plan de
+  traitement écrits par Claude, zéro alerte.
+- Seize tests ajoutés ; **494 au vert, plus aucun en échec**.
 
 ## Une collaboratrice sur le serveur, et l'app qui se connecte toute seule — 2026-10-08
 - Constat de Franck après installation par TestFlight : « serveur Oris injoignable ».
