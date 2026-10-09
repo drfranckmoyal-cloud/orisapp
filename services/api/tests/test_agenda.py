@@ -434,3 +434,18 @@ def test_asking_again_resets_the_time_of_the_request(tmp_path: Path) -> None:
     seconde = agenda.demander(reglage, JOUR)
     assert seconde > premiere
     assert agenda.demandes(reglage) == {JOUR: seconde}
+
+
+def test_a_trace_is_never_erased_by_the_very_write_that_creates_it(tmp_path: Path) -> None:
+    """Oris n'oublie que les vieilles traces. Celle d'une journée ancienne relivrée était
+    effacée dans la seconde où elle s'écrivait : l'écran ne pouvait plus dire pourquoi la
+    livraison avait été refusée, et la vérification automatique virait au rouge dès que
+    la date de ces tests vieillissait (09/10/2026)."""
+    from datetime import date, timedelta
+
+    vieux_jour = (date.today() - timedelta(days=90)).isoformat()
+    reglage = reglages(tmp_path)
+    agenda.deposer(reglage, livraison([RDV], jour=vieux_jour))
+
+    tentative = agenda.derniere_livraison(reglage, vieux_jour)
+    assert tentative is not None and tentative["rendezvous"] == 1

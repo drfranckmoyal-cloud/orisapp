@@ -306,3 +306,51 @@ def test_every_sentence_level_refusal_quotes_the_sentence_it_refuses() -> None:
     with pytest.raises(RedactionRefusee) as refus:
         _controler_phrase(absente, [fait(assertion="absent")], "Examen")
     assert absente in str(refus.value)
+
+
+def test_the_plan_titles_get_a_second_try_and_their_fallback_leaves_a_trace() -> None:
+    """09/10/2026 : les titres du plan n'avaient droit qu'à un essai, et leur repli ne
+    laissait rien au journal — un plan sortait en version simplifiée sans que rien ne le
+    dise. Même traitement que le compte rendu : un refus expliqué, puis une trace."""
+    from oris_api.llm.redaction import RedactionRefusee, verifier_titres
+    from tests.test_logging import capture
+
+    # Le refus nomme le mot fautif et l'action : de quoi reprendre sa copie.
+    with pytest.raises(RedactionRefusee) as refus:
+        verifier_titres(
+            {"i1": "Composite sur la 26"},
+            {"titres": [{"item_id": "i1", "titre": "Couronne céramique"}]},
+        )
+    assert "Composite sur la 26" in str(refus.value)
+    assert "couronne" in str(refus.value).lower()
+
+    # Le plan d'une consultation dont les titres sont refusés sort en version simplifiée,
+    # et le journal le dit — sans contenu clinique.
+    titres_refuses = httpx.Response(
+        200,
+        json={
+            "content": [
+                {
+                    "type": "tool_use",
+                    "name": "titrer_etapes",
+                    "input": {"titres": [{"item_id": "inconnu", "titre": "Hors sujet"}]},
+                }
+            ],
+            "usage": {"input_tokens": 1, "output_tokens": 1},
+        },
+    )
+    client = httpx.AsyncClient(transport=httpx.MockTransport(lambda r: titres_refuses))
+    writer = AnthropicDocumentWriter("cle", "modele", MockDocumentGenerationProvider(), client)
+    import logging
+
+    stream, handler = capture()
+    try:
+        document = asyncio.run(writer.generate(dictee(), "treatment_plan_text"))
+    finally:
+        logging.getLogger().removeHandler(handler)
+
+    assert "(repli)" in (document.generator or "")
+    lignes = [json.loads(ligne) for ligne in stream.getvalue().splitlines() if ligne.strip()]
+    replis = [e for e in lignes if e.get("event") == "redaction.repli"]
+    assert [e["document_type"] for e in replis] == ["treatment_plan_text"]
+    assert "Hors sujet" not in stream.getvalue(), "le journal ne porte aucun texte rédigé"

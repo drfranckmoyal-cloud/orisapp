@@ -431,20 +431,47 @@ class AnthropicDocumentWriter:
             {"etapes": [{"item_id": i.item_id, "action": i.action} for i in items]},
             ensure_ascii=False,
         )
-        try:
-            sortie = await self._appeler(
-                [{"role": "user", "content": demande}],
-                system=TITRES_PROMPT,
-                tool=(TITRES_TOOL, "Enregistre un titre court par étape.", titres_schema()),
-            )
-            titres = verifier_titres({i.item_id: i.action for i in items}, sortie)
-        except (httpx.HTTPError, RedactionRefusee, KeyError, ValueError) as error:
-            self.dernier_refus = f"titres : {error}"[:300]
-            document = render_treatment_plan(encounter)
-            return _avec_generateur(
-                document, f"{self._repli.info.name}:{self._repli.info.version} (repli)"
-            )
-        return render_treatment_plan(encounter, titres)
+        messages: list[dict[str, Any]] = [{"role": "user", "content": demande}]
+        actions = {i.item_id: i.action for i in items}
+        # Les titres avaient droit à un seul essai, et leur repli ne laissait aucune trace
+        # au journal : un plan sortait en version simplifiée sans que rien ne le dise
+        # (09/10/2026). Même traitement que le compte rendu, désormais.
+        for essai in range(MAX_ATTEMPTS):
+            try:
+                sortie = await self._appeler(
+                    messages,
+                    system=TITRES_PROMPT,
+                    tool=(TITRES_TOOL, "Enregistre un titre court par étape.", titres_schema()),
+                )
+            except (httpx.HTTPError, KeyError, ValueError) as error:
+                self.dernier_refus = f"titres, appel : {error}"[:300]
+                break
+            try:
+                return render_treatment_plan(encounter, verifier_titres(actions, sortie))
+            except RedactionRefusee as refus:
+                self.dernier_refus = f"titres : {refus}"[:300]
+                if essai == MAX_ATTEMPTS - 1:
+                    break
+                messages += [
+                    {
+                        "role": "assistant",
+                        "content": [
+                            {"type": "text", "text": json.dumps(sortie, ensure_ascii=False)}
+                        ],
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            f"Titres refusés : {refus}. Corrige ce point et renvoie un "
+                            "titre pour chaque étape."
+                        ),
+                    },
+                ]
+        _noter_repli("treatment_plan_text", self.dernier_refus or "titres refusés")
+        return _avec_generateur(
+            render_treatment_plan(encounter),
+            f"{self._repli.info.name}:{self._repli.info.version} (repli)",
+        )
 
     async def _appeler(
         self,
@@ -519,10 +546,19 @@ def verifier_titres(actions: dict[str, str], sortie: dict[str, Any]) -> dict[str
         if len(titre.split()) > MOTS_TITRE_MAX:
             raise RedactionRefusee(f"titre trop long : « {titre} »")
         action = actions[item_id]
-        if _racines(titre) - _racines(action):
-            raise RedactionRefusee(f"mot absent de l'action dans « {titre} »")
+        etrangers = _racines(titre) - _racines(action)
+        if etrangers:
+            # Dire le mot et l'action : sans eux, le modèle ne sait pas quoi reprendre.
+            fautifs = [m for m in titre.split() if _racines(m) & etrangers]
+            raise RedactionRefusee(
+                f"mot absent de l'action dans « {titre} » : {fautifs} — n'emploie que "
+                f"des mots de l'action « {action} »"
+            )
         if _nombres(titre) - _nombres(action) or DENT.findall(titre):
-            raise RedactionRefusee(f"chiffre ou dent en plus dans « {titre} »")
+            raise RedactionRefusee(
+                f"chiffre ou dent en plus dans « {titre} » — le titre n'en porte aucun "
+                f"qui ne soit dans l'action « {action} »"
+            )
         titres[item_id] = titre[:1].upper() + titre[1:]
     if set(titres) != set(actions):
         raise RedactionRefusee("une étape n'a pas de titre")

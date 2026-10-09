@@ -365,8 +365,12 @@ def _noter_livraison(settings: Settings, depot: Depot) -> None:
         "remplace": depot.remplace,
         "raison": depot.raison,
     }
+    # On oublie les vieilles traces, jamais celle qu'on vient d'écrire : une journée
+    # ancienne relivrée (l'extension relit un agenda passé) laissait une trace effacée
+    # dans la seconde, et l'écran ne pouvait plus dire pourquoi la livraison avait été
+    # refusée.
     vieux = (date.today() - timedelta(days=JOURS_DE_LIVRAISONS)).isoformat()
-    gardees = {jour: v for jour, v in livraisons.items() if jour >= vieux}
+    gardees = {jour: v for jour, v in livraisons.items() if jour >= vieux or jour == depot.jour}
     _ecrire(_fichier_livraisons(settings), gardees)
 
 
