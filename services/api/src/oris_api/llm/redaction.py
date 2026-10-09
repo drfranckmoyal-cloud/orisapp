@@ -49,6 +49,11 @@ MAX_ATTEMPTS = 3
 #: Un appel qui échoue (réseau, surcharge, délai) se retente, après une courte pause.
 PAUSES_APPEL = (2.0, 6.0)
 TOOL_NAME = "rediger_compte_rendu"
+#: Les deux garde-fous qui s'appuient sur un vocabulaire : quand le modèle perd
+#: l'incertitude ou le refus, lui dire quels mots Oris reconnaît vaut mieux que le
+#: laisser deviner trois fois de suite puis retomber sur un gabarit (TOTEL, 09/10/2026).
+MOTS_INCERTITUDE = "« possible », « probable », « suspicion », « à confirmer », « non confirmé »"
+MOTS_REFUS = "« refuse », « décline », « ne souhaite pas »"
 
 #: Documents en paragraphes : ceux-là seulement sont réécrits. Le plan garde sa forme,
 #: élément par élément (seuls ses titres sont proposés par Claude) ; le compte rendu
@@ -288,11 +293,16 @@ def _controler_phrase(texte: str, appui: list[ClinicalFact], titre: str) -> None
         f.assertion == "uncertain" or f.certainty in {"possible", "probable"} for f in appui
     )
     if incertain and not (INCERTITUDE.search(texte) or "non confirmé" in texte):
-        raise RedactionRefusee(f"incertitude perdue dans « {titre} » : « {texte} »")
+        raise RedactionRefusee(
+            f"incertitude perdue dans « {titre} » : « {texte} » — emploie un mot qui la "
+            f"porte explicitement : {MOTS_INCERTITUDE}"
+        )
     if any(f.clinical_status == "refused" for f in appui) and not re.search(
         r"refus|décline|ne souhaite pas", texte, re.IGNORECASE
     ):
-        raise RedactionRefusee(f"refus perdu dans « {titre} » : « {texte} »")
+        raise RedactionRefusee(
+            f"refus perdu dans « {titre} » : « {texte} » — emploie un mot qui le dit : {MOTS_REFUS}"
+        )
 
 
 class AnthropicDocumentWriter:

@@ -22,7 +22,7 @@ from oris_api.contracts import (
 )
 from oris_api.contracts.validation import ContractViolation
 from oris_api.domain.parole import parole_consistante
-from oris_api.domain.resolver import resolve
+from oris_api.domain.resolver import explication, resolve
 from oris_api.domain.types import ExtractionResult, GlossaryHint
 from oris_api.llm.prompt import (
     PROMPT_VERSION,
@@ -112,9 +112,13 @@ class AnthropicExtractionProvider:
                     from_extraction=True,
                 )
                 if violations:
+                    # Le code seul ne dit pas quoi corriger : le modèle repropose la même
+                    # faute jusqu'à l'épuisement des essais (BENTALEB, 09/10/2026).
                     raise ValueError(
                         "règles cliniques non respectées : "
                         + ", ".join(f"{v.rule} ({v.subject_id})" for v in violations)
+                        + ". "
+                        + explication(violations)
                     )
                 return result
             except (ContractViolation, ValueError) as error:

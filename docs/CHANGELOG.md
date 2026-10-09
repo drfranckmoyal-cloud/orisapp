@@ -24,7 +24,13 @@
   incertitude » a refusé les trois propositions du modèle ; Oris est retombé sur son
   modèle de texte, ce qui se voit dans le compte rendu. Le repli est donc visible, et le
   bouton « Rédiger à nouveau » existait déjà : relancée, la rédaction a réussi.
-- Cinq tests ajoutés (pipeline et extraction) ; 485 tests au vert.
+- **Un refus doit dire quoi corriger.** Oris refusait la sortie du modèle en lui rendant
+  un code (« PATIENT_PROMOTED_TO_CLINICIAN (f12) ») : le modèle reproposait trois fois la
+  même faute, et le praticien n'avait aucun compte rendu. Les quinze règles cliniques
+  s'expliquent maintenant en une phrase chacune, qui nomme le champ à corriger ; et quand
+  la rédaction perd une incertitude ou un refus, Oris dit quels mots il reconnaît au lieu
+  de laisser deviner.
+- Dix tests ajoutés (pipeline, extraction, voix, règles) ; 487 au vert.
 
 ## Une collaboratrice sur le serveur, et l'app qui se connecte toute seule — 2026-10-08
 - Constat de Franck après installation par TestFlight : « serveur Oris injoignable ».

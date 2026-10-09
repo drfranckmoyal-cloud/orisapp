@@ -160,3 +160,56 @@ def resolve(
         + check_plan(plan, facts)
         + check_procedures(procedures, facts, segments)
     )
+
+
+#: Ce que chaque règle reproche, en une phrase, à l'intention du modèle qui reprend sa
+#: copie. Un refus réduit à son code (« PATIENT_PROMOTED_TO_CLINICIAN (f12) ») ne dit pas
+#: quoi corriger : le modèle a reproposé trois fois la même faute sur une consultation de
+#: trente-trois minutes, et le praticien n'a eu aucun compte rendu (BENTALEB, 09/10/2026).
+EXPLICATIONS: dict[str, str] = {
+    "DUPLICATE_FACT_ID": "deux faits portent le même fact_id : donne à chacun le sien.",
+    "EVIDENCE_MISSING": "ce fait ne cite aucun passage : tout fait doit renvoyer aux paroles "
+    "qui le justifient (evidence_segment_ids), ou disparaître.",
+    "EVIDENCE_UNKNOWN": "ce fait cite un segment_id qui n'existe pas dans la consultation : "
+    "recopie exactement les identifiants fournis.",
+    "EVIDENCE_IS_AUDIO_GAP": "ce fait ne s'appuie que sur un passage où le son manquait : "
+    "rien n'y a été entendu, le fait ne peut pas en sortir.",
+    "EXTRACTION_SELF_VALIDATED": "manually_validated doit rester faux : seul le praticien "
+    "valide un fait, jamais l'extraction.",
+    "PERFORMED_IN_FUTURE": "un acte annoncé pour plus tard ne peut pas être « performed » : "
+    "mets temporality à « future » avec un statut de projet, ou le statut à « performed » "
+    "seulement si l'acte a été fait pendant la séance.",
+    "PATIENT_PROMOTED_TO_CLINICIAN": "ce fait est attribué à la parole du patient "
+    "(speaker_role « patient ») alors que son statut ou sa catégorie supposent un constat "
+    "ou un diagnostic du praticien. Soit le passage cité est en réalité la parole du "
+    "praticien — cite-le et mets speaker_role en conséquence —, soit le fait doit redevenir "
+    "ce qu'il est : un propos du patient (clinical_status « patient_reported »).",
+    "UNCERTAINTY_LOST": "un fait « uncertain » ne peut pas être « certain » : garde "
+    "l'incertitude telle qu'elle a été dite.",
+    "PLAN_EVIDENCE_UNKNOWN": "cet élément de plan cite un fact_id inconnu : ne cite que des "
+    "faits de ta propre sortie.",
+    "PLAN_ITEM_WITHOUT_EVIDENCE": "cet élément de plan ne s'appuie sur aucun fait : rattache-le "
+    "aux faits qui le justifient, ou retire-le.",
+    "PLAN_STATUS_UNSUPPORTED": "le statut de cet élément de plan n'est porté par aucun des "
+    "faits cités : un traitement ne devient « accepté » que si un fait dit qu'il a été "
+    "accepté, « proposé » que si un fait dit qu'il a été proposé, et ainsi de suite.",
+    "PLAN_TEETH_UNSUPPORTED": "cet élément de plan porte une dent qu'aucun fait cité ne "
+    "mentionne : n'ajoute aucune dent qui ne vienne des faits.",
+    "PROCEDURE_EVIDENCE_UNKNOWN": "cet acte ne cite aucun fait, ou un fact_id inconnu : "
+    "rattache-le aux faits de ta sortie.",
+    "PROCEDURE_STATUS_UNSUPPORTED": "le statut de cet acte n'est porté par aucun des faits "
+    "cités : un acte n'est « réalisé » que si un fait dit qu'il l'a été.",
+    "PROCEDURE_DATA_UNSUPPORTED": "une donnée de cet acte (structured_data) n'a été ni "
+    "prononcée dans les passages cités, ni nommée par un fait : ne remplis que ce qui a été "
+    "dit, laisse le reste vide.",
+}
+
+
+def explication(violations: list[Violation]) -> str:
+    """Les reproches d'une sortie refusée, dits en français, sans doublon."""
+    vues: list[str] = []
+    for violation in violations:
+        phrase = EXPLICATIONS.get(violation.rule)
+        if phrase and phrase not in vues:
+            vues.append(phrase)
+    return " ".join(vues)

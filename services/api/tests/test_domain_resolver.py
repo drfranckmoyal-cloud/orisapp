@@ -120,3 +120,31 @@ def test_performed_procedure_without_performed_fact_is_rejected() -> None:
     facts = [f.model_copy(update={"clinical_status": "planned"}) for f in source.facts]
     violations = resolve(facts, None, list(source.procedures), list(source.segments))
     assert "PROCEDURE_STATUS_UNSUPPORTED" in {v.rule for v in violations}
+
+
+def test_a_refused_output_is_told_in_words_what_to_correct() -> None:
+    """Un refus réduit à son code ne dit pas quoi corriger : le modèle a reproposé trois
+    fois la même faute sur une consultation de trente-trois minutes, et le praticien n'a
+    eu aucun compte rendu (BENTALEB, 09/10/2026)."""
+    import re
+    from pathlib import Path
+
+    from oris_api.domain import resolver as resolver_module
+    from oris_api.domain.resolver import EXPLICATIONS, Violation, explication
+
+    # Chaque règle que le résolveur sait prononcer sait aussi s'expliquer.
+    source = Path(str(resolver_module.__file__)).read_text()
+    prononcees = set(re.findall(r'Violation\("([A-Z_]+)"', source))
+    assert prononcees <= set(EXPLICATIONS), sorted(prononcees - set(EXPLICATIONS))
+
+    dit = explication(
+        [
+            Violation("PATIENT_PROMOTED_TO_CLINICIAN", "f1"),
+            Violation("PATIENT_PROMOTED_TO_CLINICIAN", "f2"),
+            Violation("PLAN_STATUS_UNSUPPORTED", "i1"),
+        ]
+    )
+    # Le même reproche n'est dit qu'une fois, et il nomme le champ à corriger.
+    assert dit.count("ce fait est attribué à la parole du patient") == 1
+    assert "statut de cet élément de plan" in dit
+    assert explication([Violation("REGLE_INCONNUE", "x")]) == ""
