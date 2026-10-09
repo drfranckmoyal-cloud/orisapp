@@ -291,13 +291,21 @@ def _controler_phrase(texte: str, appui: list[ClinicalFact], titre: str) -> None
         (f.value if isinstance(f.value, str) else json.dumps(f.value)) + " " + " ".join(f.teeth)
         for f in appui
     )
+    # Ces deux refus-là ne citaient pas la phrase fautive : dans une rubrique de dix
+    # phrases, le modèle ne pouvait pas savoir laquelle reprendre, et reproposait la même
+    # (BENTALEB, 09/10/2026). Les autres garde-fous la citaient déjà.
     dents = set(DENT.findall(texte)) - {t for f in appui for t in f.teeth}
     if dents - set(DENT.findall(source)):
-        raise RedactionRefusee(f"dent absente des faits cités dans « {titre} » : {sorted(dents)}")
+        raise RedactionRefusee(
+            f"dent absente des faits cités dans « {titre} » : {sorted(dents)} — "
+            f"dans la phrase « {texte} ». Retire cette dent : n'écris que celles des faits."
+        )
     inventes = _nombres(texte) - _nombres(source)
     if inventes:
         raise RedactionRefusee(
-            f"chiffre absent des faits cités dans « {titre} » : {sorted(inventes)}"
+            f"chiffre absent des faits cités dans « {titre} » : {sorted(inventes)} — "
+            f"dans la phrase « {texte} ». Récris cette phrase sans ce chiffre : ni durée, "
+            "ni quantité, ni mesure, ni date qui ne soit dans les faits cités."
         )
     if any(f.assertion == "absent" for f in appui) and not NEGATION.search(texte):
         raise RedactionRefusee(

@@ -260,3 +260,49 @@ def test_a_refusal_the_model_cannot_act_on_is_a_refusal_for_nothing() -> None:
         assert mots.count("«") >= 3
         for mot in re.findall(r"« ([^»]+) »", mots):
             assert mot in SYSTEM_PROMPT, f"« {mot} » refusé sans jamais avoir été demandé"
+
+
+def test_every_sentence_level_refusal_quotes_the_sentence_it_refuses() -> None:
+    """Deux refus nommaient la rubrique et le chiffre fautif, mais pas la phrase : dans
+    une rubrique de dix phrases, le modèle ne pouvait pas savoir laquelle reprendre
+    (BENTALEB, 09/10/2026). Un refus de phrase cite la phrase."""
+    from oris_api.contracts import ClinicalFact
+    from oris_api.llm.redaction import RedactionRefusee, _controler_phrase
+
+    def fait(**extra: Any) -> ClinicalFact:
+        return ClinicalFact.model_validate(
+            {
+                "fact_id": "f1",
+                "category": "symptom",
+                "concept": "cold_sensitivity",
+                "value": None,
+                "teeth": ["26"],
+                "surfaces": [],
+                "assertion": "present",
+                "temporality": "past",
+                "clinical_status": "patient_reported",
+                "speaker_role": "patient",
+                "certainty": "certain",
+                "source_type": "audio",
+                "evidence_segment_ids": ["s1"],
+                "confidence": 0.9,
+                "manually_validated": False,
+                **extra,
+            }
+        )
+
+    phrase_chiffre = "Sensibilité au froid sur la 26 depuis 3 semaines."
+    with pytest.raises(RedactionRefusee) as refus:
+        _controler_phrase(phrase_chiffre, [fait()], "Motif")
+    assert phrase_chiffre in str(refus.value)
+
+    phrase_dent = "Sensibilité au froid sur la 26 et la 47."
+    with pytest.raises(RedactionRefusee) as refus:
+        _controler_phrase(phrase_dent, [fait()], "Motif")
+    assert phrase_dent in str(refus.value)
+
+    # Les garde-fous de vocabulaire citaient déjà la phrase : ils continuent.
+    absente = "Examen de la 26."
+    with pytest.raises(RedactionRefusee) as refus:
+        _controler_phrase(absente, [fait(assertion="absent")], "Examen")
+    assert absente in str(refus.value)
