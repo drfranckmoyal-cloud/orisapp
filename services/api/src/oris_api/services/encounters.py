@@ -8,7 +8,7 @@ from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from oris_api.config import Settings
@@ -21,6 +21,7 @@ from oris_api.db.models import (
     LearningEventRow,
 )
 from oris_api.domain.lifecycle import TransitionError, ensure_transition
+from oris_api.domain.parole import parole_consistante
 from oris_api.domain.resolver import resolve
 from oris_api.domain.speaker_roles import (
     appliquer,
@@ -46,6 +47,7 @@ from oris_api.services.clinical_store import (
     load_current,
     load_segments,
     load_speaker_labels,
+    poser_les_roles,
     replace_segments,
     save_version,
 )
@@ -58,6 +60,8 @@ from oris_api.synthetic.corpus import SYNTHETIC_PAYLOAD_PREFIX
 logger = logging.getLogger("oris.pipeline")
 LOCALE = "fr-FR"
 ALREADY_PROCESSED = frozenset({"review", "validated", "exported", "archived"})
+#: Documents qu'une reprise de traitement ne réécrira jamais.
+VALIDE = frozenset({"validated", "exported"})
 #: Un traitement sans nouvelles depuis ce délai a été coupé (Mac en veille…) : on reprend.
 REPRISE_APRES = timedelta(minutes=5)
 
@@ -206,21 +210,8 @@ def attribuer_les_voix(
     poses = apply_roles(segments, speaker_labels)
     if not sans_role(poses):
         return poses
-    voix_connues = voix(segments, speaker_labels)
-    try:
-        if len(voix_connues) >= 2:
-            roles = async_bridge.run(lambda: providers.speaker_roles.attribuer(voix_connues))
-            if not roles:
-                return poses
-            # Ce que les règles ont tranché fait foi : le modèle complète, il ne corrige pas.
-            deja = assign_roles(segments, speaker_labels)
-            return appliquer(segments, speaker_labels, {**roles, **deja.roles})
-        # Aucune voix séparée — le cas de toutes les vraies consultations jusqu'ici :
-        # c'est l'enchaînement des tours de parole qui dit qui parle.
-        par_passage = async_bridge.run(
-            lambda: providers.speaker_roles.attribuer_paroles(paroles(segments))
-        )
-    except SpeakerRolesUnavailable as error:
+
+    def echec(error: SpeakerRolesUnavailable) -> None:
         logger.warning(
             "pipeline.speaker_roles_unavailable",
             extra={
@@ -229,6 +220,29 @@ def attribuer_les_voix(
                 "error_code": error.code,
             },
         )
+
+    voix_connues = voix(segments, speaker_labels)
+    if len(voix_connues) >= 2:
+        roles: dict[str, str] = {}
+        try:
+            roles = async_bridge.run(lambda: providers.speaker_roles.attribuer(voix_connues))
+        except SpeakerRolesUnavailable as error:
+            echec(error)
+        if roles:
+            # Ce que les règles ont tranché fait foi : le modèle complète, il ne corrige pas.
+            deja = assign_roles(segments, speaker_labels)
+            return appliquer(segments, speaker_labels, {**roles, **deja.roles})
+        # Les voix étaient séparées, mais leur rôle n'a pas été tranché : plutôt que de
+        # laisser toute la consultation en « locuteur inconnu » — ce qui fait ensuite
+        # échouer l'extraction entière (09/10/2026) — on redescend au passage par
+        # passage, où c'est l'enchaînement des tours de parole qui dit qui parle.
+    # Aucune voix séparée — le cas de la plupart des vraies consultations : même chemin.
+    try:
+        par_passage = async_bridge.run(
+            lambda: providers.speaker_roles.attribuer_paroles(paroles(segments))
+        )
+    except SpeakerRolesUnavailable as error:
+        echec(error)
         return poses
     return [
         segment
@@ -272,6 +286,26 @@ def set_processing_errors(encounter: Encounter, errors: list[dict[str, str]]) ->
     encounter.metadata_json = metadata
 
 
+def a_reprendre(session: Session, encounter: Encounter) -> bool:
+    """Une consultation rangée « à relire » mais sans un seul fait : y a-t-il à reprendre ?
+
+    Le 09/10/2026, trente-trois minutes de parole clinique sont ressorties avec zéro
+    fait, et Oris a présenté le dossier au praticien comme prêt à relire — « pas
+    d'informations ». Un dossier vide n'a rien à relire : relancer le traitement doit
+    refaire l'extraction, et non pas ne rien faire au nom de l'idempotence. On ne touche
+    qu'à une consultation en relecture, qui a vraiment parlé, et dont aucun document n'a
+    encore été validé : rien de validé n'est jamais réécrit.
+    """
+    if encounter.status != "review":
+        return False
+    obj = load_current(session, encounter)
+    if obj is None or obj.facts or obj.procedures or obj.treatment_plan is not None:
+        return False
+    if any(doc.status in VALIDE for doc in documents.list_documents(session, encounter.id)):
+        return False
+    return parole_consistante(load_segments(session, encounter.id))
+
+
 def process(
     session: Session,
     actor: Actor,
@@ -280,7 +314,7 @@ def process(
     sink: AudioSink,
 ) -> Encounter:
     """Transcript → faits → résolveur → objet v1 → documents. Rejouable sans doublon."""
-    if encounter.status in ALREADY_PROCESSED:
+    if encounter.status in ALREADY_PROCESSED and not a_reprendre(session, encounter):
         return encounter
     # Reprise : un traitement coupé net (Mac en veille, serveur arrêté) laisse la
     # consultation « en traitement ». Si la transcription était déjà faite — le son est
@@ -325,6 +359,8 @@ def process(
             segments=attribuer_les_voix(segments_gardes, labels_gardes, providers, encounter.id),
             speaker_labels=labels_gardes,
         )
+        if poser_les_roles(session, encounter.id, transcription.segments):
+            session.commit()  # ce qui a été rattrapé est visible dans la transcription
     else:
         # Vrai micro → fournisseur configuré ; consultation fictive → fournisseur factice.
         stt = (
@@ -470,6 +506,13 @@ def process(
         return encounter
 
     set_processing_errors(encounter, [])
+    # Première extraction : version 1. Reprise d'une extraction vide : la suivante —
+    # l'historique des versions d'objet ne se réécrit pas (spec §57).
+    derniere = session.scalar(
+        select(func.max(EncounterObjectVersion.version)).where(
+            EncounterObjectVersion.encounter_id == encounter.id
+        )
+    )
     clinical_object = ClinicalEncounter(
         encounter_id=str(encounter.id),
         patient_id=str(encounter.patient_id),
@@ -477,7 +520,7 @@ def process(
         started_at=(encounter.started_at or encounter.created_at).isoformat(),
         ended_at=encounter.ended_at.isoformat() if encounter.ended_at else None,
         status="review",
-        object_version=1,
+        object_version=(derniere or 0) + 1,
         facts=extraction.facts,
         treatment_plan=extraction.treatment_plan,
         procedures=extraction.procedures,

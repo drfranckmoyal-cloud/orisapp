@@ -1,6 +1,11 @@
 /** Libellés français de l'interface. Les valeurs viennent des contrats générés. */
 
-import type { ClinicalFactView, DocumentView, Encounter, Rattachement } from "./api";
+import type {
+  ClinicalFactView,
+  DocumentView,
+  Encounter,
+  Rattachement,
+} from "./api";
 
 export const ENCOUNTER_STATUS: Record<Encounter["status"], string> = {
   draft: "Brouillon",
@@ -54,7 +59,10 @@ export const TEMPORALITY: Record<ClinicalFactView["temporality"], string> = {
   future: "futur",
 };
 
-export const CLINICAL_STATUS: Record<ClinicalFactView["clinical_status"], string> = {
+export const CLINICAL_STATUS: Record<
+  ClinicalFactView["clinical_status"],
+  string
+> = {
   patient_reported: "rapporté par le patient",
   observed: "constaté",
   clinician_assessment: "évaluation du praticien",
@@ -144,52 +152,72 @@ const ERRORS: Record<string, string> = {
     "Le traitement est encore en cours (moins de 5 minutes) : patientez, il se termine tout seul.",
   SMILECLOUD_NON_RELIE: "Reliez d’abord ce patient à son dossier SmileCloud.",
   SMILECLOUD_INVALIDE: "Identifiant de dossier SmileCloud non reconnu.",
-  DEVICE_FROM_THIS_MAC_ONLY: "Un nouvel appareil s’autorise depuis le Mac du cabinet uniquement.",
-  TOKEN_NOT_FOUND: "Cet appareil est introuvable : il a peut-être déjà été déconnecté.",
-  SMTP_NOT_CONFIGURED: "La boîte d’envoi n’est pas branchée (mot de passe d’application manquant).",
+  DEVICE_FROM_THIS_MAC_ONLY:
+    "Un nouvel appareil s’autorise depuis le Mac du cabinet uniquement.",
+  TOKEN_NOT_FOUND:
+    "Cet appareil est introuvable : il a peut-être déjà été déconnecté.",
+  SMTP_NOT_CONFIGURED:
+    "La boîte d’envoi n’est pas branchée (mot de passe d’application manquant).",
   SENDING_EMAIL_MISSING: "Renseignez votre adresse d’envoi dans Paramètres.",
-  SMTP_AUTH_FAILED: "La messagerie a refusé l’identification : vérifiez le mot de passe d’application.",
+  SMTP_AUTH_FAILED:
+    "La messagerie a refusé l’identification : vérifiez le mot de passe d’application.",
   SMTP_RECIPIENT_REFUSED: "Adresse refusée par la messagerie.",
   SMTP_UNAVAILABLE: "Messagerie injoignable : réessayez dans un instant.",
   NO_RECIPIENT: "Cochez au moins un destinataire.",
   EMAIL_INVALID: "Une adresse saisie n’est pas valide.",
   RECIPIENT_UNKNOWN: "Destinataire inconnu : rechargez la page.",
-  FIGURE_NOT_PRINTABLE: "Ce format ne s’imprime pas encore (HEIC, radio, empreinte) : choisissez une photo JPEG ou PNG.",
+  FIGURE_NOT_PRINTABLE:
+    "Ce format ne s’imprime pas encore (HEIC, radio, empreinte) : choisissez une photo JPEG ou PNG.",
   TOO_MANY_FIGURES: "Douze photos au plus par document.",
   ENCOUNTER_IN_PROGRESS:
     "Cette consultation est en cours d’écoute ou de traitement : arrêtez-la avant de la supprimer.",
   DELIVERY_RECIPIENT_MISSING: "Indiquez à qui le document a été envoyé.",
   DELIVERY_NOT_FOUND: "Cet envoi a déjà été retiré.",
   NETWORK_UNREACHABLE: "Serveur Oris injoignable.",
-  MICROPHONE_UNAVAILABLE: "Micro indisponible : autorisez-le dans le navigateur.",
-  OBJECT_VERSION_REQUIRED: "Rechargez la page avant d’appliquer cette correction.",
-  STT_UNAVAILABLE: "La transcription est indisponible : réessayez dans un instant.",
-  NO_PROCEDURE_TO_DOCUMENT: "Aucun acte n’a été dit : il n’y a pas de compte rendu de soins à rédiger.",
+  MICROPHONE_UNAVAILABLE:
+    "Micro indisponible : autorisez-le dans le navigateur.",
+  OBJECT_VERSION_REQUIRED:
+    "Rechargez la page avant d’appliquer cette correction.",
+  STT_UNAVAILABLE:
+    "La transcription est indisponible : réessayez dans un instant.",
+  NO_PROCEDURE_TO_DOCUMENT:
+    "Aucun acte n’a été dit : il n’y a pas de compte rendu de soins à rédiger.",
   DOCUMENT_EMPTY: "Ce document n’a pas encore de contenu.",
   DOCUMENT_NOT_FOUND: "Ce document est introuvable.",
   COPY_FAILED: "La copie a échoué : votre navigateur l’a refusée.",
-  DOCUMENT_OUTDATED: "Ce document est périmé : régénérez-le avant de le valider.",
-  DOCUMENT_HAS_CRITICAL_ISSUES: "Le document contient une phrase non justifiée : validation impossible.",
-  WARNING_NOT_ACKNOWLEDGED: "Confirmez d’abord avoir pris connaissance de l’alerte critique.",
+  DOCUMENT_OUTDATED:
+    "Ce document est périmé : régénérez-le avant de le valider.",
+  DOCUMENT_HAS_CRITICAL_ISSUES:
+    "Le document contient une phrase non justifiée : validation impossible.",
+  WARNING_NOT_ACKNOWLEDGED:
+    "Confirmez d’abord avoir pris connaissance de l’alerte critique.",
   DOCUMENT_ALREADY_VALIDATED: "Ce document est déjà validé.",
-  DOCUMENTS_NOT_VALIDATED: "Tous les documents doivent être validés avant la consultation.",
-  OBJECT_VERSION_CONFLICT: "La consultation a été modifiée entre-temps : rechargez la page.",
-  CORRECTION_REJECTED: "Correction refusée : elle rendrait le dossier incohérent.",
+  DOCUMENTS_NOT_VALIDATED:
+    "Tous les documents doivent être validés avant la consultation.",
+  OBJECT_VERSION_CONFLICT:
+    "La consultation a été modifiée entre-temps : rechargez la page.",
+  CORRECTION_REJECTED:
+    "Correction refusée : elle rendrait le dossier incohérent.",
   TOOTH_NOT_FOUND: "Aucun élément ne porte cette dent.",
   SAME_TOOTH: "Les deux numéros de dent sont identiques.",
   NO_CHANGE: "Aucune modification à enregistrer.",
-  FACT_REFERENCED: "Ce fait appuie le plan de traitement : modifiez d’abord le plan.",
-  INVALID_TRANSITION: "Cette action n’est pas possible dans l’état actuel de la consultation.",
-  PATIENT_INFORMATION_REQUIRED: "Confirmez d’abord que le patient a été informé de l’enregistrement.",
+  FACT_REFERENCED:
+    "Ce fait appuie le plan de traitement : modifiez d’abord le plan.",
+  INVALID_TRANSITION:
+    "Cette action n’est pas possible dans l’état actuel de la consultation.",
+  PATIENT_INFORMATION_REQUIRED:
+    "Confirmez d’abord que le patient a été informé de l’enregistrement.",
   AUDIO_CHUNKS_MISSING: "Des segments audio ne sont pas arrivés au serveur.",
-  insecure_context: "Le micro n’est accessible que sur une connexion sécurisée (https).",
+  insecure_context:
+    "Le micro n’est accessible que sur une connexion sécurisée (https).",
   unsupported: "Ce navigateur ne permet pas la capture du micro.",
   permission_denied:
     "L’accès au micro a été refusé. Autorisez-le dans les réglages du navigateur (icône à gauche de l’adresse), puis réessayez.",
   no_microphone: "Aucun micro détecté. Branchez un micro puis réessayez.",
   microphone_busy: "Le micro est déjà utilisé par une autre application.",
   capture_failed: "La capture audio n’a pas pu démarrer.",
-  microphone_lost: "Le micro a été coupé ou débranché. La partie non captée sera signalée.",
+  microphone_lost:
+    "Le micro a été coupé ou débranché. La partie non captée sera signalée.",
 };
 
 export const PROCESSING_RULE: Record<string, string> = {
@@ -201,6 +229,12 @@ export const PROCESSING_RULE: Record<string, string> = {
     "Le micro n’a capté aucun son : l’enregistrement est muet. Vérifiez que le micro n’est pas couvert ou coupé, puis refaites un essai.",
   NO_TRANSCRIPT:
     "Aucune parole n’a été reconnue dans l’enregistrement : rien n’a pu être rédigé. Vérifiez que le micro capte bien les deux voix, puis refaites un essai.",
+  EXTRACTION_UNAVAILABLE:
+    "Le service qui relit la consultation n’a pas répondu. L’enregistrement et la transcription sont conservés : relancez le traitement.",
+  EXTRACTION_INVALID_OUTPUT:
+    "Oris a refusé le résultat de la relecture plutôt que de le corriger en silence. Rien n’est perdu : relancez le traitement, la machine reprend sa copie.",
+  ANTHROPIC_OUTPUT_TRUNCATED:
+    "La relecture a été coupée avant la fin : la consultation était trop longue pour être rendue d’un seul tenant. Relancez le traitement.",
   SPEAKER_ROLES_UNKNOWN:
     "Les voix n’ont pas pu être attribuées avec certitude : vérifiez qui a dit quoi.",
 };
@@ -211,7 +245,9 @@ export function formatDuration(ms: number): string {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
   const pad = (value: number) => String(value).padStart(2, "0");
-  return hours > 0 ? `${hours}:${pad(minutes)}:${pad(seconds)}` : `${pad(minutes)}:${pad(seconds)}`;
+  return hours > 0
+    ? `${hours}:${pad(minutes)}:${pad(seconds)}`
+    : `${pad(minutes)}:${pad(seconds)}`;
 }
 
 export function errorMessage(code: string): string {
@@ -220,9 +256,10 @@ export function errorMessage(code: string): string {
 
 export function formatDateTime(value: string | null): string {
   if (!value) return "—";
-  return new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(
-    new Date(value),
-  );
+  return new Intl.DateTimeFormat("fr-FR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
 }
 
 export function formatClock(ms: number): string {
@@ -242,7 +279,8 @@ const AXIS_LABELS: Record<string, Record<string, string>> = {
 function side(payload: unknown, field: string): string | null {
   if (payload === null || typeof payload !== "object") return null;
   const value = (payload as Record<string, unknown>)[field];
-  if (Array.isArray(value)) return value.length > 0 ? value.join(", ") : "aucune";
+  if (Array.isArray(value))
+    return value.length > 0 ? value.join(", ") : "aucune";
   if (typeof value !== "string") return null;
   return AXIS_LABELS[field]?.[value] ?? value;
 }
@@ -252,7 +290,14 @@ export function correctionDetail(event: {
   before: unknown;
   after: unknown;
 }): string | null {
-  for (const field of ["teeth", "status", "assertion", "temporality", "certainty", "clinical_status"]) {
+  for (const field of [
+    "teeth",
+    "status",
+    "assertion",
+    "temporality",
+    "certainty",
+    "clinical_status",
+  ]) {
     const before = side(event.before, field);
     const after = side(event.after, field);
     if (before !== null && after !== null && before !== after) {
@@ -267,7 +312,10 @@ export function correctionDetail(event: {
  * C'est un affichage, pas un enregistrement : la casse saisie reste intacte en base,
  * pour les noms à particule et pour le jour où la convention changera.
  */
-export function nomPatient(patient: { first_name: string; last_name: string }): string {
+export function nomPatient(patient: {
+  first_name: string;
+  last_name: string;
+}): string {
   return `${patient.first_name} ${patient.last_name.toLocaleUpperCase("fr-FR")}`.trim();
 }
 

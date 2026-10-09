@@ -24,6 +24,13 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
 
 ## Acquis des deux côtés
 
+- **« Relancer le traitement » quand il n'y a rien à relire** (09/10/2026) : un dossier
+  rangé « à relire » mais sans un seul fait, ou une relecture refusée, affiche la même
+  phrase et le même bouton — bandeau sur le site, carte sur l'iPhone. Les deux appellent
+  `POST /encounters/{id}/process`, qui reprend vraiment l'extraction au lieu de ne rien
+  faire. Trois pannes de relecture ont leur phrase en français des deux côtés
+  (`EXTRACTION_UNAVAILABLE`, `EXTRACTION_INVALID_OUTPUT`, `ANTHROPIC_OUTPUT_TRUNCATED`).
+
 - **« D'où vient cette phrase ? »** (26/09/2026) : sur le site, la phrase s'ouvre dans le
   rail de révision ; sur l'iPhone, dans une feuille. Les deux appellent la même route
   `GET /documents/{id}/preuve`, qui fait la jointure phrase → faits → paroles côté

@@ -60,6 +60,10 @@ struct ConsultationDetailView: View {
                     }
                 }
 
+                if content.rienARelire {
+                    RelectureVideCard { Task { await relancer(content) } }
+                }
+
                 if !content.documents.isEmpty {
                     Intercalaires(tab: $tab, documents: content.documents, aVerifier: content.reviewItemCount)
                 }
@@ -348,6 +352,29 @@ private struct ReviewCard: View {
 
 
 /// Pas de compte rendu : on dit pourquoi, et ce qu'on peut faire.
+/// Un dossier « à relire » sans un seul fait n'a rien à relire : l'extraction a échoué
+/// sans le dire (09/10/2026, trente-trois minutes de parole rendues vides). Le praticien
+/// ne doit pas rester devant une page vide sans issue. Jumelle du bandeau du site.
+private struct RelectureVideCard: View {
+    var relancer: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: OrisSpacing.s12) {
+            Label(
+                "La consultation a bien été entendue et transcrite, mais Oris n’en a tiré aucune information clinique : il n’y a rien à relire. L’enregistrement et la transcription sont conservés.",
+                systemImage: "doc.questionmark"
+            )
+            .font(Police.interface(15, .medium))
+            .foregroundStyle(Teinte.encreDouce)
+            Button(action: relancer) {
+                Label("Relancer le traitement", systemImage: "arrow.clockwise")
+            }
+            .buttonStyle(BoutonSecondaire())
+        }
+        .carte(rembourrage: OrisSpacing.s12, fond: Teinte.alerteDouce)
+    }
+}
+
 private struct NoDocumentCard: View {
     let encounter: EncounterSummary
     var supprimer: () -> Void = {}
@@ -357,6 +384,14 @@ private struct NoDocumentCard: View {
 
     private var rienEntendu: Bool {
         rules.contains("NO_TRANSCRIPT") || rules.contains("AUDIO_SILENT") || rules.contains("AUDIO_TEST_TONE")
+    }
+
+    /// Relancer a un sens : le traitement a été coupé, ou la relecture a échoué. Un
+    /// enregistrement muet, lui, ne donnera jamais rien de plus.
+    private var rattrapable: Bool {
+        if rienEntendu { return false }
+        return encounter.status == .processing || encounter.status == .finalizing
+            || encounter.status == .generationFailed || encounter.status == .transcriptionFailed
     }
 
     private var reason: String {
@@ -370,7 +405,13 @@ private struct NoDocumentCard: View {
             return "Aucune parole n’a été reconnue dans l’enregistrement : il n’y a rien à rédiger."
         }
         if rules.contains("STT_UNAVAILABLE") {
-            return "La transcription était indisponible. Relancez le traitement depuis l’ordinateur, dans la consultation."
+            return "La transcription était indisponible. L’enregistrement est conservé : relancez le traitement."
+        }
+        if rules.contains("ANTHROPIC_OUTPUT_TRUNCATED") {
+            return "La relecture a été coupée avant la fin : la consultation était trop longue pour être rendue d’un seul tenant. Relancez le traitement."
+        }
+        if rules.contains("EXTRACTION_INVALID_OUTPUT") || rules.contains("EXTRACTION_UNAVAILABLE") {
+            return "Oris a refusé le résultat de la relecture plutôt que de le corriger en silence. La transcription est conservée : relancez le traitement."
         }
         if encounter.status == .processing || encounter.status == .finalizing {
             return "Oris prépare le dossier… Tirez vers le bas pour actualiser."
@@ -386,6 +427,8 @@ private struct NoDocumentCard: View {
             if encounter.status == .processing || encounter.status == .finalizing {
                 Text("Si rien ne bouge après quelques minutes (Mac en veille, serveur arrêté), relancez : Oris reprend là où il s’était arrêté.")
                     .font(Police.note).foregroundStyle(Teinte.encreTresDouce)
+            }
+            if rattrapable {
                 Button(action: relancer) {
                     Label("Relancer le traitement", systemImage: "arrow.clockwise")
                 }

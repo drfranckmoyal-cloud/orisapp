@@ -170,7 +170,9 @@ def test_a_rule_corrected_since_the_writing_unblocks_the_document(
     # Une alerte d'un autre temps, figée dans le document.
     with Session(migrated_engine) as session:
         row = session.get(DocumentRow, UUID(document["id"]))
+        assert row is not None
         version = session.get(DocumentVersion, row.current_version_id)
+        assert version is not None
         version.validation_issues = [
             {
                 "code": "tooth_not_supported",

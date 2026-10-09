@@ -14,8 +14,10 @@ TRANSITIONS: dict[ClinicalEncounterStatus, frozenset[ClinicalEncounterStatus]] =
     "paused": frozenset({"recording", "finalizing", "audio_error", "upload_interrupted"}),
     "finalizing": frozenset({"processing", "transcription_failed"}),
     "processing": frozenset({"review", "transcription_failed", "generation_failed"}),
-    # Une correction après validation rouvre la révision.
-    "review": frozenset({"validated"}),
+    # Une correction après validation rouvre la révision. Et une consultation « à
+    # relire » qui ne contient aucun fait n'a rien à relire : le traitement peut la
+    # reprendre (extraction vide sur une vraie consultation, 09/10/2026).
+    "review": frozenset({"validated", "processing"}),
     "validated": frozenset({"review", "exported", "archived"}),
     "exported": frozenset({"review", "archived"}),
     "archived": frozenset(),

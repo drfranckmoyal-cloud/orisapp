@@ -483,3 +483,130 @@ def _vieillir(engine: Any, eid: str) -> None:
             "traitement_commence_le": (datetime.now(UTC) - timedelta(minutes=10)).isoformat(),
         }
         session.commit()
+
+
+def test_a_review_with_no_fact_at_all_is_processed_again_instead_of_being_shown_as_ready(
+    api: Any,
+) -> None:
+    """09/10/2026 : trente-trois minutes de parole, zéro fait, et Oris annonçait au
+    praticien un dossier prêt à relire — « pas d'informations ». Un dossier vide n'a rien
+    à relire : relancer le traitement doit refaire l'extraction, pas s'abstenir au nom de
+    l'idempotence."""
+    import dataclasses
+
+    from oris_api.contracts import ClinicalFact, TranscriptSegment
+    from oris_api.domain.types import ExtractionResult, TranscriptionResult
+    from oris_api.main import app
+    from oris_api.providers.base import ProviderInfo
+    from tests.test_audio_api import new_encounter, pcm, put_chunk
+
+    phrase = "la dent du fond me fait mal quand je bois froid depuis environ trois semaines"
+    segments = [
+        TranscriptSegment(
+            segment_id=f"s{i}",
+            start_ms=i * 2_000,
+            end_ms=i * 2_000 + 1_900,
+            speaker_role="patient",
+            text=phrase,
+            confidence=0.9,
+            is_final=True,
+        )
+        for i in range(25)
+    ]
+
+    class LongueConsultation:
+        info = ProviderInfo(name="test", version="longue-1")
+
+        async def transcribe(self, chunks: Any, locale: str, glossary: Any) -> Any:
+            return TranscriptionResult(segments=segments)
+
+    class VidePuisPleine:
+        """Le premier passage ne rend rien ; le second trouve ce qui était dit."""
+
+        info = ProviderInfo(name="test", version="vide-puis-pleine-1")
+        appels = 0
+
+        async def extract(self, segments: Any, glossary: Any) -> Any:
+            VidePuisPleine.appels += 1
+            if VidePuisPleine.appels == 1:
+                return ExtractionResult(facts=[])
+            return ExtractionResult(
+                facts=[
+                    ClinicalFact(
+                        fact_id="f1",
+                        category="symptom",
+                        concept="cold_sensitivity",
+                        value=None,
+                        teeth=["37"],
+                        surfaces=[],
+                        assertion="present",
+                        temporality="past",
+                        clinical_status="patient_reported",
+                        speaker_role="patient",
+                        certainty="certain",
+                        source_type="audio",
+                        evidence_segment_ids=["s0"],
+                        confidence=0.9,
+                        manually_validated=False,
+                    )
+                ]
+            )
+
+    original = app.state.providers
+    app.state.providers = dataclasses.replace(
+        original, speech_to_text=LongueConsultation(), clinical_extraction=VidePuisPleine()
+    )
+    try:
+        eid = new_encounter(api)
+        put_chunk(api, eid, 0, pcm())
+        vide = api.post(f"/encounters/{eid}/finish").json()
+        assert vide["status"] == "review" and vide["object_version"] == 1
+        assert clinical_object(api, eid)["facts"] == []
+
+        repris = api.post(f"/encounters/{eid}/process").json()
+    finally:
+        app.state.providers = original
+
+    assert repris["status"] == "review"
+    # Une nouvelle version d'objet, et l'ancienne garde sa place : rien n'est réécrit.
+    assert repris["object_version"] == 2
+    obj = clinical_object(api, eid)
+    assert [f["concept"] for f in obj["facts"]] == ["cold_sensitivity"]
+    assert [v["version"] for v in api.get(f"/encounters/{eid}/clinical-object").json()["versions"]]
+    # Le compte rendu existe enfin, et il cite le fait retrouvé.
+    note = documents_by_type(api, eid)["consultation_note"]
+    assert any(claim["fact_ids"] == ["f1"] for claim in note["claims"])
+
+
+def test_a_short_consultation_with_nothing_to_say_is_not_processed_again(api: Any) -> None:
+    """La reprise ne vaut que si la consultation a vraiment parlé : deux phrases sans
+    fait restent telles quelles, sinon chaque relance rappellerait le modèle pour rien."""
+    import dataclasses
+
+    from oris_api.domain.types import ExtractionResult
+    from oris_api.main import app
+    from oris_api.providers.base import ProviderInfo
+
+    class Vide:
+        info = ProviderInfo(name="test", version="vide-1")
+        appels = 0
+
+        async def extract(self, segments: Any, glossary: Any) -> Any:
+            Vide.appels += 1
+            return ExtractionResult(facts=[])
+
+    original = app.state.providers
+    app.state.providers = dataclasses.replace(original, clinical_extraction=Vide())
+    try:
+        patient = api.post("/patients", json={"first_name": "Test", "last_name": "Court"}).json()
+        eid = api.post(
+            "/encounters",
+            json={"patient_id": patient["id"], "synthetic_case_id": "ORIS-SYN-092"},
+        ).json()["id"]
+        api.post(f"/encounters/{eid}/start", json={"patient_informed": True})
+        api.post(f"/encounters/{eid}/finish")
+        api.post(f"/encounters/{eid}/process")
+    finally:
+        app.state.providers = original
+
+    assert Vide.appels == 1, "le modèle a été rappelé alors qu'il n'y avait rien à relire"

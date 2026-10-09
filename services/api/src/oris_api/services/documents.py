@@ -6,7 +6,7 @@ from collections.abc import Collection, Sequence
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from functools import partial
-from typing import Literal
+from typing import Literal, cast
 from uuid import UUID
 
 from sqlalchemy import select
@@ -86,7 +86,7 @@ def relire(
     enregistrées et des faits de l'objet dont elles sont issues.
     """
     rendu = GeneratedDocument(
-        document_type=document.document_type,
+        document_type=cast(DocumentDocumentType, document.document_type),
         content=version.content,
         claims=tuple(
             Claim(

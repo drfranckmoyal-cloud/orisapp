@@ -21,6 +21,7 @@ from oris_api.contracts import (
     validate_contract,
 )
 from oris_api.contracts.validation import ContractViolation
+from oris_api.domain.parole import parole_consistante
 from oris_api.domain.resolver import resolve
 from oris_api.domain.types import ExtractionResult, GlossaryHint
 from oris_api.llm.prompt import (
@@ -31,18 +32,25 @@ from oris_api.llm.prompt import (
     user_message,
 )
 from oris_api.llm.schema_bundle import extraction_tool_schema
+from oris_api.llm.tool_output import deballer
 from oris_api.providers.base import ExtractionUnavailable, ProviderInfo
 
 API_URL = "https://api.anthropic.com/v1/messages"
 API_VERSION = "2023-06-01"
 DEFAULT_MODEL = "claude-sonnet-5"
-MAX_TOKENS = 8_000
+# Une consultation de trente minutes produit beaucoup de faits, chacun avec ses preuves :
+# à 8 000 jetons, la sortie était tronquée en silence (BENTALEB, 09/10/2026).
+MAX_TOKENS = 16_000
 # Le modèle ne rend pas deux fois exactement la même sortie : plusieurs essais expliqués
 # valent mieux qu'une consultation sans compte rendu. Le contenu n'est jamais corrigé
 # par Oris ; c'est le modèle qui reprend sa copie, ou la sortie est rejetée.
 MAX_ATTEMPTS = 3
 # Coupure réseau ou quota : ce n'est pas la faute de la sortie, on repasse le même appel.
 TRANSIENT_BACKOFF_S = (1.0, 4.0)
+# Une demi-heure de consultation, c'est seize mille jetons à écrire : deux minutes n'y
+# suffisaient pas, et l'appel était abandonné en silence puis repassé deux fois pour
+# rien (BENTALEB, 09/10/2026). Dix minutes laissent la place à la sortie la plus longue.
+EXTRACTION_TIMEOUT_S = 600.0
 
 
 class AnthropicExtractionProvider:
@@ -53,7 +61,7 @@ class AnthropicExtractionProvider:
         api_key: str,
         model: str = DEFAULT_MODEL,
         client: httpx.AsyncClient | None = None,
-        timeout_s: float = 120,
+        timeout_s: float = EXTRACTION_TIMEOUT_S,
         max_attempts: int = MAX_ATTEMPTS,
         retry_backoff_s: tuple[float, ...] = TRANSIENT_BACKOFF_S,
     ) -> None:
@@ -86,6 +94,14 @@ class AnthropicExtractionProvider:
             usage_total = {k: usage_total[k] + usage.get(k, 0) for k in usage_total}
             try:
                 result = self._build(raw, segments, usage_total)
+                if not result.facts and parole_consistante(segments):
+                    # Le prompt autorise « rien d'exploitable » ; sur une demi-heure de
+                    # parole, c'est le signe que l'extraction a échoué, pas que la
+                    # consultation était vide. Le praticien doit le savoir (09/10/2026).
+                    raise ValueError(
+                        "aucun fait extrait alors que la consultation contient "
+                        f"{len(segments)} passages : reprends l'extraction"
+                    )
                 # Les règles déterministes d'Oris font partie du contrat : une sortie
                 # qu'elles refusent donne droit au même unique nouvel essai, expliqué.
                 violations = resolve(
@@ -167,6 +183,10 @@ class AnthropicExtractionProvider:
                 },
                 json=body,
             )
+        except httpx.TimeoutException as error:
+            # Une réponse qui n'arrive pas en dix minutes n'arrivera pas en vingt :
+            # repasser le même appel ne ferait qu'ajouter une attente à une panne.
+            raise ExtractionUnavailable("ANTHROPIC_TIMEOUT") from error
         except httpx.HTTPError as error:
             raise ExtractionUnavailable("ANTHROPIC_NETWORK") from error
         finally:
@@ -182,9 +202,13 @@ class AnthropicExtractionProvider:
 
         payload = response.json()
         usage = payload.get("usage") or {}
+        # Coupée au plafond de jetons, la sortie est incomplète : la prendre pour un
+        # « rien à extraire » ferait disparaître une consultation entière.
+        if payload.get("stop_reason") == "max_tokens":
+            raise ExtractionUnavailable("ANTHROPIC_OUTPUT_TRUNCATED")
         for block in payload.get("content") or []:
             if block.get("type") == "tool_use" and block.get("name") == TOOL_NAME:
-                return dict(block.get("input") or {}), {
+                return deballer(dict(block.get("input") or {})), {
                     "input_tokens": int(usage.get("input_tokens", 0)),
                     "output_tokens": int(usage.get("output_tokens", 0)),
                 }

@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 from dataclasses import replace
 from typing import Any
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import httpx
 import pytest
@@ -187,17 +187,19 @@ class FauxFournisseur:
         roles: dict[str, str] | None = None,
         panne: str | None = None,
         par_passage: dict[str, str] | None = None,
+        panne_voix: str | None = None,
     ) -> None:
         self.roles = roles or {}
         self.panne = panne
         self.par_passage = par_passage or {}
+        self.panne_voix = panne_voix
         self.appels = 0
         self.appels_passages = 0
 
     async def attribuer(self, voix: list[Voix]) -> dict[str, str]:
         self.appels += 1
-        if self.panne:
-            raise SpeakerRolesUnavailable(self.panne)
+        if self.panne or self.panne_voix:
+            raise SpeakerRolesUnavailable(self.panne or str(self.panne_voix))
         return self.roles
 
     async def attribuer_paroles(self, paroles: list[Parole]) -> dict[str, str]:
@@ -211,8 +213,9 @@ def jeu(
     roles: dict[str, str] | None = None,
     panne: str | None = None,
     par_passage: dict[str, str] | None = None,
+    panne_voix: str | None = None,
 ) -> tuple[Any, Any]:
-    fournisseur = FauxFournisseur(roles, panne, par_passage)
+    fournisseur = FauxFournisseur(roles, panne, par_passage, panne_voix)
     return fournisseur, replace(build_providers(Settings()), speaker_roles=fournisseur)
 
 
@@ -382,3 +385,138 @@ async def test_a_consultation_refused_from_end_to_end_is_a_failure_not_a_silence
     with pytest.raises(SpeakerRolesUnavailable) as refus:
         await fournisseur.attribuer_paroles(paroles_longues(3))
     assert refus.value.code == "SPEAKER_ROLES_INVALID_OUTPUT"
+
+
+# --- L'emballage de la réponse du modèle (09/10/2026) --------------------------------
+
+
+def test_an_answer_wrapped_in_a_string_is_unwrapped_rather_than_refused() -> None:
+    """Le modèle rend parfois tout son objet dans une chaîne. Sa réponse était juste :
+    la refuser laissait 250 passages en « locuteur inconnu », et l'extraction échouait
+    ensuite tout entière (BENTALEB, 09/10/2026)."""
+    from oris_api.llm.tool_output import deballer
+
+    # Le cas vu en vrai : l'objet entier encodé dans la valeur de sa propre clé.
+    assert deballer(
+        {"voix": '{"voix": [{"label": "0", "role": "practitioner", "confiance": 0.93}]}'}
+    ) == {"voix": [{"label": "0", "role": "practitioner", "confiance": 0.93}]}
+    # La variante plus simple : seule la liste est encodée.
+    assert deballer({"paroles": '[{"segment_id": "s1", "role": "patient"}]'}) == {
+        "paroles": [{"segment_id": "s1", "role": "patient"}]
+    }
+    # Une sortie correcte n'est pas touchée, et une chaîne qui n'est pas du JSON reste
+    # telle quelle : elle sera refusée comme avant, pas rafistolée.
+    droite = {"voix": [{"label": "0", "role": "patient", "confiance": 0.9}]}
+    assert deballer(droite) == droite
+    assert deballer({"voix": "practitioner"}) == {"voix": "practitioner"}
+
+
+def test_the_voice_answer_wrapped_in_a_string_still_assigns_the_roles() -> None:
+    """Le déballage sert bien l'attribution : bout en bout, les deux voix sont nommées."""
+    import asyncio
+
+    import httpx
+
+    from oris_api.domain.speaker_roles import SpeakerCues, Voix
+    from oris_api.llm.speaker_roles import AnthropicSpeakerRoleProvider
+
+    def repondre(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "content": [
+                    {
+                        "type": "tool_use",
+                        "name": "attribuer_les_voix",
+                        "input": {
+                            "voix": (
+                                '{"voix": [{"label": "0", "role": "practitioner", '
+                                '"confiance": 0.93}, {"label": "1", "role": "patient", '
+                                '"confiance": 0.88}]}'
+                            )
+                        },
+                    }
+                ],
+                "usage": {"input_tokens": 10, "output_tokens": 10},
+            },
+        )
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(repondre))
+    provider = AnthropicSpeakerRoleProvider("cle-de-test", client=client)
+    roles = asyncio.run(
+        provider.attribuer(
+            [
+                Voix(
+                    label="0",
+                    segments=170,
+                    duree_ms=600_000,
+                    part=0.61,
+                    premier_ms=0,
+                    extraits=["…"],
+                    indices=SpeakerCues(practitioner=0, patient=0),
+                ),
+                Voix(
+                    label="1",
+                    segments=80,
+                    duree_ms=380_000,
+                    part=0.39,
+                    premier_ms=4_000,
+                    extraits=["…"],
+                    indices=SpeakerCues(practitioner=0, patient=0),
+                ),
+            ]
+        )
+    )
+    assert roles == {"0": "practitioner", "1": "patient"}
+
+
+def test_when_naming_the_voices_fails_the_passages_are_judged_one_by_one() -> None:
+    """09/10/2026 : deux voix bien séparées, mais leur rôle refusé — et les 250 passages
+    sont restés « locuteur inconnu », ce qui a fait échouer l'extraction entière. Un
+    refus voix par voix doit redescendre au passage par passage, pas tout abandonner."""
+    fournisseur, providers = jeu(
+        panne_voix="SPEAKER_ROLES_INVALID_OUTPUT",
+        par_passage={"t1": "practitioner", "t2": "patient", "t3": "practitioner"},
+    )
+
+    poses = attribuer_les_voix(CONSULTATION, VOIX, providers, uuid4())
+
+    assert (fournisseur.appels, fournisseur.appels_passages) == (1, 1)
+    assert [s.speaker_role for s in poses] == [
+        "practitioner",
+        "patient",
+        "practitioner",
+        # Ce que le modèle n'a pas assumé reste inconnu : rien n'est deviné.
+        "unknown",
+    ]
+
+
+def test_relaunching_writes_the_recovered_roles_into_the_transcript(
+    api: Any, migrated_engine: Any
+) -> None:
+    """Relancer rattrape une attribution restée inconnue : encore faut-il que le
+    praticien le voie. Les rôles rejugés sont écrits sur les passages déjà rangés, sans
+    toucher au reste du dossier."""
+    from sqlalchemy.orm import Session
+
+    from oris_api.services.clinical_store import load_segments, poser_les_roles
+    from tests.conftest import run_synthetic
+
+    eid = run_synthetic(api, "ORIS-SYN-092")["id"]
+    avant = api.get(f"/encounters/{eid}/transcript").json()["segments"]
+    assert avant, "la consultation fictive a bien des passages"
+
+    with Session(migrated_engine) as session:
+        gardes = load_segments(session, UUID(eid))
+        rejuges = [s.model_copy(update={"speaker_role": "unknown"}) for s in gardes]
+        assert poser_les_roles(session, UUID(eid), rejuges) == len(
+            [s for s in gardes if s.speaker_role != "unknown"]
+        )
+        session.commit()
+
+    apres = api.get(f"/encounters/{eid}/transcript").json()["segments"]
+    assert {s["speaker_role"] for s in apres} == {"unknown"}
+    # Rien d'autre n'a bougé : mêmes passages, mêmes paroles, mêmes faits.
+    assert [s["segment_id"] for s in apres] == [s["segment_id"] for s in avant]
+    assert [s["text"] for s in apres] == [s["text"] for s in avant]
+    assert api.get(f"/encounters/{eid}/clinical-object").json()["clinical_object"]["facts"]

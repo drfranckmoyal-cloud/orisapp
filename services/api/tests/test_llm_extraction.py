@@ -246,3 +246,58 @@ def test_scoring_counts_matches_duplicates_and_axes() -> None:
     degraded = score_case(case, ExtractionResult(facts=wrong), 1.0)
     assert degraded.duplicates == 1
     assert degraded.negation_correct < degraded.negation_total
+
+
+# --- Une consultation entière ne disparaît pas en silence (BENTALEB, 09/10/2026) -----
+
+
+def consultation_longue(passages: int = 40) -> list[TranscriptSegment]:
+    """Une vraie consultation : assez de parole pour qu'un résultat vide soit suspect."""
+    return [
+        TranscriptSegment(
+            segment_id=f"t{i + 1}",
+            start_ms=i * 4000,
+            end_ms=i * 4000 + 3500,
+            speaker_role="practitioner",
+            text="On regarde l'usure des faces occlusales et on reprend le plan de traitement.",
+            confidence=0.9,
+            is_final=True,
+        )
+        for i in range(passages)
+    ]
+
+
+def test_a_truncated_answer_is_a_failure_not_an_empty_consultation() -> None:
+    """Coupée au plafond de jetons, la sortie était prise pour « rien à extraire »."""
+    coupee = httpx.Response(
+        200,
+        json={
+            "stop_reason": "max_tokens",
+            "content": [{"type": "tool_use", "name": TOOL_NAME, "input": {}}],
+            "usage": {"input_tokens": 9000, "output_tokens": 16000},
+        },
+    )
+    provider = provider_with([coupee, coupee, coupee, coupee])
+
+    with pytest.raises(ExtractionUnavailable) as refus:
+        asyncio.run(provider.extract(consultation_longue(), []))
+    assert refus.value.code == "ANTHROPIC_OUTPUT_TRUNCATED"
+
+
+def test_no_fact_on_a_real_consultation_is_retried_then_refused() -> None:
+    vide = httpx.Response(200, json=answer({"facts": [], "treatment_plan": None, "procedures": []}))
+    provider = provider_with([vide, vide, vide])
+
+    with pytest.raises(ExtractionUnavailable) as refus:
+        asyncio.run(provider.extract(consultation_longue(), []))
+    assert refus.value.code == "EXTRACTION_INVALID_OUTPUT"
+    assert "aucun fait" in (refus.value.details or "")
+
+
+def test_a_short_exchange_may_legitimately_contain_nothing_clinical() -> None:
+    """Un essai de deux phrases peut vraiment ne rien contenir : on ne crie pas au loup."""
+    vide = httpx.Response(200, json=answer({"facts": [], "treatment_plan": None, "procedures": []}))
+    provider = provider_with([vide])
+
+    resultat = asyncio.run(provider.extract(SEGMENTS, []))
+    assert resultat.facts == []

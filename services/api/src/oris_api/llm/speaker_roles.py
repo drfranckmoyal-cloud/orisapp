@@ -19,6 +19,7 @@ from typing import Any
 import httpx
 
 from oris_api.domain.speaker_roles import Parole, Voix
+from oris_api.llm.tool_output import deballer
 from oris_api.providers.base import ProviderInfo, SpeakerRolesUnavailable
 
 API_URL = "https://api.anthropic.com/v1/messages"
@@ -353,5 +354,5 @@ class AnthropicSpeakerRoleProvider:
 
         for block in response.json().get("content") or []:
             if block.get("type") == "tool_use" and block.get("name") == tool:
-                return dict(block.get("input") or {})
+                return deballer(dict(block.get("input") or {}))
         raise SpeakerRolesUnavailable("ANTHROPIC_NO_TOOL_OUTPUT")

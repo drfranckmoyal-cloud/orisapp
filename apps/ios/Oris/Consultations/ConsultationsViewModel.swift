@@ -56,6 +56,13 @@ final class ConsultationDetailViewModel {
             warnings.filter { $0.severity == .critical }
         }
 
+        /// Dossier rangé « à relire » mais vide de tout fait : l'extraction a échoué sans
+        /// le dire. Le praticien doit pouvoir la reprendre, pas seulement constater.
+        var rienARelire: Bool {
+            guard encounter.status == .review, let objet = clinicalObject else { return false }
+            return objet.facts.isEmpty && objet.procedures.isEmpty && objet.treatmentPlan == nil
+        }
+
         /// Points « À vérifier » : alertes de la consultation et problèmes des documents.
         var reviewItemCount: Int {
             warnings.count + documents.reduce(0) { $0 + $1.validationIssues.count }

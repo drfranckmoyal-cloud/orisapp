@@ -75,6 +75,27 @@ def replace_segments(
     session.flush()
 
 
+def poser_les_roles(session: Session, encounter_id: UUID, segments: list[TranscriptSegment]) -> int:
+    """Écrit les rôles rejugés sur des passages déjà rangés, et rien d'autre.
+
+    Relancer le traitement rattrape une attribution restée « inconnue » : encore faut-il
+    que le praticien le voie dans la transcription et dans les preuves. On met à jour la
+    seule colonne du rôle — remplacer les passages couperait les preuves des faits déjà
+    enregistrés.
+    """
+    roles = {segment.segment_id: segment.speaker_role for segment in segments}
+    poses = 0
+    for row in session.scalars(
+        select(TranscriptSegmentRow).where(TranscriptSegmentRow.encounter_id == encounter_id)
+    ):
+        role = roles.get(row.segment_id)
+        if role and role != row.speaker_role:
+            row.speaker_role = role
+            poses += 1
+    session.flush()
+    return poses
+
+
 def load_speaker_labels(session: Session, encounter_id: UUID) -> dict[str, str]:
     """Les voix gardées, par passage. Vide quand la transcription n'en a séparé aucune."""
     rows = session.scalars(

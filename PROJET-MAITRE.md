@@ -197,6 +197,16 @@ Liste complète : `docs/KNOWN_LIMITATIONS.md`. Les quatre plus importantes :
 4. **L'app iPhone n'a pas encore servi en consultation** : elle tourne sur l'iPhone de
    Franck et est vérifiée à l'écran et par 49 tests, mais aucune vraie écoute au fauteuil.
 
+**Ce que les vraies consultations ont appris, le 9 octobre 2026.** Deux consultations
+réelles sur quatre ont échoué, et les trois causes étaient invisibles depuis les
+consultations fictives — toutes courtes, toutes avec des voix bien séparées :
+une consultation de trente-trois minutes dépassait le plafond de sortie du modèle et
+était coupée en silence ; sa réponse sur « qui parle » arrivait dans un emballage
+inattendu et était refusée en entier, laissant 250 passages en « locuteur inconnu » ;
+et un dossier vide était rangé « à relire » sans issue pour le praticien. Les trois sont
+corrigées et tenues par des tests. **La leçon vaut pour la suite : la durée et le bruit
+d'une vraie consultation trouvent ce qu'un corpus propre ne trouvera jamais.**
+
 ---
 
 ## 7. Lancer Oris sur le Mac

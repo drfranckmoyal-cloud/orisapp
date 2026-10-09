@@ -91,7 +91,7 @@ def test_one_message_per_recipient_with_the_pdf_and_each_send_is_noted(
         "mutuelle@exemple.test",
     ]
     piece = next(boite.envoyes[0].iter_attachments())
-    assert piece.get_filename().startswith("Compte-rendu-consultation_ENVOI-Test_")
+    assert (piece.get_filename() or "").startswith("Compte-rendu-consultation_ENVOI-Test_")
     assert piece.get_content().startswith(b"%PDF")
     resume = api.get(f"/encounters/{encounter['id']}").json()["documents"]
     envoye_a = next(d for d in resume if d["id"] == note_id)["sent_to"]

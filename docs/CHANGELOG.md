@@ -1,5 +1,31 @@
 # Changelog
 
+## Deux consultations en échec : une relecture tronquée, et un dossier vide sans issue — 2026-10-09
+- Constat de Franck : « les 2 derniers consultations ont échoué — une me dit qu'il n'y a
+  pas d'informations alors que 30 minutes d'enregistrement (patient BENTALEB), l'autre
+  que Claude n'a pas fonctionné (patient TOTEL) ».
+- **BENTALEB** : 250 passages, 3 000 mots, trente-trois minutes de vraie parole clinique
+  — et zéro fait. Trois causes enchaînées, les trois corrigées :
+  1. la sortie du modèle était **coupée à 8 000 jetons** sans que personne ne le voie ;
+     plafond porté à 16 000, et une réponse tronquée est désormais une panne nommée
+     (`ANTHROPIC_OUTPUT_TRUNCATED`), pas un résultat ;
+  2. un résultat **vide sur une consultation qui a vraiment parlé** était accepté tel
+     quel ; il est maintenant refusé, le modèle reprend sa copie, et à défaut la
+     consultation tombe en échec explicite au lieu d'être rangée « à relire » ;
+  3. relancer le traitement d'une consultation déjà rangée **ne faisait rien** (règle
+     d'idempotence) : un dossier sans un seul fait n'a rien à relire, le traitement le
+     reprend et enregistre une nouvelle version d'objet, sans jamais réécrire l'ancienne
+     ni un document validé.
+- **Le praticien n'est plus laissé sans issue** : bandeau sur le site et carte sur
+  l'iPhone (parité, même lot), avec « Relancer le traitement », pour un dossier vide
+  comme pour une relecture refusée. Trois pannes de relecture ont maintenant une phrase
+  en français au lieu d'un code.
+- **TOTEL** : la rédaction a bien eu lieu, mais le garde-fou « ne jamais perdre une
+  incertitude » a refusé les trois propositions du modèle ; Oris est retombé sur son
+  modèle de texte, ce qui se voit dans le compte rendu. Le repli est donc visible, et le
+  bouton « Rédiger à nouveau » existait déjà : relancée, la rédaction a réussi.
+- Cinq tests ajoutés (pipeline et extraction) ; 485 tests au vert.
+
 ## Une collaboratrice sur le serveur, et l'app qui se connecte toute seule — 2026-10-08
 - Constat de Franck après installation par TestFlight : « serveur Oris injoignable ».
   Cause : une adresse saisie sans `https://` partait **en clair**, et iOS refuse le clair

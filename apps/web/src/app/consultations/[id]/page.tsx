@@ -430,6 +430,34 @@ export default function ConsultationPage() {
           </Bouton>
         </div>
       )}
+      {/* Un dossier « à relire » sans un seul fait n'a rien à relire : l'extraction a
+          échoué sans le dire (09/10/2026, trente-trois minutes de parole). On ne laisse
+          pas le praticien devant une page vide sans issue. */}
+      {data.status === "review" &&
+        object !== null &&
+        object.facts.length === 0 &&
+        object.procedures.length === 0 &&
+        object.treatment_plan === null &&
+        transcript.state === "ready" &&
+        transcript.data.segments.length > 0 && (
+          <div className="banner banner-review" role="alert">
+            La consultation a bien été entendue et transcrite, mais Oris n’en a
+            tiré aucune information clinique : il n’y a rien à relire.
+            L’enregistrement et la transcription sont conservés.{" "}
+            <Bouton
+              variante="secondaire"
+              onClick={() =>
+                act(
+                  `/encounters/${id}/process`,
+                  undefined,
+                  "Traitement relancé.",
+                )
+              }
+            >
+              Relancer le traitement
+            </Bouton>
+          </div>
+        )}
       {data.processing_errors.some((e) => PROCESSING_RULE[e.rule]) && (
         <div className="banner banner-review" role="alert">
           {data.processing_errors
@@ -455,7 +483,8 @@ export default function ConsultationPage() {
               </button>
             </div>
           )}
-          {data.processing_errors.some((e) => e.rule === "STT_UNAVAILABLE") && (
+          {(data.processing_errors.some((e) => e.rule === "STT_UNAVAILABLE") ||
+            data.status === "generation_failed") && (
             <div>
               <Bouton
                 variante="secondaire"
