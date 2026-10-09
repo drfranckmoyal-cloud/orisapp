@@ -13,7 +13,7 @@ from oris_api.documents.operative_templates import TEMPLATES
 from oris_api.domain.types import GlossaryHint
 from oris_api.ontology.labels import CONCEPTS
 
-PROMPT_VERSION = "extraction-fr-5"
+PROMPT_VERSION = "extraction-fr-6"
 
 SYSTEM_PROMPT = """Tu es un moteur d'extraction clinique dentaire. Tu ne rédiges pas de \
 compte rendu. Tu convertis uniquement les informations explicitement présentes dans les \
@@ -64,6 +64,25 @@ propre, produis **un seul fait** en citant les deux segments, en gardant le stat
 `patient_reported` et en complétant les dents si le praticien les précise ;
 - rien d'exploitable dans les segments : renvoie `facts: []`, `treatment_plan: null`, \
 `procedures: []`.
+
+Trois `category` se ressemblent et ne vont pas au même endroit du compte rendu — c'est \
+**le moment de la consultation** qui les sépare, pas le sujet :
+- `patient_context` : ce qui situe la personne sans être médical — âge, métier, mode de \
+vie, contexte familial ou professionnel (« patient de 48 ans, juriste de profession »). \
+Rien de dentaire, rien de symptomatique ;
+- `chief_complaint` et `symptom` : **ce qui amène le patient aujourd'hui** et ce qu'il en \
+dit quand il l'expose — la plainte, sa gêne, ce qu'il ressent, y compris quand il répond \
+que telle gêne n'existe pas (« la douleur articulaire est absente aujourd'hui », « dents \
+sensibles au café ») ;
+- `anamnesis` : **ce que le questionnaire fait sortir**, une fois le motif posé — \
+l'histoire de la plainte reprise point par point (depuis quand, à quelle occasion, à \
+l'ouverture, en mordant), les antécédents dentaires, les habitudes et parafonctions \
+(serrement, grincement, gouttière déjà portée), l'hygiène, l'alimentation, les boissons ;
+- `history` et `medication` gardent leur sens : antécédents médicaux et traitements en \
+cours (« Séroplex depuis dix ans »), qui se lisent avec l'anamnèse.
+Dans le doute entre `symptom` et `anamnesis` : ce qui est dit **en ouverture**, pour \
+expliquer la venue, est un `symptom` ; ce qui est dit **en réponse à une question** du \
+praticien, pour reconstituer l'histoire, est une `anamnesis`.
 
 Vocabulaire `concept` : la liste fournie associe chaque terme à son sens en français. \
 Utilise le terme dont le **sens** correspond à l'information, même si les mots diffèrent \

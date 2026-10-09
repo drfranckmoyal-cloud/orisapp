@@ -1,5 +1,24 @@
 # Changelog
 
+## Le modèle de première consultation s'ouvre sur la situation et l'anamnèse — 2026-10-10
+- Franck a corrigé à la main le compte rendu de M. BLARD du 06/10 : deux rubriques
+  ajoutées, **« Situation »** en tête et **« Anamnèse et questionnaire médical »** juste
+  après le motif. Tout ce que le patient racontait — son histoire, ses traitements, ses
+  habitudes, son hygiène — se déversait jusqu'ici dans « Motif de la consultation », ou
+  était relégué tout en bas dans « Points d'attention ».
+- **Révision de la décision n° 1 du 21 septembre** : les antécédents et les traitements
+  quittent « Points d'attention » pour l'anamnèse, où ils se lisent avec le reste.
+  « Informations données au patient » reste.
+- Deux natures de faits ajoutées au contrat (`patient_context`, `anamnesis`), donc aux
+  trois langages. **Ce qui sépare un symptôme d'une anamnèse, c'est le moment, pas le
+  sujet** : ce qui est dit en ouverture pour expliquer la venue, contre ce qui ressort
+  des questions du praticien. Choix de Franck ; c'est le modèle qui tranche, consigne à
+  l'appui (prompt `extraction-fr-6`).
+- **Le déroulé affiché pendant l'écoute** suit le nouvel ordre, sur le site comme sur
+  l'iPhone. Il en existait trois copies que rien ne tenait d'accord : un test du serveur
+  lit maintenant les deux fichiers des clients et refuse qu'ils dérivent du modèle.
+- Trois tests ajoutés ; 496 tests serveur, 73 site, 63 iPhone au vert.
+
 ## Une écoute coupée s'entend, et repart toute seule — 2026-10-10
 - Demande de Franck : « pendant une consultation active, quand la consultation se coupe,
   émettre un son très distinctif » et « mes consultations sont coupées par les appels

@@ -7,7 +7,7 @@ from typing import Annotated, Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 TranscriptSegmentSpeakerRole = Literal["practitioner", "patient", "assistant", "companion", "unknown"]
-ClinicalFactCategory = Literal["chief_complaint", "history", "symptom", "clinical_finding", "radiographic_finding", "assessment", "diagnosis", "treatment_option", "treatment_decision", "procedure", "material", "medication", "patient_information", "follow_up", "other"]
+ClinicalFactCategory = Literal["patient_context", "chief_complaint", "history", "anamnesis", "symptom", "clinical_finding", "radiographic_finding", "assessment", "diagnosis", "treatment_option", "treatment_decision", "procedure", "material", "medication", "patient_information", "follow_up", "other"]
 ClinicalFactSurfaces = Literal["M", "D", "O", "V", "B", "L", "P", "I", "C"]
 ClinicalFactAssertion = Literal["present", "absent", "uncertain"]
 ClinicalFactTemporality = Literal["past", "current", "future"]

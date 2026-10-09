@@ -77,7 +77,61 @@ def test_the_rubrics_follow_the_template_order_and_empty_ones_vanish() -> None:
     note = render_consultation_note(dictee()).content
     titres = [ligne for ligne in note.splitlines() if ligne in RUBRIQUES_CONSULTATION]
     assert titres == [t for t in RUBRIQUES_CONSULTATION if t in titres]
-    assert len(titres) == len(RUBRIQUES_CONSULTATION)
+    # Cette dictée ne dit rien de la situation du patient ni de son questionnaire
+    # médical : les deux rubriques n'existent pas, elles ne sont pas laissées vides.
+    assert "Situation" not in titres
+    assert "Anamnèse et questionnaire médical" not in titres
+    assert len(titres) == len(RUBRIQUES_CONSULTATION) - 2
+
+
+def test_the_patient_context_and_the_anamnesis_open_the_report_in_their_own_rubrics() -> None:
+    """Modèle révisé le 10/10/2026, sur le compte rendu corrigé à la main par Franck :
+    « Situation » ouvre le compte rendu, et l'anamnèse — antécédents, traitements,
+    habitudes — quitte « Points d'attention » pour une rubrique à elle, avant l'examen."""
+    encounter = dictee()
+    situation = encounter.facts[0].model_copy(
+        update={
+            "fact_id": "ctx1",
+            "category": "patient_context",
+            "concept": "profession",
+            "value": "Patient de 48 ans, juriste de profession",
+            "teeth": [],
+        }
+    )
+    traitement = encounter.facts[0].model_copy(
+        update={
+            "fact_id": "ana1",
+            "category": "medication",
+            "concept": "antidepressant",
+            "value": "Séroplex depuis environ 10 ans, en lien avec une anxiété",
+            "teeth": [],
+        }
+    )
+    habitude = encounter.facts[0].model_copy(
+        update={
+            "fact_id": "ana2",
+            "category": "anamnesis",
+            "concept": "oral_hygiene",
+            "value": "Brossage 2 fois par jour, matin et soir",
+            "teeth": [],
+        }
+    )
+    enrichie = encounter.model_copy(
+        update={"facts": [situation, traitement, habitude, *encounter.facts]}
+    )
+
+    note = render_consultation_note(enrichie).content
+    titres = [ligne for ligne in note.splitlines() if ligne in RUBRIQUES_CONSULTATION]
+    assert titres[:3] == [
+        "Situation",
+        "Motif de la consultation",
+        "Anamnèse et questionnaire médical",
+    ]
+    assert "juriste" in rubrique(note, "Situation")
+    anamnese = rubrique(note, "Anamnèse et questionnaire médical")
+    assert "Séroplex" in anamnese and "Brossage" in anamnese
+    # Ce qui était relégué dans « Points d'attention » n'y est plus.
+    assert "Séroplex" not in rubrique(note, "Points d’attention / coordination")
 
 
 def test_a_proposal_said_twice_is_written_once() -> None:
@@ -126,3 +180,28 @@ def test_a_referral_letter_is_built_from_the_same_facts_in_the_letter_rubrics() 
     # Rien n'a été dit sur ce qu'on demande au confrère : la rubrique n'existe pas.
     assert "Demande / objectifs" not in titres
     assert validate_document(lettre, encounter) == []
+
+
+def test_the_outline_shown_while_recording_matches_the_template_on_both_clients() -> None:
+    """Le déroulé affiché pendant l'écoute annonce les rubriques du compte rendu. Il en
+    existe trois copies — serveur, site, iPhone — et rien ne les tenait d'accord : changer
+    le modèle le 10/10/2026 aurait laissé les deux écrans annoncer l'ancien."""
+    import re
+    from pathlib import Path
+
+    racine = Path(__file__).resolve().parents[3]
+
+    site = (racine / "apps/web/src/lib/modeles.ts").read_text(encoding="utf-8")
+    bloc_site = site.split("consultation: [", 1)[1].split("procedure:", 1)[0]
+    titres_site = re.findall(r'titre:\s*"([^"]+)"', bloc_site)
+
+    iphone = (racine / "apps/ios/Oris/Listening/Deroule.swift").read_text(encoding="utf-8")
+    bloc_iphone = (
+        iphone.split("var rubriques", 1)[1]
+        .split("case .consultation:", 1)[1]
+        .split("case .procedure:", 1)[0]
+    )
+    titres_iphone = re.findall(r'"([^"]+)"', bloc_iphone)
+
+    assert titres_site == list(RUBRIQUES_CONSULTATION), "le déroulé du site a dérivé"
+    assert titres_iphone == list(RUBRIQUES_CONSULTATION), "le déroulé de l'iPhone a dérivé"

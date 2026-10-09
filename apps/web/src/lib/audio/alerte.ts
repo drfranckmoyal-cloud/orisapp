@@ -62,10 +62,10 @@ export class AlerteNavigateur implements AlerteCapture {
     }
   }
 
-  couper(_motif: "micro_perdu"): void {
+  couper(motif: "micro_perdu"): void {
     if (this.rappel !== null) return; // déjà en train d'alerter
     this.restants = RAPPELS_MAX;
-    this.avertir();
+    this.avertir(motif);
     this.clignoter();
     this.sonner();
     this.rappel = setInterval(() => {
@@ -101,10 +101,12 @@ export class AlerteNavigateur implements AlerteCapture {
     document.title = `⚠ ${TITRE}`;
   }
 
-  private avertir(): void {
+  private avertir(motif: string): void {
     if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
     try {
-      new Notification(TITRE, { body: MESSAGE, tag: "oris-ecoute-coupee" });
+      // Un `tag` par motif : deux coupures de même nature se remplacent au lieu de
+      // s'empiler, et le praticien ne trouve pas dix avis identiques.
+      new Notification(TITRE, { body: MESSAGE, tag: `oris-ecoute-${motif}` });
     } catch {
       // Un navigateur qui refuse l'avis ne doit pas faire tomber l'écoute.
     }

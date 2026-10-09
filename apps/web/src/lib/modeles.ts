@@ -10,17 +10,19 @@ export const RUBRIQUES: Record<
   { titre: string; detail?: string }[]
 > = {
   consultation: [
-    { titre: "Motif de la consultation" },
+    { titre: "Situation", detail: "âge, métier, contexte de vie" },
+    { titre: "Motif de la consultation", detail: "adressage, ce qui amène le patient" },
+    {
+      titre: "Anamnèse et questionnaire médical",
+      detail: "histoire de la plainte, antécédents, traitements, habitudes, hygiène",
+    },
     { titre: "Examen clinique", detail: "radios, examens complémentaires" },
     { titre: "Diagnostic / analyse" },
     { titre: "Proposition thérapeutique" },
     { titre: "Informations données au patient" },
     { titre: "Actes réalisés" },
     { titre: "Suite de la prise en charge" },
-    {
-      titre: "Points d’attention / coordination",
-      detail: "antécédents, traitements, allergies",
-    },
+    { titre: "Points d’attention / coordination" },
   ],
   procedure: [
     { titre: "Indication" },

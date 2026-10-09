@@ -29,8 +29,10 @@
     "category": {
       "type": "string",
       "enum": [
+        "patient_context",
         "chief_complaint",
         "history",
+        "anamnesis",
         "symptom",
         "clinical_finding",
         "radiographic_finding",

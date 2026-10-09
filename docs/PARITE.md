@@ -24,6 +24,12 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
 
 ## Acquis des deux côtés
 
+- **Le déroulé de la consultation** (10/10/2026) : les rubriques annoncées pendant
+  l'écoute sont les mêmes des deux côtés, et dans l'ordre du modèle. Trois copies
+  existent — `documents/renderer.py` fait foi, `apps/web/src/lib/modeles.ts` et
+  `apps/ios/Oris/Listening/Deroule.swift` la suivent — et un test du serveur les compare
+  à chaque exécution : elles ne peuvent plus dériver en silence.
+
 - **Le son d'une écoute coupée** (09/10/2026) : trois notes qui descendent, répétées
   toutes les 5 secondes, douze fois au plus. Le même motif des deux côtés — fichier
   `Oris/Resources/ecoute-coupee.wav` sur l'iPhone, fabriqué à la volée par

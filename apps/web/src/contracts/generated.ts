@@ -10,8 +10,10 @@ export const TRANSCRIPT_SEGMENT_SPEAKER_ROLE_VALUES = [
 export type TranscriptSegmentSpeakerRole = (typeof TRANSCRIPT_SEGMENT_SPEAKER_ROLE_VALUES)[number];
 
 export const CLINICAL_FACT_CATEGORY_VALUES = [
+  "patient_context",
   "chief_complaint",
   "history",
+  "anamnesis",
   "symptom",
   "clinical_finding",
   "radiographic_finding",

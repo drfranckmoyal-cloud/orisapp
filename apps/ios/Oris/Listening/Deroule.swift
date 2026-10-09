@@ -27,7 +27,9 @@ enum VisitKind: String, CaseIterable, Identifiable, Sendable, Codable {
         switch self {
         case .consultation:
             [
+                "Situation",
                 "Motif de la consultation",
+                "Anamnèse et questionnaire médical",
                 "Examen clinique",
                 "Diagnostic / analyse",
                 "Proposition thérapeutique",

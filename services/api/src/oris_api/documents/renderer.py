@@ -220,8 +220,13 @@ def limits_claims(encounter: ClinicalEncounter) -> list[Claim]:
 # --- Compte rendu de consultation, modèle du Dr Moyal (docs/MODELES_CR.md) ------------
 
 #: Rubriques et ordre arrêtés avec le praticien le 21/09/2026 (décision D, D023).
+#: Révisé le 10/10/2026 sur le compte rendu corrigé à la main par Franck (BLARD,
+#: 06/10/2026) : « Situation » ouvre le compte rendu, et l'anamnèse quitte « Points
+#: d'attention » pour une rubrique à elle, juste après le motif.
 RUBRIQUES_CONSULTATION = (
+    "Situation",
     "Motif de la consultation",
+    "Anamnèse et questionnaire médical",
     "Examen clinique",
     "Diagnostic / analyse",
     "Proposition thérapeutique",
@@ -230,9 +235,18 @@ RUBRIQUES_CONSULTATION = (
     "Suite de la prise en charge",
     "Points d’attention / coordination",
 )
-MOTIF, EXAMEN, DIAGNOSTIC, PROPOSITION, INFORMATIONS, ACTES, SUITE, ATTENTION = (
-    RUBRIQUES_CONSULTATION
-)
+(
+    SITUATION,
+    MOTIF,
+    ANAMNESE,
+    EXAMEN,
+    DIAGNOSTIC,
+    PROPOSITION,
+    INFORMATIONS,
+    ACTES,
+    SUITE,
+    ATTENTION,
+) = RUBRIQUES_CONSULTATION
 
 #: En dessous, la valeur n'est qu'un libellé (« douleur nocturne ») : elle ne porte pas
 #: seule la négation ou le statut, et la formulation par axes (plus haut) reste la règle.
@@ -266,12 +280,21 @@ SUFFIXE_MOTIF = re.compile(r",\s*motif de (la )?consultation\s*$", re.IGNORECASE
 
 
 def rubrique_de(fact: ClinicalFact) -> str:
-    """Où va un fait. Décisions du 21/09/2026 : antécédents dans « Points d'attention »,
-    radios dans « Examen clinique », options écartées ou refusées hors de la proposition."""
+    """Où va un fait. Décisions du 21/09/2026 : radios dans « Examen clinique », options
+    écartées ou refusées hors de la proposition. Révision du 10/10/2026 : l'anamnèse —
+    antécédents, traitements, habitudes — a sa propre rubrique, elle n'est plus reléguée
+    dans « Points d'attention »."""
     category, status, concept = fact.category, fact.clinical_status, fact.concept
     value = fact.value if isinstance(fact.value, str) else ""
+    if category == "patient_context":
+        return SITUATION
     if concept == "referral" or category in {"chief_complaint", "symptom"}:
         return MOTIF
+    # L'anamnèse quitte « Points d'attention » (révision du 10/10/2026) : antécédents,
+    # traitements, habitudes, hygiène, alimentation et parafonctions se lisent ensemble,
+    # avant l'examen, comme dans un questionnaire médical.
+    if category in {"anamnesis", "history", "medication"}:
+        return ANAMNESE
     if category in {"clinical_finding", "radiographic_finding"}:
         return EXAMEN
     if category in {"assessment", "diagnosis"}:
@@ -284,8 +307,6 @@ def rubrique_de(fact: ClinicalFact) -> str:
         return INFORMATIONS
     if concept == "cost_estimate" or category == "follow_up":
         return SUITE
-    if category in {"history", "medication"}:
-        return ATTENTION
     if category in {"treatment_option", "treatment_decision", "material", "procedure"}:
         if status == "performed" and fact.assertion != "absent":
             return ACTES

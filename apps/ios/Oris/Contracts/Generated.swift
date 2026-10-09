@@ -50,8 +50,10 @@ public enum TranscriptSegmentSpeakerRole: String, Codable, CaseIterable, Sendabl
 }
 
 public enum ClinicalFactCategory: String, Codable, CaseIterable, Sendable {
+    case patientContext = "patient_context"
     case chiefComplaint = "chief_complaint"
     case history = "history"
+    case anamnesis = "anamnesis"
     case symptom = "symptom"
     case clinicalFinding = "clinical_finding"
     case radiographicFinding = "radiographic_finding"
