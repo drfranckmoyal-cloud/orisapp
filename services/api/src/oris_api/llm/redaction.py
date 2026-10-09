@@ -43,7 +43,7 @@ logger = logging.getLogger("oris.redaction")
 
 API_URL = "https://api.anthropic.com/v1/messages"
 API_VERSION = "2023-06-01"
-PROMPT_VERSION = "redaction-fr-4"
+PROMPT_VERSION = "redaction-fr-5"
 MAX_TOKENS = 6_000
 MAX_ATTEMPTS = 3
 #: Un appel qui échoue (réseau, surcharge, délai) se retente, après une courte pause.
@@ -54,6 +54,7 @@ TOOL_NAME = "rediger_compte_rendu"
 #: laisser deviner trois fois de suite puis retomber sur un gabarit (TOTEL, 09/10/2026).
 MOTS_INCERTITUDE = "« possible », « probable », « suspicion », « à confirmer », « non confirmé »"
 MOTS_REFUS = "« refuse », « décline », « ne souhaite pas »"
+MOTS_NEGATION = "« pas de », « absence de », « aucun », « sans », « jamais »"
 
 #: Documents en paragraphes : ceux-là seulement sont réécrits. Le plan garde sa forme,
 #: élément par élément (seuls ses titres sont proposés par Claude) ; le compte rendu
@@ -91,6 +92,13 @@ de », « donc ») s'il n'est pas déjà dans l'un d'eux : juxtapose-les plutôt
 - pas de formule d'appel ni de signature, pas de mise en forme (ni puces, ni gras) ;
 - deux faits qui disent la même chose tiennent en une seule phrase qui les cite tous \
 les deux.
+
+Oris contrôle ta copie et la refuse **en entier** si elle perd une négation, une \
+incertitude ou un refus — il les reconnaît à des mots, et les tournures voisines ne \
+suffisent pas. Emploie donc, pour une absence : « pas de », « absence de », « aucun », \
+« sans » ; pour une incertitude : « possible », « probable », « suspicion », \
+« à confirmer », « non confirmé » ; pour un refus : « refuse », « décline », « ne \
+souhaite pas ».
 
 Mise en page, pour un texte aéré et lisible d'un coup d'œil :
 - découpe chaque rubrique en paragraphes courts, une idée chacun (une à trois phrases) ; \
@@ -292,7 +300,10 @@ def _controler_phrase(texte: str, appui: list[ClinicalFact], titre: str) -> None
             f"chiffre absent des faits cités dans « {titre} » : {sorted(inventes)}"
         )
     if any(f.assertion == "absent" for f in appui) and not NEGATION.search(texte):
-        raise RedactionRefusee(f"négation perdue dans « {titre} » : « {texte} »")
+        raise RedactionRefusee(
+            f"négation perdue dans « {titre} » : « {texte} » — emploie un mot qui la "
+            f"porte explicitement : {MOTS_NEGATION}"
+        )
     incertain = any(
         f.assertion == "uncertain" or f.certainty in {"possible", "probable"} for f in appui
     )

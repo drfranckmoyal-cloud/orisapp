@@ -238,6 +238,7 @@ def test_a_refusal_the_model_cannot_act_on_is_a_refusal_for_nothing() -> None:
     from oris_api.llm.redaction import (
         GRAS_MOTS_MAX,
         MOTS_INCERTITUDE,
+        MOTS_NEGATION,
         MOTS_REFUS,
         SYSTEM_PROMPT,
         RedactionRefusee,
@@ -252,6 +253,10 @@ def test_a_refusal_the_model_cannot_act_on_is_a_refusal_for_nothing() -> None:
     assert re.search(r"huit mots", SYSTEM_PROMPT)
     assert GRAS_MOTS_MAX == 8, "la consigne dit « huit mots » : la garder d'accord"
 
-    # Les deux garde-fous de vocabulaire nomment les mots qu'Oris reconnaît.
-    for mots in (MOTS_INCERTITUDE, MOTS_REFUS):
+    # Les trois garde-fous de vocabulaire nomment les mots qu'Oris reconnaît, et la
+    # consigne les annonce : la première copie a alors une chance de passer, au lieu de
+    # dépendre d'essais successifs.
+    for mots in (MOTS_INCERTITUDE, MOTS_REFUS, MOTS_NEGATION):
         assert mots.count("«") >= 3
+        for mot in re.findall(r"« ([^»]+) »", mots):
+            assert mot in SYSTEM_PROMPT, f"« {mot} » refusé sans jamais avoir été demandé"
