@@ -301,3 +301,26 @@ def test_a_short_exchange_may_legitimately_contain_nothing_clinical() -> None:
 
     resultat = asyncio.run(provider.extract(SEGMENTS, []))
     assert resultat.facts == []
+
+
+def test_a_call_that_times_out_is_not_passed_again_three_times() -> None:
+    """09/10/2026 : le délai de deux minutes était trop court pour une consultation de
+    trente-trois minutes, et le même appel était repassé deux fois pour rien — huit
+    minutes d'attente pour une panne. Le délai monte à dix minutes, et un dépassement
+    n'est plus pris pour une coupure réseau passagère."""
+    from oris_api.llm.anthropic_extraction import EXTRACTION_TIMEOUT_S
+
+    appels: list[httpx.Request] = []
+
+    def expire(request: httpx.Request) -> httpx.Response:
+        appels.append(request)
+        raise httpx.ReadTimeout("trop long", request=request)
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(expire))
+    provider = AnthropicExtractionProvider("cle-de-test", client=client)
+    with pytest.raises(ExtractionUnavailable) as caught:
+        asyncio.run(provider.extract(SEGMENTS, []))
+
+    assert caught.value.code == "ANTHROPIC_TIMEOUT"
+    assert len(appels) == 1, "un appel trop long ne se repasse pas tel quel"
+    assert EXTRACTION_TIMEOUT_S >= 600, "une sortie de seize mille jetons prend du temps"

@@ -30,7 +30,12 @@
   s'expliquent maintenant en une phrase chacune, qui nomme le champ à corriger ; et quand
   la rédaction perd une incertitude ou un refus, Oris dit quels mots il reconnaît au lieu
   de laisser deviner.
-- Dix tests ajoutés (pipeline, extraction, voix, règles) ; 487 au vert.
+- **Même défaut dans la rédaction, même correctif** : « passage en gras trop long » sans
+  dire la limite, « incertitude perdue » sans dire quels mots Oris reconnaît. Les refus
+  portent désormais de quoi s'y conformer, et la consigne annonce la limite du gras
+  (prompt de rédaction en version `redaction-fr-4`). C'est ce qui retenait encore le
+  compte rendu de BENTALEB sur le texte type une fois ses 61 faits retrouvés.
+- Douze tests ajoutés (pipeline, extraction, délai, voix, règles, rédaction) ; 489 au vert.
 
 ## Une collaboratrice sur le serveur, et l'app qui se connecte toute seule — 2026-10-08
 - Constat de Franck après installation par TestFlight : « serveur Oris injoignable ».

@@ -11,6 +11,7 @@ import json
 from typing import Any
 
 import httpx
+import pytest
 
 from oris_api.llm.redaction import AnthropicDocumentWriter, rubriques_de
 from oris_api.providers.mock import MockDocumentGenerationProvider
@@ -226,3 +227,31 @@ def test_a_momentary_overload_is_retried_before_falling_back(monkeypatch: Any) -
     document = asyncio.run(redacteur.generate(dictee(), "consultation_note"))
     assert "(repli)" not in document.generator
     assert appels["n"] == 2
+
+
+def test_a_refusal_the_model_cannot_act_on_is_a_refusal_for_nothing() -> None:
+    """09/10/2026 : « passage en gras trop long » sans dire la limite, « incertitude
+    perdue » sans dire quels mots Oris reconnaît — trois essais, puis le texte type.
+    Un refus doit porter de quoi s'y conformer."""
+    import re
+
+    from oris_api.llm.redaction import (
+        GRAS_MOTS_MAX,
+        MOTS_INCERTITUDE,
+        MOTS_REFUS,
+        SYSTEM_PROMPT,
+        RedactionRefusee,
+        _controler_gras,
+    )
+
+    with pytest.raises(RedactionRefusee) as refus:
+        _controler_gras("**" + " ".join(["mot"] * (GRAS_MOTS_MAX + 1)) + "**", "Examen")
+    assert str(GRAS_MOTS_MAX) in str(refus.value)
+
+    # La même limite est annoncée dans la consigne : le modèle n'a pas à la devenir.
+    assert re.search(r"huit mots", SYSTEM_PROMPT)
+    assert GRAS_MOTS_MAX == 8, "la consigne dit « huit mots » : la garder d'accord"
+
+    # Les deux garde-fous de vocabulaire nomment les mots qu'Oris reconnaît.
+    for mots in (MOTS_INCERTITUDE, MOTS_REFUS):
+        assert mots.count("«") >= 3

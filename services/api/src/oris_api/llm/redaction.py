@@ -43,7 +43,7 @@ logger = logging.getLogger("oris.redaction")
 
 API_URL = "https://api.anthropic.com/v1/messages"
 API_VERSION = "2023-06-01"
-PROMPT_VERSION = "redaction-fr-3"
+PROMPT_VERSION = "redaction-fr-4"
 MAX_TOKENS = 6_000
 MAX_ATTEMPTS = 3
 #: Un appel qui échoue (réseau, surcharge, délai) se retente, après une courte pause.
@@ -97,8 +97,8 @@ Mise en page, pour un texte aéré et lisible d'un coup d'œil :
 marque `nouveau_paragraphe: true` sur la première phrase de chaque nouveau paragraphe ;
 - mets en gras, entre doubles astérisques (**ainsi**), les seuls éléments clés : \
 diagnostic, traitement proposé ou réalisé, dents concernées, refus, alerte — un ou deux \
-passages courts par paragraphe au plus, jamais une phrase entière ; aucune autre mise \
-en forme."""
+passages par paragraphe au plus, et **jamais plus de huit mots d'affilée en gras** : \
+c'est un mot-clé qu'on souligne, pas une phrase ; aucune autre mise en forme."""
 
 TOOL_DESCRIPTION = "Enregistre le compte rendu rédigé, rubrique par rubrique."
 
@@ -271,7 +271,11 @@ def _controler_gras(texte: str, titre: str) -> None:
         raise RedactionRefusee(f"gras mal fermé dans « {titre} »")
     for passage in GRAS.findall(texte):
         if len(passage.split()) > GRAS_MOTS_MAX:
-            raise RedactionRefusee(f"passage en gras trop long dans « {titre} » : « {passage} »")
+            raise RedactionRefusee(
+                f"passage en gras trop long dans « {titre} » : « {passage} » — "
+                f"{GRAS_MOTS_MAX} mots en gras au maximum, souligne le mot-clé et "
+                "laisse le reste en texte normal"
+            )
 
 
 def _controler_phrase(texte: str, appui: list[ClinicalFact], titre: str) -> None:
