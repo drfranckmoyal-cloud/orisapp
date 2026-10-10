@@ -127,3 +127,10 @@
   display: grid;
   gap: var(--space-12);
 }
+
+/* Le texte réécrit à la main : les retours à la ligne du praticien sont les siens. */
+.texteBrut {
+  margin: 0 0 0.9rem;
+  line-height: 1.55;
+  white-space: normal;
+}

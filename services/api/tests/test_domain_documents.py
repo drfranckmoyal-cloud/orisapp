@@ -150,6 +150,34 @@ def test_validator_flags_unrendered_fact_for_review() -> None:
     ]
 
 
+def test_a_hand_rewritten_text_says_it_once_not_once_per_fact() -> None:
+    """Franck a réécrit un compte rendu à la main, puis l'a validé : la colonne de droite
+    s'est remplie de vingt-six fois « Fait non repris dans le document », sans nommer un
+    seul fait ni proposer d'action (10/10/2026). Un texte réécrit n'a plus de phrases
+    rattachées aux faits : il n'y a rien à comparer, et ça se dit une fois."""
+    obj = encounter("ORIS-SYN-092")
+    assert len(obj.facts) >= 2, "il faut plusieurs faits pour que la différence se voie"
+    reecrit = GeneratedDocument("consultation_note", "Texte écrit par le praticien.", ())
+
+    issues = validate_document(reecrit, obj)
+
+    assert [(i.code, i.severity, i.fact_id) for i in issues] == [
+        ("fact_coverage_unknown", "review", None)
+    ]
+
+
+def test_a_document_that_still_has_sentences_keeps_naming_the_facts_it_forgot() -> None:
+    """La vérification phrase par phrase garde tout son sens quand elle est possible."""
+    obj = encounter("ORIS-SYN-092")
+    partiel = GeneratedDocument(
+        "consultation_note",
+        "",
+        (Claim("S", "Rapporté par le patient : absence de x (16).", ("f1",)),),
+    )
+    codes = [i.code for i in validate_document(partiel, obj)]
+    assert codes and set(codes) == {"fact_not_rendered"}
+
+
 def test_unknown_concept_is_never_guessed() -> None:
     obj = encounter("ORIS-SYN-092")
     unknown = obj.facts[0].model_copy(update={"concept": "concept_inedit"})

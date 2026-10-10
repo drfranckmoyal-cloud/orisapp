@@ -1,5 +1,28 @@
 # Changelog
 
+## Un texte réécrit à la main s'affiche, et ne se fait plus sermonner vingt-six fois — 2026-10-10
+- Franck réécrit un compte rendu à la main, le valide, et la colonne de droite se remplit
+  de **vingt-six fois « Fait non repris dans le document »** : « je ne sais même pas ce
+  que c'est, et pas d'action possible ». Deux défauts derrière.
+- **Son texte n'était pas affiché.** Deux mille caractères écrits de sa main, bien
+  enregistrés — et l'écran annonçait « Document vide : aucun fait clinique à rédiger ».
+  Oris ne savait rendre qu'un document découpé en phrases rattachées aux faits ; un texte
+  libre n'en a pas. Il s'affiche désormais tel qu'il a été écrit.
+- **L'alerte se dit une fois, et dit quelque chose.** Un texte réécrit n'a plus de
+  phrases rattachées aux faits : il n'y a rien à comparer. Une seule ligne le dit
+  (`fact_coverage_unknown`) — « Oris ne peut plus vérifier que chaque fait du dossier y
+  figure. Rien à corriger : c'est votre texte qui fait foi ». La vérification fait par
+  fait reste entière quand elle est possible.
+- **Les alertes des documents déjà écrits ont été recalculées** avec les règles
+  d'aujourd'hui (`scripts/recalculer_alertes.py`, essai à blanc par défaut) : quatre
+  documents concernés, dont deux qui traînaient encore les fausses alertes de dents
+  corrigées le 4 octobre. Aucun texte, aucun dossier clinique n'est touché.
+- **Côté Dental Lens** (0.33.0) : le premier dépôt réel n'était pas parti. Une lecture de
+  galeries en échec depuis une heure gardait la tête de file et mettait tout SmileCloud au
+  repos. La file se range maintenant — ce que le praticien vient de demander d'abord — et
+  le repos ne retient que la demande qui l'a provoqué.
+- Deux tests ajoutés côté Oris, quatre côté Dental Lens ; 501 tests serveur, 73 site au vert.
+
 ## La bibliothèque du patient dans la page du compte rendu — 2026-10-10
 - **« Bibliothèque »**, nouvelle carte de la colonne de droite : les pièces jointes du
   patient *et* la récupération SmileCloud, sans quitter le compte rendu. « C'est embêtant

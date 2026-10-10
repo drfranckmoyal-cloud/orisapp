@@ -13,6 +13,28 @@ export function avecGras(texte: string): ReactNode[] {
     .map((morceau, i) => (i % 2 === 1 ? <strong key={i}>{morceau}</strong> : morceau));
 }
 
+/** Le texte tel que le praticien l'a écrit : ses lignes, ses paragraphes, rien de plus.
+ *
+ * Oris ne le découpe pas en phrases : il ne sait pas d'où elles viennent, et faire comme
+ * s'il le savait serait mentir. Les titres de rubrique s'y lisent comme il les a laissés.
+ */
+function TexteBrut({ contenu }: { contenu: string }) {
+  return (
+    <div className={styles.document}>
+      {contenu.split(/\n{2,}/).map((bloc, i) => (
+        <p key={i} className={styles.texteBrut}>
+          {bloc.split("\n").map((ligne, j) => (
+            <span key={j}>
+              {j > 0 && <br />}
+              {avecGras(ligne)}
+            </span>
+          ))}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 /** Les paragraphes d'une rubrique : ceux que le texte rédigé a découpés, sinon un seul. */
 function paragraphes(claims: Numerotee[]): Numerotee[][] {
   const groupes: Numerotee[][] = [];
@@ -52,6 +74,10 @@ export function DocumentBody({
   });
 
   if (sections.length === 0) {
+    // Un texte réécrit à la main n'a plus de phrases rattachées aux faits — mais c'est
+    // du texte, et c'est celui du praticien : l'écran annonçait « document vide » alors
+    // que ses deux mille caractères étaient bien là (Franck, 10/10/2026).
+    if (document.content.trim()) return <TexteBrut contenu={document.content} />;
     return <p className="muted">Document vide : aucun fait clinique à rédiger.</p>;
   }
   return (

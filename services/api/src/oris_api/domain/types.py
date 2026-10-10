@@ -90,6 +90,9 @@ IssueCode = Literal[
     "tooth_not_supported",
     "performed_not_supported",
     "fact_not_rendered",
+    #: Texte réécrit à la main : il n'a plus de phrases rattachées aux faits, donc plus
+    #: rien à vérifier phrase par phrase. Dit une fois, pas une fois par fait.
+    "fact_coverage_unknown",
     "unrendered_concept",
     "negation_unclear",
     "operative_field_missing",

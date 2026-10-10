@@ -35,6 +35,8 @@ const LIBELLES_PROBLEME: Record<string, string> = {
   tooth_not_supported: "Dent citée absente des faits",
   performed_not_supported: "« Réalisé » sans acte réalisé",
   fact_not_rendered: "Fait non repris dans le document",
+  fact_coverage_unknown:
+    "Texte réécrit à la main : Oris ne peut plus vérifier que chaque fait du dossier y figure. Rien à corriger — c’est votre texte qui fait foi.",
   unrendered_concept: "Élément non reconnu, à rédiger",
   operative_field_missing: "Champ important non dicté",
   negation_unclear: "Négation à vérifier : la phrase ne dit pas l’absence",

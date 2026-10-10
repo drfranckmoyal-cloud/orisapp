@@ -70,8 +70,15 @@ def validate_document(
 
     if document.document_type == "consultation_note":
         rendered = set(document.supported_fact_ids)
-        for fact_id in facts:
-            if fact_id not in rendered:
+        manquants = [fact_id for fact_id in facts if fact_id not in rendered]
+        if manquants and not document.claims:
+            # Le praticien a réécrit le texte lui-même : il n'y a plus de phrases
+            # rattachées aux faits, donc plus rien à comparer. Le dire vingt-six fois,
+            # sans pouvoir nommer un seul fait ni proposer une action, n'apprenait rien
+            # à personne (Franck, 10/10/2026). On le dit une fois.
+            issues.append(ValidationIssue("fact_coverage_unknown", "review"))
+        else:
+            for fact_id in manquants:
                 issues.append(ValidationIssue("fact_not_rendered", "review", fact_id=fact_id))
 
     return issues
