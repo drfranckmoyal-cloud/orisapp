@@ -854,38 +854,76 @@ function Specialites() {
   );
 }
 
+interface Praticien {
+  id: string;
+  name: string;
+  title: string;
+  role: string;
+  moi: boolean;
+}
+
+const ROLE_AU_CABINET: Record<string, string> = {
+  practitioner: "praticien",
+  assistant: "assistante",
+  admin: "administrateur",
+};
+
 function Equipe({ cabinet }: { cabinet: Cabinet }) {
+  const [praticiens] = useApi<Praticien[]>("/cabinet/praticiens");
+  // Tant que la liste n'est pas là, on montre au moins celui qui regarde l'écran.
+  const equipe: Praticien[] =
+    praticiens.state === "ready" && praticiens.data.length > 0
+      ? praticiens.data
+      : [
+          {
+            id: "moi",
+            name: cabinet.practitioner_name,
+            title: cabinet.practitioner_title,
+            role: "practitioner",
+            moi: true,
+          },
+        ];
+
   return (
     <Rubrique
       id="equipe"
       icone={<Icone nom="patients" taille={18} />}
       titre="Praticiens du cabinet"
-      resume="Chaque praticien garde son dictionnaire, ses préférences et ses consultations ; aucun ne voit celles d’un autre."
+      resume="Les patients et les consultations sont ceux du cabinet : chaque praticien les voit tous. Le dictionnaire, les préférences de rédaction et le journal d’audit, eux, restent personnels."
     >
-      <div className={styles.ligneReglage}>
-        <div className={styles.identite}>
-          <span className={styles.vignettePetite}>
-            {cabinet.practitioner_name
-              .split(" ")
-              .map((m) => m[0] ?? "")
-              .join("")
-              .slice(0, 2)}
-          </span>
-          <div>
-            <strong>
-              {cabinet.practitioner_title} {cabinet.practitioner_name}
-            </strong>
-            <span className={styles.sousNom}>vous</span>
+      {equipe.map((membre) => (
+        <div key={membre.id} className={styles.ligneReglage}>
+          <div className={styles.identite}>
+            <span className={styles.vignettePetite}>
+              {membre.name
+                .split(" ")
+                .map((m) => m[0] ?? "")
+                .join("")
+                .slice(0, 2)}
+            </span>
+            <div>
+              <strong>
+                {membre.title} {membre.name}
+              </strong>
+              <span className={styles.sousNom}>
+                {membre.moi
+                  ? "vous"
+                  : (ROLE_AU_CABINET[membre.role] ?? membre.role)}
+              </span>
+            </div>
           </div>
+          <Pastille ton="valide">actif</Pastille>
         </div>
-        <Pastille ton="valide">actif</Pastille>
-      </div>
+      ))}
       <div className={styles.ligneReglage}>
         <div>
           <strong>Inviter un praticien ou une assistante</strong>
           <p className={styles.aide}>
-            Viendra avec les comptes et la connexion (feuille de route, étape
-            1).
+            Pas encore depuis cet écran. Aujourd’hui, un compte s’ouvre à la
+            main sur le serveur : il reçoit son mot de passe et son jeton
+            d’application, et ses actions portent son nom dans le journal.
+            L’invitation en libre-service viendra avec la vraie connexion
+            (feuille de route, étape 1).
           </p>
         </div>
         <Bouton disabled variante="secondaire">

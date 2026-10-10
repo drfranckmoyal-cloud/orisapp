@@ -9,6 +9,7 @@ import { Icone } from "@/components/Icones";
 import { JetonPraticien } from "@/components/JetonPraticien";
 import { PiecesJointes } from "@/components/patients/PiecesJointes";
 import { CorrectionPanel } from "@/components/review/CorrectionPanel";
+import { DepotSmileCloud } from "@/components/review/DepotSmileCloud";
 import { DocumentBody } from "@/components/review/DocumentView";
 import { Documentation } from "@/components/review/Documentation";
 import { EnvoiDocument } from "@/components/review/EnvoiDocument";
@@ -999,6 +1000,15 @@ export default function ConsultationPage() {
               selection={selection}
               onSelect={setSelection}
               motDe={motDe}
+            />
+          )}
+
+          {/* Le compte rendu se range là où le praticien regarde ses photos : il n'a
+              ni à le télécharger, ni à le téléverser à la main. */}
+          {active && !shadow && (
+            <DepotSmileCloud
+              documentId={active.id}
+              relie={Boolean(data.patient.smilecloud_case_id)}
             />
           )}
 

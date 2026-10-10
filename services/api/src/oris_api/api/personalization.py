@@ -21,6 +21,7 @@ from oris_api.db.models import (
     GlossaryTermRow,
     ModelVersion,
     Organization,
+    OrganizationMember,
     PromptVersion,
     User,
 )
@@ -124,6 +125,22 @@ class CabinetOut(BaseModel):
     sending_email: str = ""
 
 
+class PraticienOut(BaseModel):
+    """Un praticien du cabinet, tel que l'écran des réglages le montre.
+
+    Rien de secret : ni adresse, ni jeton, ni droits — seulement de quoi dire qui
+    partage ce cabinet, et donc ces dossiers.
+    """
+
+    id: UUID
+    name: str
+    title: str = ""
+    #: `practitioner`, `assistant` ou `admin` : ce que la personne est dans le cabinet.
+    role: str = "practitioner"
+    #: Vrai pour celui qui regarde l'écran.
+    moi: bool = False
+
+
 class CabinetPatch(BaseModel):
     model_config = ConfigDict(extra="forbid")
     name: Annotated[str, Field(max_length=200)] | None = None
@@ -159,6 +176,32 @@ def read_cabinet(session: SessionDep, actor: ActorDep) -> CabinetOut:
     if organisation is None:
         raise NotFound("ORGANIZATION_NOT_FOUND", str(actor.organization_id))
     return cabinet_out(organisation, session.get(User, actor.user_id))
+
+
+@router.get("/cabinet/praticiens", response_model=list[PraticienOut])
+def list_praticiens(session: SessionDep, actor: ActorDep) -> list[PraticienOut]:
+    """Qui partage ce cabinet. L'écran des réglages n'affichait que « vous » alors que
+    le cabinet compte deux praticiens depuis le 08/10/2026 : il laissait croire qu'on
+    travaillait seul sur des dossiers que l'on partage."""
+    organisation = session.get(Organization, actor.organization_id)
+    titre = (organisation.identity or {}).get("practitioner_title", "") if organisation else ""
+    membres = session.scalars(
+        select(User)
+        .join(OrganizationMember, OrganizationMember.user_id == User.id)
+        .where(OrganizationMember.organization_id == actor.organization_id)
+        .order_by(User.name)
+    )
+    return [
+        PraticienOut(
+            id=u.id,
+            name=u.name,
+            # La civilité du cabinet ne vaut que pour un praticien.
+            title=titre if u.role == "practitioner" else "",
+            role=u.role,
+            moi=u.id == actor.user_id,
+        )
+        for u in membres
+    ]
 
 
 @router.patch("/me/cabinet", response_model=CabinetOut)

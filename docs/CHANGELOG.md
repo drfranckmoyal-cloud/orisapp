@@ -1,5 +1,25 @@
 # Changelog
 
+## Le compte rendu se range dans SmileCloud, et les réglages disent qui partage le cabinet — 2026-10-10
+- **« Envoyer vers SmileCloud »**, demandé par Franck : depuis la consultation, carte
+  « Dans SmileCloud », le compte rendu va se classer dans la documentation du patient —
+  sans le télécharger, sans le téléverser à la main. Le connecteur n'allait jusqu'ici que
+  dans un sens ; il va maintenant dans les deux.
+- Oris ne dépose rien lui-même : il pose une demande de plus dans la file que l'extension
+  Chrome relève déjà, lui remet le PDF (fabriqué à la demande, jamais écrit sur le
+  disque), et attend qu'elle dise si c'est fait. L'écran dit toujours où ça en est :
+  *demandé*, *rangé*, ou *pas déposé* avec la raison. **La moitié extension reste à
+  écrire** (contrat dans `docs/PIECES_JOINTES_SMILECLOUD.md`).
+- **L'écran des réglages ne disait pas la vérité** : il montrait « vous » seul et
+  affirmait qu'« aucun praticien ne voit les consultations d'un autre », alors que le
+  cabinet compte Charlotte depuis le 8 octobre et que **les dossiers sont partagés** —
+  c'est même le but. Il liste maintenant les praticiens réels, dit ce qui est commun (les
+  patients, les consultations) et ce qui reste personnel (le dictionnaire, les
+  préférences, le journal), et explique comment un compte s'ouvre aujourd'hui.
+- La même recherche « ce document appartient-il à ce cabinet ? » était recopiée à cinq
+  endroits : elle n'a plus qu'un seul endroit où vivre.
+- Trois tests ajoutés ; 499 tests serveur, 73 site, 63 iPhone au vert.
+
 ## Le modèle de première consultation s'ouvre sur la situation et l'anamnèse — 2026-10-10
 - Franck a corrigé à la main le compte rendu de M. BLARD du 06/10 : deux rubriques
   ajoutées, **« Situation »** en tête et **« Anamnèse et questionnaire médical »** juste

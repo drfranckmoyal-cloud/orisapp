@@ -175,6 +175,68 @@ def demander_fichiers(
     return demande
 
 
+def demander_depot(
+    settings: Settings,
+    case_id: str,
+    document_id: UUID,
+    nom_fichier: str,
+    patient_id: UUID,
+    organisation_id: UUID,
+    praticien_id: UUID,
+) -> dict[str, Any]:
+    """Déposer un document d'Oris **dans** le dossier SmileCloud du patient.
+
+    Le connecteur n'allait que dans un sens — SmileCloud vers Oris. Celui-ci va dans
+    l'autre : le compte rendu signé par le praticien se range là où il regarde ses
+    photos, sans qu'il ait à le télécharger puis à le téléverser à la main
+    (demande de Franck, 10/10/2026).
+
+    Une demande en attente par document : redemander ne fait pas deux dépôts.
+    """
+    demandes = _demandes(settings)
+    for d in demandes:
+        if (
+            d["type"] == "depot"
+            and d.get("document_id") == str(document_id)
+            and not d.get("termine")
+        ):
+            return d
+    demande = {
+        "id": uuid4().hex,
+        "type": "depot",
+        "case_id": case_id,
+        "document_id": str(document_id),
+        "nom": nom_fichier,
+        "patient_id": str(patient_id),
+        "organisation_id": str(organisation_id),
+        "praticien_id": str(praticien_id),
+        "demande_le": _maintenant(),
+    }
+    demandes.append(demande)
+    _ranger_demandes(settings, demandes)
+    return demande
+
+
+def noter_depot(settings: Settings, demande_id: str, raison: str = "") -> dict[str, Any]:
+    """L'extension a déposé le document — ou dit pourquoi elle n'a pas pu."""
+
+    def changer(d: dict[str, Any]) -> None:
+        d["termine"] = True
+        d["depose_le"] = _maintenant()
+        if raison:
+            d["raison"] = raison
+
+    return _modifier(settings, demande_id, changer)
+
+
+def dernier_depot(settings: Settings, document_id: UUID) -> dict[str, Any] | None:
+    """Le dernier dépôt demandé pour ce document : l'écran dit où ça en est."""
+    for d in reversed(_demandes(settings)):
+        if d["type"] == "depot" and d.get("document_id") == str(document_id):
+            return d
+    return None
+
+
 def demandes_en_attente(settings: Settings) -> list[dict[str, Any]]:
     """Ce que l'extension doit faire, sans rien d'autre que ce dont elle a besoin."""
     return [
@@ -188,6 +250,8 @@ def demandes_en_attente(settings: Settings) -> list[dict[str, Any]]:
                 if d["type"] == "fichiers"
                 else {}
             ),
+            # Un dépôt dit quel fichier aller chercher, et sous quel nom le ranger.
+            **({"nom": d["nom"]} if d["type"] == "depot" else {}),
         }
         for d in _demandes(settings)
         if not d.get("termine")

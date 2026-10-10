@@ -245,3 +245,55 @@ la récupération. Jamais d'abandon en silence.
 cours, dernière récupération), `PUT …/smilecloud` (relier / délier),
 `POST …/smilecloud/galeries` (demander la lecture), `POST …/smilecloud/recuperer`
 (`{"fichiers": [res_id…]}`).
+
+
+---
+
+## L'autre sens : déposer un document d'Oris dans SmileCloud
+
+*Demandé par Franck le 10 octobre 2026. Côté Oris : fait et testé
+(`tests/test_smilecloud.py`). **Côté extension : à écrire.***
+
+Le connecteur n'allait que dans un sens. Celui-ci va dans l'autre : depuis la
+consultation, carte **« Dans SmileCloud »**, le praticien range le compte rendu là où il
+regarde ses photos — sans le télécharger, sans le téléverser à la main.
+
+Oris ne dépose rien lui-même : il pose une demande de plus dans la file que l'extension
+relève déjà, et attend. L'écran dit toujours où ça en est : *demandé*, *rangé*, ou
+*pas déposé* avec la raison.
+
+### Ce que voit l'extension — une demande de plus dans `GET /smilecloud/demandes`
+
+```json
+{"id": "b7…", "type": "depot", "case_id": "0f3c…",
+ "nom": "Oris - compte rendu de consultation.pdf",
+ "demande_le": "2026-10-10T08:00:00+00:00"}
+```
+
+### 1. Retirer le document — `GET /smilecloud/depot/{id}`
+
+Répond les octets du PDF (`application/pdf`). Il est fabriqué à la demande et oublié
+aussitôt : rien n'est écrit sur le disque du Mac (D88). Même garde que les autres routes
+de l'extension : ce Mac seulement, plus le jeton partagé s'il est posé.
+
+### 2. Le déposer dans SmileCloud
+
+Dans l'onglet **Documentation** du dossier `case_id`, sous le nom donné par `nom`.
+C'est la partie qui reste à écrire, du côté de l'extension Dental Lens.
+
+### 3. Le dire — `POST /smilecloud/depose`
+
+```json
+{"id": "b7…"}                               ← déposé
+{"id": "b7…", "raison": "dossier fermé"}    ← pas déposé, et le praticien lit pourquoi
+```
+
+Une demande non servie disparaît au bout de 12 h, comme les autres : l'écran cesse
+d'attendre et propose de redemander.
+
+### Ce qu'Oris refuse d'avance
+
+- Patient non relié à un dossier SmileCloud → `SMILECLOUD_NON_RELIE`, et la carte
+  renvoie à la fiche patient pour faire le lien.
+- Document sans texte → `DOCUMENT_EMPTY`.
+- Redemander un dépôt déjà en attente ne crée pas une deuxième demande.

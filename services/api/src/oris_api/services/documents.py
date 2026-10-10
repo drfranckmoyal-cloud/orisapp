@@ -104,6 +104,27 @@ def relire(
     return validate_document(rendu, obj)
 
 
+def get_document(session: Session, actor: Actor, document_id: UUID) -> DocumentRow:
+    """Le document, s'il appartient bien au cabinet de celui qui le demande."""
+    document, _ = document_et_consultation(session, actor, document_id)
+    return document
+
+
+def document_et_consultation(
+    session: Session, actor: Actor, document_id: UUID
+) -> tuple[DocumentRow, Encounter]:
+    """Le document et sa consultation, ou `DOCUMENT_NOT_FOUND`.
+
+    La même recherche était recopiée à cinq endroits : un cabinet ne voit jamais le
+    document d'un autre, et cette garantie n'a qu'un seul endroit où vivre.
+    """
+    document = session.get(DocumentRow, document_id)
+    encounter = session.get(Encounter, document.encounter_id) if document else None
+    if document is None or encounter is None or encounter.organization_id != actor.organization_id:
+        raise NotFound("DOCUMENT_NOT_FOUND", str(document_id))
+    return document, encounter
+
+
 def list_documents(session: Session, encounter_id: UUID) -> list[DocumentRow]:
     return list(
         session.scalars(
@@ -225,10 +246,7 @@ def edit_text(session: Session, actor: Actor, document_id: UUID, content: str) -
     est dit tel quel. La provenance phrase par phrase n'est plus disponible sur un texte
     écrit à la main — l'interface doit le signaler plutôt que de faire semblant.
     """
-    document = session.get(DocumentRow, document_id)
-    encounter = session.get(Encounter, document.encounter_id) if document else None
-    if document is None or encounter is None or encounter.organization_id != actor.organization_id:
-        raise NotFound("DOCUMENT_NOT_FOUND", str(document_id))
+    document, encounter = document_et_consultation(session, actor, document_id)
     if encounter.mode == "shadow":
         raise Conflict("SHADOW_ENCOUNTER", str(document_id))
     last = current_version(session, document)
@@ -279,10 +297,7 @@ def validate(
     acknowledged_warning_codes: list[str],
 ) -> DocumentRow:
     """Validation explicite du praticien : jamais automatique (D009)."""
-    document = session.get(DocumentRow, document_id)
-    encounter = session.get(Encounter, document.encounter_id) if document else None
-    if document is None or encounter is None or encounter.organization_id != actor.organization_id:
-        raise NotFound("DOCUMENT_NOT_FOUND", str(document_id))
+    document, encounter = document_et_consultation(session, actor, document_id)
     version = current_version(session, document)
     if version is None:
         raise Conflict("DOCUMENT_EMPTY", str(document_id))
@@ -375,10 +390,7 @@ def export_document(
     statut ne bouge pas : seule la sortie d'un document validé le passe à `exported`
     (spec §50 : la validation reste une action explicite du praticien).
     """
-    document = session.get(DocumentRow, document_id)
-    encounter = session.get(Encounter, document.encounter_id) if document else None
-    if document is None or encounter is None or encounter.organization_id != actor.organization_id:
-        raise NotFound("DOCUMENT_NOT_FOUND", str(document_id))
+    document, encounter = document_et_consultation(session, actor, document_id)
     version = current_version(session, document)
     if version is None:
         raise Conflict("DOCUMENT_EMPTY", str(document_id))
@@ -511,10 +523,7 @@ def supprimer(session: Session, actor: Actor, document_id: UUID) -> None:
     """Supprime un document, quel qu'il soit (choix de Franck, 21/09/2026) : ses versions,
     ses envois notés et ses photos placées partent avec lui ; les pièces jointes et le
     dossier clinique restent. Le journal d'audit garde la trace de la suppression."""
-    document = session.get(DocumentRow, document_id)
-    encounter = session.get(Encounter, document.encounter_id) if document else None
-    if document is None or encounter is None or encounter.organization_id != actor.organization_id:
-        raise NotFound("DOCUMENT_NOT_FOUND", str(document_id))
+    document = get_document(session, actor, document_id)
     document.current_version_id = None
     session.flush()
     audit.record(

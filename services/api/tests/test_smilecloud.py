@@ -117,3 +117,58 @@ def test_gallery_reading_needs_a_link(api: Any) -> None:
     patient = api.post("/patients", json={"first_name": "Sans", "last_name": "LIEN"}).json()
     reponse = api.post(f"/patients/{patient['id']}/smilecloud/galeries")
     assert reponse.status_code == 422 and reponse.json()["code"] == "SMILECLOUD_NON_RELIE"
+
+
+def test_a_report_is_filed_into_the_patients_smilecloud_without_leaving_oris(api: Any) -> None:
+    """Le connecteur n'allait que dans un sens. Franck demandait à l'inverse que le compte
+    rendu se range là où il regarde ses photos (10/10/2026), sans le télécharger puis le
+    téléverser à la main. Oris ne dépose rien lui-même : il pose la demande, et
+    l'extension la sert — ici, c'est le test qui joue l'extension."""
+    from tests.conftest import documents_by_type, run_synthetic
+
+    encounter = run_synthetic(api, "ORIS-SYN-092")
+    note = documents_by_type(api, encounter["id"])["consultation_note"]
+    pid = encounter["patient"]["id"]
+
+    # Sans lien vers un dossier SmileCloud, Oris refuse et le dit.
+    refus = api.post(f"/documents/{note['id']}/smilecloud")
+    assert (refus.status_code, refus.json()["code"]) == (422, "SMILECLOUD_NON_RELIE")
+    assert api.get(f"/documents/{note['id']}/smilecloud").json()["etat"] == "absent"
+
+    api.put(f"/patients/{pid}/smilecloud", json={"case_id": CASE})
+    demande = api.post(f"/documents/{note['id']}/smilecloud").json()
+    assert demande["etat"] == "en_attente"
+    # Redemander ne fait pas deux dépôts.
+    api.post(f"/documents/{note['id']}/smilecloud")
+
+    attendues = [d for d in api.get("/smilecloud/demandes").json() if d["type"] == "depot"]
+    assert len(attendues) == 1
+    assert attendues[0]["case_id"] == CASE
+    assert attendues[0]["nom"].endswith(".pdf")
+
+    # L'extension retire le PDF, le dépose dans SmileCloud, et le dit.
+    pdf = api.get(f"/smilecloud/depot/{attendues[0]['id']}")
+    assert pdf.status_code == 200
+    assert pdf.content[:4] == b"%PDF"
+    assert api.post("/smilecloud/depose", json={"id": attendues[0]["id"]}).json() == {"note": True}
+
+    assert api.get(f"/documents/{note['id']}/smilecloud").json()["etat"] == "depose"
+    assert [d for d in api.get("/smilecloud/demandes").json() if d["type"] == "depot"] == []
+
+
+def test_a_deposit_that_could_not_be_done_says_why_instead_of_staying_silent(api: Any) -> None:
+    from tests.conftest import documents_by_type, run_synthetic
+
+    encounter = run_synthetic(api, "ORIS-SYN-092")
+    note = documents_by_type(api, encounter["id"])["consultation_note"]
+    api.put(f"/patients/{encounter['patient']['id']}/smilecloud", json={"case_id": CASE})
+    api.post(f"/documents/{note['id']}/smilecloud")
+    demande = next(d for d in api.get("/smilecloud/demandes").json() if d["type"] == "depot")
+
+    api.post(
+        "/smilecloud/depose",
+        json={"id": demande["id"], "raison": "dossier SmileCloud fermé"},
+    )
+    etat = api.get(f"/documents/{note['id']}/smilecloud").json()
+    assert etat["etat"] == "impossible"
+    assert etat["raison"] == "dossier SmileCloud fermé"

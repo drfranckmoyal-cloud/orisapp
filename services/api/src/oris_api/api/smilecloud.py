@@ -9,7 +9,7 @@ import hmac
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Header, Request
+from fastapi import APIRouter, Body, Header, Request, Response
 from pydantic import BaseModel, Field
 
 from oris_api.api.dependencies import (
@@ -20,11 +20,21 @@ from oris_api.api.dependencies import (
     depuis_cette_machine,
 )
 from oris_api.config import Settings
-from oris_api.services import attachments, patients, smilecloud
+from oris_api.services import attachments, documents, encounters, patients, smilecloud
 from oris_api.services.errors import Forbidden, NotFound, Unprocessable
 from oris_api.services.identity import Actor
 
 router = APIRouter(tags=["smilecloud"])
+
+#: Le nom sous lequel le document se range dans SmileCloud : lisible dans leur liste,
+#: et qui dit d'où il vient.
+TITRES_DOCUMENT = {
+    "consultation_note": "compte rendu de consultation",
+    "treatment_plan_text": "plan de traitement",
+    "operative_note": "compte rendu operatoire",
+    "patient_summary": "resume patient",
+    "referral_letter": "courrier d adressage",
+}
 
 
 def _extension(request: Request, settings: Settings, authorization: str | None) -> None:
@@ -72,10 +82,13 @@ class GaleriesIn(BaseModel):
 
 class DemandeExtensionOut(BaseModel):
     id: str
-    type: Literal["galeries", "fichiers"]
+    #: `depot` va dans l'autre sens : Oris remet un document à ranger dans SmileCloud.
+    type: Literal["galeries", "fichiers", "depot"]
     case_id: str
     demande_le: str
     fichiers: list[str] | None = None
+    #: Le nom sous lequel ranger le document déposé (`depot` seulement).
+    nom: str | None = None
 
 
 class EcartIn(BaseModel):
@@ -163,6 +176,54 @@ def recevoir_fichier(
     return {"recu": True, "piece": str(piece.id), "termine": suivi["termine"]}
 
 
+class DepotFaitIn(BaseModel):
+    id: str = Field(max_length=64)
+    #: Vide quand c'est fait ; sinon ce qui a empêché le dépôt, dit au praticien.
+    raison: str = Field(default="", max_length=200)
+
+
+@router.get("/smilecloud/depot/{demande_id}")
+def retirer_le_document(
+    demande_id: str,
+    request: Request,
+    session: SessionDep,
+    settings: SettingsDep,
+    magasin: MagasinDep,
+    authorization: str | None = Header(default=None),
+) -> Response:
+    """Le PDF à déposer dans SmileCloud, pour l'extension et pour elle seule.
+
+    Il n'est pas gardé sur le disque du Mac (D88) : il est fabriqué à la demande, remis,
+    et oublié.
+    """
+    _extension(request, settings, authorization)
+    d = smilecloud.demande(settings, demande_id)
+    if d is None or d["type"] != "depot":
+        raise NotFound("DEMANDE_INCONNUE", demande_id)
+    acteur = Actor(UUID(d["organisation_id"]), UUID(d["praticien_id"]))
+    sortie = documents.export_document(session, acteur, UUID(d["document_id"]), "pdf", magasin)
+    return Response(
+        content=sortie.payload,
+        media_type=sortie.media_type,
+        headers={"content-disposition": f'attachment; filename="{sortie.filename}"'},
+    )
+
+
+@router.post("/smilecloud/depose")
+def noter_depot(
+    body: DepotFaitIn,
+    request: Request,
+    settings: SettingsDep,
+    authorization: str | None = Header(default=None),
+) -> dict[str, bool]:
+    """L'extension a déposé le document dans SmileCloud — ou dit pourquoi non."""
+    _extension(request, settings, authorization)
+    if smilecloud.demande(settings, body.id) is None:
+        raise NotFound("DEMANDE_INCONNUE", body.id)
+    smilecloud.noter_depot(settings, body.id, body.raison)
+    return {"note": True}
+
+
 @router.post("/smilecloud/ecarte")
 def ecarter(
     body: EcartIn,
@@ -226,6 +287,68 @@ class SmileCloudPatientOut(BaseModel):
     galeries_lues_le: str | None
     lecture_en_cours: bool
     recuperation: RecuperationOut | None
+
+
+class DepotOut(BaseModel):
+    """Où en est le dépôt d'un document dans SmileCloud."""
+
+    #: « absent » (jamais demandé), « en_attente », « depose », « impossible ».
+    etat: str
+    demande_le: str | None = None
+    depose_le: str | None = None
+    raison: str = ""
+
+
+@router.get("/documents/{document_id}/smilecloud", response_model=DepotOut)
+def etat_depot(
+    document_id: UUID, session: SessionDep, actor: ActorDep, settings: SettingsDep
+) -> DepotOut:
+    documents.get_document(session, actor, document_id)
+    return _depot(settings, document_id)
+
+
+@router.post("/documents/{document_id}/smilecloud", response_model=DepotOut)
+def deposer_dans_smilecloud(
+    document_id: UUID, session: SessionDep, actor: ActorDep, settings: SettingsDep
+) -> DepotOut:
+    """Ranger ce document dans le dossier SmileCloud du patient.
+
+    Oris ne dépose rien lui-même : il pose la demande, et l'extension Chrome la sert à
+    son prochain passage, comme elle sert déjà les récupérations. Le praticien n'a donc
+    ni à télécharger le PDF, ni à le téléverser à la main.
+    """
+    document = documents.get_document(session, actor, document_id)
+    encounter = encounters.get_encounter(session, actor, document.encounter_id)
+    patient = patients.get_patient(session, actor, encounter.patient_id)
+    if not patient.smilecloud_case_id:
+        raise Unprocessable("SMILECLOUD_NON_RELIE")
+    if documents.current_version(session, document) is None:
+        raise Unprocessable("DOCUMENT_EMPTY")
+    smilecloud.demander_depot(
+        settings,
+        patient.smilecloud_case_id,
+        document_id,
+        f"Oris - {TITRES_DOCUMENT.get(document.document_type, 'document')}.pdf",
+        patient.id,
+        actor.organization_id,
+        actor.user_id,
+    )
+    return _depot(settings, document_id)
+
+
+def _depot(settings: Settings, document_id: UUID) -> DepotOut:
+    dernier = smilecloud.dernier_depot(settings, document_id)
+    if dernier is None:
+        return DepotOut(etat="absent")
+    if not dernier.get("termine"):
+        return DepotOut(etat="en_attente", demande_le=dernier["demande_le"])
+    raison = dernier.get("raison", "")
+    return DepotOut(
+        etat="impossible" if raison else "depose",
+        demande_le=dernier["demande_le"],
+        depose_le=dernier.get("depose_le"),
+        raison=raison,
+    )
 
 
 class LienIn(BaseModel):
