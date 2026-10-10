@@ -205,3 +205,50 @@ def test_the_outline_shown_while_recording_matches_the_template_on_both_clients(
 
     assert titres_site == list(RUBRIQUES_CONSULTATION), "le déroulé du site a dérivé"
     assert titres_iphone == list(RUBRIQUES_CONSULTATION), "le déroulé de l'iPhone a dérivé"
+
+
+def test_naming_the_rubric_while_dictating_decides_where_the_fact_goes() -> None:
+    """Franck ne dicte pas dans l'ordre du modèle : il décrit la consultation une fois le
+    patient parti, comme ça lui vient (10/10/2026). L'ordre n'a aucune importance — Oris
+    range d'après la nature du fait. Mais quand il veut être sûr, il nomme la rubrique,
+    et c'est alors elle qui tranche, quoi qu'en pense le modèle."""
+    from oris_api.documents.renderer import rubrique_de
+
+    encounter = dictee()
+    modele = encounter.facts[0]
+
+    # Un fait que le modèle a rangé en « symptôme » — donc dans le motif…
+    symptome = modele.model_copy(
+        update={
+            "fact_id": "d1",
+            "category": "symptom",
+            "concept": "bruxism",
+            "value": "serre les dents la journée",
+            "teeth": [],
+        }
+    )
+    assert rubrique_de(symptome) == "Motif de la consultation"
+
+    # …suit le praticien dès qu'il nomme la rubrique.
+    nomme = symptome.model_copy(
+        update={"fact_id": "d2", "value": "Anamnèse : serre les dents la journée"}
+    )
+    assert rubrique_de(nomme) == "Anamnèse et questionnaire médical"
+
+    # Toutes les rubriques du modèle se nomment, dans la langue du praticien.
+    for dit, attendue in [
+        ("Situation : patient de 48 ans, juriste", "Situation"),
+        ("Antécédents : gouttière portée il y a dix ans", "Anamnèse et questionnaire médical"),
+        ("Examen : usure localisée en antérieur", "Examen clinique"),
+        ("Points d’attention : patient anxieux", "Points d’attention / coordination"),
+        ("Suites : revoir dans six mois", "Suite de la prise en charge"),
+    ]:
+        assert rubrique_de(modele.model_copy(update={"value": dit})) == attendue, dit
+
+    # Le nom de la rubrique ne se retrouve pas dans le compte rendu.
+    enrichie = encounter.model_copy(update={"facts": [nomme, *encounter.facts]})
+    anamnese = rubrique(
+        render_consultation_note(enrichie).content, "Anamnèse et questionnaire médical"
+    )
+    assert "erre les dents la journée" in anamnese
+    assert "Anamnèse :" not in anamnese

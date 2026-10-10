@@ -108,10 +108,22 @@ deux rubriques ajoutées, l'anamnèse sortie de « Points d'attention ».*
 - Deux natures de faits nouvelles dans le contrat : `patient_context` (rubrique 1) et
   `anamnesis` (rubrique 3). `history` et `medication` vont désormais à l'anamnèse, plus
   à « Points d'attention » — c'est la révision de la décision n° 1 du 21 septembre.
-- **Ce qui sépare un `symptom` d'une `anamnesis`, c'est le moment, pas le sujet** :
-  dit en ouverture pour expliquer la venue → `symptom` (rubrique 2) ; dit en réponse à
-  une question du praticien, pour reconstituer l'histoire → `anamnesis` (rubrique 3).
-  Choix de Franck du 10/10/2026 ; c'est le modèle d'extraction qui tranche, consigne à
-  l'appui (prompt `extraction-fr-6`).
+- **L'ordre dans lequel Franck dicte n'a aucune importance.** Il décrit la consultation
+  comme ça lui vient, souvent une fois le patient parti, et il revient en arrière. Oris
+  ne range jamais d'après le moment où une chose a été dite : il extrait des faits, et
+  chaque fait rejoint sa rubrique d'après **sa nature**. C'était vrai avant, ça le reste.
+- **Ce qui sépare un `symptom` d'une `anamnesis`, c'est la nature, pas le moment** : ce
+  que le patient **ressent** → `symptom` (rubrique 2) ; ce qu'il **raconte de son
+  histoire ou de ses habitudes** → `anamnesis` (rubrique 3). Le modèle d'extraction
+  tranche, consigne à l'appui (prompt `extraction-fr-7`).
+  *(Première formulation du 10/10 corrigée le jour même : elle s'appuyait sur « dit en
+  ouverture » contre « dit en réponse à une question », ce qui ne veut rien dire quand le
+  praticien dicte seul, après coup.)*
+- **Nommer la rubrique en dictant décide du rangement.** « Anamnèse : il prend du
+  Séroplex depuis dix ans », « Situation : patient de 48 ans, juriste », « Suites :
+  revoir dans six mois » : le nom dit l'emporte sur ce que le modèle aurait choisi, et il
+  est retiré du texte rendu. Les dix rubriques se nomment, avec leurs variantes courantes
+  (`INTITULES_DICTES` dans `documents/renderer.py`). C'est la porte de sortie quand une
+  phrase pourrait aller à deux endroits.
 - Le déroulé affiché pendant l'écoute suit le même ordre, sur le site et sur l'iPhone.
   Un test du serveur lit les deux fichiers et refuse qu'ils dérivent.

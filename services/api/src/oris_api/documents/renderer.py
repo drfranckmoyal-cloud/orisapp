@@ -269,13 +269,49 @@ ANTERIEUR = re.compile(r"\b(antérieur\w*|déjà|précédemment|auparavant|il y 
 INFORMATION = re.compile(r"^(information|informé|informée|explication|expliqué)", re.IGNORECASE)
 DENT_ECRITE = re.compile(r"(?<!\d)([1-4][1-8]|[5-8][1-5])(?!\d)")
 
+#: Les rubriques qu'on peut **nommer en dictant**, et les façons de les dire.
+#:
+#: Franck ne dicte pas dans l'ordre du modèle : il décrit la consultation une fois le
+#: patient parti, comme ça lui vient (10/10/2026). L'ordre n'a aucune importance — Oris
+#: range chaque fait d'après sa nature, pas d'après le moment où il a été dit. Mais quand
+#: le praticien veut être sûr, il nomme la rubrique, et c'est alors elle qui décide :
+#: « anamnèse : il prend du Séroplex depuis dix ans » ira dans l'anamnèse, quoi qu'en
+#: pense le modèle. Le nom dit est ensuite retiré du texte rendu.
+INTITULES_DICTES: tuple[tuple[str, str], ...] = (
+    (r"situation", SITUATION),
+    (r"motif(?: de (?:la )?consultation)?", MOTIF),
+    (
+        r"anamn[èe]se(?: et questionnaire m[ée]dical)?|questionnaire m[ée]dical|"
+        r"ant[ée]c[ée]dents?|historique",
+        ANAMNESE,
+    ),
+    (r"examen(?: clinique)?", EXAMEN),
+    (r"diagnostic(?: ?/ ?analyse)?|analyse", DIAGNOSTIC),
+    (r"proposition(?: th[ée]rapeutique)?|traitement propos[ée]", PROPOSITION),
+    (r"information(?:s)? (?:donn[ée]es? au )?patient", INFORMATIONS),
+    (r"actes? r[ée]alis[ée]s?", ACTES),
+    (r"suite(?:s)?(?: de la prise en charge)?", SUITE),
+    (r"points? d[’']attention(?: ?/ ?coordination)?|coordination", ATTENTION),
+)
+
 #: Préfixes dictés qui ne font que répéter le titre de la rubrique.
 PREFIXES_DICTES = re.compile(
-    r"^(proposition thérapeutique|diagnostic( / analyse)?|information(s)? (données au )?patient|"
-    r"motif( de (la )?consultation)?|examen clinique|point(s)? d[’']attention|"
-    r"suite de la prise en charge)\s*:\s*",
+    r"^(?:" + "|".join(motif for motif, _ in INTITULES_DICTES) + r")\s*:\s*",
     re.IGNORECASE,
 )
+
+
+def rubrique_dictee(valeur: object) -> str | None:
+    """La rubrique nommée en tête de phrase, s'il y en a une."""
+    if not isinstance(valeur, str):
+        return None
+    debut = valeur.strip()
+    for motif, rubrique in INTITULES_DICTES:
+        if re.match(rf"^(?:{motif})\s*:\s*", debut, re.IGNORECASE):
+            return rubrique
+    return None
+
+
 SUFFIXE_MOTIF = re.compile(r",\s*motif de (la )?consultation\s*$", re.IGNORECASE)
 
 
@@ -286,6 +322,10 @@ def rubrique_de(fact: ClinicalFact) -> str:
     dans « Points d'attention »."""
     category, status, concept = fact.category, fact.clinical_status, fact.concept
     value = fact.value if isinstance(fact.value, str) else ""
+    # Le praticien a nommé la rubrique : c'est lui qui décide, pas le modèle.
+    dictee = rubrique_dictee(value)
+    if dictee is not None:
+        return dictee
     if category == "patient_context":
         return SITUATION
     if concept == "referral" or category in {"chief_complaint", "symptom"}:

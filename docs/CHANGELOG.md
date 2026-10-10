@@ -17,7 +17,18 @@
 - **Le déroulé affiché pendant l'écoute** suit le nouvel ordre, sur le site comme sur
   l'iPhone. Il en existait trois copies que rien ne tenait d'accord : un test du serveur
   lit maintenant les deux fichiers des clients et refuse qu'ils dérivent du modèle.
-- Trois tests ajoutés ; 496 tests serveur, 73 site, 63 iPhone au vert.
+- **L'ordre dans lequel Franck dicte n'a aucune importance**, et ça méritait d'être dit :
+  il décrit la consultation comme ça lui vient, souvent une fois le patient parti. Oris
+  n'a jamais rangé d'après le moment où une chose est dite — il extrait des faits, et
+  chaque fait rejoint sa rubrique d'après sa nature. La première formulation de la
+  consigne, écrite le matin même, s'appuyait pourtant sur « dit en ouverture » contre
+  « dit en réponse à une question » : corrigée, elle ne parle plus que de la nature du
+  fait (prompt `extraction-fr-7`).
+- **Nommer la rubrique en dictant décide désormais du rangement** : « Anamnèse : il prend
+  du Séroplex depuis dix ans » ira dans l'anamnèse, quoi qu'en pense le modèle. Les dix
+  rubriques se nomment, avec leurs variantes ; le nom est retiré du texte rendu. Oris
+  savait déjà effacer ce préfixe, il ne s'en servait pas pour ranger.
+- Quatre tests ajoutés ; 497 tests serveur, 73 site, 63 iPhone au vert.
 
 ## Une écoute coupée s'entend, et repart toute seule — 2026-10-10
 - Demande de Franck : « pendant une consultation active, quand la consultation se coupe,
