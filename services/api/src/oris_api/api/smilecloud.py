@@ -26,6 +26,10 @@ from oris_api.services.identity import Actor
 
 router = APIRouter(tags=["smilecloud"])
 
+#: Ce qui peut partir dans le dossier du patient : un document que le praticien a
+#: validé, et lui seul. Un brouillon reste dans Oris.
+DEPOSABLE = frozenset({"validated", "exported"})
+
 #: Le nom sous lequel le document se range dans SmileCloud : lisible dans leur liste,
 #: et qui dit d'où il vient.
 TITRES_DOCUMENT = {
@@ -324,6 +328,10 @@ def deposer_dans_smilecloud(
         raise Unprocessable("SMILECLOUD_NON_RELIE")
     if documents.current_version(session, document) is None:
         raise Unprocessable("DOCUMENT_EMPTY")
+    # Un brouillon ne part pas dans le dossier du patient : ce qui entre dans SmileCloud
+    # y reste, et le praticien ne pourra pas l'en retirer depuis Oris (Franck, 10/10/2026).
+    if document.status not in DEPOSABLE:
+        raise Unprocessable("DOCUMENT_NOT_VALIDATED")
     smilecloud.demander_depot(
         settings,
         patient.smilecloud_case_id,

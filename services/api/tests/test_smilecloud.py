@@ -136,6 +136,13 @@ def test_a_report_is_filed_into_the_patients_smilecloud_without_leaving_oris(api
     assert api.get(f"/documents/{note['id']}/smilecloud").json()["etat"] == "absent"
 
     api.put(f"/patients/{pid}/smilecloud", json={"case_id": CASE})
+
+    # Un brouillon ne part pas : ce qui entre dans SmileCloud y reste, et Oris ne pourra
+    # plus l'en retirer (Franck, 10/10/2026).
+    brouillon = api.post(f"/documents/{note['id']}/smilecloud")
+    assert (brouillon.status_code, brouillon.json()["code"]) == (422, "DOCUMENT_NOT_VALIDATED")
+
+    api.post(f"/documents/{note['id']}/validate", json={"acknowledged_warning_codes": []})
     demande = api.post(f"/documents/{note['id']}/smilecloud").json()
     assert demande["etat"] == "en_attente"
     # Redemander ne fait pas deux dépôts.
@@ -162,6 +169,7 @@ def test_a_deposit_that_could_not_be_done_says_why_instead_of_staying_silent(api
     encounter = run_synthetic(api, "ORIS-SYN-092")
     note = documents_by_type(api, encounter["id"])["consultation_note"]
     api.put(f"/patients/{encounter['patient']['id']}/smilecloud", json={"case_id": CASE})
+    api.post(f"/documents/{note['id']}/validate", json={"acknowledged_warning_codes": []})
     api.post(f"/documents/{note['id']}/smilecloud")
     demande = next(d for d in api.get("/smilecloud/demandes").json() if d["type"] == "depot")
 

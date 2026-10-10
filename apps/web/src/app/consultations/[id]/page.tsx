@@ -8,6 +8,7 @@ import { TypeDocument } from "@/components/documents/TypeDocument";
 import { Icone } from "@/components/Icones";
 import { JetonPraticien } from "@/components/JetonPraticien";
 import { PiecesJointes } from "@/components/patients/PiecesJointes";
+import { SmileCloud } from "@/components/patients/SmileCloud";
 import { CorrectionPanel } from "@/components/review/CorrectionPanel";
 import { DepotSmileCloud } from "@/components/review/DepotSmileCloud";
 import { DocumentBody } from "@/components/review/DocumentView";
@@ -128,6 +129,8 @@ export default function ConsultationPage() {
   const [suppression, setSuppression] = useState<
     "fermee" | "confirmer" | "en_cours"
   >("fermee");
+  // Les fichiers rapatriés de SmileCloud rechargent la liste des pièces jointes.
+  const [versionPieces, setVersionPieces] = useState(0);
   const motDe = useConcepts();
   const [toast, setToast] = useState<string | null>(null);
   const [confirmerRetrait, setConfirmerRetrait] = useState<string | null>(null);
@@ -1009,6 +1012,7 @@ export default function ConsultationPage() {
             <DepotSmileCloud
               documentId={active.id}
               relie={Boolean(data.patient.smilecloud_case_id)}
+              valide={estValide(active)}
             />
           )}
 
@@ -1043,27 +1047,32 @@ export default function ConsultationPage() {
             </details>
           )}
 
-          {/* Les pièces du patient : utiles pour s'y référer, pas à chaque consultation.
-              Repliées, elles ne prennent qu'une ligne. Une pièce déposée ici est
-              rattachée à cette consultation. */}
-          <details className={styles.replie}>
-            <summary>
-              Pièces jointes
+          {/* Les pièces du patient, ici et pas ailleurs : aller les voir obligeait à
+              quitter le compte rendu, donc à perdre le fil (Franck, 10/10/2026). La
+              récupération SmileCloud y est aussi, pour la même raison. Une pièce
+              déposée ici est rattachée à cette consultation. */}
+          <Carte
+            titre="Bibliothèque"
+            action={
               <Link
                 href={`/patients/${data.patient.id}`}
                 className="link-button"
               >
                 fiche patient
               </Link>
-            </summary>
-            <div className={styles.replieContenu}>
-              <PiecesJointes
-                patientId={data.patient.id}
-                encounterId={data.id}
-                compact
-              />
-            </div>
-          </details>
+            }
+          >
+            <SmileCloud
+              patientId={data.patient.id}
+              rapatries={() => setVersionPieces((v) => v + 1)}
+            />
+            <PiecesJointes
+              key={versionPieces}
+              patientId={data.patient.id}
+              encounterId={data.id}
+              compact
+            />
+          </Carte>
 
           {audio.state === "ready" && (
             <p className={styles.audio}>

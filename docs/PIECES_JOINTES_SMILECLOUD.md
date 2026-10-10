@@ -297,6 +297,9 @@ d'attendre et propose de redemander.
 
 ### Ce qu'Oris refuse d'avance
 
+- **Document non validé → `DOCUMENT_NOT_VALIDATED`** (Franck, 10/10/2026). Ce qui entre
+  dans SmileCloud y reste, et Oris ne pourra pas l'en retirer : seul un compte rendu que
+  le praticien a validé part dans le dossier du patient.
 - Patient non relié à un dossier SmileCloud → `SMILECLOUD_NON_RELIE`, et la carte
   renvoie à la fiche patient pour faire le lien.
 - Document sans texte → `DOCUMENT_EMPTY`.

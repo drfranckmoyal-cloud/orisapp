@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-import { Bouton, Carte, Pastille } from "@/components/ui";
+import styles from "@/components/review/depotSmileCloud.module.css";
+import { Carte } from "@/components/ui";
 import { ApiError, apiRequest } from "@/lib/api";
 
 interface Depot {
@@ -13,25 +14,26 @@ interface Depot {
 }
 
 const REFUS: Record<string, string> = {
-  SMILECLOUD_NON_RELIE:
-    "Ce patient n’est pas relié à un dossier SmileCloud. Ouvrez sa fiche pour faire le lien, une fois pour toutes.",
+  SMILECLOUD_NON_RELIE: "Patient non relié à un dossier SmileCloud.",
+  DOCUMENT_NOT_VALIDATED: "Validez le compte rendu d’abord.",
   DOCUMENT_EMPTY: "Ce document n’a pas encore de texte.",
 };
 
 /**
- * « Ranger dans SmileCloud » : le compte rendu va se classer là où le praticien
- * regarde ses photos, sans téléchargement ni téléversement à la main.
+ * « Envoyer vers SmileCloud » : une ligne, un bouton aux couleurs de SmileCloud.
  *
- * Oris ne dépose rien lui-même : il pose la demande, et l'extension Chrome la sert à
- * son prochain passage — comme elle sert déjà les récupérations de photos. L'écran dit
- * donc toujours où ça en est, y compris quand l'extension est éteinte.
+ * Le document part dans le dossier du patient, porté par l'extension Chrome — rien à
+ * télécharger ni à téléverser. **Un brouillon ne part pas** : ce qui entre dans
+ * SmileCloud y reste, et Oris ne pourra pas l'en retirer (Franck, 10/10/2026).
  */
 export function DepotSmileCloud({
   documentId,
   relie,
+  valide,
 }: {
   documentId: string;
   relie: boolean;
+  valide: boolean;
 }) {
   const [depot, setDepot] = useState<Depot | null>(null);
   const [envoi, setEnvoi] = useState(false);
@@ -40,7 +42,11 @@ export function DepotSmileCloud({
   useEffect(() => {
     let vivant = true;
     apiRequest<Depot>(`/documents/${documentId}/smilecloud`)
-      .then((etat) => vivant && setDepot(etat))
+      .then((etat) => {
+        if (!vivant) return;
+        setDepot(etat);
+        setErreur(null);
+      })
       .catch(() => undefined);
     return () => {
       vivant = false;
@@ -65,47 +71,39 @@ export function DepotSmileCloud({
   }
 
   const etat = depot?.etat ?? "absent";
+  const empeche = !valide
+    ? REFUS.DOCUMENT_NOT_VALIDATED
+    : !relie
+      ? REFUS.SMILECLOUD_NON_RELIE
+      : null;
+
   return (
-    <Carte titre="Dans SmileCloud">
-      {etat === "depose" && (
-        <p style={{ marginTop: 0 }}>
-          <Pastille ton="valide">rangé</Pastille> Le document est dans la
-          documentation du patient, sur SmileCloud.
-        </p>
-      )}
-      {etat === "en_attente" && (
-        <p className="muted" style={{ marginTop: 0 }}>
-          Demandé. Le dépôt se fera au prochain passage de l’extension Chrome —
-          elle doit tourner, et vous être connecté à SmileCloud.
-        </p>
-      )}
-      {etat === "impossible" && (
-        <p style={{ marginTop: 0 }}>
-          <Pastille ton="alerte">pas déposé</Pastille> {depot?.raison}
-        </p>
-      )}
-      {etat === "absent" && (
-        <p className="muted" style={{ marginTop: 0 }}>
-          Ranger ce compte rendu dans la documentation du patient, sur
-          SmileCloud. Rien à télécharger : Oris le fait porter par l’extension.
-        </p>
-      )}
-      {!relie && (
-        <p className="muted" style={{ marginTop: 0 }}>
-          Ce patient n’est pas encore relié à un dossier SmileCloud : le lien se
-          fait sur sa fiche, une fois pour toutes.
-        </p>
-      )}
-      {erreur && <p className="banner banner-review">{erreur}</p>}
-      <Bouton
-        variante="secondaire"
-        disabled={!relie || envoi || etat === "en_attente"}
+    <Carte serree className={styles.carte}>
+      <button
+        type="button"
+        className={styles.bouton}
+        disabled={Boolean(empeche) || envoi || etat === "en_attente"}
         onClick={() => void deposer()}
       >
         {etat === "depose" || etat === "impossible"
-          ? "Déposer à nouveau"
+          ? "Envoyer à nouveau"
           : "Envoyer vers SmileCloud"}
-      </Bouton>
+      </button>
+      <p className={styles.mot}>
+        {erreur ? (
+          <span className={styles.refus}>{erreur}</span>
+        ) : empeche ? (
+          empeche
+        ) : etat === "depose" ? (
+          <span className={styles.fait}>Rangé dans le dossier du patient.</span>
+        ) : etat === "en_attente" ? (
+          "Demandé : l’extension Chrome le dépose à son prochain passage."
+        ) : etat === "impossible" ? (
+          <span className={styles.refus}>Pas déposé — {depot?.raison}</span>
+        ) : (
+          "Range le compte rendu dans la documentation du patient."
+        )}
+      </p>
     </Carte>
   );
 }

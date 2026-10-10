@@ -1,0 +1,53 @@
+/* Les couleurs de SmileCloud, relevées sur ses propres jetons de style le 10/10/2026
+   (voir D120 de Dental Lens) : passer d'une fenêtre à l'autre ne change pas d'univers,
+   et le bouton dit sans un mot où part le document. */
+.carte {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+}
+
+.bouton {
+  --sc-teal: #0096af;
+  background: var(--sc-teal);
+  color: #fff;
+  border: 1px solid var(--sc-teal);
+  border-radius: 8px;
+  padding: 7px 13px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.86rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.bouton:hover:not(:disabled) {
+  background: #007e93;
+}
+
+.bouton:disabled {
+  background: transparent;
+  color: var(--texte-discret, #6b7280);
+  border-color: var(--bordure, #d8dde3);
+  cursor: default;
+}
+
+/* La raison tient sur une ligne, à côté du bouton : la carte ne grandit pas. */
+.mot {
+  flex: 1 1 11rem;
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: var(--texte-discret, #6b7280);
+}
+
+.fait {
+  color: #0096af;
+  font-weight: 600;
+}
+
+.refus {
+  color: var(--alerte, #b3261e);
+}

@@ -1,5 +1,19 @@
 # Changelog
 
+## La bibliothèque du patient dans la page du compte rendu — 2026-10-10
+- **« Bibliothèque »**, nouvelle carte de la colonne de droite : les pièces jointes du
+  patient *et* la récupération SmileCloud, sans quitter le compte rendu. « C'est embêtant
+  de devoir changer de page pour voir quelles pièces jointes a le patient, ça nous fait
+  sortir de la page compte rendu » — ce qui était replié au bas du rail devient une carte
+  à part entière, dépliée.
+- **Un brouillon ne part plus dans SmileCloud** : ce qui y entre y reste, et Oris ne
+  pourra pas l'en retirer. Seul un compte rendu validé peut être déposé
+  (`DOCUMENT_NOT_VALIDATED`), et la carte le dit au lieu de laisser cliquer.
+- La carte d'envoi tient maintenant **sur une ligne**, avec le bouton aux couleurs de
+  SmileCloud (teal `#0096af`, relevé sur ses propres jetons de style) : passer d'une
+  fenêtre à l'autre ne change pas d'univers.
+- Un test de plus ; 499 tests serveur, 73 site, 63 iPhone au vert.
+
 ## Le compte rendu se range dans SmileCloud, et les réglages disent qui partage le cabinet — 2026-10-10
 - **« Envoyer vers SmileCloud »**, demandé par Franck : depuis la consultation, carte
   « Dans SmileCloud », le compte rendu va se classer dans la documentation du patient —
