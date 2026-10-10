@@ -8,8 +8,9 @@
 - Oris ne dépose rien lui-même : il pose une demande de plus dans la file que l'extension
   Chrome relève déjà, lui remet le PDF (fabriqué à la demande, jamais écrit sur le
   disque), et attend qu'elle dise si c'est fait. L'écran dit toujours où ça en est :
-  *demandé*, *rangé*, ou *pas déposé* avec la raison. **La moitié extension reste à
-  écrire** (contrat dans `docs/PIECES_JOINTES_SMILECLOUD.md`).
+  *demandé*, *rangé*, ou *pas déposé* avec la raison. **La moitié extension a suivi le
+  jour même** (Dental Lens 0.29.0) : elle réutilise le geste éprouvé de la galerie
+  « QR ID » et range les documents dans une galerie « Comptes rendus ».
 - **L'écran des réglages ne disait pas la vérité** : il montrait « vous » seul et
   affirmait qu'« aucun praticien ne voit les consultations d'un autre », alors que le
   cabinet compte Charlotte depuis le 8 octobre et que **les dossiers sont partagés** —

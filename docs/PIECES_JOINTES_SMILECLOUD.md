@@ -252,7 +252,8 @@ cours, dernière récupération), `PUT …/smilecloud` (relier / délier),
 ## L'autre sens : déposer un document d'Oris dans SmileCloud
 
 *Demandé par Franck le 10 octobre 2026. Côté Oris : fait et testé
-(`tests/test_smilecloud.py`). **Côté extension : à écrire.***
+(`tests/test_smilecloud.py`). **Côté extension : fait le jour même**, Dental Lens 0.29.0
+(décision D122 de son fichier maître), sept essais sur le vrai code de l'extension.*
 
 Le connecteur n'allait que dans un sens. Celui-ci va dans l'autre : depuis la
 consultation, carte **« Dans SmileCloud »**, le praticien range le compte rendu là où il
@@ -278,8 +279,11 @@ de l'extension : ce Mac seulement, plus le jeton partagé s'il est posé.
 
 ### 2. Le déposer dans SmileCloud
 
-Dans l'onglet **Documentation** du dossier `case_id`, sous le nom donné par `nom`.
-C'est la partie qui reste à écrire, du côté de l'extension Dental Lens.
+Dans l'onglet **Documentation** du dossier `case_id`, sous le nom donné par `nom`, dans
+une galerie **« Comptes rendus »** créée au besoin — les séries de photos gardent les
+leurs. L'extension réutilise le geste éprouvé de la galerie « QR ID » : le menu de la
+galerie, puis son champ de fichier ; jamais l'API privée (D85). Un PDF n'ayant pas de
+vignette, l'arrivée se confirme sur la liste des ressources que la page garde en mémoire.
 
 ### 3. Le dire — `POST /smilecloud/depose`
 
