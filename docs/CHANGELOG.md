@@ -1,5 +1,19 @@
 # Changelog
 
+## Un contretemps ne fait plus recliquer le praticien — 2026-10-12
+- Le dépôt d'un document dans SmileCloud échouait parfois pour une raison passagère : la
+  page du dossier n'avait pas fini de s'afficher. L'extension le disait — « rien n'a été
+  déposé, on réessaiera » — mais **Oris fermait la demande**, et la reprise annoncée
+  n'avait jamais lieu. Décalage trouvé en lisant le message de la session Dental Lens,
+  avant qu'il ne se voie en consultation.
+- `POST /smilecloud/depose` accepte désormais `reessayer` : rien n'est parti, la demande
+  **reste ouverte** et sera resservie toute seule. La carte dit « demandé, pas encore
+  abouti », avec la raison.
+- Deux défauts attrapés par le test de bout en bout, pas par la relecture : le champ
+  était lu puis **jeté** faute d'être passé au service, et le motif d'un essai raté
+  **survivait à la réussite** — un dépôt abouti s'affichait encore « pas déposé ».
+- Un test de plus ; 502 tests serveur, 73 site au vert.
+
 ## Un texte réécrit à la main s'affiche, et ne se fait plus sermonner vingt-six fois — 2026-10-10
 - Franck réécrit un compte rendu à la main, le valide, et la colonne de droite se remplit
   de **vingt-six fois « Fait non repris dans le document »** : « je ne sais même pas ce

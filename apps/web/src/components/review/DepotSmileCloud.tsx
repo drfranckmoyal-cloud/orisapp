@@ -97,7 +97,13 @@ export function DepotSmileCloud({
         ) : etat === "depose" ? (
           <span className={styles.fait}>Rangé dans le dossier du patient.</span>
         ) : etat === "en_attente" ? (
-          "Demandé : l’extension Chrome le dépose à son prochain passage."
+          // Une demande encore ouverte peut déjà porter un contretemps : le dire plutôt
+          // que d'afficher « demandé » pendant qu'on repasse dessus.
+          depot?.raison ? (
+            `Demandé, pas encore abouti — ${depot.raison}. Oris réessaie tout seul.`
+          ) : (
+            "Demandé : l’extension Chrome le dépose à son prochain passage."
+          )
         ) : etat === "impossible" ? (
           <span className={styles.refus}>Pas déposé — {depot?.raison}</span>
         ) : (

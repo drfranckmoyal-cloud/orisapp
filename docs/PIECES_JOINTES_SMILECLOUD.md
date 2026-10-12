@@ -288,9 +288,17 @@ vignette, l'arrivée se confirme sur la liste des ressources que la page garde e
 ### 3. Le dire — `POST /smilecloud/depose`
 
 ```json
-{"id": "b7…"}                               ← déposé
-{"id": "b7…", "raison": "dossier fermé"}    ← pas déposé, et le praticien lit pourquoi
+{"id": "b7…"}                                          ← déposé
+{"id": "b7…", "raison": "dossier fermé"}               ← pas déposé, le praticien lit pourquoi
+{"id": "b7…", "raison": "…", "reessayer": true}        ← rien n'est parti, on recommencera
 ```
+
+`reessayer` (12/10/2026, convenu avec la session Dental Lens) : **rien n'a été déposé**
+et ça vaut la peine de recommencer — la liste des fichiers du dossier ne s'affichait pas,
+par exemple. La demande **reste ouverte** : elle sera resservie au passage suivant, et le
+praticien lit « demandé, pas encore abouti — <raison> » sans avoir à recliquer. Un dépôt
+qui finit par aboutir efface le motif : il ne reste pas marqué « pas déposé ».
+Sans le champ, le comportement est inchangé — la demande se ferme.
 
 Une demande non servie disparaît au bout de 12 h, comme les autres : l'écran cesse
 d'attendre et propose de redemander.

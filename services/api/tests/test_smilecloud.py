@@ -163,6 +163,44 @@ def test_a_report_is_filed_into_the_patients_smilecloud_without_leaving_oris(api
     assert [d for d in api.get("/smilecloud/demandes").json() if d["type"] == "depot"] == []
 
 
+def test_a_contretemps_keeps_the_request_open_instead_of_asking_the_practitioner_again(
+    api: Any,
+) -> None:
+    """Quand rien n'est parti et que ça vaut la peine de recommencer — la page de
+    SmileCloud n'avait pas fini de s'afficher —, la demande reste ouverte et sera
+    resservie. Le praticien n'a pas à recliquer pour un contretemps qui ne le regarde
+    pas (12/10/2026, contrat convenu avec la session Dental Lens)."""
+    from tests.conftest import documents_by_type, run_synthetic
+
+    encounter = run_synthetic(api, "ORIS-SYN-092")
+    note = documents_by_type(api, encounter["id"])["consultation_note"]
+    api.put(f"/patients/{encounter['patient']['id']}/smilecloud", json={"case_id": CASE})
+    api.post(f"/documents/{note['id']}/validate", json={"acknowledged_warning_codes": []})
+    api.post(f"/documents/{note['id']}/smilecloud")
+    demande = next(d for d in api.get("/smilecloud/demandes").json() if d["type"] == "depot")
+
+    api.post(
+        "/smilecloud/depose",
+        json={
+            "id": demande["id"],
+            "raison": "la liste des fichiers du dossier ne s'affiche pas",
+            "reessayer": True,
+        },
+    )
+
+    etat = api.get(f"/documents/{note['id']}/smilecloud").json()
+    assert etat["etat"] == "en_attente", "la demande n'est pas close"
+    assert "ne s'affiche pas" in etat["raison"], "le contretemps est dit au praticien"
+    # Et l'extension la retrouve à son prochain passage.
+    assert [d["id"] for d in api.get("/smilecloud/demandes").json() if d["type"] == "depot"] == [
+        demande["id"]
+    ]
+
+    # Le dépôt finit par aboutir : la demande se referme.
+    api.post("/smilecloud/depose", json={"id": demande["id"]})
+    assert api.get(f"/documents/{note['id']}/smilecloud").json()["etat"] == "depose"
+
+
 def test_a_deposit_that_could_not_be_done_says_why_instead_of_staying_silent(api: Any) -> None:
     from tests.conftest import documents_by_type, run_synthetic
 

@@ -184,6 +184,8 @@ class DepotFaitIn(BaseModel):
     id: str = Field(max_length=64)
     #: Vide quand c'est fait ; sinon ce qui a empêché le dépôt, dit au praticien.
     raison: str = Field(default="", max_length=200)
+    #: Rien n'est parti et ça vaut la peine de recommencer : la demande reste ouverte.
+    reessayer: bool = False
 
 
 @router.get("/smilecloud/depot/{demande_id}")
@@ -224,7 +226,7 @@ def noter_depot(
     _extension(request, settings, authorization)
     if smilecloud.demande(settings, body.id) is None:
         raise NotFound("DEMANDE_INCONNUE", body.id)
-    smilecloud.noter_depot(settings, body.id, body.raison)
+    smilecloud.noter_depot(settings, body.id, body.raison, body.reessayer)
     return {"note": True}
 
 
@@ -349,7 +351,11 @@ def _depot(settings: Settings, document_id: UUID) -> DepotOut:
     if dernier is None:
         return DepotOut(etat="absent")
     if not dernier.get("termine"):
-        return DepotOut(etat="en_attente", demande_le=dernier["demande_le"])
+        # Une demande encore ouverte peut déjà porter un contretemps : le praticien lit
+        # « demandé », et pourquoi ça n'a pas encore abouti.
+        return DepotOut(
+            etat="en_attente", demande_le=dernier["demande_le"], raison=dernier.get("raison", "")
+        )
     raison = dernier.get("raison", "")
     return DepotOut(
         etat="impossible" if raison else "depose",

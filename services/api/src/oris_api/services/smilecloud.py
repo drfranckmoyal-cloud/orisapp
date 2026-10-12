@@ -217,14 +217,29 @@ def demander_depot(
     return demande
 
 
-def noter_depot(settings: Settings, demande_id: str, raison: str = "") -> dict[str, Any]:
-    """L'extension a déposé le document — ou dit pourquoi elle n'a pas pu."""
+def noter_depot(
+    settings: Settings, demande_id: str, raison: str = "", reessayer: bool = False
+) -> dict[str, Any]:
+    """L'extension a déposé le document — ou dit pourquoi elle n'a pas pu.
+
+    `reessayer` : **rien n'est parti**, et ça vaut la peine de recommencer — la page de
+    SmileCloud n'avait pas fini de s'afficher, par exemple. La demande reste alors
+    ouverte et sera resservie au prochain passage, au lieu d'obliger le praticien à
+    cliquer de nouveau pour un contretemps qui ne le regarde pas (12/10/2026).
+    """
 
     def changer(d: dict[str, Any]) -> None:
-        d["termine"] = True
         d["depose_le"] = _maintenant()
         if raison:
             d["raison"] = raison
+        else:
+            # Un contretemps d'un essai précédent ne survit pas à la réussite : sans ça,
+            # un dépôt abouti s'affichait encore « pas déposé ».
+            d.pop("raison", None)
+        if reessayer and raison:
+            d["essais"] = int(d.get("essais", 0)) + 1
+        else:
+            d["termine"] = True
 
     return _modifier(settings, demande_id, changer)
 
