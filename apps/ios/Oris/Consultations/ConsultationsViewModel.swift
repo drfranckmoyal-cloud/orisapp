@@ -6,7 +6,10 @@ import Observation
 final class ConsultationsViewModel {
     enum State: Equatable {
         case loading
-        case failed
+        /// Avec la raison, dite au praticien. Elle était jetée : un jeton refusé
+        /// s'affichait « serveur injoignable », et Franck a cherché deux semaines du
+        /// côté du réseau un problème qui était dans ses réglages (24/10/2026).
+        case failed(String)
         case loaded([EncounterSummary])
     }
 
@@ -21,7 +24,7 @@ final class ConsultationsViewModel {
         do {
             state = .loaded(try await client.encounters())
         } catch {
-            state = .failed
+            state = .failed(Labels.erreur(error))
         }
     }
 
@@ -71,7 +74,8 @@ final class ConsultationDetailViewModel {
 
     enum State: Equatable {
         case loading
-        case failed
+        /// Avec la raison : voir `ConsultationsViewModel.State`.
+        case failed(String)
         case loaded(Content)
     }
 
@@ -91,7 +95,7 @@ final class ConsultationDetailViewModel {
             async let object = try? client.clinicalObject(encounterId: encounterId)
             state = .loaded(Content(encounter: try await encounter, documents: try await documents, clinicalObject: await object))
         } catch {
-            state = .failed
+            state = .failed(Labels.erreur(error))
         }
     }
 }

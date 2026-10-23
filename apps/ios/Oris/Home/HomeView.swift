@@ -306,6 +306,13 @@ struct ServerStatusCard: View {
                         .foregroundStyle(Teinte.encreDouce)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+            case .refuse(let raison):
+                Label("Serveur joignable, mais cet iPhone est refusé", systemImage: "lock.trianglebadge.exclamationmark")
+                    .foregroundStyle(Teinte.alerte)
+                Text(raison)
+                    .font(Police.note)
+                    .foregroundStyle(Teinte.encreDouce)
+                    .fixedSize(horizontal: false, vertical: true)
             case .reachable(let health):
                 Label("Serveur Oris connecté · version \(health.version)", systemImage: "checkmark.circle")
                     .foregroundStyle(Teinte.accent)

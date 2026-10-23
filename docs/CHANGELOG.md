@@ -1,5 +1,22 @@
 # Changelog
 
+## L'app iPhone disait « injoignable » alors qu'elle était refusée — 2026-10-24
+- Franck : « Oris app téléphone ne fonctionne toujours pas seul », deux semaines après la
+  mise en ligne. Le journal du serveur a tranché : le 9 octobre, l'iPhone **a bien joint
+  le serveur** — `/mobile/health` répond 200 — puis s'est fait **refuser** (`403`) à
+  chaque vraie lecture. Son jeton est absent ou faux. Plus une seule requête depuis.
+- **Deux écrans mentaient, chacun à sa façon.** L'accueil ne contrôlait que la santé du
+  serveur, qui ne demande aucun jeton : il affichait « Serveur Oris connecté » et une
+  liste vide. L'onglet Consultations, lui, jetait la raison de l'échec et affichait
+  toujours « Serveur Oris injoignable ». Rien ne pointait vers le jeton — d'où deux
+  semaines passées à chercher du côté du réseau.
+- L'accueil fait maintenant une **vraie lecture**, qui exige le jeton, et sait dire
+  « Serveur joignable, mais cet iPhone est refusé ». Les écrans de liste et de
+  consultation **portent la raison** au lieu de la supposer. Le refus sans jeton
+  (`AUTHENTICATION_REQUIRED`) avait sa phrase manquante : il l'a.
+- Deux tests ajoutés, dont celui qui interdit de confondre « connecté » et « refusé » ;
+  64 tests iPhone au vert.
+
 ## Un contretemps ne fait plus recliquer le praticien — 2026-10-12
 - Le dépôt d'un document dans SmileCloud échouait parfois pour une raison passagère : la
   page du dossier n'avait pas fini de s'afficher. L'extension le disait — « rien n'a été

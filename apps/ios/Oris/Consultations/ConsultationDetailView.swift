@@ -19,9 +19,9 @@ struct ConsultationDetailView: View {
             switch model.state {
             case .loading:
                 ProgressView("Chargement…").tint(Teinte.accent)
-            case .failed:
+            case .failed(let raison):
                 MessageVide(icone: "exclamationmark.triangle", titre: "Consultation indisponible",
-                            texte: "Tirez vers le bas pour réessayer.")
+                            texte: raison + " Tirez vers le bas pour réessayer.")
                     .padding(OrisSpacing.s16)
             case .loaded(let content):
                 loaded(content)

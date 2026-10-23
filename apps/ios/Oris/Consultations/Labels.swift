@@ -71,7 +71,8 @@ enum Labels {
         "PROCESSING_IN_PROGRESS": "Le traitement est encore en cours (moins de 5 minutes) : patientez, il se termine tout seul.",
         "SMILECLOUD_NON_RELIE": "Reliez d’abord ce patient à son dossier SmileCloud.",
         "SMILECLOUD_INVALIDE": "Identifiant de dossier SmileCloud non reconnu.",
-        "INVALID_TOKEN": "Jeton refusé : il a pu être désactivé. Créez-en un nouveau sur le Mac.",
+        "INVALID_TOKEN": "Le jeton de cet iPhone est refusé par le serveur. Recopiez-le dans Paramètres › Connexion à Oris.",
+        "AUTHENTICATION_REQUIRED": "Cet iPhone n’a pas de jeton. Ajoutez-le dans Paramètres › Connexion à Oris.",
     ]
 
     static func erreur(_ error: Error) -> String {

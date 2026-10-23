@@ -105,9 +105,11 @@ struct ConsultationsView: View {
                 .padding(.top, OrisSpacing.s32)
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-        case .failed:
-            MessageVide(icone: "exclamationmark.triangle", titre: "Serveur Oris injoignable",
-                        texte: "Tirez vers le bas pour réessayer.")
+        case .failed(let raison):
+            // La raison, pas une supposition : « injoignable » envoyait chercher un
+            // problème de réseau alors que c'était le jeton qui était refusé.
+            MessageVide(icone: "exclamationmark.triangle", titre: "Liste indisponible",
+                        texte: raison + " Tirez vers le bas pour réessayer.")
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
         case .loaded(let encounters):

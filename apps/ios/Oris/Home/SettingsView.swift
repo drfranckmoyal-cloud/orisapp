@@ -86,6 +86,7 @@ struct SettingsView: View {
     private var etatServeur: String {
         switch model.serverState {
         case .reachable: "connecté"
+        case .refuse: "jeton refusé"
         case .unreachable: "injoignable"
         case .checking: "…"
         }
