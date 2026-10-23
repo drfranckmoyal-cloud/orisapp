@@ -80,6 +80,34 @@ enum Connexion {
         UserDefaults.standard.string(forKey: serveurKey) ?? ""
     }
 
+    /// Ce que le serveur rend quand on se connecte.
+    struct Session: Decodable, Sendable, Equatable {
+        let jeton: String
+        let appareil_id: String
+        let praticien: String
+        let email: String
+    }
+
+    private static let praticienKey = "oris.praticien"
+
+    /// Qui est connecté, pour l'afficher dans les réglages. Jamais le mot de passe :
+    /// il ne quitte pas l'écran de connexion.
+    static var praticienConnecte: String? {
+        UserDefaults.standard.string(forKey: praticienKey)
+    }
+
+    static func retenir(_ session: Session) -> Bool {
+        UserDefaults.standard.set("\(session.praticien) · \(session.email)", forKey: praticienKey)
+        return enregistrer(jeton: session.jeton)
+    }
+
+    /// Se déconnecter : le jeton s'oublie, le serveur garde le sien jusqu'à ce qu'on le
+    /// révoque depuis « Appareils connectés ».
+    static func deconnecter() {
+        UserDefaults.standard.removeObject(forKey: praticienKey)
+        oublierJeton()
+    }
+
     // MARK: Jeton
 
     static var jeton: String? {

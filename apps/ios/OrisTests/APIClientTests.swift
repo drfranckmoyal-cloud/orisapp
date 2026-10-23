@@ -30,6 +30,20 @@ private struct SanteOkMaisRefuseTransport: HTTPTransport {
     }
 }
 
+/// Garde la dernière requête envoyée, pour vérifier ce qui part vraiment sur le réseau.
+private actor EspionTransport: HTTPTransport {
+    let body: String
+    private(set) var derniere: URLRequest?
+
+    init(body: String) { self.body = body }
+
+    func send(_ request: URLRequest) async throws -> (Data, URLResponse) {
+        derniere = request
+        let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        return (Data(body.utf8), response)
+    }
+}
+
 private struct FailingTransport: HTTPTransport {
     func send(_ request: URLRequest) async throws -> (Data, URLResponse) {
         throw URLError(.cannotConnectToHost)
@@ -60,6 +74,29 @@ final class APIClientTests: XCTestCase {
         } catch {
             XCTAssertEqual(error as? APIError, .httpStatus(503))
         }
+    }
+
+    /// 24/10/2026 : l'iPhone ne demande plus qu'on lui recopie un jeton. Il se connecte,
+    /// et range lui-même ce que le serveur lui rend.
+    func testLoggingInAsksForATokenAndReadsItBack() async throws {
+        let corps = #"{"jeton":"oris_abc","appareil_id":"a1","praticien":"Franck Moyal","email":"f@m.fr"}"#
+        let espion = EspionTransport(body: corps)
+        let client = APIClient(baseURL: baseURL, transport: espion)
+
+        let session = try await client.connecter(
+            email: "f@m.fr", motDePasse: "un-mot-de-passe", appareil: "iPhone de Franck")
+
+        XCTAssertEqual(session.jeton, "oris_abc")
+        XCTAssertEqual(session.praticien, "Franck Moyal")
+        let envoye = await espion.derniere
+        XCTAssertEqual(envoye?.url?.path, "/auth/login")
+        XCTAssertEqual(envoye?.httpMethod, "POST")
+        let json = try XCTUnwrap(envoye?.httpBody)
+        let lu = try XCTUnwrap(JSONSerialization.jsonObject(with: json) as? [String: Any])
+        XCTAssertEqual(lu["email"] as? String, "f@m.fr")
+        XCTAssertEqual(lu["appareil"] as? String, "iPhone de Franck")
+        // Le mot de passe part dans le corps, jamais dans l'adresse.
+        XCTAssertFalse((envoye?.url?.absoluteString ?? "").contains("mot-de-passe"))
     }
 
     @MainActor

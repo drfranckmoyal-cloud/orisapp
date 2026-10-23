@@ -16,6 +16,7 @@ from fastapi.responses import JSONResponse
 from oris_api import __version__
 from oris_api.api import (
     audio,
+    auth,
     connecteurs,
     correspondents,
     deliveries,
@@ -74,6 +75,8 @@ def create_app() -> FastAPI:
     )
     app.add_exception_handler(ServiceError, service_error_handler)
     app.include_router(health.router)
+    # La seule porte ouverte : c'est elle qui délivre les jetons.
+    app.include_router(auth.router)
     app.include_router(patients.router)
     app.include_router(correspondents.router)
     app.include_router(journee.router)

@@ -94,6 +94,13 @@ class User(Base):
     sending_email: Mapped[str] = mapped_column(String(320), default="", server_default="")
     role: Mapped[str] = mapped_column(contract_enum(UserRole, "user_role"))
     preferences: Mapped[dict[str, Any]] = jsonb(dict)
+    #: Empreinte scrypt du mot de passe, et son sel. Vides tant qu'aucun mot de passe
+    #: n'a été posé : ce compte ne peut alors pas se connecter.
+    password_hash: Mapped[str | None] = mapped_column(String(128), default=None)
+    password_salt: Mapped[str | None] = mapped_column(String(64), default=None)
+    #: Essais manqués d'affilée, et jusqu'à quand le compte refuse de répondre.
+    failed_logins: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
     created_at: Mapped[datetime] = created_at()
 
 

@@ -69,6 +69,16 @@ struct APIClient: Sendable {
         try await get("health")
     }
 
+    /// Se connecter : mail et mot de passe contre un jeton pour **cet appareil**.
+    ///
+    /// Remplace la recopie à la main d'un jeton de quarante-huit caractères depuis le
+    /// Mac (Franck, 24/10/2026 : « j'en ai marre de mettre des jetons »). Le jeton reste
+    /// ce qui circule ensuite ; seule la façon de l'obtenir change.
+    func connecter(email: String, motDePasse: String, appareil: String) async throws -> Connexion.Session {
+        try await send("auth/login", method: "POST",
+                       body: ["email": email, "mot_de_passe": motDePasse, "appareil": appareil])
+    }
+
     func encounters(status: ClinicalEncounterStatus? = nil) async throws -> [EncounterSummary] {
         try await get("encounters", query: status.map { [URLQueryItem(name: "status", value: $0.rawValue)] } ?? [])
     }

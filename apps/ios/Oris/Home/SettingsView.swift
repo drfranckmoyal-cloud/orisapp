@@ -396,15 +396,22 @@ private struct EcouteView: View {
     }
 }
 
-/// Connexion au serveur Oris : adresse du Mac et jeton (réglages d'avant, déplacés ici).
+/// Se connecter à Oris : mail et mot de passe, comme partout ailleurs.
+///
+/// Avant le 24/10/2026, il fallait recopier à la main un jeton de quarante-huit
+/// caractères lu sur le Mac. Franck : « j'en ai marre de mettre des jetons, c'est
+/// chiant. » Il avait raison. Le jeton existe toujours — c'est lui qui circule à chaque
+/// appel — mais il s'obtient maintenant en se connectant, et il est rangé tout seul.
 private struct ConnexionView: View {
     @State var model: HomeViewModel
     let client: APIClient
     var reconnect: () -> Void
 
+    @State private var email = ""
+    @State private var motDePasse = ""
+    @State private var connecte = Connexion.praticienConnecte
+    @State private var enCours = false
     @State private var serveur = Connexion.serveurSaisi
-    @State private var jeton = ""
-    @State private var jetonPresent = Connexion.jeton != nil
     @State private var message: String?
     @State private var erreur: String?
 
@@ -415,50 +422,91 @@ private struct ConnexionView: View {
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
             }
+            if let connecte {
+                Section {
+                    Label(connecte, systemImage: "person.crop.circle.badge.checkmark")
+                        .font(Police.interface(15, .medium))
+                    Button("Se déconnecter de cet iPhone", role: .destructive) {
+                        Connexion.deconnecter()
+                        self.connecte = nil
+                        reconnect()
+                    }
+                } header: {
+                    Text("Connecté")
+                } footer: {
+                    Text("Se déconnecter n’efface aucune consultation : elles vivent sur le serveur. Pour qu’un iPhone perdu cesse d’accéder à Oris, retirez-le aussi dans « Appareils connectés ».")
+                }
+            } else {
+                Section {
+                    TextField("Votre adresse électronique", text: $email)
+                        .keyboardType(.emailAddress).textContentType(.username)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled()
+                    SecureField("Mot de passe", text: $motDePasse)
+                        .textContentType(.password)
+                    Button(enCours ? "Connexion…" : "Se connecter") { Task { await seConnecter() } }
+                        .font(Police.interface(15.5, .bold))
+                        .disabled(enCours || email.isEmpty || motDePasse.isEmpty)
+                    if let erreur {
+                        Text(erreur).font(Police.note).foregroundStyle(Teinte.alerte)
+                    }
+                } header: {
+                    Text("Se connecter")
+                } footer: {
+                    Text("Les mêmes identifiants que sur l’ordinateur. Cet iPhone retient la connexion : vous ne la refaites qu’après l’avoir déconnecté, ou après une réinstallation.")
+                }
+            }
             Section {
-                TextField("http://localhost:8000", text: $serveur)
-                    .keyboardType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled()
-                SecureField(jetonPresent ? "Jeton enregistré — saisir pour remplacer" : "Jeton d’accès (oris_…)", text: $jeton)
-                    .textInputAutocapitalization(.never).autocorrectionDisabled()
-                Button("Enregistrer et se reconnecter", action: enregistrer)
-                    .font(Police.interface(15.5, .bold))
-                if jetonPresent {
-                    Button("Oublier le jeton", role: .destructive) {
-                        Connexion.oublierJeton()
-                        jetonPresent = false
+                DisclosureGroup("Adresse du serveur") {
+                    TextField(Connexion.serveurParDefaut.absoluteString, text: $serveur)
+                        .keyboardType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled()
+                    Button("Enregistrer l’adresse") {
+                        erreur = nil
+                        guard serveur.trimmingCharacters(in: .whitespaces).isEmpty
+                                || Connexion.adresse(serveur) != nil else {
+                            erreur = "Adresse du serveur non reconnue."
+                            return
+                        }
+                        Connexion.enregistrer(serveur: serveur)
                         reconnect()
                     }
                 }
-                if let erreur {
-                    Text(erreur).font(Police.note).foregroundStyle(Teinte.alerte)
-                }
-            } header: {
-                Text("Adresse du Mac et jeton")
             } footer: {
-                Text("Le nom du Mac sur le réseau (par exemple MacBook-Pro-3.local:8000) : il ne change pas d’un Wi-Fi à l’autre, contrairement à une adresse chiffrée. Et le jeton de cet iPhone. Serveur utilisé : \(client.baseURL.absoluteString)")
+                Text("À ne changer que si Oris déménage. Serveur utilisé : \(client.baseURL.absoluteString)")
             }
         }
         .task { await model.refresh() }
     }
 
-    private func enregistrer() {
+    private func seConnecter() async {
+        enCours = true
         erreur = nil
-        if !serveur.trimmingCharacters(in: .whitespaces).isEmpty, Connexion.adresse(serveur) == nil {
-            erreur = "Adresse du serveur non reconnue."
-            return
-        }
-        Connexion.enregistrer(serveur: serveur)
-        let saisi = jeton.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !saisi.isEmpty {
-            guard Connexion.enregistrer(jeton: saisi) else {
-                erreur = "Le jeton n’a pas pu être rangé dans le trousseau."
+        defer { enCours = false }
+        do {
+            let session = try await client.connecter(
+                email: email.trimmingCharacters(in: .whitespacesAndNewlines),
+                motDePasse: motDePasse,
+                appareil: nomDeCetAppareil())
+            guard Connexion.retenir(session) else {
+                erreur = "La connexion n’a pas pu être rangée dans le trousseau."
                 return
             }
-            jeton = ""
-            jetonPresent = true
+            motDePasse = ""
+            connecte = Connexion.praticienConnecte
+            message = "Connecté à Oris."
+            reconnect()
+        } catch {
+            erreur = Labels.erreur(error)
         }
-        reconnect()
     }
+
+    /// « iPhone de Franck » : c'est ce nom qui apparaîtra dans « Appareils connectés ».
+    private func nomDeCetAppareil() -> String {
+        #if canImport(UIKit)
+        return UIDevice.current.name
+        #else
+        return "iPhone"
+        #endif
+        }
 }
 
 private struct AppareilsView: View {
