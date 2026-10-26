@@ -91,6 +91,23 @@ dernières sont gardées). À faire avant toute opération risquée.
 **Restauration essayée le 08/10/2026** sur une base jetable : 37 tables retrouvées. Une
 sauvegarde non essayée ne compte pas.
 
+## Le compte applicatif possède ses tables
+
+Le 8 octobre, transporter la base du Mac a fait de `postgres` le propriétaire des 37
+tables, alors que l'application se connecte en `oris`. Conséquence : **toute migration
+échouait** (« must be owner of table users »), et `deployer-en-ligne.command` annonçait
+quand même « Oris est à jour ». Le serveur a tourné **dix-huit jours** avec un schéma
+périmé ; c'est ce qui faisait répondre 500 à la connexion de l'app iPhone.
+
+Remis d'aplomb le 26/10/2026 (propriété rendue à `oris`), et le script de déploiement
+**s'arrête** désormais si une migration échoue. À vérifier après tout `pg_restore` :
+
+```
+ssh root@51.159.130.158 "su - postgres -c \"psql -d oris -At -c \\\"select tableowner, count(*) from pg_tables where schemaname in ('public','learning') group by 1\\\"\""
+```
+
+Une seule ligne, `oris|37`, est la bonne réponse.
+
 ## Ce qui n'est pas en place
 
 - **Pas de contrat HDS** avec Scaleway, alors que le serveur porte désormais de vraies

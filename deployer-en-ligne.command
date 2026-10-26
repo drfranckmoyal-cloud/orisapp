@@ -30,7 +30,19 @@ echo "2/5  Dépendances du serveur…"
 ssh "$SERVEUR" "su - oris -c 'cd /home/oris/app/services/api && .venv/bin/pip install -q -e \".[localdb]\"'" || exit 1
 
 echo "3/5  Mise à jour de la base…"
-ssh "$SERVEUR" "su - oris -c 'cd /home/oris/app/services/api && .venv/bin/alembic upgrade head' 2>&1 | tail -1"
+# Une migration qui échoue arrête tout. Le 26/10/2026, elle échouait depuis le 8 octobre
+# — le compte de l'application n'était plus propriétaire de ses tables après le transport
+# de la base du Mac — et ce script annonçait quand même « Oris est à jour ». Le serveur a
+# tourné dix-huit jours avec un schéma périmé, et la connexion de l'app répondait 500.
+SORTIE=$(ssh "$SERVEUR" "su - oris -c 'cd /home/oris/app/services/api && .venv/bin/alembic upgrade head' 2>&1")
+echo "$SORTIE" | tail -1
+if echo "$SORTIE" | grep -qiE "error|exception|Traceback"; then
+  echo
+  echo "     ÉCHEC de la mise à jour de la base — rien n'a été relancé."
+  echo "$SORTIE" | tail -5
+  read -r -p "Appuyez sur Entrée pour fermer." _
+  exit 1
+fi
 
 echo "4/5  Fabrication du site… (une à deux minutes)"
 ssh "$SERVEUR" "su - oris -c 'cd /home/oris/app/apps/web && npm ci --no-audit --no-fund >/dev/null 2>&1 && NEXT_PUBLIC_ORIS_API_URL=$ADRESSE/api NODE_OPTIONS=--max-old-space-size=3000 npm run build >/dev/null 2>&1'" \
