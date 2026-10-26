@@ -31,13 +31,18 @@ soit reçu par le serveur (déjà en place).
 
 ### Étape 1 — Comptes et connexion *(Claude, peut commencer tout de suite)*
 
-Aujourd'hui l'accès se fait par jeton collé à la main. Un produit vendu a besoin de :
+**Fait le 26/10/2026 — la connexion par mail et mot de passe.** `POST /auth/login`
+remet un jeton d'appareil contre une adresse et un mot de passe (empreinte scrypt, dix
+caractères minimum, blocage un quart d'heure après cinq essais faux). L'iPhone a son
+écran de connexion et sa déconnexion ; plus aucun jeton à recopier. Mot de passe posé par
+`scripts/poser_mot_de_passe.py`, faute d'écran pour le faire.
+
+Reste à faire pour un produit vendu :
 - création d'un cabinet, invitation d'un confrère ou d'une assistante, rôles ;
-- connexion par mail + mot de passe + **code à usage unique** (application
-  d'authentification), mot de passe oublié ;
+- **code à usage unique** (application d'authentification), mot de passe oublié ;
 - **Pro Santé Connect** (connexion avec la carte e-CPS des professionnels de santé) à
   prévoir : c'est ce que les praticiens connaissent et ce que l'État recommande ;
-- sur l'iPhone : un écran de connexion à la place du jeton ; déconnexion à distance d'un
+- un écran pour poser son mot de passe soi-même, et la déconnexion à distance d'un
   appareil perdu.
 
 ### Étape 2 — Oris prêt à être installé chez un hébergeur *(Claude)*

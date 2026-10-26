@@ -1,5 +1,25 @@
 # Changelog
 
+## Un identifiant et un mot de passe, et une migration qui ne mentait plus — 2026-10-26
+- Franck : « j'en ai marre de mettre des jetons, c'est chiant ». Il a tranché : un vrai
+  compte. L'app iPhone demande maintenant **une adresse électronique et un mot de passe**
+  et obtient son jeton toute seule, une fois pour toutes, rangé dans le trousseau.
+  `POST /auth/login` est la seule route qui n'exige pas de jeton. Mot de passe gardé en
+  empreinte scrypt, dix caractères minimum, cinq essais faux bloquent le compte un quart
+  d'heure, et un mot de passe faux répond comme un compte inconnu pour ne pas dire qui
+  existe. Six tests serveur, deux tests iPhone.
+- **La mise en ligne annonçait « Oris est à jour » depuis dix-huit jours sans l'être.**
+  La connexion répondait 500 : la colonne du mot de passe n'existait pas en base. Au
+  transport des données du 8 octobre, les 37 tables avaient changé de propriétaire pour
+  le compte administrateur ; **toute migration échouait** depuis — et `deployer-en-ligne.command`
+  ne regardait pas le résultat. Propriété rendue au compte applicatif (tables, séquences,
+  types, schéma `learning`), migration passée, et le déploiement **s'arrête maintenant en
+  montrant l'erreur**. Le contrôle de propriété est écrit dans `docs/EN_LIGNE.md`.
+- Vérifié en ligne sur le compte de démonstration : bon mot de passe → jeton remis et
+  lecture acceptée ; mauvais mot de passe et compte inconnu → `IDENTIFIANTS_REFUSES`.
+- Reste de l'étape 1, non fait : second facteur, mot de passe oublié, création de
+  cabinet, invitation d'un confrère, Pro Santé Connect.
+
 ## L'app iPhone disait « injoignable » alors qu'elle était refusée — 2026-10-24
 - Franck : « Oris app téléphone ne fonctionne toujours pas seul », deux semaines après la
   mise en ligne. Le journal du serveur a tranché : le 9 octobre, l'iPhone **a bien joint

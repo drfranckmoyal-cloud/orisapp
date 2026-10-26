@@ -46,7 +46,7 @@ confiance à la machine locale, donc **tout appel exige un jeton**. D'où trois 
 |---|---|---|
 | `/` | le navigateur | mot de passe personnel (un compte par praticien) |
 | `/api/` | le navigateur (appels du site) | même mot de passe ; **nginx ajoute le jeton de ce praticien-là**, choisi par une carte `map $remote_user`, que le navigateur ne voit jamais |
-| `/mobile/` | l'app iPhone | **son propre jeton**, vérifié par le serveur |
+| `/mobile/` | l'app iPhone | **son propre jeton**, vérifié par le serveur — l'app l'obtient elle-même en se connectant avec l'identifiant et le mot de passe du praticien (`POST /mobile/auth/login`, la seule porte qui n'exige pas de jeton) |
 
 ### Les praticiens du cabinet
 
@@ -125,9 +125,15 @@ Mac garde sa copie — les deux bases vivent désormais leur vie séparément.
 
 ## Et l'iPhone
 
-L'app pointe vers `https://51-159-130-158.nip.io/mobile`, avec son jeton — adresse et
-jeton dans le fichier d'accès du Mac, à recopier dans Paramètres › Connexion à Oris.
+L'app pointe vers `https://51-159-130-158.nip.io/mobile`. Depuis le 26/10/2026, **plus
+rien à recopier** : Paramètres › Connexion à Oris demande l'identifiant et le mot de
+passe, et l'app obtient son jeton toute seule. Poser ou changer un mot de passe sur le
+serveur :
 
-Pour que le téléphone soit vraiment autonome, il reste à passer par **TestFlight**
-(compte développeur Apple de Franck) : l'app s'installe alors sans câble et sans Mac, et
-n'expire plus.
+```
+ssh -t root@51.159.130.158 "su - oris -c 'cd /home/oris/app/services/api && \
+  .venv/bin/python ../../scripts/poser_mot_de_passe.py --email <adresse>'"
+```
+
+Le téléphone est autonome depuis **TestFlight** (08/10/2026) : l'app s'installe sans
+câble et sans Mac, et n'expire plus.

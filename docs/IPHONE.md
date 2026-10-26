@@ -11,8 +11,9 @@
   ses documents (compte rendu, plan, courrier) ou, sans parole, avec la raison.
 - Défaut corrigé le 21/09 : sur un vrai appareil, **chaque segment audio était perdu**
   (le chemin « Application Support » contient un espace, relu encodé). Un test le garde.
-- Paramètres : adresse du serveur et **jeton d'accès** (rangé dans le trousseau de
-  l'iPhone). Parcours réseau vérifié : sans jeton le serveur refuse, avec jeton il répond.
+- Paramètres : identifiant et mot de passe (depuis le 26/10/2026 — voir plus bas) ; le
+  jeton reçu est rangé dans le trousseau de l'iPhone. Parcours réseau vérifié : sans
+  jeton le serveur refuse, avec jeton il répond.
 
 ## Ce que Franck doit faire (Claude ne peut pas le faire à sa place)
 
@@ -110,9 +111,29 @@ xcodebuild -exportArchive -archivePath /tmp/Oris.xcarchive \
 Un test interne ne passe **pas** par la revue d'Apple : la version est disponible dès que
 le traitement est fini, en quelques minutes.
 
-**À la première installation**, l'app ne connaît pas encore le serveur : Paramètres ›
-Connexion à Oris, recopier l'adresse et le jeton depuis
-`~/Library/Application Support/Oris/acces-en-ligne.txt`.
+## Une vraie connexion, plus de jeton à recopier — 26/10/2026
+
+Franck : « j'en ai marre de mettre des jetons ». L'app ne demande plus un jeton, mais
+**son identifiant et son mot de passe**, comme n'importe quelle application.
+
+- Paramètres › Connexion à Oris : adresse électronique, mot de passe, « Se connecter ».
+  L'iPhone reçoit alors son propre jeton, le range dans le trousseau et ne le redemande
+  plus. L'adresse du serveur est pré-réglée, cachée derrière « Réglages avancés ».
+- Identifiant de Franck : **`drfranckmoyal@gmail.com`** (l'adresse de démonstration
+  `praticien.demo@oris.local` a disparu le 26/10/2026).
+- Poser ou changer un mot de passe, faute d'écran pour le faire :
+  `python3 scripts/poser_mot_de_passe.py --email <adresse>` — sur le Mac, ou sur le
+  serveur par `ssh` (voir `docs/EN_LIGNE.md`). Dix caractères minimum ; la base n'en
+  garde qu'une empreinte scrypt.
+- Cinq mots de passe faux de suite bloquent le compte un quart d'heure. Un mot de passe
+  faux et un compte inconnu répondent la même chose, pour ne pas dire qui existe.
+- Vérifié en ligne le 26/10/2026, sur le compte de démonstration : bon mot de passe →
+  jeton remis et lecture acceptée ; mauvais mot de passe et compte inconnu → refus
+  `IDENTIFIANTS_REFUSES`.
+
+Ce qui manque encore, et reste l'étape 1 de la feuille de route : le second facteur, le
+mot de passe oublié, la création de cabinet, l'invitation d'un confrère, Pro Santé
+Connect.
 
 ## Pour que les appels ne coupent plus les consultations
 

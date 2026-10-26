@@ -140,6 +140,13 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 **Sécurité (depuis le 20 septembre)**
 - L'accès à Oris passe par un **jeton** personnel : je peux en créer un, le révoquer, et
   hors de votre Mac aucune page ne répond sans lui.
+- **Depuis le 26 octobre, vous n'avez plus à recopier ce jeton.** L'app iPhone demande
+  votre adresse électronique (`drfranckmoyal@gmail.com`) et votre mot de passe, et
+  obtient son jeton toute seule, une fois pour toutes. Dix caractères minimum ; cinq
+  essais faux bloquent le compte un quart d'heure ; la base ne garde qu'une empreinte du
+  mot de passe, dont on ne peut pas le reconstituer. Manquent encore le code à usage
+  unique, le mot de passe oublié et l'invitation d'un confrère (étape 1 de la feuille de
+  route).
 - Un **journal** garde qui a fait quoi et quand — sans jamais recopier une phrase du
   patient, un diagnostic ni un document.
 - La **suppression du son** peut être relancée à tout moment ; si le stockage tombe, la

@@ -67,6 +67,12 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
   depuis le Mac seulement.
 
 
+- **Écran de connexion** (26/10/2026) : sur l'iPhone, Paramètres › Connexion à Oris
+  demande l'adresse électronique et le mot de passe, et l'app obtient son jeton. Le site
+  n'en a pas besoin : le navigateur est déjà identifié par le mot de passe du serveur, et
+  nginx ajoute le jeton du praticien sans que la page le voie. Même compte, même mot de
+  passe des deux côtés ; seul l'endroit où on le tape diffère.
+
 - iPhone : appareil photo, écoute écran verrouillé et pendant un appel, son gardé chiffré
   hors connexion ; **écran d'ouverture** (logo et slogan, 1,5 s) et **Face ID** à
   l'ouverture et au retour après deux minutes — un navigateur a sa propre session.
