@@ -36,6 +36,7 @@ from oris_api.documents.renderer import (
     Style,
     render_content,
 )
+from oris_api.domain.civilite import consigne
 from oris_api.domain.types import Claim, GeneratedDocument
 from oris_api.providers.base import DocumentGenerationProvider, ProviderInfo
 
@@ -87,6 +88,9 @@ refusé, réalisé, prévu) exactement ;
 - une information rapportée par le patient reste attribuée au patient ;
 - n'établis aucun lien de cause ou de but entre deux faits (« en raison de », « afin \
 de », « donc ») s'il n'est pas déjà dans l'un d'eux : juxtapose-les plutôt ;
+- accorde selon la consigne `accord` du message, qui vient de la civilité de la fiche \
+patient : ne déduis JAMAIS le genre d'un prénom, et quand la consigne dit de ne pas \
+accorder, emploie des tournures qui s'en passent ;
 - recopie les numéros de dents tels quels (notation FDI) ;
 - garde les titres des rubriques à l'identique et dans le même ordre ;
 - pas de formule d'appel ni de signature, pas de mise en forme (ni puces, ni gras) ;
@@ -188,6 +192,7 @@ def _fait(fact: ClinicalFact) -> dict[str, Any]:
 def message(rubriques: list[Rubrique], facts: dict[str, ClinicalFact], style: Style) -> str:
     payload = {
         "longueur": "concise" if style.length == "concise" else "standard",
+        "accord": consigne(style.civilite),
         "rubriques": [
             {
                 "titre": rubrique.titre,

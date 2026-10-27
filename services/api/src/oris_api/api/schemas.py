@@ -15,6 +15,7 @@ from oris_api.contracts.generated import (
     DocumentStatus,
     LearningEventEventType,
 )
+from oris_api.domain.civilite import Civilite
 from oris_api.domain.corrections import CorrectionOperation
 from oris_api.services.audio import GapReason
 
@@ -36,6 +37,9 @@ class PatientCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     first_name: Name
     last_name: Name
+    # Pour accorder les documents, et rien d'autre. Vide = on ne sait pas, et Oris
+    # n'accorde alors pas plutôt que de deviner d'après le prénom.
+    civility: Civilite = ""
     birth_date: date | None = None
     external_id: str | None = None
     email: Annotated[str, StringConstraints(max_length=200)] = ""
@@ -53,6 +57,7 @@ class PatientUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     first_name: Name | None = None
     last_name: Name | None = None
+    civility: Civilite | None = None
     birth_date: date | None = None
     external_id: str | None = None
     email: Annotated[str, StringConstraints(max_length=200)] | None = None
@@ -66,6 +71,7 @@ class PatientOut(BaseModel):
     id: UUID
     first_name: str
     last_name: str
+    civility: str
     birth_date: date | None
     external_id: str | None
     smilecloud_case_id: str | None

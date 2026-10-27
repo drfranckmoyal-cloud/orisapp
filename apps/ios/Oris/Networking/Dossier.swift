@@ -6,13 +6,16 @@ struct PatientFiche: Codable, Equatable, Sendable {
     let id: String
     let firstName: String
     let lastName: String
+    /// « monsieur », « madame », ou vide. Elle n'accorde que la forme des documents :
+    /// sans elle, le rédacteur devinait le genre d'après le prénom.
+    let civility: String
     let birthDate: String?
     let externalId: String?
     let email: String
     let note: String
 
     enum CodingKeys: String, CodingKey {
-        case id, email, note
+        case id, email, note, civility
         case firstName = "first_name"
         case lastName = "last_name"
         case birthDate = "birth_date"

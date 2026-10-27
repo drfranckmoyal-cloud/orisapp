@@ -78,6 +78,9 @@ class Style:
 
     length: str = "standard"
     terminology: dict[str, str] = field(default_factory=dict)
+    #: « monsieur », « madame », ou vide. Elle ne sert qu'à accorder : sans elle, le
+    #: rédacteur devinait le genre d'après le prénom et se trompait.
+    civilite: str = ""
 
     def label_of(self, concept: str, default: str) -> str:
         return self.terminology.get(concept, default)

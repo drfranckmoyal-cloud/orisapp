@@ -9,6 +9,7 @@ struct EditionPatientView: View {
     @Environment(\.dismiss) private var fermer
     @State private var prenom = ""
     @State private var nom = ""
+    @State private var civilite = ""
     @State private var avecNaissance = false
     @State private var naissance = Calendar.current.date(from: DateComponents(year: 1980, month: 1, day: 1)) ?? Date()
     @State private var email = ""
@@ -24,7 +25,15 @@ struct EditionPatientView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Identité") {
+                Section {
+                    // Elle n'entre dans aucun fait clinique : elle sert à accorder les
+                    // documents. Non précisée, Oris écrit sans accorder plutôt que de
+                    // deviner le genre d'après le prénom (Franck, 27/10/2026).
+                    Picker("Civilité", selection: $civilite) {
+                        Text("Monsieur").tag("monsieur")
+                        Text("Madame").tag("madame")
+                        Text("Non précisée").tag("")
+                    }
                     ChampFiche(titre: "Prénom", texte: $prenom)
                     ChampFiche(titre: "Nom", texte: $nom)
                     Toggle("Date de naissance connue", isOn: $avecNaissance)
@@ -32,6 +41,10 @@ struct EditionPatientView: View {
                         DatePicker("Naissance", selection: $naissance, in: ...Date(), displayedComponents: .date)
                             .environment(\.locale, Locale(identifier: "fr_FR"))
                     }
+                } header: {
+                    Text("Identité")
+                } footer: {
+                    Text("La civilité sert à accorder les comptes rendus. Sans elle, Oris écrit sans accorder plutôt que de deviner.")
                 }
                 Section {
                     ChampFiche(titre: "Mail", texte: $email, clavier: .emailAddress, brut: true)
@@ -64,6 +77,7 @@ struct EditionPatientView: View {
             .onAppear {
                 prenom = fiche.firstName
                 nom = fiche.lastName
+                civilite = fiche.civility
                 email = fiche.email
                 dossier = fiche.externalId ?? ""
                 note = fiche.note
@@ -81,7 +95,8 @@ struct EditionPatientView: View {
         defer { enCours = false }
         do {
             let nouvelle = try await client.modifierPatient(
-                id: fiche.id, prenom: prenom, nom: nom, naissance: avecNaissance ? naissance : nil,
+                id: fiche.id, prenom: prenom, nom: nom, civilite: civilite,
+                naissance: avecNaissance ? naissance : nil,
                 email: email, dossier: dossier, note: note
             )
             enregistree(nouvelle)

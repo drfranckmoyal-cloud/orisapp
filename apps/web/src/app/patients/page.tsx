@@ -4,7 +4,16 @@ import { useMemo, useState } from "react";
 
 import Link from "next/link";
 
-import { Bouton, Carte, Champ, EnTetePage, EtatVide, Pastille, Squelette } from "@/components/ui";
+import {
+  Bouton,
+  Carte,
+  Champ,
+  EnTetePage,
+  EtatVide,
+  Pastille,
+  Selecteur,
+  Squelette,
+} from "@/components/ui";
 import { Icone } from "@/components/Icones";
 import { ApiError, apiRequest, type Patient, type PatientListe } from "@/lib/api";
 import { errorMessage, formatDate } from "@/lib/labels";
@@ -129,6 +138,7 @@ export default function PatientsPage() {
         body: {
           first_name: String(data.get("first_name") ?? "").trim(),
           last_name: String(data.get("last_name") ?? "").trim(),
+          civility: String(data.get("civility") ?? ""),
           birth_date: String(data.get("birth_date") ?? "") || null,
           external_id: String(data.get("external_id") ?? "").trim() || null,
           email: String(data.get("email") ?? "").trim(),
@@ -158,6 +168,16 @@ export default function PatientsPage() {
       {creation && (
         <Carte titre="Nouveau patient">
           <form className="form-row" onSubmit={creer}>
+            {/* La civilité n'est là que pour accorder les documents : sans elle, le
+                rédacteur devinait le genre d'après le prénom (27/10/2026). */}
+            <label className="field">
+              Civilité
+              <Selecteur name="civility" defaultValue="">
+                <option value="">Non précisée</option>
+                <option value="monsieur">Monsieur</option>
+                <option value="madame">Madame</option>
+              </Selecteur>
+            </label>
             <label className="field">
               Prénom
               <Champ name="first_name" required autoFocus />

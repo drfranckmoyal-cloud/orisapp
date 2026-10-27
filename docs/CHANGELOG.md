@@ -1,5 +1,21 @@
 # Changelog
 
+## La civilité du patient, pour ne plus écrire « la patiente » à un homme — 2026-10-27
+- Franck, en relisant un compte rendu : « c'est un patient et pas une patiente ». Oris ne
+  pouvait pas savoir : la fiche ne portait ni Monsieur ni Madame, et le rédacteur
+  **devinait le genre d'après le prénom**. Un prénom n'est pas un genre.
+- La fiche patient porte maintenant la **civilité** (Monsieur, Madame, ou non précisée),
+  sur le site comme sur l'iPhone, et le rédacteur reçoit la consigne d'accord qui en
+  découle. **Vide, la consigne est de ne pas accorder** — « le patient », pas de « il »
+  ni de « elle », et jamais de déduction d'après le prénom. Le dire une fois suffit :
+  tous les documents de ce patient s'accordent, aujourd'hui et plus tard.
+- La civilité est une donnée de **forme** : elle n'entre dans aucun fait clinique, aucun
+  document ne la cite, et elle ne change pas une seule décision. Les formules du gabarit
+  de secours (« Rapporté par le patient ») restent neutres : ce sont des formules
+  d'usage, et les toucher fragiliserait l'effacement des préfixes redondants.
+- Six tests ajoutés, dont celui qui interdit au défaut d'être « masculin ».
+- 516 tests serveur · 73 site · 65 iPhone au vert.
+
 ## Deux consultations réelles perdues par une base en retard sur le contrat — 2026-10-27
 - Franck, ce matin : « 2 consultations réalisées ce matin sur téléphone et 2 messages
   extraction refusée ». Deux pannes empilées, et **aucune des deux n'était celle qui

@@ -47,6 +47,47 @@
         }
       }
     },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login",
+        "operationId": "login_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnexionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnexionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/patients": {
       "get": {
         "tags": [
@@ -1278,7 +1319,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DepotOut"
+                  "$ref": "#/components/schemas/oris_api__api__schemas__DepotOut"
                 }
               }
             }
@@ -1627,6 +1668,127 @@
         }
       }
     },
+    "/smilecloud/depot/{demande_id}": {
+      "get": {
+        "tags": [
+          "smilecloud"
+        ],
+        "summary": "Retirer Le Document",
+        "description": "Le PDF à déposer dans SmileCloud, pour l'extension et pour elle seule.\n\nIl n'est pas gardé sur le disque du Mac (D88) : il est fabriqué à la demande, remis,\net oublié.",
+        "operationId": "retirer_le_document_smilecloud_depot__demande_id__get",
+        "parameters": [
+          {
+            "name": "demande_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Demande Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/smilecloud/depose": {
+      "post": {
+        "tags": [
+          "smilecloud"
+        ],
+        "summary": "Noter Depot",
+        "description": "L'extension a déposé le document dans SmileCloud — ou dit pourquoi non.",
+        "operationId": "noter_depot_smilecloud_depose_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DepotFaitIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Noter Depot Smilecloud Depose Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/smilecloud/ecarte": {
       "post": {
         "tags": [
@@ -1674,6 +1836,91 @@
                     "type": "boolean"
                   },
                   "title": "Response Ecarter Smilecloud Ecarte Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/{document_id}/smilecloud": {
+      "get": {
+        "tags": [
+          "smilecloud"
+        ],
+        "summary": "Etat Depot",
+        "operationId": "etat_depot_documents__document_id__smilecloud_get",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/oris_api__api__smilecloud__DepotOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "smilecloud"
+        ],
+        "summary": "Deposer Dans Smilecloud",
+        "description": "Ranger ce document dans le dossier SmileCloud du patient.\n\nOris ne dépose rien lui-même : il pose la demande, et l'extension Chrome la sert à\nson prochain passage, comme elle sert déjà les récupérations. Le praticien n'a donc\nni à télécharger le PDF, ni à le téléverser à la main.",
+        "operationId": "deposer_dans_smilecloud_documents__document_id__smilecloud_post",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/oris_api__api__smilecloud__DepotOut"
                 }
               }
             }
@@ -4244,6 +4491,32 @@
         }
       }
     },
+    "/cabinet/praticiens": {
+      "get": {
+        "tags": [
+          "personnalisation"
+        ],
+        "summary": "List Praticiens",
+        "description": "Qui partage ce cabinet. L'écran des réglages n'affichait que « vous » alors que\nle cabinet compte deux praticiens depuis le 08/10/2026 : il laissait croire qu'on\ntravaillait seul sur des dossiers que l'on partage.",
+        "operationId": "list_praticiens_cabinet_praticiens_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PraticienOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Praticiens Cabinet Praticiens Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/ontology/concepts": {
       "get": {
         "tags": [
@@ -5784,8 +6057,10 @@
           "category": {
             "type": "string",
             "enum": [
+              "patient_context",
               "chief_complaint",
               "history",
+              "anamnesis",
               "symptom",
               "clinical_finding",
               "radiographic_finding",
@@ -5982,6 +6257,60 @@
           "peut_ouvrir"
         ],
         "title": "ConnecteursOut"
+      },
+      "ConnexionIn": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 320,
+            "title": "Email"
+          },
+          "mot_de_passe": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Mot De Passe"
+          },
+          "appareil": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Appareil",
+            "default": "appareil"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "mot_de_passe"
+        ],
+        "title": "ConnexionIn"
+      },
+      "ConnexionOut": {
+        "properties": {
+          "jeton": {
+            "type": "string",
+            "title": "Jeton"
+          },
+          "appareil_id": {
+            "type": "string",
+            "title": "Appareil Id"
+          },
+          "praticien": {
+            "type": "string",
+            "title": "Praticien"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "jeton",
+          "appareil_id",
+          "praticien",
+          "email"
+        ],
+        "title": "ConnexionOut"
       },
       "CorrectionRequest": {
         "properties": {
@@ -6534,7 +6863,8 @@
             "type": "string",
             "enum": [
               "galeries",
-              "fichiers"
+              "fichiers",
+              "depot"
             ],
             "title": "Type"
           },
@@ -6559,6 +6889,17 @@
               }
             ],
             "title": "Fichiers"
+          },
+          "nom": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nom"
           }
         },
         "type": "object",
@@ -6606,40 +6947,30 @@
         ],
         "title": "DemandeOut"
       },
-      "DepotOut": {
+      "DepotFaitIn": {
         "properties": {
-          "jour": {
+          "id": {
             "type": "string",
-            "title": "Jour"
-          },
-          "rendezvous": {
-            "type": "integer",
-            "title": "Rendezvous"
-          },
-          "remplace": {
-            "type": "boolean",
-            "title": "Remplace"
+            "maxLength": 64,
+            "title": "Id"
           },
           "raison": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Raison"
+            "type": "string",
+            "maxLength": 200,
+            "title": "Raison",
+            "default": ""
+          },
+          "reessayer": {
+            "type": "boolean",
+            "title": "Reessayer",
+            "default": false
           }
         },
         "type": "object",
         "required": [
-          "jour",
-          "rendezvous",
-          "remplace"
+          "id"
         ],
-        "title": "DepotOut",
-        "description": "Ce qu'on répond à l'extension : ce qui a été gardé, et sinon pourquoi."
+        "title": "DepotFaitIn"
       },
       "DictationOut": {
         "properties": {
@@ -8409,8 +8740,10 @@
           "category": {
             "type": "string",
             "enum": [
+              "patient_context",
               "chief_complaint",
               "history",
+              "anamnesis",
               "symptom",
               "clinical_finding",
               "radiographic_finding",
@@ -8651,6 +8984,16 @@
             "minLength": 1,
             "title": "Last Name"
           },
+          "civility": {
+            "type": "string",
+            "enum": [
+              "",
+              "monsieur",
+              "madame"
+            ],
+            "title": "Civility",
+            "default": ""
+          },
           "birth_date": {
             "anyOf": [
               {
@@ -8709,6 +9052,10 @@
           "last_name": {
             "type": "string",
             "title": "Last Name"
+          },
+          "civility": {
+            "type": "string",
+            "title": "Civility"
           },
           "birth_date": {
             "anyOf": [
@@ -8785,6 +9132,7 @@
           "id",
           "first_name",
           "last_name",
+          "civility",
           "birth_date",
           "external_id",
           "smilecloud_case_id",
@@ -8809,6 +9157,10 @@
           "last_name": {
             "type": "string",
             "title": "Last Name"
+          },
+          "civility": {
+            "type": "string",
+            "title": "Civility"
           },
           "birth_date": {
             "anyOf": [
@@ -8863,6 +9215,7 @@
           "id",
           "first_name",
           "last_name",
+          "civility",
           "birth_date",
           "external_id",
           "smilecloud_case_id",
@@ -8899,6 +9252,22 @@
               }
             ],
             "title": "Last Name"
+          },
+          "civility": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "",
+                  "monsieur",
+                  "madame"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Civility"
           },
           "birth_date": {
             "anyOf": [
@@ -9176,6 +9545,41 @@
         "type": "object",
         "title": "PractitionerPreferences",
         "description": "Ce que le praticien a choisi. Les valeurs par défaut sont celles d'Oris."
+      },
+      "PraticienOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "default": ""
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "default": "practitioner"
+          },
+          "moi": {
+            "type": "boolean",
+            "title": "Moi",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "PraticienOut",
+        "description": "Un praticien du cabinet, tel que l'écran des réglages le montre.\n\nRien de secret : ni adresse, ni jeton, ni droits — seulement de quoi dire qui\npartage ce cabinet, et donc ces dossiers."
       },
       "PreferenceReset": {
         "properties": {
@@ -10591,6 +10995,41 @@
         ],
         "title": "CandidatOut"
       },
+      "oris_api__api__schemas__DepotOut": {
+        "properties": {
+          "jour": {
+            "type": "string",
+            "title": "Jour"
+          },
+          "rendezvous": {
+            "type": "integer",
+            "title": "Rendezvous"
+          },
+          "remplace": {
+            "type": "boolean",
+            "title": "Remplace"
+          },
+          "raison": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raison"
+          }
+        },
+        "type": "object",
+        "required": [
+          "jour",
+          "rendezvous",
+          "remplace"
+        ],
+        "title": "DepotOut",
+        "description": "Ce qu'on répond à l'extension : ce qui a été gardé, et sinon pourquoi."
+      },
       "oris_api__api__smilecloud__CandidatOut": {
         "properties": {
           "case_id": {
@@ -10613,6 +11052,47 @@
           "pour_cent"
         ],
         "title": "CandidatOut"
+      },
+      "oris_api__api__smilecloud__DepotOut": {
+        "properties": {
+          "etat": {
+            "type": "string",
+            "title": "Etat"
+          },
+          "demande_le": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demande Le"
+          },
+          "depose_le": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Depose Le"
+          },
+          "raison": {
+            "type": "string",
+            "title": "Raison",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "etat"
+        ],
+        "title": "DepotOut",
+        "description": "Où en est le dépôt d'un document dans SmileCloud."
       }
     }
   }

@@ -22,6 +22,7 @@ import { PiecesJointes } from "@/components/patients/PiecesJointes";
 import { SmileCloud } from "@/components/patients/SmileCloud";
 import {
   apiRequest,
+  type Civilite,
   type ClientConfig,
   type Encounter,
   type Patient,
@@ -87,11 +88,26 @@ export default function PatientPage() {
   const smilecloud =
     config.state === "ready" && config.data.smilecloud_connected;
   const [note, setNote] = useState<string | null>(null);
+  const [civilite, setCivilite] = useState<Civilite | null>(null);
 
   const consultations = encounters.state === "ready" ? encounters.data : [];
   const validesCount = consultations
     .flatMap((e) => e.documents)
     .filter((d) => d.status === "validated" || d.status === "exported").length;
+
+  /** La civilité sert à accorder les documents : elle s'applique dès le prochain. */
+  async function enregistrerCivilite(valeur: Civilite) {
+    setCivilite(valeur);
+    try {
+      await apiRequest<Patient>(`/patients/${id}`, {
+        method: "PATCH",
+        body: { civility: valeur },
+      });
+      rechargerPatient();
+    } catch {
+      setCivilite(null);
+    }
+  }
 
   /** Le champ de note rapporte lui-même l'échec : on le laisse remonter. */
   async function enregistrerNote(valeur: string) {
@@ -107,6 +123,7 @@ export default function PatientPage() {
 
   const fiche = patient.state === "ready" ? patient.data : null;
   const valeurNote = note ?? fiche?.note ?? "";
+  const valeurCivilite = (civilite ?? fiche?.civility ?? "") as Civilite;
 
   return (
     <div className="page">
@@ -143,6 +160,20 @@ export default function PatientPage() {
           <div className={styles.cadre}>
             {/* Une information par ligne, dans l'ordre où on les cherche. */}
             <Info cle="Nom">{nomPatient(fiche)}</Info>
+            {/* Elle n'entre dans aucun fait clinique : elle ne sert qu'à accorder les
+                documents. Non précisée, Oris écrit sans accorder plutôt que de deviner
+                le genre d'après le prénom (Franck, 27/10/2026). */}
+            <Info cle="Civilité">
+              <Onglets<Civilite>
+                valeur={valeurCivilite}
+                onChange={(valeur) => void enregistrerCivilite(valeur)}
+                options={[
+                  { valeur: "monsieur", libelle: "Monsieur" },
+                  { valeur: "madame", libelle: "Madame" },
+                  { valeur: "", libelle: "Non précisée" },
+                ]}
+              />
+            </Info>
             <Info cle="Courriel">
               {fiche.email ? (
                 <a href={`mailto:${fiche.email}`} className="link-button">

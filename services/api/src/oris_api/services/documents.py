@@ -159,7 +159,14 @@ def generate(
     preferences = PractitionerPreferences.load(
         (session.get(User, encounter.practitioner_id) or User()).preferences
     )
-    style = Style(length=preferences.document_length, terminology=dict(preferences.terminology))
+    # La civilité vient de la fiche patient : c'est elle qui accorde les documents. Elle
+    # n'entre pas dans le fond — aucun fait n'en dépend — seulement dans la forme.
+    patient = session.get(Patient, encounter.patient_id)
+    style = Style(
+        length=preferences.document_length,
+        terminology=dict(preferences.terminology),
+        civilite=(patient.civility if patient else ""),
+    )
     existing = {doc.document_type: doc for doc in list_documents(session, encounter.id)}
     wanted = document_types_for(obj, {*existing, *include})
     if seulement:

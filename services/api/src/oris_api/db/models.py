@@ -25,6 +25,7 @@ from sqlalchemy import (
     CheckConstraint,
     Date,
     DateTime,
+    Enum,
     Float,
     ForeignKey,
     Integer,
@@ -58,6 +59,7 @@ from oris_api.contracts.generated import (
     TreatmentPlanStatus,
 )
 from oris_api.db.base import Base, contract_enum, created_at, updated_at, uuid_pk
+from oris_api.domain.civilite import CIVILITES
 
 UserRole = Literal["practitioner", "assistant", "admin"]  # spec §62
 ObjectChangeKind = Literal["extraction", "correction", "status_change"]
@@ -128,6 +130,16 @@ class Patient(Base):
     first_name: Mapped[str] = mapped_column(String(200))
     last_name: Mapped[str] = mapped_column(String(200))
     birth_date: Mapped[date | None] = mapped_column(Date)
+    # « monsieur », « madame », ou vide quand on ne sait pas. Elle ne sert qu'à **accorder**
+    # les documents : sans elle, le rédacteur devinait le genre d'après le prénom et se
+    # trompait (Franck, 27/10/2026 : « c'est un patient et pas une patiente »). Vide, Oris
+    # écrit sans accorder plutôt que de parier.
+    civility: Mapped[str] = mapped_column(
+        Enum(*CIVILITES, name="patient_civility", native_enum=False, create_constraint=True,
+             length=max(len(c) for c in CIVILITES), validate_strings=True),
+        default="",
+        server_default="",
+    )
     external_id: Mapped[str | None] = mapped_column(String(200))
     # Dossier du patient dans SmileCloud, posé une fois puis retenu. **Distinct
     # d'`external_id`**, qui porte le numéro de dossier du cabinet : confondre les deux

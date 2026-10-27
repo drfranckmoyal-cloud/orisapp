@@ -34,10 +34,11 @@ final class CorrespondantsTests: XCTestCase {
 
     func testAnEmptyBirthDateAndFileNumberAreErased() async throws {
         let guichet = Guichet(corps: """
-        {"id":"p1","first_name":"Anne","last_name":"TEST","birth_date":null,"external_id":null,"email":"","note":""}
+        {"id":"p1","first_name":"Anne","last_name":"TEST","civility":"madame","birth_date":null,"external_id":null,"email":"","note":""}
         """)
         _ = try await APIClient(baseURL: base, transport: guichet).modifierPatient(
-            id: "p1", prenom: " Anne ", nom: "TEST", naissance: nil, email: "", dossier: "  ", note: ""
+            id: "p1", prenom: " Anne ", nom: "TEST", civilite: "madame", naissance: nil,
+            email: "", dossier: "  ", note: ""
         )
         let requete = try XCTUnwrap(guichet.derniere)
         XCTAssertEqual(requete.httpMethod, "PATCH")
@@ -45,6 +46,8 @@ final class CorrespondantsTests: XCTestCase {
         XCTAssertTrue(corps["birth_date"] is NSNull)
         XCTAssertTrue(corps["external_id"] is NSNull)
         XCTAssertEqual(corps["first_name"] as? String, "Anne")
+        // La civilité part telle quelle : c'est elle qui accordera les documents.
+        XCTAssertEqual(corps["civility"] as? String, "madame")
     }
 
     func testABirthDateIsSentAsADay() {

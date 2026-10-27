@@ -39,8 +39,10 @@ def valeurs_en_base(engine: Engine) -> dict[str, set[str]]:
                 "SELECT conname, pg_get_constraintdef(oid) FROM pg_constraint WHERE contype = 'c'"
             )
         ).all()
+    # `[^']*` et non `[^']+` : la chaîne vide est une valeur comme une autre — c'est la
+    # civilité d'un patient dont on ne connaît pas le genre.
     return {
-        nom: set(re.findall(r"'([^']+)'::character varying", definition))
+        nom: set(re.findall(r"'([^']*)'::character varying", definition))
         for nom, definition in definitions
     }
 

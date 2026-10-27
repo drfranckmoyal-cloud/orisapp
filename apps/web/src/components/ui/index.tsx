@@ -171,6 +171,11 @@ export function Champ(props: ComponentProps<"input">) {
   return <input {...props} className={`${styles.champ} ${props.className ?? ""}`} />;
 }
 
+/** Choix dans une liste courte, habillé comme un champ de saisie. */
+export function Selecteur(props: ComponentProps<"select">) {
+  return <select {...props} className={`${styles.champ} ${props.className ?? ""}`} />;
+}
+
 /** Onglets. Un seul groupe visible à la fois, jamais de contenu caché sans onglet. */
 export function Onglets<T extends string>({
   valeur,

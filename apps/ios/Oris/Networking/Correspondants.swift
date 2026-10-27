@@ -128,11 +128,12 @@ extension APIClient {
     }
 
     /// Les champs de la fiche patient ; une date de naissance vide l'efface.
-    func modifierPatient(id: String, prenom: String, nom: String, naissance: Date?, email: String,
-                         dossier: String, note: String) async throws -> PatientFiche {
+    func modifierPatient(id: String, prenom: String, nom: String, civilite: String, naissance: Date?,
+                         email: String, dossier: String, note: String) async throws -> PatientFiche {
         var corps: [String: Any] = [
             "first_name": prenom.trimmingCharacters(in: .whitespaces),
             "last_name": nom.trimmingCharacters(in: .whitespaces),
+            "civility": civilite,
             "email": email.trimmingCharacters(in: .whitespaces),
             "note": note,
         ]

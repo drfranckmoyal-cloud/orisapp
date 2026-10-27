@@ -55,6 +55,8 @@ export async function fetchHealth(
 
 type Schemas = components["schemas"];
 export type Patient = Schemas["PatientOut"];
+/** Civilité du patient : elle n'accorde que la forme des documents, jamais le fond. */
+export type Civilite = NonNullable<Schemas["PatientUpdate"]["civility"]>;
 /** Le patient **dans la liste** : avec de quoi le reconnaître sans l'ouvrir. */
 export type PatientListe = Schemas["PatientListOut"];
 export type Encounter = Schemas["EncounterOut"];

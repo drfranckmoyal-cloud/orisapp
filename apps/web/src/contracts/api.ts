@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Login */
+        post: operations["login_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/patients": {
         parameters: {
             query?: never;
@@ -524,6 +541,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/smilecloud/depot/{demande_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retirer Le Document
+         * @description Le PDF à déposer dans SmileCloud, pour l'extension et pour elle seule.
+         *
+         *     Il n'est pas gardé sur le disque du Mac (D88) : il est fabriqué à la demande, remis,
+         *     et oublié.
+         */
+        get: operations["retirer_le_document_smilecloud_depot__demande_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/smilecloud/depose": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Noter Depot
+         * @description L'extension a déposé le document dans SmileCloud — ou dit pourquoi non.
+         */
+        post: operations["noter_depot_smilecloud_depose_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/smilecloud/ecarte": {
         parameters: {
             query?: never;
@@ -538,6 +598,31 @@ export interface paths {
          * @description L'extension n'a pas pu lire ce fichier (ou l'a reconnu comme vidéo, CBCT…).
          */
         post: operations["ecarter_smilecloud_ecarte_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/documents/{document_id}/smilecloud": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Etat Depot */
+        get: operations["etat_depot_documents__document_id__smilecloud_get"];
+        put?: never;
+        /**
+         * Deposer Dans Smilecloud
+         * @description Ranger ce document dans le dossier SmileCloud du patient.
+         *
+         *     Oris ne dépose rien lui-même : il pose la demande, et l'extension Chrome la sert à
+         *     son prochain passage, comme elle sert déjà les récupérations. Le praticien n'a donc
+         *     ni à télécharger le PDF, ni à le téléverser à la main.
+         */
+        post: operations["deposer_dans_smilecloud_documents__document_id__smilecloud_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1389,6 +1474,28 @@ export interface paths {
         patch: operations["patch_cabinet_me_cabinet_patch"];
         trace?: never;
     };
+    "/cabinet/praticiens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Praticiens
+         * @description Qui partage ce cabinet. L'écran des réglages n'affichait que « vous » alors que
+         *     le cabinet compte deux praticiens depuis le 08/10/2026 : il laissait croire qu'on
+         *     travaillait seul sur des dossiers que l'on partage.
+         */
+        get: operations["list_praticiens_cabinet_praticiens_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ontology/concepts": {
         parameters: {
             query?: never;
@@ -2055,7 +2162,7 @@ export interface components {
              * Category
              * @enum {string}
              */
-            category: "chief_complaint" | "history" | "symptom" | "clinical_finding" | "radiographic_finding" | "assessment" | "diagnosis" | "treatment_option" | "treatment_decision" | "procedure" | "material" | "medication" | "patient_information" | "follow_up" | "other";
+            category: "patient_context" | "chief_complaint" | "history" | "anamnesis" | "symptom" | "clinical_finding" | "radiographic_finding" | "assessment" | "diagnosis" | "treatment_option" | "treatment_decision" | "procedure" | "material" | "medication" | "patient_information" | "follow_up" | "other";
             /** Concept */
             concept: string;
             /** Value */
@@ -2113,6 +2220,29 @@ export interface components {
             smilecloud: components["schemas"]["VoyantOut"];
             /** Peut Ouvrir */
             peut_ouvrir: boolean;
+        };
+        /** ConnexionIn */
+        ConnexionIn: {
+            /** Email */
+            email: string;
+            /** Mot De Passe */
+            mot_de_passe: string;
+            /**
+             * Appareil
+             * @default appareil
+             */
+            appareil: string;
+        };
+        /** ConnexionOut */
+        ConnexionOut: {
+            /** Jeton */
+            jeton: string;
+            /** Appareil Id */
+            appareil_id: string;
+            /** Praticien */
+            praticien: string;
+            /** Email */
+            email: string;
         };
         /** CorrectionRequest */
         CorrectionRequest: {
@@ -2327,13 +2457,15 @@ export interface components {
              * Type
              * @enum {string}
              */
-            type: "galeries" | "fichiers";
+            type: "galeries" | "fichiers" | "depot";
             /** Case Id */
             case_id: string;
             /** Demande Le */
             demande_le: string;
             /** Fichiers */
             fichiers?: string[] | null;
+            /** Nom */
+            nom?: string | null;
         };
         /** DemandeIn */
         DemandeIn: {
@@ -2347,19 +2479,20 @@ export interface components {
             /** Demande Le */
             demande_le: string;
         };
-        /**
-         * DepotOut
-         * @description Ce qu'on répond à l'extension : ce qui a été gardé, et sinon pourquoi.
-         */
-        DepotOut: {
-            /** Jour */
-            jour: string;
-            /** Rendezvous */
-            rendezvous: number;
-            /** Remplace */
-            remplace: boolean;
-            /** Raison */
-            raison?: string | null;
+        /** DepotFaitIn */
+        DepotFaitIn: {
+            /** Id */
+            id: string;
+            /**
+             * Raison
+             * @default
+             */
+            raison: string;
+            /**
+             * Reessayer
+             * @default false
+             */
+            reessayer: boolean;
         };
         /**
          * DictationOut
@@ -3059,7 +3192,7 @@ export interface components {
              * Category
              * @enum {string}
              */
-            category: "chief_complaint" | "history" | "symptom" | "clinical_finding" | "radiographic_finding" | "assessment" | "diagnosis" | "treatment_option" | "treatment_decision" | "procedure" | "material" | "medication" | "patient_information" | "follow_up" | "other";
+            category: "patient_context" | "chief_complaint" | "history" | "anamnesis" | "symptom" | "clinical_finding" | "radiographic_finding" | "assessment" | "diagnosis" | "treatment_option" | "treatment_decision" | "procedure" | "material" | "medication" | "patient_information" | "follow_up" | "other";
             /** Concept */
             concept: string;
             /** Value */
@@ -3152,6 +3285,12 @@ export interface components {
             first_name: string;
             /** Last Name */
             last_name: string;
+            /**
+             * Civility
+             * @default
+             * @enum {string}
+             */
+            civility: "" | "monsieur" | "madame";
             /** Birth Date */
             birth_date?: string | null;
             /** External Id */
@@ -3185,6 +3324,8 @@ export interface components {
             first_name: string;
             /** Last Name */
             last_name: string;
+            /** Civility */
+            civility: string;
             /** Birth Date */
             birth_date: string | null;
             /** External Id */
@@ -3224,6 +3365,8 @@ export interface components {
             first_name: string;
             /** Last Name */
             last_name: string;
+            /** Civility */
+            civility: string;
             /** Birth Date */
             birth_date: string | null;
             /** External Id */
@@ -3246,6 +3389,8 @@ export interface components {
             first_name?: string | null;
             /** Last Name */
             last_name?: string | null;
+            /** Civility */
+            civility?: ("" | "monsieur" | "madame") | null;
             /** Birth Date */
             birth_date?: string | null;
             /** External Id */
@@ -3349,6 +3494,37 @@ export interface components {
             terminology?: {
                 [key: string]: string;
             };
+        };
+        /**
+         * PraticienOut
+         * @description Un praticien du cabinet, tel que l'écran des réglages le montre.
+         *
+         *     Rien de secret : ni adresse, ni jeton, ni droits — seulement de quoi dire qui
+         *     partage ce cabinet, et donc ces dossiers.
+         */
+        PraticienOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Title
+             * @default
+             */
+            title: string;
+            /**
+             * Role
+             * @default practitioner
+             */
+            role: string;
+            /**
+             * Moi
+             * @default false
+             */
+            moi: boolean;
         };
         /**
          * PreferenceReset
@@ -3906,6 +4082,20 @@ export interface components {
             /** Coche */
             coche: boolean;
         };
+        /**
+         * DepotOut
+         * @description Ce qu'on répond à l'extension : ce qui a été gardé, et sinon pourquoi.
+         */
+        oris_api__api__schemas__DepotOut: {
+            /** Jour */
+            jour: string;
+            /** Rendezvous */
+            rendezvous: number;
+            /** Remplace */
+            remplace: boolean;
+            /** Raison */
+            raison?: string | null;
+        };
         /** CandidatOut */
         oris_api__api__smilecloud__CandidatOut: {
             /** Case Id */
@@ -3914,6 +4104,23 @@ export interface components {
             nom: string;
             /** Pour Cent */
             pour_cent: number;
+        };
+        /**
+         * DepotOut
+         * @description Où en est le dépôt d'un document dans SmileCloud.
+         */
+        oris_api__api__smilecloud__DepotOut: {
+            /** Etat */
+            etat: string;
+            /** Demande Le */
+            demande_le?: string | null;
+            /** Depose Le */
+            depose_le?: string | null;
+            /**
+             * Raison
+             * @default
+             */
+            raison: string;
         };
     };
     responses: never;
@@ -3960,6 +4167,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReadinessResponse"];
+                };
+            };
+        };
+    };
+    login_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConnexionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnexionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -4794,7 +5034,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DepotOut"];
+                    "application/json": components["schemas"]["oris_api__api__schemas__DepotOut"];
                 };
             };
             /** @description Validation Error */
@@ -5004,6 +5244,76 @@ export interface operations {
             };
         };
     };
+    retirer_le_document_smilecloud_depot__demande_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                demande_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    noter_depot_smilecloud_depose_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DepotFaitIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     ecarter_smilecloud_ecarte_post: {
         parameters: {
             query?: never;
@@ -5028,6 +5338,68 @@ export interface operations {
                     "application/json": {
                         [key: string]: boolean;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    etat_depot_documents__document_id__smilecloud_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["oris_api__api__smilecloud__DepotOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deposer_dans_smilecloud_documents__document_id__smilecloud_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["oris_api__api__smilecloud__DepotOut"];
                 };
             };
             /** @description Validation Error */
@@ -6720,6 +7092,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_praticiens_cabinet_praticiens_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PraticienOut"][];
                 };
             };
         };

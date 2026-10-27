@@ -67,6 +67,10 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
   depuis le Mac seulement.
 
 
+- **Civilité du patient** (27/10/2026) : présente des deux côtés — trois choix dans la
+  fiche (Monsieur, Madame, non précisée). Site : dans le cadre « Informations », et aussi
+  à la création d'un patient. iPhone : dans la section Identité de la fiche. Aucun écart.
+
 - **Écran de connexion** (26/10/2026) : sur l'iPhone, Paramètres › Connexion à Oris
   demande l'adresse électronique et le mot de passe, et l'app obtient son jeton. Le site
   n'en a pas besoin : le navigateur est déjà identifié par le mot de passe du serveur, et
