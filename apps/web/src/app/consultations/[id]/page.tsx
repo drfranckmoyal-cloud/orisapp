@@ -40,7 +40,7 @@ import {
   DOCUMENT_STATUS,
   DOCUMENT_TYPE,
   ENCOUNTER_STATUS,
-  PROCESSING_RULE,
+  messageRegle,
   errorMessage,
   formatDateTime,
   formatDuration,
@@ -462,10 +462,10 @@ export default function ConsultationPage() {
             </Bouton>
           </div>
         )}
-      {data.processing_errors.some((e) => PROCESSING_RULE[e.rule]) && (
+      {data.processing_errors.some((e) => messageRegle(e.rule)) && (
         <div className="banner banner-review" role="alert">
           {data.processing_errors
-            .map((e) => PROCESSING_RULE[e.rule])
+            .map((e) => messageRegle(e.rule))
             .filter(Boolean)
             .join(" ")}
           {/* Rien n'a été entendu : rien à perdre, la consultation s'efface d'un geste. */}
@@ -506,12 +506,12 @@ export default function ConsultationPage() {
           )}
         </div>
       )}
-      {data.processing_errors.some((e) => !PROCESSING_RULE[e.rule]) && (
+      {data.processing_errors.some((e) => !messageRegle(e.rule)) && (
         <div className="banner banner-critical" role="alert">
           Oris a refusé le résultat de l’extraction plutôt que de le corriger en
           silence :{" "}
           {data.processing_errors
-            .filter((e) => !PROCESSING_RULE[e.rule])
+            .filter((e) => !messageRegle(e.rule))
             .map((e) => `${e.rule} (${e.subject_id})`)
             .join(", ")}
           .

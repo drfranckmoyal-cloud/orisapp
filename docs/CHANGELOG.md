@@ -1,5 +1,33 @@
 # Changelog
 
+## Deux consultations réelles perdues par une base en retard sur le contrat — 2026-10-27
+- Franck, ce matin : « 2 consultations réalisées ce matin sur téléphone et 2 messages
+  extraction refusée ». Deux pannes empilées, et **aucune des deux n'était celle qui
+  s'affichait**. Les deux consultations sont récupérées : 31 et 30 faits cliniques,
+  compte rendu et plan rédigés.
+- **La clé Anthropic était refusée** (`invalid x-api-key`) : morte entre le 9 et le
+  27 octobre. Ni l'iPhone ni le site ne savaient traduire `ANTHROPIC_AUTH` — l'écran
+  disait « Extraction refusée », et la matinée s'est passée à soupçonner le micro. Les
+  pannes d'IA ont maintenant leurs phrases des deux côtés (clé refusée, réseau coupé,
+  délai dépassé, service indisponible, demande refusée), et elles disent toutes que
+  l'enregistrement et la transcription sont conservés. `scripts/poser_cle_ia.py` pose une
+  clé sans l'afficher, et **ne l'installe que si Anthropic l'accepte**.
+- **Puis la base a refusé les faits.** Le 10 octobre, le modèle de compte rendu avait
+  gagné « Situation » et « Anamnèse », et le contrat deux catégories, `patient_context`
+  et `anamnesis`. Le modèle Python les a prises seul (`contract_enum` lit le contrat) —
+  **aucune migration ne les avait portées en base**. La relecture aboutissait, la base
+  rejetait le premier fait, et la consultation retombait en « Extraction refusée ».
+  Migration 0023, et un test (`test_contrats_en_base.py`) compare désormais les
+  **vingt-quatre** énumérations du contrat à celles de la base : l'écart échoue en une
+  seconde au lieu d'attendre une vraie consultation.
+- « Extraction refusée » devient **« Relecture non aboutie »** : le mot dit le constat,
+  plus une cause qu'il ne connaissait pas.
+- Au passage, dans mon propre outil : `poser_cle_ia.py` annonçait « clé refusée » alors
+  qu'il n'avait **pas pu appeler** Anthropic (le Python de macOS n'a pas les autorités de
+  certification). Le même défaut que ceux que je traque ici. Il emprunte les certificats
+  d'Oris.
+- 510 tests serveur · 73 site · 65 iPhone au vert.
+
 ## Un identifiant et un mot de passe, et une migration qui ne mentait plus — 2026-10-26
 - Franck : « j'en ai marre de mettre des jetons, c'est chiant ». Il a tranché : un vrai
   compte. L'app iPhone demande maintenant **une adresse électronique et un mot de passe**

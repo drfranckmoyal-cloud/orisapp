@@ -20,7 +20,7 @@ export const ENCOUNTER_STATUS: Record<Encounter["status"], string> = {
   audio_error: "Erreur audio",
   upload_interrupted: "Envoi interrompu",
   transcription_failed: "Transcription impossible",
-  generation_failed: "Extraction refusée",
+  generation_failed: "Relecture non aboutie",
 };
 
 export const DOCUMENT_STATUS: Record<DocumentView["status"], string> = {
@@ -237,7 +237,36 @@ export const PROCESSING_RULE: Record<string, string> = {
     "La relecture a été coupée avant la fin : la consultation était trop longue pour être rendue d’un seul tenant. Relancez le traitement.",
   SPEAKER_ROLES_UNKNOWN:
     "Les voix n’ont pas pu être attribuées avec certitude : vérifiez qui a dit quoi.",
+  // Pannes du service d'IA. Elles arrivent avant toute relecture : l'enregistrement et la
+  // transcription sont intacts, et un nouvel essai suffit — sauf pour la clé, qu'il faut
+  // remplacer. Le 27/10/2026, faute de ces phrases, deux consultations réelles n'ont
+  // affiché que « Extraction refusée » et la matinée s'est passée à soupçonner le micro.
+  ANTHROPIC_AUTH:
+    "La clé d’accès à l’IA est refusée : Oris n’a pas pu faire relire la consultation. L’enregistrement et la transcription sont conservés. Il faut poser une nouvelle clé (console.anthropic.com), puis relancer le traitement.",
+  ANTHROPIC_NETWORK:
+    "Oris n’a pas pu joindre le service d’IA (connexion coupée). L’enregistrement et la transcription sont conservés : relancez le traitement.",
+  ANTHROPIC_TIMEOUT:
+    "Le service d’IA n’a pas répondu dans le temps imparti. L’enregistrement et la transcription sont conservés : relancez le traitement.",
 };
+
+/** Codes d'une panne passagère du service d'IA : surcharge (429) ou panne chez lui (5xx). */
+const IA_INDISPONIBLE =
+  "Le service d’IA est momentanément indisponible de son côté. L’enregistrement et la transcription sont conservés : relancez le traitement dans quelques minutes.";
+
+/**
+ * Le motif d'un échec de traitement, en français.
+ *
+ * Les codes des pannes d'IA portent leur statut HTTP (`ANTHROPIC_HTTP_503`) : on les
+ * reconnaît par leur début, pour qu'un statut inédit ne retombe pas dans « Oris a refusé
+ * le résultat », qui accuserait la relecture d'une panne de réseau.
+ */
+export function messageRegle(rule: string): string | undefined {
+  if (PROCESSING_RULE[rule]) return PROCESSING_RULE[rule];
+  if (rule.startsWith("ANTHROPIC_HTTP_")) return IA_INDISPONIBLE;
+  if (rule.startsWith("ANTHROPIC_REJECTED_"))
+    return `Le service d’IA a refusé la demande (${rule.replace("ANTHROPIC_REJECTED_", "code ")}). L’enregistrement et la transcription sont conservés : prévenez Claude.`;
+  return undefined;
+}
 
 export function formatDuration(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);

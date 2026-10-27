@@ -413,6 +413,9 @@ private struct NoDocumentCard: View {
         if rules.contains("EXTRACTION_INVALID_OUTPUT") || rules.contains("EXTRACTION_UNAVAILABLE") {
             return "Oris a refusé le résultat de la relecture plutôt que de le corriger en silence. La transcription est conservée : relancez le traitement."
         }
+        if let panne = Labels.panneIA(rules) {
+            return panne
+        }
         if encounter.status == .processing || encounter.status == .finalizing {
             return "Oris prépare le dossier… Tirez vers le bas pour actualiser."
         }

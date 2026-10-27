@@ -16,7 +16,7 @@ enum Labels {
         case .audioError: "Erreur audio"
         case .uploadInterrupted: "Envoi interrompu"
         case .transcriptionFailed: "Transcription impossible"
-        case .generationFailed: "Extraction refusée"
+        case .generationFailed: "Relecture non aboutie"
         }
     }
 
@@ -74,6 +74,33 @@ enum Labels {
         "INVALID_TOKEN": "Le jeton de cet iPhone est refusé par le serveur. Recopiez-le dans Paramètres › Connexion à Oris.",
         "AUTHENTICATION_REQUIRED": "Cet iPhone n’a pas de jeton. Ajoutez-le dans Paramètres › Connexion à Oris.",
     ]
+
+    /// Le service d'IA est en panne, et la panne a un nom.
+    ///
+    /// Ces échecs arrivent **avant** toute relecture : l'enregistrement et la transcription
+    /// sont intacts. Le 27/10/2026, faute de ces phrases, deux consultations réelles n'ont
+    /// affiché que « Extraction refusée » et la matinée s'est passée à soupçonner le micro.
+    static func panneIA(_ regles: Set<String>) -> String? {
+        if regles.contains("ANTHROPIC_AUTH") {
+            return "La clé d’accès à l’IA est refusée : la consultation n’a pas pu être relue. L’enregistrement et la transcription sont conservés — il faut poser une nouvelle clé sur l’ordinateur, puis relancer le traitement."
+        }
+        if regles.contains("ANTHROPIC_NETWORK") {
+            return "Oris n’a pas pu joindre le service d’IA (connexion coupée). L’enregistrement et la transcription sont conservés : relancez le traitement."
+        }
+        if regles.contains("ANTHROPIC_TIMEOUT") {
+            return "Le service d’IA n’a pas répondu dans le temps imparti. L’enregistrement et la transcription sont conservés : relancez le traitement."
+        }
+        // Les codes de panne portent leur statut HTTP (ANTHROPIC_HTTP_503) : on les
+        // reconnaît par leur début, pour qu'un statut inédit ne reste pas muet.
+        if regles.contains(where: { $0.hasPrefix("ANTHROPIC_HTTP_") }) {
+            return "Le service d’IA est momentanément indisponible de son côté. L’enregistrement et la transcription sont conservés : relancez le traitement dans quelques minutes."
+        }
+        if let refus = regles.first(where: { $0.hasPrefix("ANTHROPIC_REJECTED_") }) {
+            let code = refus.replacingOccurrences(of: "ANTHROPIC_REJECTED_", with: "")
+            return "Le service d’IA a refusé la demande (code \(code)). L’enregistrement et la transcription sont conservés : prévenez Claude."
+        }
+        return nil
+    }
 
     static func erreur(_ error: Error) -> String {
         if case .server(_, let code, _)? = error as? APIError {
