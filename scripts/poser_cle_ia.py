@@ -5,13 +5,20 @@ Anthropic l'accepte** : une clé fausse ne remplace jamais celle qui est en plac
 n'apparaît ni à l'écran, ni dans l'historique du terminal, ni dans un message.
 
     python3 scripts/poser_cle_ia.py
+    grep ^ANTHROPIC_API_KEY= services/api/.env | ssh … poser_cle_ia.py --depuis-entree
+
+La seconde forme recopie la clé d'un poste vers un autre (le Mac vers le serveur en
+ligne) : Anthropic ne montre une clé qu'une fois, et personne ne la retient. Elle passe
+par l'entrée standard, jamais par la ligne de commande, que `ps` afficherait.
 """
 
 from __future__ import annotations
 
+import argparse
 import getpass
 import json
 import ssl
+import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -77,12 +84,30 @@ def remplacer(texte: str, cle: str) -> str:
     return "\n".join(lignes) + "\n"
 
 
+def lire(depuis_entree: bool) -> str:
+    """La clé, tapée à l'abri des regards ou reçue d'un autre poste par l'entrée standard."""
+    if not depuis_entree:
+        return getpass.getpass("Clé Anthropic (elle ne s'affiche pas) : ").strip()
+    # On accepte la clé seule ou la ligne entière du fichier, « ANTHROPIC_API_KEY=… » :
+    # c'est ce que rend un `grep` sur le .env de l'autre poste.
+    brut = sys.stdin.read().strip()
+    return brut.split("=", 1)[1].strip() if brut.startswith(f"{VARIABLE}=") else brut
+
+
 def main() -> int:
+    arguments = argparse.ArgumentParser(description=__doc__)
+    arguments.add_argument(
+        "--depuis-entree",
+        action="store_true",
+        help="lire la clé sur l'entrée standard au lieu de la demander",
+    )
+    options = arguments.parse_args()
+
     if not ENV.exists():
         print(f"Pas de fichier {ENV} : rien à modifier.")
         return 1
 
-    cle = getpass.getpass("Clé Anthropic (elle ne s'affiche pas) : ").strip()
+    cle = lire(options.depuis_entree)
     if not cle:
         print("Rien saisi : le fichier n'a pas été touché.")
         return 1
