@@ -80,6 +80,25 @@ enum Connexion {
         UserDefaults.standard.string(forKey: serveurKey) ?? ""
     }
 
+    private static let migrationKey = "oris.migration.serveur-en-ligne"
+
+    /// Décroche l'iPhone du Mac, une fois pour toutes.
+    ///
+    /// Franck, le 08/11/2026 : « l'app ne fonctionne toujours pas si l'ordinateur est
+    /// éteint ». Elle visait encore `MacBook-Pro-3.local:8000`, réglé en septembre quand
+    /// il n'y avait pas de serveur en ligne. Depuis (décision D027), Oris vit sur un
+    /// serveur unique, allumé jour et nuit : une adresse de machine du cabinet n'a plus
+    /// de raison d'être. Le jeton de ce Mac ne vaut rien en ligne : il s'oublie avec
+    /// l'adresse, et l'écran de connexion prend la suite.
+    static func quitterLeServeurDuMac() {
+        let reglages = UserDefaults.standard
+        guard !reglages.bool(forKey: migrationKey) else { return }
+        reglages.set(true, forKey: migrationKey)
+        guard let saisi = reglages.string(forKey: serveurKey), surLeReseauLocal(saisi) else { return }
+        reglages.removeObject(forKey: serveurKey)
+        deconnecter()
+    }
+
     /// Ce que le serveur rend quand on se connecte.
     struct Session: Decodable, Sendable, Equatable {
         let jeton: String

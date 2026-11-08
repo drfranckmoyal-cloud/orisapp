@@ -1,5 +1,23 @@
 # Changelog
 
+## L'iPhone décroché du Mac — 2026-11-08
+- Franck : « l'app ne fonctionne toujours pas si l'ordinateur est éteint ». Deux verrous,
+  et le premier était mon abandon.
+- **La version avec l'écran de connexion n'avait jamais été livrée.** Fabriquée le
+  27 octobre, son envoi à Apple a échoué sur la signature (la clé de distribution
+  refusait de signer hors de Xcode), j'ai demandé une manipulation du trousseau — et
+  l'affaire est restée en suspens douze jours. La clé signe à nouveau : la version est
+  **envoyée et acceptée par Apple** (0.1.0, build 1).
+- **Second verrou, que je n'avais pas vu : une mise à jour ne touche pas aux réglages.**
+  L'iPhone gardait `MacBook-Pro-3.local:8000`, réglé en septembre quand il n'y avait pas
+  de serveur en ligne ; il aurait continué à chercher le Mac même avec la nouvelle app.
+  `Connexion.quitterLeServeurDuMac()` fait la bascule **une seule fois** au premier
+  lancement : l'adresse du Mac et son jeton s'oublient, le serveur en ligne prend la
+  suite, et l'écran de connexion s'affiche. Elle ne touche jamais une adresse qui n'est
+  pas celle d'une machine du cabinet, et respecte une adresse locale saisie après coup
+  (pour la mise au point au câble). Un test tient les trois cas.
+- 66 tests iPhone au vert.
+
 ## La civilité du patient, pour ne plus écrire « la patiente » à un homme — 2026-10-27
 - Franck, en relisant un compte rendu : « c'est un patient et pas une patiente ». Oris ne
   pouvait pas savoir : la fiche ne portait ni Monsieur ni Madame, et le rédacteur

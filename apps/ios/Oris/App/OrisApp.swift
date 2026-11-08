@@ -10,6 +10,10 @@ struct OrisApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
+        // Dans cet ordre : la migration efface une vieille adresse de machine du
+        // cabinet, puis un réglage posé expressément depuis le Mac (câble, mise au
+        // point) reprend la main sans être balayé.
+        Connexion.quitterLeServeurDuMac()
         Connexion.reglerDepuisLeMac()
         ApparenceOris.appliquer()
         if !["localhost", "127.0.0.1", "::1"].contains(Connexion.serveur.host() ?? "") {

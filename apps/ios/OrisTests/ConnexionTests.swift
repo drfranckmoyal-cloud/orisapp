@@ -21,6 +21,35 @@ final class ConnexionTests: XCTestCase {
         XCTAssertNil(Connexion.adresse("ftp://mac.local"))
     }
 
+    /// Franck, le 08/11/2026 : « l'app ne fonctionne toujours pas si l'ordinateur est
+    /// éteint ». Elle visait encore le Mac. La migration la décroche — une fois, et sans
+    /// toucher à une adresse qui n'est pas celle d'une machine du cabinet.
+    func testTheAppLeavesTheMacAddressBehindOnceAndOnlyIfItIsLocal() {
+        let reglages = UserDefaults.standard
+        let memoire = (reglages.string(forKey: "oris.serveur"),
+                       reglages.bool(forKey: "oris.migration.serveur-en-ligne"))
+        defer {
+            reglages.set(memoire.0, forKey: "oris.serveur")
+            reglages.set(memoire.1, forKey: "oris.migration.serveur-en-ligne")
+        }
+
+        reglages.set("MacBook-Pro-3.local:8000", forKey: "oris.serveur")
+        reglages.set(false, forKey: "oris.migration.serveur-en-ligne")
+        Connexion.quitterLeServeurDuMac()
+        XCTAssertEqual(Connexion.serveur, Connexion.serveurParDefaut)
+
+        // Une seule fois : une adresse locale saisie après coup est un choix, pas un reste.
+        reglages.set("MacBook-Pro-3.local:8000", forKey: "oris.serveur")
+        Connexion.quitterLeServeurDuMac()
+        XCTAssertEqual(Connexion.serveurSaisi, "MacBook-Pro-3.local:8000")
+
+        // Et elle ne touche jamais à un serveur qui n'est pas sur le réseau du cabinet.
+        reglages.set("https://oris.exemple.fr/mobile", forKey: "oris.serveur")
+        reglages.set(false, forKey: "oris.migration.serveur-en-ligne")
+        Connexion.quitterLeServeurDuMac()
+        XCTAssertEqual(Connexion.serveurSaisi, "https://oris.exemple.fr/mobile")
+    }
+
     func testTheTokenTravelsWithEveryRequest() async throws {
         let recorder = RecordingTransport()
         let transport = AuthorizingTransport(base: recorder, token: "oris_secret")

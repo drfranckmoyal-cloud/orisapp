@@ -135,6 +135,19 @@ Ce qui manque encore, et reste l'étape 1 de la feuille de route : le second fac
 mot de passe oublié, la création de cabinet, l'invitation d'un confrère, Pro Santé
 Connect.
 
+## L'app ne dépend plus du Mac — 08/11/2026
+
+Une mise à jour TestFlight **ne touche pas aux réglages de l'app** : l'iPhone gardait
+l'adresse du Mac (`MacBook-Pro-3.local:8000`), posée en septembre avant qu'il y ait un
+serveur en ligne, et cherchait donc un Mac éteint. `Connexion.quitterLeServeurDuMac()`,
+appelée au démarrage **avant** `reglerDepuisLeMac()`, efface une fois pour toutes une
+adresse de machine du cabinet et son jeton ; l'app repart sur
+`https://51-159-130-158.nip.io/mobile` et demande identifiant et mot de passe.
+
+À retenir pour la suite : **tout réglage posé sur un appareil survit aux mises à jour**.
+Changer un défaut dans le code ne suffit pas ; il faut une bascule explicite, qui ne se
+produise qu'une fois et qui respecte un choix fait exprès par le praticien.
+
 ## Pour que les appels ne coupent plus les consultations
 
 Aucune application ne peut empêcher un appel de sonner et de prendre le micro : c'est
