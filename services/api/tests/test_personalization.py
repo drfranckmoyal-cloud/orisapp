@@ -11,6 +11,7 @@ def test_preferences_start_at_oris_defaults_and_can_be_changed(api: Any) -> None
     assert api.get("/me/preferences").json() == {
         "document_length": "standard",
         "terminology": {},
+        "consignes": [],
     }
     updated = api.patch(
         "/me/preferences",
@@ -178,7 +179,7 @@ def test_a_preference_can_always_be_put_back_to_the_oris_default(api: Any) -> No
 
     # Tout, d'un coup — sans toucher au dictionnaire saisi à la main.
     tout = api.post("/me/preferences/reset", json={}).json()
-    assert tout == {"document_length": "standard", "terminology": {}}
+    assert tout == {"document_length": "standard", "terminology": {}, "consignes": []}
     assert [term["canonical"] for term in api.get("/glossary").json()] == ["G-ænial A'CHORD"]
 
 
