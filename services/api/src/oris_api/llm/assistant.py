@@ -45,7 +45,7 @@ from oris_api.domain.corrections import (
 
 API_URL = "https://api.anthropic.com/v1/messages"
 API_VERSION = "2023-06-01"
-PROMPT_VERSION = "assistant-fr-2"
+PROMPT_VERSION = "assistant-fr-3"
 MAX_TOKENS = 3_000
 PROPOSITIONS_MAX = 5
 
@@ -84,7 +84,9 @@ Règles absolues :
 d'écrire, avec ses mots ;
 - une demande de forme ne devient jamais une opération sur le dossier, et inversement ;
 - `resume` est une phrase adressée au praticien, en français simple, qui dit ce que tu as \
-compris et ce qui va changer — sans jargon informatique, sans identifiant."""
+compris et ce qui va changer — sans jargon informatique, sans identifiant. Écris-la au \
+FUTUR (« Je vais remplacer… », « Le compte rendu sera accordé… ») : rien n'est encore \
+fait, le praticien doit d'abord confirmer. N'écris jamais « j'ai corrigé »."""
 
 RELIRE_PROMPT = """Tu relis un document dentaire rédigé pour un chirurgien-dentiste \
 français, et tu proposes des améliorations de FORME : lourdeurs, répétitions, paragraphes \

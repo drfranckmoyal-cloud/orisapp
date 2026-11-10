@@ -375,6 +375,9 @@ export const AssistantCorrection = forwardRef<
               <div key={echange.id} className={`${styles.bulle} ${styles.oris}`}>
                 <span className={styles.nature} data-nature={lecture.nature}>
                   {NATURE[lecture.nature]}
+                  {/* Une proposition comprise n'est pas une correction faite : le dire
+                      (Franck, 10/11/2026 : « il a compris mais pas réalisé »). */}
+                  {lecture.nature !== "incompris" && " · à confirmer"}
                 </span>
                 <div>{lecture.resume}</div>
                 {lecture.nature === "redaction" && (

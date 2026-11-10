@@ -133,7 +133,7 @@ struct CorrigerAvecClaude: View {
         case .lecture(let id, let lecture):
             cadre {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(nature(lecture.nature).uppercased())
+                    Text((nature(lecture.nature) + (lecture.nature == "incompris" ? "" : " · à confirmer")).uppercased())
                         .font(Police.interface(11, .heavy))
                         .foregroundStyle(lecture.nature == "dossier" ? Teinte.attention : Teinte.accent)
                     Text(lecture.resume)
