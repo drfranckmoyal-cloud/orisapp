@@ -7,10 +7,11 @@ correction qui existe déjà ; la rédaction repasse par le rédacteur et tous s
 
 from __future__ import annotations
 
+import hashlib
 from typing import Annotated, Any, Literal, cast
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Body, Header
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
 
@@ -20,8 +21,10 @@ from oris_api.db.models import DocumentRow, Encounter, Patient
 from oris_api.domain.correction_intent import interpret
 from oris_api.domain.corrections import CorrectionOperation
 from oris_api.domain.preferences import Consigne, PreferencesPatch, ajouter_consigne
+from oris_api.domain.types import AudioChunk
 from oris_api.llm.assistant import PERMISES, AssistantIndisponible, Lecture
 from oris_api.llm.redaction import REDIGES
+from oris_api.providers.base import TranscriptionUnavailable
 from oris_api.providers.factory import ProviderSet
 from oris_api.services import (
     async_bridge,
@@ -33,6 +36,7 @@ from oris_api.services import (
     learning,
     personalization,
 )
+from oris_api.services import audio as audio_service
 from oris_api.services.errors import Conflict, NotFound, ServiceError, Unprocessable
 
 router = APIRouter(tags=["assistant"])
@@ -56,6 +60,8 @@ class AssistantLecture(BaseModel):
     """Ce qu'Oris a compris. Rien n'a changé."""
 
     nature: Nature
+    #: La demande telle qu'elle a été lue — ou entendue, quand elle est dictée.
+    demande: str = ""
     resume: str
     consigne: str = ""
     civilite: str = ""
@@ -114,10 +120,11 @@ def _fictive(encounter: Encounter) -> bool:
 
 
 def _lecture_out(
-    lecture: Lecture, source: Literal["regles", "claude"], version: int
+    lecture: Lecture, source: Literal["regles", "claude"], version: int, demande: str = ""
 ) -> AssistantLecture:
     return AssistantLecture(
         nature=lecture.nature,
+        demande=demande,
         resume=lecture.resume,
         consigne=lecture.consigne,
         civilite=lecture.civilite,
@@ -126,6 +133,38 @@ def _lecture_out(
         source=source,
         object_version=version,
     )
+
+
+def _comprendre(
+    session: Session, encounter: Encounter, demande: str, providers: ProviderSet
+) -> AssistantLecture:
+    obj = clinical_store.load_current(session, encounter)
+    regles = interpret(demande, obj)
+    if regles.kind == "clinical":
+        lecture = Lecture("dossier", regles.summary, operations=list(regles.operations))
+        return _lecture_out(lecture, "regles", obj.object_version, demande)
+
+    assistant = None if _fictive(encounter) else providers.assistant
+    if assistant is None:
+        if regles.kind == "editorial":
+            lecture = Lecture(
+                "redaction",
+                f"Consigne de rédaction : {regles.preference}.",
+                consigne=regles.preference,
+            )
+        else:
+            raison = regles.reason or "Je n'ai pas compris ce qu'il faut changer."
+            lecture = Lecture("incompris", raison, question=raison)
+        return _lecture_out(lecture, "regles", obj.object_version, demande)
+
+    patient = session.get(Patient, encounter.patient_id)
+    try:
+        lecture = async_bridge.run(
+            lambda: assistant.comprendre(demande, obj, patient.civility if patient else "")
+        )
+    except AssistantIndisponible as panne:
+        raise ServiceIndisponible(panne.code, str(encounter.id)) from panne
+    return _lecture_out(lecture, "claude", obj.object_version, demande)
 
 
 @router.post("/encounters/{encounter_id}/assistant", response_model=AssistantLecture)
@@ -143,33 +182,45 @@ def comprendre(
     Claude, sauf pour une consultation fictive, dont rien ne sort d'Oris.
     """
     encounter = encounters.get_encounter(session, actor, encounter_id)
-    obj = clinical_store.load_current(session, encounter)
-    regles = interpret(body.demande, obj)
-    if regles.kind == "clinical":
-        lecture = Lecture("dossier", regles.summary, operations=list(regles.operations))
-        return _lecture_out(lecture, "regles", obj.object_version)
+    return _comprendre(session, encounter, body.demande.strip(), providers)
 
-    assistant = None if _fictive(encounter) else providers.assistant
-    if assistant is None:
-        if regles.kind == "editorial":
-            lecture = Lecture(
-                "redaction",
-                f"Consigne de rédaction : {regles.preference}.",
-                consigne=regles.preference,
-            )
-        else:
-            raison = regles.reason or "Je n'ai pas compris ce qu'il faut changer."
-            lecture = Lecture("incompris", raison, question=raison)
-        return _lecture_out(lecture, "regles", obj.object_version)
 
-    patient = session.get(Patient, encounter.patient_id)
+@router.post("/encounters/{encounter_id}/assistant/voix", response_model=AssistantLecture)
+def comprendre_a_la_voix(
+    encounter_id: UUID,
+    payload: Annotated[bytes, Body(media_type=audio_service.AUDIO_FORMAT)],
+    content_type: Annotated[str, Header()],
+    session: SessionDep,
+    actor: ActorDep,
+    providers: ProvidersDep,
+) -> AssistantLecture:
+    """La même demande, dictée : transcrite dans la requête, jamais conservée (D010)."""
+    encounter = encounters.get_encounter(session, actor, encounter_id)
+    if content_type.replace(" ", "").lower() != audio_service.AUDIO_FORMAT:
+        raise Unprocessable("UNSUPPORTED_AUDIO_FORMAT", str(encounter.id))
+    if not payload or len(payload) % 2:
+        raise Unprocessable("INVALID_CHUNK", str(encounter.id))
+    chunk = AudioChunk(
+        session_id=str(encounter.id),
+        sequence=0,
+        timestamp_ms=0,
+        checksum=hashlib.sha256(payload).hexdigest(),
+        payload=payload,
+    )
     try:
-        lecture = async_bridge.run(
-            lambda: assistant.comprendre(body.demande, obj, patient.civility if patient else "")
+        transcription = async_bridge.run(
+            lambda: providers.speech_to_text.transcribe([chunk], encounters.LOCALE, [])
         )
-    except AssistantIndisponible as panne:
-        raise ServiceIndisponible(panne.code, str(encounter.id)) from panne
-    return _lecture_out(lecture, "claude", obj.object_version)
+    except TranscriptionUnavailable as error:
+        raise Conflict("STT_UNAVAILABLE", str(encounter.id), [error.code]) from error
+    demande = " ".join(segment.text for segment in transcription.segments).strip()
+    if len(demande) < 2:
+        raison = "Je n'ai rien entendu. Redites votre demande, ou écrivez-la."
+        obj = clinical_store.load_current(session, encounter)
+        return _lecture_out(
+            Lecture("incompris", raison, question=raison), "regles", obj.object_version
+        )
+    return _comprendre(session, encounter, demande, providers)
 
 
 def _a_reecrire(

@@ -3764,6 +3764,71 @@
         }
       }
     },
+    "/encounters/{encounter_id}/assistant/voix": {
+      "post": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "Comprendre A La Voix",
+        "description": "La même demande, dictée : transcrite dans la requête, jamais conservée (D010).",
+        "operationId": "comprendre_a_la_voix_encounters__encounter_id__assistant_voix_post",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          },
+          {
+            "name": "content-type",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Content-Type"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "audio/pcm;rate=16000;channels=1;encoding=s16le": {
+              "schema": {
+                "type": "string",
+                "contentMediaType": "application/octet-stream",
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantLecture"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters/{encounter_id}/assistant/appliquer": {
       "post": {
         "tags": [
@@ -5680,6 +5745,11 @@
               "incompris"
             ],
             "title": "Nature"
+          },
+          "demande": {
+            "type": "string",
+            "title": "Demande",
+            "default": ""
           },
           "resume": {
             "type": "string",

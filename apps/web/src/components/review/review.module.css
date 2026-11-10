@@ -134,3 +134,37 @@
   line-height: 1.55;
   white-space: normal;
 }
+
+/* Le texte s'édite à même la page (10/11/2026) : un clic y pose le curseur. La source
+   d'une phrase reste à portée, par la petite cible qui la suit au survol. */
+.document[data-modifiable="true"] .claim,
+.document[data-modifiable="true"] .texteBrut {
+  cursor: text;
+}
+
+.source {
+  /* Hors du flux, à l'endroit où finit la phrase : la cible n'écarte pas les mots. */
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin: -1px 0 0 2px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--accent-encre);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s;
+  z-index: 2;
+}
+
+.claim:hover .source,
+.claim[data-selected="true"] .source,
+.source:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}

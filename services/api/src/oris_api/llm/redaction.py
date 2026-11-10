@@ -34,8 +34,10 @@ from oris_api.documents.renderer import (
     LIMITS_SECTION,
     NEGATION,
     PATIENT,
+    SELON,
     Style,
     render_content,
+    selon,
 )
 from oris_api.domain.civilite import consigne
 from oris_api.domain.types import Claim, GeneratedDocument
@@ -57,8 +59,6 @@ TOOL_NAME = "rediger_compte_rendu"
 MOTS_INCERTITUDE = "« possible », « probable », « suspicion », « à confirmer », « non confirmé »"
 MOTS_REFUS = "« refuse », « décline », « ne souhaite pas »"
 MOTS_NEGATION = "« pas de », « absence de », « aucun », « sans », « jamais »"
-MOTS_PATIENT = "« la patiente rapporte », « il décrit », « elle signale », « consulte pour »"
-SELON_LE_PATIENT = re.compile(r"\bselon (?:le patient|la patiente)\b", re.IGNORECASE)
 
 #: Documents en paragraphes : ceux-là seulement sont réécrits. Le plan garde sa forme,
 #: élément par élément (seuls ses titres sont proposés par Claude) ; le compte rendu
@@ -89,12 +89,11 @@ faits de sa rubrique ;
 confirmé »), la temporalité (« antérieurement », « déjà ») et le statut (proposé, \
 refusé, réalisé, prévu) exactement ;
 - une information rapportée par le patient reste attribuée au patient, mais **une seule \
-fois par paragraphe** : la première phrase du paragraphe dit d'où vient l'information \
-(« La patiente rapporte… », « Il décrit… », « Elle consulte pour… »), les suivantes \
-s'enchaînent sans le redire. N'écris JAMAIS « Selon le patient » en tête de chaque \
-phrase : au plus une fois par rubrique, et de préférence une tournure avec un verbe. \
-Ne mélange pas dans un même paragraphe les propos du patient et tes constats : ouvre \
-un nouveau paragraphe quand la source change ;
+fois par suite de propos** : la première phrase dit d'où vient l'information (« La \
+patiente rapporte… », « Il décrit… », « Elle consulte pour… »), les suivantes \
+s'enchaînent sans le redire, même sur plusieurs paragraphes. Redis-le seulement après \
+une phrase de constat du praticien. N'écris JAMAIS « Selon le patient » en tête de \
+chaque phrase : préfère une tournure avec un verbe, une fois ;
 - n'établis aucun lien de cause ou de but entre deux faits (« en raison de », « afin \
 de », « donc ») s'il n'est pas déjà dans l'un d'eux : juxtapose-les plutôt ;
 - accorde selon la consigne `accord` du message, qui vient de la civilité de la fiche \
@@ -240,6 +239,7 @@ def verifier(
     rubriques: list[Rubrique],
     sortie: dict[str, Any],
     facts: dict[str, ClinicalFact],
+    style: Style = DEFAULT_STYLE,
 ) -> list[Claim]:
     """Contrôle la copie. Renvoie les phrases acceptées, ou lève `RedactionRefusee`."""
     rendues = sortie.get("rubriques")
@@ -255,14 +255,14 @@ def verifier(
         couverts: set[str] = set()
         paragraphe = -1
         # L'attribution au patient se dit une fois par suite de phrases : `attribue` dit
-        # si la phrase précédente du même paragraphe la portait déjà.
+        # si la phrase précédente la portait déjà. Seule une phrase du praticien ferme
+        # la suite — pas un saut de paragraphe : dans « Motif » ou « Anamnèse », tout
+        # vient du patient, et le redire à chaque alinéa serait la lourdeur qu'on retire.
         attribue = False
-        formules = 0
         for phrase in rendue.get("phrases") or []:
             texte = str(phrase.get("texte", "")).strip()
             if paragraphe < 0 or phrase.get("nouveau_paragraphe"):
                 paragraphe += 1
-                attribue = False
             _controler_gras(texte, rubrique.titre)
             cites = [str(fid) for fid in phrase.get("fact_ids") or []]
             if not texte or not cites:
@@ -274,25 +274,22 @@ def verifier(
                 )
             appui = [facts[fid] for fid in cites if fid in facts]
             _controler_phrase(sans_gras(texte), appui, rubrique.titre)
-            du_patient = bool(appui) and all(f.clinical_status == "patient_reported" for f in appui)
+            du_patient = bool(appui) and all(
+                f.clinical_status == "patient_reported" for f in appui
+            )
             if not du_patient:
                 attribue = False
             else:
-                if not attribue and not PATIENT.search(texte):
-                    raise RedactionRefusee(
-                        f"attribution au patient perdue dans « {rubrique.titre} » : « {texte} » "
-                        "— c'est la première phrase du paragraphe qui rapporte ses propos : "
-                        f"dis d'où ils viennent ({MOTS_PATIENT}). Les phrases suivantes du "
-                        "même paragraphe n'ont pas à le redire."
-                    )
+                # Oris **répare** l'attribution au lieu de refuser la copie : l'ajouter ou
+                # la retirer est mécanique et ne change aucun fait. Un refus, lui, coûtait
+                # un essai — trois de suite, et le document partait en version de secours
+                # (constaté le 10/11/2026 sur un compte rendu réel de 54 phrases).
+                if attribue and SELON.match(texte):
+                    reste = SELON.sub("", texte)
+                    texte = f"{reste[:1].upper()}{reste[1:]}"
+                elif not attribue and not PATIENT.search(texte):
+                    texte = f"{selon(style)}{texte[:1].lower()}{texte[1:]}"
                 attribue = True
-            formules += len(SELON_LE_PATIENT.findall(texte))
-            if formules > 1:
-                raise RedactionRefusee(
-                    f"« Selon le patient » répété dans « {rubrique.titre} » : une seule fois "
-                    "par rubrique au plus. Attribue une fois par paragraphe avec un verbe "
-                    f"({MOTS_PATIENT}), puis enchaîne sans le redire."
-                )
             couverts |= set(cites)
             claims.append(
                 Claim(
@@ -422,7 +419,7 @@ class AnthropicDocumentWriter:
                 _noter_repli(document_type, self.dernier_refus)
                 return _avec_generateur(base, repli)
             try:
-                claims = verifier(rubriques, sortie, facts)
+                claims = verifier(rubriques, sortie, facts, style)
             except RedactionRefusee as refus:
                 self.dernier_refus = str(refus)[:300]
                 if essai == MAX_ATTEMPTS - 1:

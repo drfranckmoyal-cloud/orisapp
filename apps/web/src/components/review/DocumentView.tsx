@@ -18,11 +18,21 @@ export function avecGras(texte: string): ReactNode[] {
  * Oris ne le découpe pas en phrases : il ne sait pas d'où elles viennent, et faire comme
  * s'il le savait serait mentir. Les titres de rubrique s'y lisent comme il les a laissés.
  */
-function TexteBrut({ contenu }: { contenu: string }) {
+function TexteBrut({
+  contenu,
+  onEdit,
+}: {
+  contenu: string;
+  onEdit?: ((position: number) => void) | undefined;
+}) {
   return (
-    <div className={styles.document}>
+    <div className={styles.document} data-modifiable={Boolean(onEdit)}>
       {contenu.split(/\n{2,}/).map((bloc, i) => (
-        <p key={i} className={styles.texteBrut}>
+        <p
+          key={i}
+          className={styles.texteBrut}
+          onClick={onEdit ? () => onEdit(Math.max(0, contenu.indexOf(bloc))) : undefined}
+        >
           {bloc.split("\n").map((ligne, j) => (
             <span key={j}>
               {j > 0 && <br />}
@@ -53,10 +63,14 @@ export function DocumentBody({
   document,
   selected,
   onSelect,
+  onEdit,
 }: {
   document: DocumentData;
   selected: Claim | null;
   onSelect: (claim: Claim) => void;
+  /** Le texte s'édite à même la page : un clic dans une phrase y pose le curseur. La
+   *  source de la phrase passe alors par la petite cible qui la suit. */
+  onEdit?: ((position: number) => void) | undefined;
 }) {
   const flagged = new Set(
     document.validation_issues.flatMap((issue) =>
@@ -77,16 +91,19 @@ export function DocumentBody({
     // Un texte réécrit à la main n'a plus de phrases rattachées aux faits — mais c'est
     // du texte, et c'est celui du praticien : l'écran annonçait « document vide » alors
     // que ses deux mille caractères étaient bien là (Franck, 10/10/2026).
-    if (document.content.trim()) return <TexteBrut contenu={document.content} />;
+    if (document.content.trim())
+      return <TexteBrut contenu={document.content} onEdit={onEdit} />;
     return <p className="muted">Document vide : aucun fait clinique à rédiger.</p>;
   }
   return (
-    <div className={styles.document}>
+    <div className={styles.document} data-modifiable={Boolean(onEdit)}>
       {/* Le rail montre déjà la source au clic — encore faut-il savoir que c'est
           cliquable : le même mot que sur l'iPhone. */}
-      <p className={styles.indicePreuve}>
-        Cliquez une phrase pour voir d’où elle vient.
-      </p>
+      {!onEdit && (
+        <p className={styles.indicePreuve}>
+          Cliquez une phrase pour voir d’où elle vient.
+        </p>
+      )}
       {sections.map((section) => (
         <section key={section.title} className={styles.rubrique}>
           <h3 className={styles.sectionTitle}>{section.title}</h3>
@@ -104,7 +121,11 @@ export function DocumentBody({
                   className={styles.claim}
                   data-selected={selected === claim}
                   data-flagged={flagged.has(index)}
-                  onClick={() => onSelect(claim)}
+                  onClick={() =>
+                    onEdit
+                      ? onEdit(Math.max(0, document.content.indexOf(claim.text)))
+                      : onSelect(claim)
+                  }
                   onKeyDown={(event) => {
                     if (event.key === "Enter" || event.key === " ") {
                       event.preventDefault();
@@ -112,7 +133,24 @@ export function DocumentBody({
                     }
                   }}
                 >
-                  {avecGras(claim.text)}{" "}
+                  {avecGras(claim.text)}
+                  {onEdit && (
+                    <button
+                      type="button"
+                      className={styles.source}
+                      title="D’où vient cette phrase ?"
+                      aria-label="Voir d’où vient cette phrase"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onSelect(claim);
+                      }}
+                    >
+                      <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+                        <circle cx="10" cy="10" r="5.4" />
+                        <path d="M10 2.4v3M10 14.6v3M2.4 10h3M14.6 10h3" />
+                      </svg>
+                    </button>
+                  )}{" "}
                 </span>
               ))}
             </p>

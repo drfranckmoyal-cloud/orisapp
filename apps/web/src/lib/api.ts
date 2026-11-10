@@ -190,6 +190,40 @@ export async function sendVoiceCorrection(
   return body as SpokenCorrection;
 }
 
+/** Le dialogue de correction : ce qu'Oris a compris d'une demande, avant d'y toucher. */
+export type LectureAssistant = Schemas["AssistantLecture"];
+export type ResultatAssistant = Schemas["AssistantResultat"];
+export type PropositionRelecture = Schemas["PropositionOut"];
+export type Consignes = Schemas["ConsignesOut"];
+
+/** La demande dictée : transcrite par le serveur, comprise comme une demande écrite. */
+export async function sendVoiceAssistant(
+  encounterId: string,
+  pcm: Uint8Array,
+  fetcher: typeof fetch = fetch,
+  baseUrl: string = API_BASE_URL,
+): Promise<LectureAssistant> {
+  let response: Response;
+  try {
+    response = await fetcher(`${baseUrl}/encounters/${encounterId}/assistant/voix`, {
+      method: "POST",
+      headers: { "Content-Type": "audio/pcm;rate=16000;channels=1;encoding=s16le" },
+      body: pcm as BodyInit,
+    });
+  } catch {
+    throw new ApiError(0, "NETWORK_UNREACHABLE");
+  }
+  const body: unknown = await response.json().catch(() => null);
+  if (!response.ok) {
+    const error = (body ?? {}) as { code?: unknown };
+    throw new ApiError(
+      response.status,
+      typeof error.code === "string" ? error.code : `HTTP_${response.status}`,
+    );
+  }
+  return body as LectureAssistant;
+}
+
 export type Preferences = Schemas["PractitionerPreferences"];
 export type GlossaryTerm = Schemas["GlossaryTermOut"];
 export type LearningSuggestion = Schemas["SuggestionOut"];

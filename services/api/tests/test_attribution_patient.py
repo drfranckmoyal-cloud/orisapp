@@ -10,12 +10,10 @@ from __future__ import annotations
 
 from typing import Any
 
-import pytest
-
 from oris_api.contracts import ClinicalFact
 from oris_api.documents.renderer import Style, alleger_attribution, selon
 from oris_api.domain.types import Claim
-from oris_api.llm.redaction import RedactionRefusee, Rubrique, verifier
+from oris_api.llm.redaction import Rubrique, verifier
 
 
 def fait(fact_id: str, statut: str, valeur: str = "douleur") -> ClinicalFact:
@@ -96,31 +94,50 @@ def test_la_copie_de_claude_attribue_une_fois_par_paragraphe() -> None:
     assert len(verifier(rubrique("p1", "p2"), acceptee, faits)) == 2
 
 
-def test_une_parole_du_patient_sans_attribution_est_refusee() -> None:
+def test_une_parole_du_patient_sans_attribution_est_reparee_pas_refusee() -> None:
+    """Refuser coûtait un essai ; trois de suite, et le document partait en version de
+    secours (10/11/2026). L'attribution s'ajoute mécaniquement : aucun fait ne bouge."""
     faits = {"p1": fait("p1", "patient_reported")}
-    with pytest.raises(RedactionRefusee, match="attribution au patient perdue"):
-        verifier(
-            rubrique("p1"),
-            copie({"texte": "Une douleur est présente.", "fact_ids": ["p1"]}),
-            faits,
-        )
+    claims = verifier(
+        rubrique("p1"),
+        copie({"texte": "Une douleur est présente.", "fact_ids": ["p1"]}),
+        faits,
+        Style(civilite="madame"),
+    )
+    assert claims[0].text == "Selon la patiente, une douleur est présente."
 
 
-def test_un_nouveau_paragraphe_redit_la_source() -> None:
+def test_un_nouveau_paragraphe_ne_redit_pas_la_source() -> None:
+    """Dans « Motif » ou « Anamnèse », tout vient du patient : une fois suffit."""
     faits = {"p1": fait("p1", "patient_reported"), "p2": fait("p2", "patient_reported")}
-    sans = copie(
+    suite = copie(
         {"texte": "Elle décrit une douleur.", "fact_ids": ["p1"]},
         {"texte": "Une douleur gêne le sommeil.", "fact_ids": ["p2"], "nouveau_paragraphe": True},
     )
-    with pytest.raises(RedactionRefusee, match="attribution au patient perdue"):
-        verifier(rubrique("p1", "p2"), sans, faits)
+    claims = verifier(rubrique("p1", "p2"), suite, faits)
+    assert [c.text for c in claims] == ["Elle décrit une douleur.", "Une douleur gêne le sommeil."]
 
 
-def test_selon_le_patient_deux_fois_dans_une_rubrique_est_refuse() -> None:
+def test_selon_le_patient_repete_est_allege() -> None:
     faits = {"p1": fait("p1", "patient_reported"), "p2": fait("p2", "patient_reported")}
     lourde = copie(
         {"texte": "Selon le patient, une douleur.", "fact_ids": ["p1"]},
         {"texte": "Selon le patient, une douleur la nuit.", "fact_ids": ["p2"]},
     )
-    with pytest.raises(RedactionRefusee, match="répété"):
-        verifier(rubrique("p1", "p2"), lourde, faits)
+    claims = verifier(rubrique("p1", "p2"), lourde, faits)
+    assert [c.text for c in claims] == ["Selon le patient, une douleur.", "Une douleur la nuit."]
+
+
+def test_apres_un_constat_la_parole_du_patient_redit_sa_source() -> None:
+    faits = {
+        "p1": fait("p1", "patient_reported"),
+        "o1": fait("o1", "observed"),
+        "p2": fait("p2", "patient_reported"),
+    }
+    melee = copie(
+        {"texte": "Il décrit une douleur.", "fact_ids": ["p1"]},
+        {"texte": "À l'examen, une douleur à la palpation.", "fact_ids": ["o1"]},
+        {"texte": "Une douleur persiste la nuit.", "fact_ids": ["p2"]},
+    )
+    claims = verifier(rubrique("p1", "o1", "p2"), melee, faits)
+    assert claims[2].text == "Selon le patient, une douleur persiste la nuit."

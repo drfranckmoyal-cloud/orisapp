@@ -1,0 +1,791 @@
+/* La page de relecture, réorganisée le 10/11/2026 (Franck : « je m'y perds vraiment »).
+
+   Trois zones, dans l'ordre où on s'en sert :
+   1. un en-tête qui reste en haut — qui, où on en est, et l'action du moment ;
+   2. le document, comme une feuille, avec ses onglets ;
+   3. à droite, le dialogue de correction puis ce qu'il faut vérifier. */
+
+/* --- 1. En-tête collant ---------------------------------------------------------- */
+
+.entete {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: calc(-1 * var(--espace-6, 24px)) calc(-1 * var(--espace-6, 24px)) 0;
+  padding: 14px var(--espace-6, 24px) 0;
+  background: color-mix(in srgb, var(--fond) 94%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--trait);
+}
+
+.retour {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--encre-tres-douce);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.retour:hover {
+  color: var(--accent);
+}
+
+.ligne {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 4px;
+}
+
+.identite {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.patient {
+  margin: 0;
+  font-family: var(--police-marque);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.patient a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.patient a:hover {
+  color: var(--accent);
+}
+
+.prenom {
+  font-weight: 500;
+}
+
+.quand {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--encre-douce);
+  font-size: 13px;
+}
+
+.pousse {
+  flex: 1;
+}
+
+.etapes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--encre-tres-douce);
+}
+
+.etapes li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.etapes li + li::before {
+  content: "›";
+  margin-right: 2px;
+  color: var(--trait-fort);
+}
+
+.etapes i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--trait-fort);
+}
+
+.etapes li[data-etat="encours"] {
+  color: var(--attention);
+}
+
+.etapes li[data-etat="encours"] i {
+  background: var(--attention-vif);
+}
+
+.etapes li[data-etat="fait"] {
+  color: var(--accent);
+}
+
+.etapes li[data-etat="fait"] i {
+  background: var(--accent);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.valide {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: var(--rayon-pastille);
+  background: var(--valide-douce);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* Un petit menu « ⋯ » : ce qu'on fait rarement, à un clic de distance. */
+.menu {
+  position: relative;
+}
+
+.menu > summary {
+  list-style: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--rayon-bouton);
+  border: 1px solid transparent;
+  color: var(--encre-douce);
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.menu > summary:hover,
+.menu[open] > summary {
+  background: var(--surface);
+  border-color: var(--trait-fort);
+}
+
+.menuContenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  min-width: 250px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--trait);
+  border-radius: 14px;
+  box-shadow: 0 22px 50px -24px rgba(0, 0, 0, 0.4);
+  display: grid;
+  gap: 2px;
+}
+
+.menuContenu a,
+.menuContenu button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 11px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--encre);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.menuContenu a:hover,
+.menuContenu button:hover {
+  background: var(--surface-2);
+}
+
+.menuContenu [data-danger="true"] {
+  color: var(--alerte);
+}
+
+/* --- 2. Onglets : un par document, larges, avec leur état -------------------------- */
+
+.onglets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 14px;
+}
+
+.onglet {
+  position: relative;
+  top: 1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px 13px;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 14px 14px 0 0;
+  background: none;
+  color: var(--encre-douce);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.onglet:hover {
+  color: var(--encre);
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+}
+
+.onglet[aria-selected="true"] {
+  background: var(--surface);
+  border-color: var(--trait);
+  color: var(--encre);
+}
+
+.onglet[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: -1px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--accent);
+}
+
+.etat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: var(--rayon-pastille);
+  font-size: 11.5px;
+  font-weight: 800;
+  background: var(--attention-douce);
+  color: var(--attention);
+}
+
+.etat[data-etat="valide"] {
+  background: var(--valide-douce);
+  color: var(--accent);
+}
+
+.etat[data-etat="envoye"] {
+  background: var(--surface-douce);
+  color: var(--encre-douce);
+}
+
+.ajout {
+  color: var(--accent);
+}
+
+.ajout small {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--encre-tres-douce);
+}
+
+/* --- Bandeaux et corps ----------------------------------------------------------- */
+
+.bandeaux {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.bandeaux:empty {
+  display: none;
+}
+
+.corps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 390px);
+  gap: 26px;
+  align-items: start;
+}
+
+@media (max-width: 1180px) {
+  .corps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* --- 3. Le document, comme une feuille ------------------------------------------- */
+
+.feuille {
+  background: var(--surface);
+  border: 1px solid var(--trait);
+  border-radius: 0 18px 18px 18px;
+  min-width: 0;
+}
+
+.outils {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--trait);
+  background: var(--surface-2);
+  border-radius: 0 18px 0 0;
+}
+
+.outil,
+.outilIa {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--encre-douce);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.outil:hover:not(:disabled) {
+  background: var(--surface);
+  border-color: var(--trait-fort);
+  color: var(--encre);
+}
+
+.outilIa {
+  background: var(--surface);
+  border-color: #b9d3c5;
+  color: var(--accent);
+}
+
+.outilIa:hover:not(:disabled) {
+  background: var(--accent-douce);
+}
+
+.outil:disabled,
+.outilIa:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.info {
+  margin-left: 6px;
+  color: var(--encre-tres-douce);
+  font-size: 12.5px;
+}
+
+.etatTexte {
+  margin-left: auto;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--encre-tres-douce);
+}
+
+.etatTexte[data-etat="enregistre"] {
+  color: var(--accent);
+}
+
+.etatTexte[data-etat="erreur"] {
+  color: var(--alerte);
+  white-space: normal;
+}
+
+/* Le correspondant : choisi ou créé sans quitter la page. */
+.corresp {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--trait);
+  font-size: 13.5px;
+}
+
+.correspLib {
+  color: var(--encre-tres-douce);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.puces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.puce {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 6px 4px 5px;
+  border-radius: var(--rayon-pastille);
+  background: var(--accent-douce);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.puce i {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-encre);
+  font-style: normal;
+  font-size: 10.5px;
+  display: grid;
+  place-items: center;
+}
+
+.puce small {
+  font-weight: 600;
+  color: var(--encre-douce);
+}
+
+.puce button {
+  border: 0;
+  background: none;
+  color: var(--encre-tres-douce);
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 3px;
+  cursor: pointer;
+}
+
+.puce button:hover {
+  color: var(--alerte);
+}
+
+.aucun {
+  color: var(--encre-tres-douce);
+  font-size: 13px;
+}
+
+.correspActions {
+  display: flex;
+  gap: 6px;
+}
+
+.ancre {
+  position: relative;
+}
+
+.petit {
+  padding: 6px 11px;
+  border-radius: 10px;
+  border: 1px solid var(--trait-fort);
+  background: var(--surface);
+  color: var(--encre);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.petit:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.volet {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 25;
+  width: min(360px, 86vw);
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--trait);
+  border-radius: 16px;
+  box-shadow: 0 26px 60px -26px rgba(0, 0, 0, 0.45);
+  display: grid;
+  gap: 10px;
+}
+
+.roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.roles button {
+  padding: 5px 10px;
+  border-radius: var(--rayon-pastille);
+  border: 1px solid var(--trait-fort);
+  background: var(--surface);
+  color: var(--encre-douce);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.roles button[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-encre);
+}
+
+.propositions {
+  display: grid;
+  gap: 4px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.propositions button {
+  display: grid;
+  gap: 1px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.propositions button:hover:not(:disabled) {
+  background: var(--accent-douce);
+}
+
+.propositions b {
+  font-size: 13.5px;
+  color: var(--encre);
+}
+
+.propositions span {
+  font-size: 12px;
+  color: var(--encre-douce);
+}
+
+.creerDepuisListe {
+  padding: 9px 10px;
+  border: 1px dashed var(--trait-fort);
+  border-radius: 10px;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.creerDepuisListe:hover {
+  background: var(--accent-douce);
+}
+
+.correspErreur {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--alerte);
+  font-size: 12.5px;
+}
+
+/* La fenêtre de création : par-dessus la page, sans la quitter. */
+.fenetre {
+  width: min(560px, 94vw);
+  max-height: 92vh;
+  padding: 0;
+  border: 1px solid var(--trait);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--encre);
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.55);
+}
+
+.fenetre::backdrop {
+  background: rgba(26, 24, 21, 0.42);
+  backdrop-filter: blur(2px);
+}
+
+.fenetreCorps {
+  padding: 22px;
+  display: grid;
+  gap: 12px;
+}
+
+.fenetreCorps h2 {
+  margin: 0;
+  font-family: var(--police-marque);
+  font-size: 21px;
+  font-weight: 600;
+}
+
+.fenetreCorps > p {
+  margin: -6px 0 0;
+  color: var(--encre-douce);
+  font-size: 13px;
+}
+
+/* Le texte : une colonne de lecture, qu'on modifie en cliquant dedans. */
+.page {
+  padding: 30px clamp(20px, 5vw, 60px) 34px;
+  display: grid;
+  gap: 14px;
+}
+
+.texte {
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.noteEdition {
+  margin: 0 0 12px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--attention-douce);
+  color: var(--attention);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.zoneTexte {
+  display: block;
+  width: 100%;
+  min-height: 240px;
+  padding: 14px 16px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: var(--surface-2);
+  box-shadow: 0 0 0 4px var(--accent-douce);
+  color: var(--encre);
+  font: inherit;
+  font-size: 15.5px;
+  line-height: 1.7;
+  resize: none;
+  overflow: hidden;
+  outline: none;
+}
+
+.sousTexte {
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+  display: grid;
+  gap: 12px;
+}
+
+/* Sous le texte : les photos (le glisser-déposer y reste), puis l'envoi. */
+.bloc {
+  border-top: 1px solid var(--trait);
+  padding: 22px clamp(20px, 5vw, 60px);
+}
+
+.blocTitre {
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.blocTitre small {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--encre-tres-douce);
+}
+
+.avantValidation {
+  color: var(--encre-douce);
+  font-size: 13.5px;
+}
+
+.avantValidation > summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--encre-douce);
+}
+
+.avantValidation[open] > summary {
+  margin-bottom: 14px;
+}
+
+/* --- 4. Colonne de droite -------------------------------------------------------- */
+
+.colonne {
+  position: sticky;
+  top: 150px;
+  display: grid;
+  gap: 16px;
+  max-height: calc(100vh - 166px);
+  overflow-y: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+@media (max-width: 1180px) {
+  .colonne {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+.accuse {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px 13px;
+  border-radius: 14px;
+  background: var(--alerte-douce);
+  color: var(--alerte);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.accuse input {
+  margin-top: 3px;
+  accent-color: var(--alerte);
+}
+
+.replie {
+  background: var(--surface);
+  border: 1px solid var(--trait);
+  border-radius: var(--rayon-carte);
+  padding: 12px 16px;
+}
+
+.replie > summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.replie[open] > summary {
+  margin-bottom: 12px;
+}
+
+.audio {
+  margin: 0;
+  color: var(--encre-tres-douce);
+  font-size: 12px;
+  line-height: 1.5;
+}

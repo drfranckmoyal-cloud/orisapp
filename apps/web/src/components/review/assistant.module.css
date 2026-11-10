@@ -1,0 +1,366 @@
+/* Corriger avec Claude : le dialogue de correction, ouvert en permanence à droite du
+   document. Les demandes du praticien à droite, les réponses d'Oris à gauche. */
+
+.assistant {
+  background: var(--surface);
+  border: 1px solid #cfe0d6;
+  border-radius: var(--rayon-carte);
+  box-shadow: 0 18px 40px -30px rgba(20, 83, 59, 0.55);
+  overflow: hidden;
+}
+
+.tete {
+  padding: 16px 18px 12px;
+  background: linear-gradient(180deg, #eef5f1, var(--surface));
+  border-bottom: 1px solid var(--trait);
+}
+
+.titre {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 15.5px;
+  font-weight: 800;
+  color: var(--encre);
+}
+
+.pastille {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-encre);
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+}
+
+.sous {
+  margin: 5px 0 0;
+  color: var(--encre-douce);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.fil {
+  padding: 14px 14px 4px;
+  display: grid;
+  gap: 10px;
+  max-height: min(46vh, 440px);
+  overflow-y: auto;
+}
+
+.bulle {
+  padding: 10px 13px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.moi {
+  background: var(--accent);
+  color: var(--accent-encre);
+  justify-self: end;
+  max-width: 90%;
+  border-bottom-right-radius: 4px;
+}
+
+.oris {
+  background: var(--surface-2);
+  border: 1px solid var(--trait);
+  border-bottom-left-radius: 4px;
+  display: grid;
+  gap: 6px;
+}
+
+.oris[data-sorte="attente"] {
+  color: var(--encre-douce);
+  font-style: italic;
+}
+
+.oris[data-sorte="erreur"] {
+  background: var(--alerte-douce);
+  border-color: transparent;
+  color: var(--alerte);
+}
+
+.oris[data-sorte="fait"] {
+  background: var(--valide-douce);
+  border-color: transparent;
+  color: var(--accent-fonce);
+}
+
+.nature {
+  justify-self: start;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: var(--rayon-pastille);
+  background: var(--accent-douce);
+  color: var(--accent);
+}
+
+.nature[data-nature="dossier"] {
+  background: var(--attention-douce);
+  color: var(--attention);
+}
+
+.nature[data-nature="incompris"] {
+  background: var(--surface-douce);
+  color: var(--encre-douce);
+}
+
+.apercu {
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px dashed var(--trait-fort);
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: var(--encre-douce);
+}
+
+.choix {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.choix button {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 7px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1px solid var(--trait-fort);
+  background: var(--surface);
+  color: var(--encre);
+}
+
+.choix button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.choix .principal {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-encre);
+}
+
+.choix .discret {
+  border-color: transparent;
+  background: transparent;
+  color: var(--encre-douce);
+}
+
+.garde {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--encre-tres-douce);
+}
+
+.propositions {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.propositions label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 9px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--trait);
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: var(--encre-douce);
+  cursor: pointer;
+}
+
+.propositions input {
+  accent-color: var(--accent);
+  margin-top: 3px;
+}
+
+.propositions b {
+  display: block;
+  color: var(--encre);
+  font-size: 13px;
+}
+
+.saisie {
+  border-top: 1px solid var(--trait);
+  padding: 12px;
+  display: grid;
+  gap: 9px;
+}
+
+.champ {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--trait-fort);
+  border-radius: 14px;
+  padding: 5px 5px 5px 14px;
+}
+
+.champ:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-douce);
+}
+
+.champ[data-dictee="true"] {
+  border-color: var(--attention-vif);
+  box-shadow: 0 0 0 3px var(--attention-douce);
+}
+
+.champ input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: var(--encre);
+  outline: none;
+}
+
+.micro,
+.envoi {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.micro {
+  border: 1px solid var(--trait-fort);
+  background: var(--surface);
+  color: var(--encre-douce);
+}
+
+.micro[data-actif="true"] {
+  background: var(--attention-vif);
+  border-color: var(--attention-vif);
+  color: #fff;
+}
+
+.envoi {
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-encre);
+}
+
+.micro:disabled,
+.envoi:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.suggestions button {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--encre-douce);
+  background: var(--surface-douce);
+  border: 0;
+  padding: 5px 11px;
+  border-radius: var(--rayon-pastille);
+  cursor: pointer;
+}
+
+.suggestions button:hover:not(:disabled) {
+  background: var(--accent-douce);
+  color: var(--accent);
+}
+
+.suggestions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.consignes {
+  font-size: 12px;
+  color: var(--encre-douce);
+}
+
+.consignes > button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--encre-douce);
+  background: none;
+  border: 0;
+  padding: 2px 4px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.consignes > button span {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.consignes ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.consignes li {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px 6px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--trait);
+  border-radius: 9px;
+}
+
+.consignes em {
+  font-style: normal;
+  color: var(--encre-tres-douce);
+  white-space: nowrap;
+}
+
+.consignes li button {
+  border: 0;
+  background: none;
+  color: var(--encre-tres-douce);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.consignes li button:hover {
+  color: var(--alerte);
+}

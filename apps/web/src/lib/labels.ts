@@ -148,6 +148,12 @@ export const LEARNING_EVENT: Record<string, string> = {
 };
 
 const ERRORS: Record<string, string> = {
+  ASSISTANT_UNAVAILABLE:
+    "Claude n’est pas disponible pour cette consultation (cas fictif, ou IA non configurée). Les corrections simples — « remplace 26 par 27 » — restent comprises.",
+  RELECTURE_NON_PROPOSEE:
+    "La relecture par Claude porte sur les documents rédigés : compte rendu et courrier.",
+  CONSIGNE_REQUIRED: "Aucune consigne à appliquer.",
+  CIVILITE_REQUIRED: "Précisez Monsieur ou Madame.",
   PROCESSING_IN_PROGRESS:
     "Le traitement est encore en cours (moins de 5 minutes) : patientez, il se termine tout seul.",
   SMILECLOUD_NON_RELIE: "Reliez d’abord ce patient à son dossier SmileCloud.",
@@ -280,7 +286,7 @@ export function formatDuration(ms: number): string {
 }
 
 export function errorMessage(code: string): string {
-  return ERRORS[code] ?? `Action impossible (${code}).`;
+  return ERRORS[code] ?? messageRegle(code) ?? `Action impossible (${code}).`;
 }
 
 export function formatDateTime(value: string | null): string {

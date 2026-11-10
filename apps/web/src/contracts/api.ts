@@ -1238,6 +1238,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/encounters/{encounter_id}/assistant/voix": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Comprendre A La Voix
+         * @description La même demande, dictée : transcrite dans la requête, jamais conservée (D010).
+         */
+        post: operations["comprendre_a_la_voix_encounters__encounter_id__assistant_voix_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters/{encounter_id}/assistant/appliquer": {
         parameters: {
             query?: never;
@@ -2010,6 +2030,11 @@ export interface components {
              * @enum {string}
              */
             nature: "dossier" | "redaction" | "civilite" | "incompris";
+            /**
+             * Demande
+             * @default
+             */
+            demande: string;
             /** Resume */
             resume: string;
             /**
@@ -6792,6 +6817,43 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AssistantDemande"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantLecture"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    comprendre_a_la_voix_encounters__encounter_id__assistant_voix_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "content-type": string;
+            };
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "audio/pcm;rate=16000;channels=1;encoding=s16le": string;
             };
         };
         responses: {

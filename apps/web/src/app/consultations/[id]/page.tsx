@@ -2,27 +2,34 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { TypeDocument } from "@/components/documents/TypeDocument";
 import { Icone } from "@/components/Icones";
 import { JetonPraticien } from "@/components/JetonPraticien";
 import { PiecesJointes } from "@/components/patients/PiecesJointes";
 import { SmileCloud } from "@/components/patients/SmileCloud";
+import {
+  AssistantCorrection,
+  type AssistantHandle,
+} from "@/components/review/AssistantCorrection";
 import { CorrectionPanel } from "@/components/review/CorrectionPanel";
+import { CorrespondantRapide } from "@/components/review/CorrespondantRapide";
 import { DepotSmileCloud } from "@/components/review/DepotSmileCloud";
-import { DocumentBody } from "@/components/review/DocumentView";
 import { Documentation } from "@/components/review/Documentation";
 import { EnvoiDocument } from "@/components/review/EnvoiDocument";
-import { EtapeParcours } from "@/components/review/EtapeParcours";
 import { Envois } from "@/components/review/Envois";
 import { PlanVisuel } from "@/components/review/PlanVisuel";
 import { RailRevision } from "@/components/review/RailRevision";
 import type { Selection } from "@/components/review/SourcePanel";
-import { SpokenCorrectionPanel } from "@/components/review/SpokenCorrection";
+import {
+  type EtatTexte,
+  TexteModifiable,
+} from "@/components/review/TexteModifiable";
 import { TreatmentPlanCards } from "@/components/review/TreatmentPlanCards";
 import styles from "@/components/review/consultation.module.css";
-import { Barre, Bouton, Carte, Pastille, Zone } from "@/components/ui";
+import mise from "@/components/review/relecture.module.css";
+import { Barre, Bouton, Carte, Pastille } from "@/components/ui";
 import {
   ApiError,
   apiRequest,
@@ -85,11 +92,16 @@ function quand(iso: string): string {
   return `${jour} à ${heure}`;
 }
 
+/** Les documents que Claude rédige en paragraphes : les seuls qu'il sait relire. */
+const REDIGES = new Set(["consultation_note", "referral_letter"]);
+
 /** Une consultation, un document à la fois.
  *
- * Quand Oris a écrit plusieurs documents, chacun a son intercalaire : on sait toujours
- * sur lequel on travaille, et ce qu'on fait (réécrire, valider, noter un envoi) ne
- * touche que lui. Le dossier clinique, lui, est commun : il est à droite.
+ * Réorganisée le 10/11/2026 (Franck : « je m'y perds vraiment »). Trois zones, dans
+ * l'ordre où l'on s'en sert : un en-tête qui reste en haut (qui, où on en est, l'action
+ * du moment), le document comme une feuille qu'on modifie en cliquant dedans, et à droite
+ * le dialogue de correction puis ce qu'il faut vérifier. Aucune fonction n'a disparu :
+ * ce qu'on fait rarement est rangé dans les menus « ⋯ ».
  */
 export default function ConsultationPage() {
   const { id } = useParams<{ id: string }>();
@@ -120,12 +132,14 @@ export default function ConsultationPage() {
   } | null>(null);
   // Si le navigateur refuse le presse-papiers, le texte doit rester récupérable.
   const [copyFallback, setCopyFallback] = useState<string | null>(null);
-  // Une réécriture appartient à un document : changer d'intercalaire ne la perd pas, et
-  // elle ne s'affiche jamais sous un autre.
-  const [edition, setEdition] = useState<{
-    documentId: string;
-    texte: string;
-  } | null>(null);
+  // Le texte s'édite à même la page et s'enregistre tout seul : on dit où il en est.
+  const [etatTexte, setEtatTexte] = useState<{
+    etat: EtatTexte;
+    message?: string;
+  }>({ etat: "repos" });
+  const assistant = useRef<AssistantHandle | null>(null);
+  // Un correspondant rattaché ici doit apparaître dans les destinataires de l'envoi.
+  const [versionEnvoi, setVersionEnvoi] = useState(0);
   const [suppression, setSuppression] = useState<
     "fermee" | "confirmer" | "en_cours"
   >("fermee");
@@ -155,25 +169,7 @@ export default function ConsultationPage() {
     setFeedback(null);
     setCopyFallback(null);
     setAcknowledged(false);
-  }
-
-  async function enregistrerTexte(document: DocumentView) {
-    if (edition === null) return;
-    setFeedback(null);
-    try {
-      await apiRequest(`/documents/${document.id}/text`, {
-        method: "POST",
-        body: { content: edition.texte },
-      });
-      setEdition(null);
-      setFeedback({
-        tone: "ok",
-        text: "Texte enregistré. Le dossier clinique est inchangé.",
-      });
-      reloadAll();
-    } catch (caught) {
-      erreur(caught);
-    }
+    setEtatTexte({ etat: "repos" });
   }
 
   /** Raccourcir = une préférence de rédaction, appliquée à partir de maintenant (§53). */
@@ -324,62 +320,194 @@ export default function ConsultationPage() {
     envois.state === "ready"
       ? envois.data.filter((e) => e.document_id === documentId)
       : [];
-  const enEdition =
-    active && edition?.documentId === active.id ? edition : null;
+  const enSaisie =
+    etatTexte.etat === "saisie" || etatTexte.etat === "enregistrement";
+  const valide = active ? estValide(active) : false;
+  const envoye = active ? envoisDe(active.id).length > 0 : false;
+  const nomDocument = active
+    ? DOCUMENT_TYPE[active.document_type].toLocaleLowerCase("fr-FR")
+    : "document";
+  const corrigeable =
+    !shadow && ["review", "validated", "exported"].includes(data.status);
 
   return (
     <div className="page" data-pleine-largeur>
-      <header className={styles.entete}>
-        <Link href="/consultations" className={styles.retour}>
+      {/* 1. L'en-tête reste en haut : le patient, l'étape, l'action du moment. */}
+      <header className={mise.entete}>
+        <Link href="/consultations" className={mise.retour}>
           <Icone nom="retour" taille={15} /> Consultations
         </Link>
-        <div className={styles.enteteLigne}>
-          <div className={styles.identite}>
-            <h1 className={styles.patient}>
+        <div className={mise.ligne}>
+          <div className={mise.identite}>
+            <h1 className={mise.patient}>
               <Link href={`/patients/${data.patient.id}`}>
                 {data.patient.last_name.toLocaleUpperCase("fr-FR")}{" "}
-                <span className={styles.prenom}>{data.patient.first_name}</span>
+                <span className={mise.prenom}>{data.patient.first_name}</span>
               </Link>
             </h1>
-            <p className={styles.quand}>
+            <p className={mise.quand}>
               <JetonPraticien
                 nom={data.practitioner.name}
                 titre={data.practitioner.title}
                 taille="petit"
               />
-              Consultation du {quand(data.started_at ?? data.created_at)}
+              {quand(data.started_at ?? data.created_at)}
               {data.synthetic_case_id &&
                 ` · cas fictif ${data.synthetic_case_id}`}
-              <span aria-hidden="true">·</span>
-              {/* Ce qui a été entendu, mot pour mot : le recours en cas de doute. */}
-              <Link
-                href={`/consultations/${id}/transcription`}
-                className={styles.brute}
-              >
-                transcription brute
-              </Link>
             </p>
           </div>
-          <div className={styles.actionsConsultation}>
-            <Pastille ton={tonConsultation(data.status)}>
-              {ENCOUNTER_STATUS[data.status]}
-            </Pastille>
-            {shadow && <Pastille ton="attention">mode ombre</Pastille>}
-            {!EN_COURS.has(data.status) && (
-              <button
-                type="button"
-                className={styles.supprimer}
-                onClick={() => setSuppression("confirmer")}
-                title="Supprimer cette consultation"
-              >
-                <Icone nom="corbeille" taille={16} />
-                Supprimer
-              </button>
+          <span className={mise.pousse} />
+          {active && !shadow && (
+            <ol className={mise.etapes} aria-label="Avancement">
+              <li data-etat={valide ? "fait" : "encours"}>
+                <i aria-hidden="true" />
+                Relire
+              </li>
+              <li data-etat={valide ? "fait" : "attente"}>
+                <i aria-hidden="true" />
+                Valider
+              </li>
+              <li data-etat={envoye ? "fait" : valide ? "encours" : "attente"}>
+                <i aria-hidden="true" />
+                Envoyer
+              </li>
+            </ol>
+          )}
+          <div className={mise.actions}>
+            {!active && (
+              <Pastille ton={tonConsultation(data.status)}>
+                {ENCOUNTER_STATUS[data.status]}
+              </Pastille>
             )}
+            {shadow && <Pastille ton="attention">mode ombre</Pastille>}
+            {active && !shadow && !valide && (
+              <Bouton
+                disabled={
+                  !active.is_current ||
+                  enSaisie ||
+                  (criticalWarnings.length > 0 && !acknowledged)
+                }
+                title={
+                  criticalWarnings.length > 0 && !acknowledged
+                    ? "Cochez d’abord la prise de connaissance de l’alerte, à droite"
+                    : undefined
+                }
+                onClick={() => void valider(active)}
+              >
+                <Icone nom="valide" taille={16} /> Valider le {nomDocument}
+              </Bouton>
+            )}
+            {active && !shadow && valide && (
+              <>
+                <span className={mise.valide}>
+                  <Icone nom="valide" taille={15} /> Validé
+                </span>
+                <Bouton
+                  variante={envoye ? "secondaire" : "principal"}
+                  onClick={() =>
+                    window.document
+                      .getElementById("envoi")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  }
+                >
+                  <Icone nom="envoi" taille={16} />{" "}
+                  {envoye ? "Envoyer encore" : "Envoyer…"}
+                </Bouton>
+              </>
+            )}
+            <details className={mise.menu}>
+              <summary
+                title="Transcription, suppression"
+                aria-label="Autres actions sur la consultation"
+              >
+                ⋯
+              </summary>
+              <div className={mise.menuContenu}>
+                {/* Ce qui a été entendu, mot pour mot : le recours en cas de doute. */}
+                <Link href={`/consultations/${id}/transcription`}>
+                  Transcription de la consultation
+                </Link>
+                <Link href={`/patients/${data.patient.id}`}>Fiche du patient</Link>
+                {!EN_COURS.has(data.status) && (
+                  <button
+                    type="button"
+                    data-danger="true"
+                    onClick={() => setSuppression("confirmer")}
+                  >
+                    <Icone nom="corbeille" taille={15} /> Supprimer la
+                    consultation
+                  </button>
+                )}
+              </div>
+            </details>
           </div>
         </div>
+
+        {/* 2. Un onglet par document, large, avec son état. */}
+        {docs.length > 0 && active && (
+          <div className={mise.onglets} role="tablist" aria-label="Documents rédigés">
+            {docs.map((doc) => (
+              <button
+                key={doc.id}
+                type="button"
+                role="tab"
+                aria-selected={doc.id === active.id}
+                className={mise.onglet}
+                onClick={() => choisir(doc)}
+              >
+                {DOCUMENT_TYPE[doc.document_type]}
+                {estValide(doc) ? (
+                  <span className={mise.etat} data-etat="valide">
+                    <Icone nom="valide" taille={12} /> Validé
+                  </span>
+                ) : (
+                  <span className={mise.etat}>{DOCUMENT_STATUS[doc.status]}</span>
+                )}
+                {envoisDe(doc.id).length > 0 && (
+                  <span className={mise.etat} data-etat="envoye">
+                    <Icone nom="envoi" taille={12} /> envoyé
+                  </span>
+                )}
+              </button>
+            ))}
+            {operativeProposed && !shadow && (
+              <button
+                type="button"
+                className={`${mise.onglet} ${mise.ajout}`}
+                title="Un acte a été détecté. Rédigé seulement à partir de ce qui a été dit pendant l’intervention."
+                onClick={() =>
+                  act(
+                    `/encounters/${id}/documents/operative-note`,
+                    undefined,
+                    "Compte rendu de soins rédigé.",
+                  )
+                }
+              >
+                + Compte rendu de soins <small>un acte a été détecté</small>
+              </button>
+            )}
+            {!shadow &&
+              !docs.some((doc) => doc.document_type === "referral_letter") && (
+                <button
+                  type="button"
+                  className={`${mise.onglet} ${mise.ajout}`}
+                  title="Rédigé à partir de ce qui a été dit ; vous le complétez en écrivant dans le texte."
+                  onClick={() =>
+                    act(
+                      `/encounters/${id}/documents/referral-letter`,
+                      undefined,
+                      "Courrier d’adressage rédigé : complétez la demande au confrère en écrivant dans le texte.",
+                    )
+                  }
+                >
+                  + Courrier d’adressage
+                </button>
+              )}
+          </div>
+        )}
       </header>
 
+      <div className={mise.bandeaux}>
       {suppression !== "fermee" && (
         <div
           className={`banner banner-critical ${styles.confirmation}`}
@@ -542,9 +670,10 @@ export default function ConsultationPage() {
           <strong>À vérifier</strong> — {warning.message}
         </div>
       ))}
+      </div>
 
-      <div className={styles.disposition}>
-        <section className={styles.classeur} aria-label="Documents">
+      <div className={mise.corps}>
+        <section aria-label="Document">
           {docs.length === 0 && (
             <Carte>
               <p className="muted" style={{ margin: 0 }}>
@@ -554,334 +683,196 @@ export default function ConsultationPage() {
           )}
 
           {docs.length > 0 && active && (
-            <>
-              <div
-                className={styles.intercalaires}
-                role="tablist"
-                aria-label="Documents rédigés"
-              >
-                {docs.map((doc) => {
-                  const partis = envoisDe(doc.id);
-                  return (
+            <article
+              className={mise.feuille}
+              role="tabpanel"
+              aria-label={DOCUMENT_TYPE[active.document_type]}
+            >
+              {/* La barre du document : ce qu'on fait souvent, à plat ; le reste dans « ⋯ ». */}
+              {!shadow && (
+                <div className={mise.outils}>
+                  {REDIGES.has(active.document_type) && (
                     <button
-                      key={doc.id}
                       type="button"
-                      role="tab"
-                      aria-selected={doc.id === active.id}
-                      data-type={doc.document_type}
-                      className={styles.intercalaire}
-                      onClick={() => choisir(doc)}
+                      className={mise.outilIa}
+                      disabled={!corrigeable}
+                      title="Claude relit le document et propose des améliorations, à cocher"
+                      onClick={() => assistant.current?.relire()}
                     >
-                      <TypeDocument type={doc.document_type} />
-                      <span className={styles.intercalaireEtat}>
-                        {estValide(doc) ? (
-                          <span className={styles.etatValide}>
-                            <Icone nom="valide" taille={12} /> Validé
-                          </span>
-                        ) : (
-                          <span className={styles.etatARelire}>
-                            {DOCUMENT_STATUS[doc.status]}
-                          </span>
-                        )}
-                        {partis.length > 0 && (
-                          <span className={styles.etatEnvoye}>
-                            <Icone nom="envoi" taille={12} /> envoyé
-                          </span>
-                        )}
-                        {edition?.documentId === doc.id && (
-                          <span className={styles.etatEdition}>
-                            réécriture en cours
-                          </span>
-                        )}
-                      </span>
+                      ✦ Relecture par Claude
                     </button>
-                  );
-                })}
-                {operativeProposed && !shadow && (
+                  )}
                   <button
                     type="button"
-                    className={styles.intercalaireAjout}
-                    title="Un acte a été détecté. Rédigé seulement à partir de ce qui a été dit pendant l’intervention."
-                    onClick={() =>
-                      act(
-                        `/encounters/${id}/documents/operative-note`,
-                        undefined,
-                        "Compte rendu de soins rédigé.",
-                      )
-                    }
+                    className={mise.outil}
+                    onClick={() => void exportDocument(active)}
                   >
-                    + Compte rendu de soins
-                    <span className={styles.intercalaireEtat}>
-                      un acte a été détecté
-                    </span>
+                    PDF
                   </button>
-                )}
-                {!shadow &&
-                  !docs.some(
-                    (doc) => doc.document_type === "referral_letter",
-                  ) && (
-                    <button
-                      type="button"
-                      className={`${styles.intercalaireAjout} ${styles.intercalaireCourrier}`}
-                      title="Rédigé à partir de ce qui a été dit ; vous le complétez en éditant le texte."
-                      onClick={() =>
-                        act(
-                          `/encounters/${id}/documents/referral-letter`,
-                          undefined,
-                          "Courrier d’adressage rédigé : complétez la demande au confrère en éditant le texte.",
-                        )
-                      }
+                  <button
+                    type="button"
+                    className={mise.outil}
+                    onClick={() => void copyForRecord(active)}
+                  >
+                    Copier
+                  </button>
+                  <details className={mise.menu}>
+                    <summary
+                      title="Raccourcir, rédiger à nouveau, supprimer"
+                      aria-label="Autres actions sur ce document"
                     >
-                      + Courrier d’adressage
-                      <span className={styles.intercalaireEtat}>
-                        à un confrère
-                      </span>
-                    </button>
-                  )}
-              </div>
-
-              <article
-                className={styles.feuille}
-                data-type={active.document_type}
-                role="tabpanel"
-                aria-label={DOCUMENT_TYPE[active.document_type]}
-              >
-                {/* Trois temps, dans l'ordre : rédiger et valider, documenter, envoyer. */}
-                <EtapeParcours
-                  numero={1}
-                  teinte="redaction"
-                  fait={estValide(active)}
-                >
-                  <header className={styles.feuilleEntete}>
-                    <div>
-                      <h2 className={styles.feuilleTitre}>
-                        {DOCUMENT_TYPE[active.document_type]}
-                      </h2>
-                      <p className={styles.feuilleVersion}>
-                        {DOCUMENT_STATUS[active.status]} · version{" "}
-                        {active.version} · rédigé depuis le dossier clinique v
-                        {active.generated_from_object_version}
-                      </p>
-                    </div>
-                    {!shadow && !enEdition && (
-                      <div className={styles.outils}>
-                        <Bouton
-                          variante="discret"
-                          onClick={() =>
-                            setEdition({
-                              documentId: active.id,
-                              texte: active.content,
-                            })
-                          }
-                        >
-                          Éditer
-                        </Bouton>
-                        <Bouton
-                          variante="discret"
-                          onClick={() => void raccourcir()}
-                        >
-                          Raccourcir
-                        </Bouton>
-                        <Bouton
-                          variante="discret"
-                          onClick={() => void copyForRecord(active)}
-                        >
-                          Copier
-                        </Bouton>
-                        <Bouton
-                          variante="secondaire"
-                          onClick={() => void exportDocument(active)}
-                        >
-                          PDF
-                        </Bouton>
-                      </div>
-                    )}
-                  </header>
-
-                  {/* Tout document se supprime (21/09/2026) ; le dossier clinique reste. */}
-                  {!shadow && (
-                    <div className={styles.retirerDocument}>
-                      {confirmerRetrait === active.id ? (
-                        <>
-                          <span>
-                            Supprimer ce{" "}
-                            {DOCUMENT_TYPE[
-                              active.document_type
-                            ].toLocaleLowerCase("fr-FR")}{" "}
-                            ? Ses versions et ses envois notés partent avec lui.
-                          </span>
-                          <button
-                            type="button"
-                            className={styles.supprimerFort}
-                            onClick={() => void retirerDocument(active)}
-                          >
-                            Supprimer
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setConfirmerRetrait(null)}
-                          >
-                            Annuler
-                          </button>
-                        </>
-                      ) : (
+                      ⋯
+                    </summary>
+                    <div className={mise.menuContenu}>
+                      <button type="button" onClick={() => void raccourcir()}>
+                        Raccourcir tous mes comptes rendus
+                      </button>
+                      {active.document_type !== "treatment_plan_text" && (
                         <button
                           type="button"
-                          className={styles.supprimer}
-                          onClick={() => setConfirmerRetrait(active.id)}
-                        >
-                          <Icone nom="corbeille" taille={15} /> Supprimer ce{" "}
-                          {DOCUMENT_TYPE[
-                            active.document_type
-                          ].toLocaleLowerCase("fr-FR")}
-                        </button>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Valider se fait ici, en tête du document : on sait ce qu'on valide. */}
-                  {!shadow && (
-                    <div
-                      className={styles.barreValidation}
-                      data-valide={estValide(active)}
-                    >
-                      {estValide(active) ? (
-                        <span className={styles.valideLe}>
-                          <Icone nom="valide" taille={16} /> Document validé
-                        </span>
-                      ) : (
-                        <>
-                          {criticalWarnings.length > 0 && (
-                            <label className={styles.prisConnaissance}>
-                              <input
-                                type="checkbox"
-                                checked={acknowledged}
-                                onChange={(event) =>
-                                  setAcknowledged(event.target.checked)
-                                }
-                              />
-                              J’ai pris connaissance de l’alerte critique : ce
-                              document n’est pas exhaustif.
-                            </label>
-                          )}
-                          <Bouton
-                            disabled={
-                              !active.is_current ||
-                              enEdition !== null ||
-                              (criticalWarnings.length > 0 && !acknowledged)
-                            }
-                            onClick={() => void valider(active)}
-                          >
-                            <Icone nom="valide" taille={16} /> Valider ce{" "}
-                            {DOCUMENT_TYPE[
-                              active.document_type
-                            ].toLocaleLowerCase("fr-FR")}
-                          </Bouton>
-                          <span className={styles.noteValidation}>
-                            Relisez, puis validez : tant qu’il n’est pas validé,
-                            le PDF porte la mention « brouillon ».
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  )}
-
-                  {feedback && (
-                    <div
-                      className={`banner ${feedback.tone === "ok" ? "banner-info" : "banner-critical"}`}
-                      role="status"
-                    >
-                      {feedback.text}
-                    </div>
-                  )}
-
-                  {!active.is_current && (
-                    <div className="banner banner-review">
-                      Ce document a été rédigé avant la dernière correction du
-                      dossier clinique.
-                      <div>
-                        <Bouton
-                          variante="secondaire"
                           onClick={() =>
                             act(
-                              `/encounters/${id}/documents/generate`,
+                              `/documents/${active.id}/rediger`,
                               undefined,
-                              "Documents régénérés.",
+                              "Document rédigé à nouveau depuis le dossier clinique.",
                             )
                           }
                         >
-                          Régénérer les documents
-                        </Bouton>
-                      </div>
+                          Rédiger à nouveau depuis le dossier
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        data-danger="true"
+                        onClick={() => setConfirmerRetrait(active.id)}
+                      >
+                        <Icone nom="corbeille" taille={15} /> Supprimer ce{" "}
+                        {nomDocument}
+                      </button>
                     </div>
-                  )}
+                  </details>
+                  <span
+                    className={mise.etatTexte}
+                    data-etat={etatTexte.etat}
+                    role="status"
+                  >
+                    {etatTexte.etat === "saisie" && "Modification en cours…"}
+                    {etatTexte.etat === "enregistrement" && "Enregistrement…"}
+                    {etatTexte.etat === "enregistre" && "✓ Enregistré"}
+                    {etatTexte.etat === "erreur" &&
+                      `Non enregistré : ${etatTexte.message ?? ""}`}
+                    {etatTexte.etat === "repos" &&
+                      (valide
+                        ? `Version ${active.version} · validée`
+                        : active.document_type === "treatment_plan_text"
+                          ? `Version ${active.version}`
+                          : "Cliquez dans le texte pour le modifier")}
+                  </span>
+                </div>
+              )}
 
-                  {active.document_type === "treatment_plan_text" && (
-                    <PlanVisuel encounterId={id} version={active.version} />
-                  )}
+              {/* Le correspondant se choisit ici : plus besoin d'ouvrir la fiche du patient. */}
+              {!shadow && (
+                <CorrespondantRapide
+                  patientId={data.patient.id}
+                  onChange={() => setVersionEnvoi((v) => v + 1)}
+                />
+              )}
 
-                  {active.document_type === "treatment_plan_text" && object && (
-                    // Les outils du plan restent là, repliés : on lit d'abord, on corrige ensuite.
-                    <details className={styles.corrigerPlan}>
-                      <summary>
-                        Modifier le plan (statuts, ordre, ajouts, retraits)
-                      </summary>
-                      <TreatmentPlanCards
-                        encounter={data}
-                        clinicalObject={object}
-                        onSelectFact={(factId) =>
-                          setSelection({ kind: "fact", factId })
-                        }
-                        onCorrected={reloadAll}
-                      />
-                    </details>
-                  )}
+              <div className={mise.page}>
+                {confirmerRetrait === active.id && (
+                  <div className="banner banner-critical" role="alertdialog">
+                    Supprimer ce {nomDocument} ? Ses versions et ses envois
+                    notés partent avec lui.
+                    <Barre>
+                      <button
+                        type="button"
+                        className={styles.supprimerFort}
+                        onClick={() => void retirerDocument(active)}
+                      >
+                        Supprimer
+                      </button>
+                      <Bouton
+                        variante="secondaire"
+                        onClick={() => setConfirmerRetrait(null)}
+                      >
+                        Annuler
+                      </Bouton>
+                    </Barre>
+                  </div>
+                )}
 
-                  {active.document_type ===
-                  "treatment_plan_text" ? null : enEdition === null ? (
-                    <div className={styles.texte}>
-                      <DocumentBody
-                        document={active}
-                        selected={
-                          selection?.kind === "claim" ? selection.claim : null
+                {feedback && (
+                  <div
+                    className={`banner ${feedback.tone === "ok" ? "banner-info" : "banner-critical"}`}
+                    role="status"
+                  >
+                    {feedback.text}
+                  </div>
+                )}
+
+                {!active.is_current && (
+                  <div className="banner banner-review">
+                    Ce document a été rédigé avant la dernière correction du
+                    dossier clinique.
+                    <div>
+                      <Bouton
+                        variante="secondaire"
+                        onClick={() =>
+                          act(
+                            `/encounters/${id}/documents/generate`,
+                            undefined,
+                            "Documents régénérés.",
+                          )
                         }
-                        onSelect={(claim) =>
-                          setSelection({ kind: "claim", claim })
-                        }
-                      />
+                      >
+                        Régénérer les documents
+                      </Bouton>
                     </div>
-                  ) : (
-                    <div style={{ display: "grid", gap: 12 }}>
-                      <div className="banner banner-review">
-                        Vous réécrivez le texte de ce document seulement. Le
-                        dossier clinique ne changera pas : si une donnée
-                        clinique est fausse, corrigez-la plutôt à droite.
-                      </div>
-                      <Zone
-                        value={enEdition.texte}
-                        autoFocus
-                        aria-label="Texte du document"
-                        onChange={(event) =>
-                          setEdition({
-                            documentId: active.id,
-                            texte: event.target.value,
-                          })
-                        }
-                      />
-                      <Barre>
-                        <Bouton onClick={() => void enregistrerTexte(active)}>
-                          Enregistrer
-                        </Bouton>
-                        <Bouton
-                          variante="secondaire"
-                          onClick={() => setEdition(null)}
-                        >
-                          Annuler
-                        </Bouton>
-                      </Barre>
-                    </div>
-                  )}
+                  </div>
+                )}
 
+                {active.document_type === "treatment_plan_text" && (
+                  <PlanVisuel encounterId={id} version={active.version} />
+                )}
+
+                {active.document_type === "treatment_plan_text" && object && (
+                  // Les outils du plan restent là, repliés : on lit d'abord, on corrige ensuite.
+                  <details className={styles.corrigerPlan}>
+                    <summary>
+                      Modifier le plan (statuts, ordre, ajouts, retraits)
+                    </summary>
+                    <TreatmentPlanCards
+                      encounter={data}
+                      clinicalObject={object}
+                      onSelectFact={(factId) =>
+                        setSelection({ kind: "fact", factId })
+                      }
+                      onCorrected={reloadAll}
+                    />
+                  </details>
+                )}
+
+                {active.document_type !== "treatment_plan_text" && (
+                  <TexteModifiable
+                    key={`${active.id}-${active.version}`}
+                    document={active}
+                    modifiable={!shadow && !valide}
+                    selected={
+                      selection?.kind === "claim" ? selection.claim : null
+                    }
+                    onSelect={(claim) => setSelection({ kind: "claim", claim })}
+                    onEtat={(etat, message) =>
+                      setEtatTexte(message ? { etat, message } : { etat })
+                    }
+                    onEnregistre={() => {
+                      reloadDocuments();
+                      reloadLearning();
+                    }}
+                  />
+                )}
+
+                <div className={mise.sousTexte}>
                   {/* Claude n'a pas pu rédiger : Oris a posé sa version simplifiée. On le dit,
                       et on propose de réessayer — ce document seul, les autres ne bougent pas. */}
                   {active.generator.includes("(repli)") && !shadow && (
@@ -904,13 +895,21 @@ export default function ConsultationPage() {
                     </div>
                   )}
 
-                  {active.generator.startsWith("practitioner") &&
-                    enEdition === null && (
-                      <p className="muted" style={{ margin: 0 }}>
-                        Texte réécrit à la main : la provenance phrase par
-                        phrase n’est plus disponible sur ce document.
-                      </p>
-                    )}
+                  {active.generator.startsWith("practitioner") && (
+                    <p className="muted" style={{ margin: 0 }}>
+                      Texte écrit à la main : c’est le vôtre, Oris ne le
+                      rattache plus phrase par phrase au dossier clinique. « ⋯ ›
+                      Rédiger à nouveau » revient à la version d’Oris.
+                    </p>
+                  )}
+
+                  {valide && active.document_type !== "treatment_plan_text" && (
+                    <p className="muted" style={{ margin: 0 }}>
+                      Document validé : il ne se modifie plus en cliquant
+                      dedans. Une correction demandée à droite en rédige une
+                      nouvelle version, à valider de nouveau.
+                    </p>
+                  )}
 
                   {copyFallback !== null && (
                     <label style={{ display: "grid", gap: 8 }}>
@@ -929,51 +928,113 @@ export default function ConsultationPage() {
                       />
                     </label>
                   )}
-                </EtapeParcours>
+                </div>
+              </div>
 
-                {!shadow && (
-                  <EtapeParcours numero={2} teinte="documentation">
-                    <Documentation
-                      documentId={active.id}
-                      patientId={data.patient.id}
-                      encounterId={data.id}
-                    />
-                  </EtapeParcours>
-                )}
+              {/* Les photos restent sous le texte, avec leur glisser-déposer (Franck,
+                  10/11/2026 : « il faut toujours le drag and drop photos sous le texte »). */}
+              {!shadow && (
+                <div className={mise.bloc}>
+                  <Documentation
+                    documentId={active.id}
+                    patientId={data.patient.id}
+                    encounterId={data.id}
+                  />
+                </div>
+              )}
 
-                {!shadow && (
-                  <EtapeParcours
-                    numero={3}
-                    teinte="envoi"
-                    fait={envoisDe(active.id).length > 0}
-                    dernier
-                  >
-                    <EnvoiDocument
-                      documentId={active.id}
-                      version={active.version}
-                      onEnvoye={reloadAll}
-                      onEditer={() => {
-                        setEdition({
-                          documentId: active.id,
-                          texte: active.content,
-                        });
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      }}
-                    />
-                    <Envois
-                      documentId={active.id}
-                      patientId={data.patient.id}
-                      envois={envoisDe(active.id)}
-                      onChange={reloadAll}
-                    />
-                  </EtapeParcours>
-                )}
-              </article>
-            </>
+              {/* L'envoi vient après la validation : avant, il se replie pour ne pas
+                  occuper un écran entier avec un formulaire qu'on ne peut pas envoyer. */}
+              {!shadow && (
+                <div className={mise.bloc} id="envoi">
+                  {valide ? (
+                    <>
+                      <h2 className={mise.blocTitre}>
+                        Envoyer ce {nomDocument}
+                        {envoye && <small>déjà envoyé — voir plus bas</small>}
+                      </h2>
+                      <EnvoiDocument
+                        key={versionEnvoi}
+                        documentId={active.id}
+                        version={active.version}
+                        onEnvoye={reloadAll}
+                        onEditer={() =>
+                          window.scrollTo({ top: 0, behavior: "smooth" })
+                        }
+                      />
+                      <Envois
+                        documentId={active.id}
+                        patientId={data.patient.id}
+                        envois={envoisDe(active.id)}
+                        onChange={reloadAll}
+                      />
+                      {/* Le compte rendu se range là où le praticien regarde ses photos. */}
+                      <DepotSmileCloud
+                        documentId={active.id}
+                        relie={Boolean(data.patient.smilecloud_case_id)}
+                        valide={valide}
+                      />
+                    </>
+                  ) : (
+                    <details className={mise.avantValidation}>
+                      <summary>
+                        Envoi, impression, dépôt SmileCloud — après validation
+                        (ouvrir quand même)
+                      </summary>
+                      <EnvoiDocument
+                        key={versionEnvoi}
+                        documentId={active.id}
+                        version={active.version}
+                        onEnvoye={reloadAll}
+                        onEditer={() =>
+                          window.scrollTo({ top: 0, behavior: "smooth" })
+                        }
+                      />
+                      <Envois
+                        documentId={active.id}
+                        patientId={data.patient.id}
+                        envois={envoisDe(active.id)}
+                        onChange={reloadAll}
+                      />
+                      <DepotSmileCloud
+                        documentId={active.id}
+                        relie={Boolean(data.patient.smilecloud_case_id)}
+                        valide={valide}
+                      />
+                    </details>
+                  )}
+                </div>
+              )}
+            </article>
           )}
         </section>
 
-        <aside className={styles.rail}>
+        {/* 4. À droite : corriger d'abord, vérifier ensuite, le reste rangé dessous. */}
+        <aside className={mise.colonne}>
+          {object && !shadow && (
+            <AssistantCorrection
+              ref={assistant}
+              encounterId={data.id}
+              documentId={active?.id ?? null}
+              relisible={active ? REDIGES.has(active.document_type) : false}
+              actif={corrigeable}
+              civilite={data.patient.civility ?? ""}
+              onChange={reloadAll}
+            />
+          )}
+
+          {active && !shadow && !valide && criticalWarnings.length > 0 && (
+            <label className={mise.accuse}>
+              <input
+                type="checkbox"
+                checked={acknowledged}
+                onChange={(event) => setAcknowledged(event.target.checked)}
+              />
+              J’ai pris connaissance de l’alerte critique : ce document n’est
+              pas exhaustif.
+            </label>
+          )}
+
           {/* Sans dossier clinique (transcription échouée), les repères posés
               pendant l'écoute restent visibles : le geste n'est pas perdu. */}
           {!object && marks.state === "ready" && marks.data.length > 0 && (
@@ -1006,44 +1067,19 @@ export default function ConsultationPage() {
             />
           )}
 
-          {/* Le compte rendu se range là où le praticien regarde ses photos : il n'a
-              ni à le télécharger, ni à le téléverser à la main. */}
-          {active && !shadow && (
-            <DepotSmileCloud
-              documentId={active.id}
-              relie={Boolean(data.patient.smilecloud_case_id)}
-              valide={estValide(active)}
-            />
-          )}
-
-          {/* Replié par défaut : on corrige quand on a vu une erreur, pas à chaque fois. */}
+          {/* Le formulaire fait par fait reste là pour qui préfère cocher que dire. */}
           {object && !shadow && (
-            <details className={styles.replie}>
-              <summary>Corriger le dossier clinique</summary>
-              <div
-                className={styles.replieContenu}
-                style={{ display: "grid", gap: 12 }}
-              >
-                <p className="muted" style={{ margin: 0 }}>
-                  Une correction modifie d’abord le dossier clinique ; Oris
-                  réécrit ensuite tous les documents.
-                </p>
-                <SpokenCorrectionPanel
-                  encounter={data}
-                  clinicalObject={object}
-                  onCorrected={reloadAll}
-                />
-                <details>
-                  <summary>Corriger sans dicter</summary>
-                  <div style={{ marginTop: 12 }}>
-                    <CorrectionPanel
-                      encounter={data}
-                      clinicalObject={object}
-                      onCorrected={reloadAll}
-                    />
-                  </div>
-                </details>
-              </div>
+            <details className={mise.replie}>
+              <summary>Corriger le dossier à la main</summary>
+              <p className="muted" style={{ marginTop: 0 }}>
+                Une correction modifie d’abord le dossier clinique ; Oris
+                réécrit ensuite tous les documents.
+              </p>
+              <CorrectionPanel
+                encounter={data}
+                clinicalObject={object}
+                onCorrected={reloadAll}
+              />
             </details>
           )}
 
@@ -1075,7 +1111,7 @@ export default function ConsultationPage() {
           </Carte>
 
           {audio.state === "ready" && (
-            <p className={styles.audio}>
+            <p className={mise.audio}>
               Audio : {formatDuration(audio.data.received_duration_ms)} reçues
               en {audio.data.received_count} segment(s)
               {audio.data.gaps.length === 0 ? ", sans interruption" : ""}.{" "}
