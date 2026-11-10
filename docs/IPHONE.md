@@ -135,6 +135,21 @@ Ce qui manque encore, et reste l'étape 1 de la feuille de route : le second fac
 mot de passe oublié, la création de cabinet, l'invitation d'un confrère, Pro Santé
 Connect.
 
+## Quand l'envoi en ligne de commande est refusé — 10/11/2026
+
+`xcodebuild -exportArchive` a répondu « Failed to Use Accounts » (aucun compte avec accès
+App Store Connect pour l'équipe), alors que le compte était bien connecté dans Xcode
+(Settings › Apple Accounts : Franck Moyal, équipe FRANCK JOSEPH MOYAL, Admin). La
+commande ne voyait pas le compte ; Xcode, lui, oui. Le détour qui marche :
+
+1. copier l'archive dans `~/Library/Developer/Xcode/Archives/<date>/` ;
+2. l'ouvrir (`open …/Oris.xcarchive`) : la fenêtre **Organizer** de Xcode s'affiche ;
+3. **Distribute App › App Store Connect › Distribute**. Le numéro de build monte tout
+   seul (0.1.0 build 4 ce jour-là).
+
+Inutile de demander à Franck de se reconnecter avant d'avoir regardé cette fenêtre :
+Xcode est en anglais chez lui, et le compte n'était pas en cause.
+
 ## L'app ne dépend plus du Mac — 08/11/2026
 
 Une mise à jour TestFlight **ne touche pas aux réglages de l'app** : l'iPhone gardait
