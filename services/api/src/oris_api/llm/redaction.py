@@ -33,6 +33,7 @@ from oris_api.documents.renderer import (
     INCERTITUDE,
     LIMITS_SECTION,
     NEGATION,
+    PATIENT,
     Style,
     render_content,
 )
@@ -56,6 +57,8 @@ TOOL_NAME = "rediger_compte_rendu"
 MOTS_INCERTITUDE = "« possible », « probable », « suspicion », « à confirmer », « non confirmé »"
 MOTS_REFUS = "« refuse », « décline », « ne souhaite pas »"
 MOTS_NEGATION = "« pas de », « absence de », « aucun », « sans », « jamais »"
+MOTS_PATIENT = "« la patiente rapporte », « il décrit », « elle signale », « consulte pour »"
+SELON_LE_PATIENT = re.compile(r"\bselon (?:le patient|la patiente)\b", re.IGNORECASE)
 
 #: Documents en paragraphes : ceux-là seulement sont réécrits. Le plan garde sa forme,
 #: élément par élément (seuls ses titres sont proposés par Claude) ; le compte rendu
@@ -85,7 +88,13 @@ faits de sa rubrique ;
 - préserve la négation (« pas de », « absence de »), l'incertitude (« possible », « non \
 confirmé »), la temporalité (« antérieurement », « déjà ») et le statut (proposé, \
 refusé, réalisé, prévu) exactement ;
-- une information rapportée par le patient reste attribuée au patient ;
+- une information rapportée par le patient reste attribuée au patient, mais **une seule \
+fois par paragraphe** : la première phrase du paragraphe dit d'où vient l'information \
+(« La patiente rapporte… », « Il décrit… », « Elle consulte pour… »), les suivantes \
+s'enchaînent sans le redire. N'écris JAMAIS « Selon le patient » en tête de chaque \
+phrase : au plus une fois par rubrique, et de préférence une tournure avec un verbe. \
+Ne mélange pas dans un même paragraphe les propos du patient et tes constats : ouvre \
+un nouveau paragraphe quand la source change ;
 - n'établis aucun lien de cause ou de but entre deux faits (« en raison de », « afin \
 de », « donc ») s'il n'est pas déjà dans l'un d'eux : juxtapose-les plutôt ;
 - accorde selon la consigne `accord` du message, qui vient de la civilité de la fiche \
@@ -240,10 +249,15 @@ def verifier(
     for rubrique, rendue in zip(rubriques, rendues, strict=True):
         couverts: set[str] = set()
         paragraphe = -1
+        # L'attribution au patient se dit une fois par suite de phrases : `attribue` dit
+        # si la phrase précédente du même paragraphe la portait déjà.
+        attribue = False
+        formules = 0
         for phrase in rendue.get("phrases") or []:
             texte = str(phrase.get("texte", "")).strip()
             if paragraphe < 0 or phrase.get("nouveau_paragraphe"):
                 paragraphe += 1
+                attribue = False
             _controler_gras(texte, rubrique.titre)
             cites = [str(fid) for fid in phrase.get("fact_ids") or []]
             if not texte or not cites:
@@ -255,6 +269,25 @@ def verifier(
                 )
             appui = [facts[fid] for fid in cites if fid in facts]
             _controler_phrase(sans_gras(texte), appui, rubrique.titre)
+            du_patient = bool(appui) and all(f.clinical_status == "patient_reported" for f in appui)
+            if not du_patient:
+                attribue = False
+            else:
+                if not attribue and not PATIENT.search(texte):
+                    raise RedactionRefusee(
+                        f"attribution au patient perdue dans « {rubrique.titre} » : « {texte} » "
+                        "— c'est la première phrase du paragraphe qui rapporte ses propos : "
+                        f"dis d'où ils viennent ({MOTS_PATIENT}). Les phrases suivantes du "
+                        "même paragraphe n'ont pas à le redire."
+                    )
+                attribue = True
+            formules += len(SELON_LE_PATIENT.findall(texte))
+            if formules > 1:
+                raise RedactionRefusee(
+                    f"« Selon le patient » répété dans « {rubrique.titre} » : une seule fois "
+                    "par rubrique au plus. Attribue une fois par paragraphe avec un verbe "
+                    f"({MOTS_PATIENT}), puis enchaîne sans le redire."
+                )
             couverts |= set(cites)
             claims.append(
                 Claim(

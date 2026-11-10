@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from oris_api.contracts import ClinicalEncounter, ClinicalFact, Procedure
 from oris_api.documents.operative_templates import (
@@ -266,8 +266,18 @@ INCERTITUDE = re.compile(
     re.IGNORECASE,
 )
 PATIENT = re.compile(
-    r"\b(patiente?|se plaint|rapporte|signale|souhait\w*|dit|décrit|ressent)\b", re.IGNORECASE
+    r"\b(patiente?|se plaint|rapporte|signale|souhait\w*|dit|décrit|ressent|selon|d'après|"
+    r"consulte|exprime|attend|indique|mentionne|évoque|déclare|explique|précise|relate)\b",
+    re.IGNORECASE,
 )
+
+
+def selon(style: Style) -> str:
+    """« Selon le patient, » — accordé quand la fiche dit Madame."""
+    return "Selon la patiente, " if style.civilite == "madame" else "Selon le patient, "
+
+
+SELON = re.compile(r"^Selon (?:le patient|la patiente), ")
 ANTERIEUR = re.compile(r"\b(antérieur\w*|déjà|précédemment|auparavant|il y a)\b", re.IGNORECASE)
 INFORMATION = re.compile(r"^(information|informé|informée|explication|expliqué)", re.IGNORECASE)
 DENT_ECRITE = re.compile(r"(?<!\d)([1-4][1-8]|[5-8][1-5])(?!\d)")
@@ -403,7 +413,7 @@ def phrase_redigee(fact: ClinicalFact, style: Style = DEFAULT_STYLE) -> str:
     if incertain and not INCERTITUDE.search(texte):
         texte += ", non confirmé"
     if status == "patient_reported" and not PATIENT.search(texte):
-        texte = f"Selon le patient, {texte[:1].lower()}{texte[1:]}"
+        texte = f"{selon(style)}{texte[:1].lower()}{texte[1:]}"
     anterieur = fact.temporality == "past" and status in {"discussed", "proposed"}
     if anterieur and not ANTERIEUR.search(texte):
         texte = f"Évoqué antérieurement : {texte[:1].lower()}{texte[1:]}"
@@ -465,7 +475,40 @@ def ranger(
             )
             continue
         claims.append(Claim(rubrique, texte, fact_ids=(fact.fact_id,)))
-    return [claim for rubrique in rubriques for claim in par_rubrique[rubrique]]
+    statuts = {fact.fact_id: fact.clinical_status for fact in encounter.facts}
+    return [
+        claim
+        for rubrique in rubriques
+        for claim in alleger_attribution(par_rubrique[rubrique], statuts)
+    ]
+
+
+def alleger_attribution(claims: list[Claim], statuts: dict[str, str]) -> list[Claim]:
+    """« Selon le patient, » une fois par suite de phrases du patient, pas à chacune.
+
+    Franck, le 10/11/2026, sur un compte rendu réel : quarante « Selon le patient » pour
+    cinquante-quatre phrases — « beaucoup de lourdeur ». L'attribution reste : la première
+    phrase d'une suite la porte, les suivantes en héritent. Une phrase du praticien
+    (constat, proposition) **ferme la suite** : la prochaine parole du patient redit d'où
+    elle vient. On distingue donc toujours ce que le patient rapporte de ce qui est
+    constaté — c'est l'invariant — sans le répéter à chaque ligne.
+    """
+    allegees: list[Claim] = []
+    attribue = False
+    for claim in claims:
+        du_patient = bool(claim.fact_ids) and all(
+            statuts.get(fid) == "patient_reported" for fid in claim.fact_ids
+        )
+        if not du_patient:
+            attribue = False
+            allegees.append(claim)
+            continue
+        if attribue and SELON.match(claim.text):
+            reste = SELON.sub("", claim.text)
+            claim = replace(claim, text=f"{reste[:1].upper()}{reste[1:]}")
+        attribue = True
+        allegees.append(claim)
+    return allegees
 
 
 def render_consultation_note(

@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relecture v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fond:#f5f2ec; --surface:#fff; --surface-2:#fdfbf8; --surface-douce:#ebe5db;
+    --encre:#1a1815; --encre-douce:#544d44; --encre-tres-douce:#8a8073;
+    --accent:#14533b; --accent-vif:#1a6b4c; --accent-douce:#e5efe9;
+    --trait:#e3dccf; --trait-fort:#cdc4b3;
+    --attention:#a8540a; --attention-douce:#fbeedd; --alerte:#9c2a1c; --alerte-douce:#fbeae7;
+    --sc:#0096af;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Manrope, system-ui, sans-serif; color:var(--encre); background:var(--fond); font-size:14px; }
+  .app { display:grid; grid-template-columns:220px 1fr; min-height:100vh; }
+
+  /* Barre latérale (inchangée, résumée) */
+  .menu { background:linear-gradient(180deg,#1b4a36,#123f2d); color:#f6f3ee; padding:18px 14px; }
+  .marque { background:#f6f3ee; color:var(--accent); border-radius:14px; padding:12px 16px; font-family:Fraunces,serif; font-size:24px; font-weight:600; }
+  .menu nav { margin-top:22px; display:grid; gap:4px; }
+  .menu a { color:#f6f3ee; text-decoration:none; padding:9px 12px; border-radius:10px; font-weight:600; opacity:.85; }
+  .menu a.actif { background:#f6f3ee; color:var(--accent); opacity:1; }
+
+  /* Zone de travail */
+  .travail { display:flex; flex-direction:column; min-width:0; }
+
+  /* 1. En-tête collant : qui, quand, où on en est, et UNE action principale */
+  .entete { position:sticky; top:0; z-index:5; background:rgba(245,242,236,.94); backdrop-filter:blur(8px);
+            border-bottom:1px solid var(--trait); padding:14px 32px 0; }
+  .ligne1 { display:flex; align-items:center; gap:16px; }
+  .retour { color:var(--encre-tres-douce); text-decoration:none; font-weight:600; font-size:13px; }
+  .patient { font-family:Fraunces,serif; font-size:26px; font-weight:600; letter-spacing:-.01em; }
+  .patient small { font-family:Manrope; font-size:13px; color:var(--encre-douce); font-weight:500; margin-left:10px; }
+  .pousse { flex:1; }
+  .btn { border:1px solid var(--trait-fort); background:var(--surface); color:var(--encre); border-radius:12px; padding:10px 16px;
+         font:700 14px Manrope; cursor:pointer; display:inline-flex; align-items:center; gap:8px; white-space:nowrap; }
+  .btn.principal { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 6px 16px -8px rgba(20,83,59,.7); }
+  .btn.eteint { opacity:.45; cursor:not-allowed; }
+  .btn.discret { border-color:transparent; background:transparent; color:var(--encre-douce); padding:8px 10px; }
+  .btn.sc { background:var(--sc); border-color:var(--sc); color:#fff; }
+  .progression { display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--encre-douce); font-weight:600; }
+  .progression span { display:inline-flex; align-items:center; gap:6px; }
+  .progression i { width:8px; height:8px; border-radius:50%; background:var(--trait-fort); display:inline-block; }
+  .progression .fait i { background:var(--accent); } .progression .encours i { background:var(--attention-vif, #d97a1f); }
+  .progression b { color:var(--trait-fort); }
+
+  /* 2. Les documents : de vrais onglets, larges, avec leur état */
+  .onglets { display:flex; gap:6px; margin-top:16px; }
+  .onglet { flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:12px 20px 13px; border-radius:14px 14px 0 0;
+            border:1px solid transparent; border-bottom:none; font-weight:700; font-size:15px; color:var(--encre-douce); cursor:pointer; position:relative; top:1px; }
+  .onglet.actif { background:var(--surface); border-color:var(--trait); color:var(--encre); }
+  .onglet.actif::after { content:""; position:absolute; left:16px; right:16px; top:-1px; height:3px; border-radius:3px; background:var(--accent); }
+  .etat { font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:999px; }
+  .etat.relire { background:var(--attention-douce); color:var(--attention); }
+  .etat.valide { background:var(--accent-douce); color:var(--accent); }
+  .onglet.ajout { color:var(--accent); font-weight:700; }
+
+  /* Corps : le document à gauche, l'assistant à droite */
+  .corps { display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:28px; padding:0 32px 40px; align-items:start; }
+
+  /* 3. Le document, comme une feuille */
+  .feuille { background:var(--surface); border:1px solid var(--trait); border-top-left-radius:0; border-radius:0 18px 18px 18px; box-shadow:0 1px 0 rgba(0,0,0,.02); }
+  .outils { display:flex; align-items:center; gap:4px; padding:12px 18px; border-bottom:1px solid var(--trait); background:var(--surface-2); border-radius:0 18px 0 0; }
+  .outils .info { color:var(--encre-tres-douce); font-size:12.5px; margin-left:8px; }
+  .page { padding:36px 64px 48px; max-width:820px; margin:0 auto; font-size:15.5px; line-height:1.7; }
+  .rubrique { margin-top:26px; }
+  .rubrique h3 { font-size:11.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--accent); font-weight:800; margin:0 0 8px;
+                 display:flex; align-items:center; gap:10px; }
+  .rubrique h3::after { content:""; flex:1; height:1px; background:var(--trait); }
+  .rubrique p { margin:0 0 10px; }
+  .attrib { background:linear-gradient(transparent 62%, #e5efe9 62%); }
+  .avertie { background:var(--alerte-douce); border-bottom:2px solid var(--alerte); border-radius:3px; padding:0 2px; }
+  .indice { color:var(--encre-tres-douce); font-size:12.5px; text-align:center; margin-top:28px; }
+
+  /* 4. Colonne de droite : l'assistant d'abord, toujours ouvert */
+  .colonne { position:sticky; top:150px; display:grid; gap:16px; }
+  .carte { background:var(--surface); border:1px solid var(--trait); border-radius:18px; }
+  .carte h4 { margin:0; font-size:15px; font-weight:800; display:flex; align-items:center; gap:8px; }
+  .assistant { overflow:hidden; box-shadow:0 18px 40px -28px rgba(20,83,59,.55); border-color:#cfe0d6; }
+  .assistant .tete { padding:16px 18px 12px; background:linear-gradient(180deg,#eef5f1,#fff); border-bottom:1px solid var(--trait); }
+  .assistant .tete p { margin:4px 0 0; color:var(--encre-douce); font-size:12.5px; }
+  .pastille-ia { width:26px; height:26px; border-radius:8px; background:var(--accent); color:#fff; display:grid; place-items:center; font-size:14px; }
+  .fil { padding:14px 16px; display:grid; gap:10px; max-height:360px; overflow:auto; }
+  .bulle { padding:10px 13px; border-radius:14px; font-size:13.5px; line-height:1.5; }
+  .bulle.moi { background:var(--accent); color:#fff; justify-self:end; border-bottom-right-radius:4px; max-width:88%; }
+  .bulle.ia { background:var(--surface-2); border:1px solid var(--trait); border-bottom-left-radius:4px; }
+  .apercu { margin-top:8px; padding:8px 10px; background:#fff; border:1px dashed var(--trait-fort); border-radius:10px; font-size:12.5px; color:var(--encre-douce); }
+  .apercu s { color:var(--alerte); } .apercu ins { color:var(--accent); text-decoration:none; font-weight:700; }
+  .choix { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .choix .btn { padding:7px 11px; font-size:12.5px; border-radius:10px; }
+  .garde { font-size:11.5px; color:var(--encre-tres-douce); margin-top:6px; }
+  .saisie { border-top:1px solid var(--trait); padding:12px; display:grid; gap:8px; }
+  .champ { display:flex; align-items:center; gap:8px; background:var(--surface-2); border:1px solid var(--trait-fort); border-radius:14px; padding:6px 6px 6px 14px; }
+  .champ input { border:0; background:transparent; flex:1; font:500 14px Manrope; outline:none; color:var(--encre); }
+  .rond { width:36px; height:36px; border-radius:10px; border:0; display:grid; place-items:center; cursor:pointer; font-size:16px; }
+  .rond.micro { background:var(--surface); border:1px solid var(--trait-fort); }
+  .rond.envoi { background:var(--accent); color:#fff; }
+  .suggestions { display:flex; gap:6px; flex-wrap:wrap; }
+  .suggestions span { font-size:12px; font-weight:600; color:var(--encre-douce); background:var(--surface-douce); padding:5px 10px; border-radius:999px; cursor:pointer; }
+  .consignes { display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--encre-douce); padding:0 4px; }
+  .consignes a { color:var(--accent); font-weight:700; text-decoration:none; }
+
+  .verifier { padding:14px 16px; }
+  .point { display:grid; grid-template-columns:auto 1fr; gap:10px; margin-top:10px; padding:10px 12px; border-radius:12px; background:var(--alerte-douce); }
+  .point b { display:block; font-size:13px; }
+  .point span { font-size:12.5px; color:var(--encre-douce); }
+  .point a { font-size:12.5px; font-weight:700; color:var(--alerte); text-decoration:none; }
+
+  .dossier { padding:12px 14px; display:grid; gap:6px; }
+  .rangee { display:flex; align-items:center; gap:10px; padding:8px 6px; border-radius:10px; font-weight:600; font-size:13.5px; cursor:pointer; }
+  .rangee:hover { background:var(--surface-2); }
+  .rangee .ico { width:30px; height:30px; border-radius:9px; display:grid; place-items:center; background:var(--surface-douce); font-size:14px; }
+  .rangee .ico.sc { background:var(--sc); color:#fff; font-size:11px; font-weight:800; }
+  .rangee em { margin-left:auto; font-style:normal; color:var(--encre-tres-douce); font-weight:600; font-size:12.5px; }
+
+  /* Correspondant : choisi ou créé sans quitter la page */
+  .corresp { display:flex; align-items:center; gap:10px; padding:10px 18px; border-bottom:1px solid var(--trait); font-size:13.5px; }
+  .corresp .lib { color:var(--encre-tres-douce); font-weight:700; font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; }
+  .puce { display:inline-flex; align-items:center; gap:8px; background:var(--accent-douce); color:var(--accent); font-weight:700;
+          padding:5px 10px 5px 6px; border-radius:999px; }
+  .puce i { width:22px; height:22px; border-radius:50%; background:var(--accent); color:#fff; font-style:normal; font-size:11px; display:grid; place-items:center; }
+  .puce small { font-weight:600; color:var(--encre-douce); }
+  .puce, .corresp .lien { white-space:nowrap; }
+  .lien { color:var(--accent); font-weight:700; text-decoration:none; cursor:pointer; }
+  .btn.petit { padding:6px 11px; font-size:12.5px; border-radius:10px; }
+  .btn.ia { background:#fff; border-color:#b9d3c5; color:var(--accent); }
+  .enregistre { color:var(--accent); font-weight:700; font-size:12.5px; margin-left:auto; white-space:nowrap; }
+  .page[contenteditable] { outline:none; caret-color:var(--accent); }
+  .page[contenteditable]:focus { box-shadow:inset 3px 0 0 var(--accent-douce); }
+  .liste-ia { margin:8px 0 0; padding:0; list-style:none; display:grid; gap:6px; }
+  .liste-ia li { display:grid; grid-template-columns:auto 1fr; gap:8px; padding:8px 10px; background:#fff; border:1px solid var(--trait); border-radius:10px; font-size:12.5px; }
+  .liste-ia input { accent-color:var(--accent); margin-top:2px; }
+  .liste-ia b { display:block; font-size:13px; }
+
+  /* La fenêtre de création, montrée sous la page pour la maquette */
+  .vitrine { margin:8px 32px 48px; padding:22px; border:1px dashed var(--trait-fort); border-radius:18px; }
+  .vitrine > p { margin:0 0 14px; color:var(--encre-douce); font-size:13px; font-weight:600; }
+  .fenetre { width:460px; background:var(--surface); border-radius:20px; box-shadow:0 30px 70px -30px rgba(0,0,0,.45); border:1px solid var(--trait); padding:22px; }
+  .fenetre h4 { margin:0 0 4px; font-family:Fraunces,serif; font-size:20px; }
+  .fenetre .sous { color:var(--encre-douce); font-size:12.5px; margin-bottom:14px; }
+  .grille { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .grille label { display:grid; gap:4px; font-size:12px; font-weight:700; color:var(--encre-douce); }
+  .grille label.large { grid-column:1 / -1; }
+  .grille input, .grille select { border:1px solid var(--trait-fort); border-radius:10px; padding:9px 10px; font:500 14px Manrope; background:var(--surface-2); }
+  .fenetre .pied { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
+
+  /* Photos : la zone de dépôt reste sous le texte, là où on vient de relire */
+  .photos { margin:0 40px 36px; border:1.5px dashed #9fc0d8; background:#eef5fb; border-radius:16px; padding:18px 20px;
+            display:flex; align-items:center; gap:14px; }
+  .photos .quoi { flex:1; }
+  .photos b { display:block; font-size:15px; color:#1f4e79; }
+  .photos span { font-size:12.5px; color:var(--encre-douce); }
+  .photos .btn.bleu { background:#1f4e79; border-color:#1f4e79; color:#fff; }
+
+  /* Repères de maquette (à retirer) */
+  .repere { position:absolute; background:#2b2bd9; color:#fff; font:800 12px Manrope; min-width:24px; padding:0 5px; height:24px; border-radius:50%;
+            display:grid; place-items:center; box-shadow:0 0 0 3px #fff; z-index:20; }
+  .ancre { position:relative; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="menu">
+    <div class="marque">Oris</div>
+    <nav>
+      <a>Accueil</a><a>Votre journée</a><a>Patients</a><a class="actif">Consultations</a>
+      <a>Correspondants</a><a>Envois</a><a>Paramètres</a>
+    </nav>
+  </aside>
+
+  <main class="travail">
+    <!-- 1. En-tête collant -->
+    <header class="entete ancre">
+      <span class="repere" style="left:8px;top:14px">1</span>
+      <div class="ligne1">
+        <a class="retour">← Consultations</a>
+      </div>
+      <div class="ligne1" style="margin-top:6px">
+        <div class="patient">MARTIN Claire <small>Consultation du jeudi 6 novembre · 17 h 45 · 42 min</small></div>
+        <div class="pousse"></div>
+        <div class="progression">
+          <span class="encours"><i></i>Relire</span><b>›</b>
+          <span><i></i>Valider</span><b>›</b>
+          <span><i></i>Envoyer</span>
+        </div>
+        <button class="btn principal">✓ Valider le compte rendu</button>
+        <button class="btn eteint" title="Après validation">Envoyer…</button>
+        <button class="btn discret" title="Transcription, supprimer la consultation">⋯</button>
+      </div>
+
+      <!-- 2. Les documents -->
+      <div class="onglets ancre">
+        <span class="repere" style="left:-26px;top:10px">2</span>
+        <div class="onglet actif">Compte rendu <span class="etat relire">À relire</span></div>
+        <div class="onglet">Plan de traitement <span class="etat relire">À relire</span></div>
+        <div class="onglet ajout">+ Courrier d’adressage</div>
+      </div>
+    </header>
+
+    <div class="corps">
+      <!-- 3. Le document -->
+      <section class="feuille ancre">
+        <span class="repere" style="left:-12px;top:10px">3</span>
+        <div class="outils">
+          <button class="btn ia petit ancre"><span class="repere" style="left:-14px;top:-14px">9</span>✦ Relecture par Claude</button>
+          <button class="btn discret">PDF</button>
+          <button class="btn discret">Copier</button>
+          <button class="btn discret">⋯</button>
+          <span class="info">Cliquez dans le texte et écrivez — c’est enregistré tout seul</span>
+          <span class="enregistre ancre"><span class="repere" style="right:-14px;top:-18px">8</span>✓ Enregistré</span>
+        </div>
+        <div class="corresp ancre">
+          <span class="repere" style="left:-12px;top:6px">7</span>
+          <span class="lib">Correspondant</span>
+          <span class="puce"><i>LA</i>Dr Léa AUBERT <small>· nous l’a adressée</small></span>
+          <a class="lien">Changer</a>
+          <span class="pousse"></span>
+          <button class="btn petit">Choisir un correspondant ▾</button>
+          <button class="btn petit">+ Nouveau</button>
+        </div>
+        <article class="page" contenteditable="true" spellcheck="false">
+          <div class="rubrique" style="margin-top:0">
+            <h3>Situation</h3>
+            <p>Patiente de 61 ans, <span class="attrib">qui rapporte</span> ne pas travailler actuellement, après avoir dirigé les services culturels d’une fédération nationale.</p>
+          </div>
+          <div class="rubrique">
+            <h3>Motif de la consultation</h3>
+            <p><span class="attrib">La patiente consulte pour</span> des douleurs de la mâchoire, avec des dents antérieures qui se frottent de plus en plus. Chaque ajout de hauteur à droite apportait une amélioration de deux à trois heures, sans tenue dans le temps.</p>
+            <p>Elle décrit une douleur continue, surtout articulaire, avec des douleurs aux tempes des deux côtés qui l’empêchent de dormir plus de six à sept heures.</p>
+            <p>Elle attend des dents qui ne la fassent plus souffrir et une position stable.</p>
+          </div>
+          <div class="rubrique">
+            <h3>Anamnèse et questionnaire médical</h3>
+            <p><span class="attrib">Elle rapporte</span> des troubles de l’occlusion depuis quatre ans, suivis par plusieurs praticiens : reprise d’une prémolaire, dévitalisation de la 46, meulages répétés, gouttières successives. Seule l’ostéopathie l’a soulagée.</p>
+          </div>
+          <div class="rubrique">
+            <h3>Examen clinique</h3>
+            <p>À l’examen, traces de tétracycline, avec des dents de deux couleurs. Contacts prématurés en <span class="avertie">26</span>.</p>
+          </div>
+          <div class="rubrique">
+            <h3>Proposition thérapeutique</h3>
+            <p>Une extraction est proposée pour faire de la place, ainsi qu’un meulage des dents dans le même but. Une orthodontie est également évoquée.</p>
+          </div>
+          <div class="rubrique">
+            <h3>Points d’attention</h3>
+            <p>La patiente refuse explicitement l’extraction et ne souhaite plus entendre parler de meulage.</p>
+          </div>
+          <p class="indice">— Fin du compte rendu —</p>
+        </article>
+        <div class="photos ancre">
+          <span class="repere" style="left:-12px;top:-12px">3b</span>
+          <div class="quoi"><b>Photos du compte rendu</b><span>Glissez une photo ici, juste sous le texte — elle s’imprime avec le document. Aucune photo pour l’instant.</span></div>
+          <button class="btn bleu">+ Déposer une photo</button>
+          <button class="btn">Choisir dans les pièces jointes</button>
+        </div>
+      </section>
+
+      <!-- 4. La colonne de droite -->
+      <aside class="colonne">
+        <div class="carte assistant ancre">
+          <span class="repere" style="left:-12px;top:14px">4</span>
+          <div class="tete">
+            <h4><span class="pastille-ia">✦</span> Corriger avec Claude</h4>
+            <p>Dites ce qui ne va pas, comme à un assistant. Rien ne change sans votre accord.</p>
+          </div>
+          <div class="fil">
+            <div class="bulle moi">Enlève les « selon le patient » à chaque phrase, c’est lourd</div>
+            <div class="bulle ia">
+              Compris : c’est une <b>question de rédaction</b>, aucun fait ne bouge. L’attribution est dite une fois en tête de rubrique, puis « elle décrit », « elle rapporte ».
+              <div class="apercu"><s>Selon le patient, mal aux tempes…</s><br><ins>Elle décrit des douleurs aux tempes…</ins><br>38 phrases allégées · 0 fait modifié</div>
+              <div class="choix">
+                <button class="btn principal">Appliquer ici</button>
+                <button class="btn">Appliquer et retenir pour toujours</button>
+              </div>
+              <div class="garde">Les garde-fous restent : négations, incertitudes et refus sont vérifiés avant publication.</div>
+            </div>
+            <div class="bulle ia">
+              <b>Relecture du compte rendu</b> — quatre améliorations possibles, aucune ne touche aux faits :
+              <ul class="liste-ia">
+                <li><input type="checkbox" checked><div><b>Alléger les « selon le patient »</b>38 phrases · attribution dite une fois par paragraphe</div></li>
+                <li><input type="checkbox" checked><div><b>Accorder au féminin</b>La fiche dit « Madame » · 12 accords</div></li>
+                <li><input type="checkbox" checked><div><b>Regrouper l’historique des gouttières</b>6 phrases éparses dans « Anamnèse » → un paragraphe</div></li>
+                <li><input type="checkbox"><div><b>Raccourcir le « Motif »</b>14 phrases → 6, sans rien retirer</div></li>
+              </ul>
+              <div class="choix"><button class="btn principal">Appliquer les 3 cochées</button><button class="btn">Tout refuser</button></div>
+            </div>
+            <div class="bulle moi">La 26 c’est la 27</div>
+            <div class="bulle ia">
+              Ça, c’est le <b>dossier clinique</b> : je remplace la 26 par la 27 dans « contacts prématurés », puis le compte rendu et le plan se mettent à jour.
+              <div class="choix"><button class="btn principal">Corriger le dossier</button><button class="btn">Annuler</button></div>
+            </div>
+          </div>
+          <div class="saisie">
+            <div class="champ">
+              <input placeholder="« accorde au féminin », « plus court », « la 26 c’est la 27 »…">
+              <button class="rond micro" title="Dicter">🎙</button>
+              <button class="rond envoi" title="Envoyer">↑</button>
+            </div>
+            <div class="suggestions"><span>Plus court</span><span>Accorder au féminin</span><span>Moins de « selon le patient »</span><span>Retirer une phrase</span></div>
+            <div class="consignes"><span>2 consignes retenues pour tous vos comptes rendus</span><a>Voir</a></div>
+          </div>
+        </div>
+
+        <div class="carte verifier ancre">
+          <span class="repere" style="left:-12px;top:12px">5</span>
+          <h4>À vérifier avant de valider <span class="etat relire">1</span></h4>
+          <div class="point">
+            <span>⚠︎</span>
+            <div><b>Une dent est citée sans être dans le dossier : 26</b><span>Rubrique « Examen clinique ». Elle a peut-être été mal entendue.</span><br><a>Voir la phrase</a> · <a>Corriger</a></div>
+          </div>
+        </div>
+
+        <div class="carte dossier ancre">
+          <span class="repere" style="left:-12px;top:12px">6</span>
+          <div class="rangee"><span class="ico">📎</span>Pièces jointes et photos<em>4</em></div>
+          <div class="rangee"><span class="ico sc">SC</span>SmileCloud<em>dossier relié</em></div>
+          <div class="rangee"><span class="ico">🗒</span>Transcription de la consultation<em>42 min</em></div>
+        </div>
+      </aside>
+    </div>
+    <div class="vitrine">
+      <p>Ce qui s’ouvre au clic sur « + Nouveau » — par-dessus la page, sans la quitter :</p>
+      <div class="fenetre">
+        <h4>Nouveau correspondant</h4>
+        <div class="sous">Il est créé, rattaché à cette patiente, et coché comme destinataire.</div>
+        <div class="grille">
+          <label>Civilité<select><option>Dr</option><option>Pr</option><option>M.</option><option>Mme</option></select></label>
+          <label>Spécialité<select><option>Orthodontiste</option><option>Chirurgien-dentiste</option><option>Médecin traitant</option><option>ORL</option></select></label>
+          <label>Prénom<input value="Léa"></label>
+          <label>Nom<input value="AUBERT"></label>
+          <label class="large">Courriel<input placeholder="pour lui envoyer le courrier"></label>
+          <label class="large">Lien avec la patiente<select><option>Nous l’a adressée</option><option>Nous lui adressons</option><option>La suit aussi</option></select></label>
+        </div>
+        <div class="pied"><button class="btn">Annuler</button><button class="btn principal">Créer et rattacher</button></div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>
