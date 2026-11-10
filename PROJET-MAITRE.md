@@ -152,6 +152,21 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
 - La **suppression du son** peut être relancée à tout moment ; si le stockage tombe, la
   panne est signalée au lieu d'être avalée.
 
+**Relire et corriger (depuis le 10 novembre)**
+- La page d'une consultation est réorganisée : en haut, le patient et le bouton du
+  moment (Valider, puis Envoyer) restent toujours visibles ; les documents sont de vrais
+  onglets ; le texte se modifie en cliquant dedans et s'enregistre tout seul ; le
+  correspondant se choisit ou se crée sans quitter la page.
+- **« Corriger avec Claude »** : vous écrivez ou dictez ce qui ne va pas. Claude dit ce
+  qu'il a compris — le dossier clinique, la rédaction, ou la civilité du patient — et
+  rien ne change sans votre accord. Une consigne de rédaction peut valoir pour ce
+  document seulement, ou être retenue pour tous les suivants. Le même dialogue est sur
+  l'iPhone.
+- **« Relecture par Claude »** : il relit le document et propose des améliorations de
+  forme à cocher. Il ne propose jamais de toucher à un fait.
+- « Selon le patient » ne se répète plus à chaque phrase : une fois par suite de propos
+  du patient, et de nouveau après un constat de votre part.
+
 **Ce qui n'existe pas encore**
 - La dictée des corrections n'a pas encore été essayée avec un vrai micro (je n'en ai
   pas) : le circuit est vérifié par les tests, pas par la voix.

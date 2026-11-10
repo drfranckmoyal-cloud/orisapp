@@ -1,5 +1,35 @@
 # Changelog
 
+## La page de relecture refaite, et un dialogue pour corriger — 2026-11-10
+- Franck : « je m'y perds vraiment ». L'audit, sur un compte rendu réel : une page de
+  **quatre écrans de haut**, **25 boutons**, le bouton « Valider » qui disparaît dès qu'on
+  fait défiler, un formulaire d'envoi d'un écran entier alors que rien n'est envoyable,
+  la correction repliée au fond de la colonne de droite, des onglets en pastilles.
+  Maquette validée par lui avant le code (`docs/maquettes/relecture-v2.html`).
+- **La page.** Un en-tête qui reste en haut (patient, étapes Relire › Valider › Envoyer,
+  une action principale), des onglets larges avec leur état, le document comme une
+  feuille. Le **texte se modifie en cliquant dedans** et s'enregistre tout seul (dix
+  frappes ne font pas dix versions) ; la source d'une phrase passe par une petite cible
+  au survol. Le **correspondant** se choisit ou se crée dans une fenêtre sans quitter la
+  page. Les photos restent sous le texte, avec leur glisser-déposer. L'envoi se replie
+  tant que le document n'est pas validé. Rien n'est retiré : le rare va dans « ⋯ ».
+- **« Corriger avec Claude ».** Ouvert en permanence à droite ; on écrit ou on dicte.
+  Claude ne corrige rien lui-même : il dit la nature de la demande — **dossier clinique**
+  (traduite en opérations, validées et appliquées par le chemin existant), **rédaction**
+  (une consigne de forme, pour ce document ou retenue pour tous), **civilité** — et
+  attend l'accord. Une réponse bancale redevient une question. Les tournures connues
+  restent comprises sans IA. **« Relecture par Claude »** propose des améliorations de
+  forme à cocher. Le même dialogue est sur l'iPhone.
+- **« Selon le patient ».** Quarante fois pour cinquante-quatre phrases. L'attribution se
+  dit maintenant une fois par suite de propos du patient ; un constat du praticien ferme
+  la suite, et la parole suivante redit d'où elle vient. Même compte rendu, après :
+  36 phrases, plus aucune formule répétée, rédigé en 29 secondes.
+- **Ce que l'essai réel a corrigé.** Ma première version *refusait* la copie de Claude
+  quand l'attribution manquait : trois refus de suite, et le compte rendu partait en
+  version de secours. Oris **répare** désormais l'attribution lui-même — l'ajouter ou
+  la retirer est mécanique et ne change aucun fait.
+- 539 tests serveur · 69 site · 69 iPhone au vert.
+
 ## L'iPhone décroché du Mac — 2026-11-08
 - Franck : « l'app ne fonctionne toujours pas si l'ordinateur est éteint ». Deux verrous,
   et le premier était mon abandon.

@@ -18,6 +18,7 @@ struct TraitementDocument: View {
     @State private var editionOuverte = false
     @State private var confirmerSuppression = false
     @State private var redaction = false
+    @State private var dialogueOuvert = false
 
     private var valide: Bool { [.validated, .exported].contains(document.status) }
     private var critiques: [EncounterWarning] { content.criticalWarnings }
@@ -73,6 +74,15 @@ struct TraitementDocument: View {
                 .background(Teinte.attentionDouce, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
 
+            // Le dialogue de correction, comme sur le site : dire ce qui ne va pas,
+            // voir ce qu'Oris a compris, confirmer (Franck, 10/11/2026).
+            Button {
+                dialogueOuvert = true
+            } label: {
+                Label("Corriger avec Claude", systemImage: "sparkles")
+            }
+            .buttonStyle(BoutonSecondaire())
+
             HStack(spacing: 8) {
                 action("PDF", "doc.richtext") { Task { await ouvrirPDF() } }
                 action("Envoyer", "paperplane") { envoiOuvert = true }
@@ -99,6 +109,12 @@ struct TraitementDocument: View {
         .sheet(isPresented: $envoiOuvert) {
             EnvoiView(client: client, document: document) { resultat in
                 toast = resultat
+                Task { await recharger() }
+            }
+        }
+        .sheet(isPresented: $dialogueOuvert) {
+            CorrigerAvecClaude(client: client, encounterId: content.encounter.id, document: document) { message in
+                toast = message
                 Task { await recharger() }
             }
         }

@@ -72,6 +72,11 @@ enum Labels {
         "SMILECLOUD_NON_RELIE": "Reliez d’abord ce patient à son dossier SmileCloud.",
         "SMILECLOUD_INVALIDE": "Identifiant de dossier SmileCloud non reconnu.",
         "INVALID_TOKEN": "Le jeton de cet iPhone est refusé par le serveur. Recopiez-le dans Paramètres › Connexion à Oris.",
+        "ASSISTANT_UNAVAILABLE": "Claude n’est pas disponible pour cette consultation (cas fictif, ou IA non configurée). Les corrections simples — « remplace 26 par 27 » — restent comprises.",
+        "RELECTURE_NON_PROPOSEE": "La relecture par Claude porte sur les documents rédigés : compte rendu et courrier.",
+        "ANTHROPIC_AUTH": "La clé d’accès à l’IA est refusée. Il faut poser une nouvelle clé sur l’ordinateur.",
+        "ANTHROPIC_NETWORK": "Oris n’a pas pu joindre le service d’IA. Réessayez dans un instant.",
+        "ANTHROPIC_TIMEOUT": "Le service d’IA n’a pas répondu à temps. Réessayez.",
         "AUTHENTICATION_REQUIRED": "Cet iPhone n’a pas de jeton. Ajoutez-le dans Paramètres › Connexion à Oris.",
     ]
 

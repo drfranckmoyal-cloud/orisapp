@@ -7,7 +7,6 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
 
 - Transcription brute d'une consultation (l'iPhone montre les paroles d'une phrase,
   pas encore la transcription entière).
-- Correction du dossier clinique (à la voix et au clavier : « remplace 26 par 27 »).
 - Plan de traitement visuel (schéma dentaire, étapes colorées, chronologie).
 - Compte rendu de soins à la demande quand un acte a été dit ; suppression d'un
   courrier d'adressage ou d'un compte rendu de soins demandé par erreur.
@@ -66,6 +65,18 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
   Chrome sur le Mac) ; l'iPhone montre l'état seulement. Autoriser un nouvel appareil :
   depuis le Mac seulement.
 
+
+- **Corriger avec Claude** (10/11/2026) : le dialogue de correction est des deux côtés
+  — demande libre, lecture par Claude, confirmation, relecture à cocher, consigne
+  « retenue pour toujours ». Site : ouvert en permanence à droite du document, avec un
+  micro. iPhone : bouton « Corriger avec Claude » sous le document ; la dictée y est celle
+  du clavier. La liste des consignes retenues ne se consulte et ne se retire que sur le
+  site (colonne de droite) : sur l'iPhone on peut en ajouter, pas encore les relire.
+
+- **Page de relecture** (10/11/2026) : réorganisée sur le site seulement (en-tête fixe,
+  grands onglets, texte modifiable en cliquant dedans, correspondant choisi ou créé sur
+  la page). L'iPhone garde son écran en cartes, qui n'avait pas ce défaut : le texte s'y
+  modifie par « Modifier », et le correspondant se rattache depuis la fiche du patient.
 
 - **Civilité du patient** (27/10/2026) : présente des deux côtés — trois choix dans la
   fiche (Monsieur, Madame, non précisée). Site : dans le cadre « Informations », et aussi
