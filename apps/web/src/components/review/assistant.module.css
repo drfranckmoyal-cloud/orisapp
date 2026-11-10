@@ -364,3 +364,76 @@
 .consignes li button:hover {
   color: var(--alerte);
 }
+
+/* Une demande et ce qu'elle est devenue (11/11/2026) : traitée, à confirmer, en cours… */
+.demande {
+  justify-self: end;
+  max-width: 90%;
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+}
+
+.demande .moi {
+  max-width: 100%;
+}
+
+.marque {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 1px 8px;
+  border-radius: var(--rayon-pastille);
+  background: var(--surface-douce);
+  color: var(--encre-douce);
+}
+
+.marque[data-ton="valide"] {
+  background: var(--valide-douce);
+  color: var(--accent);
+}
+
+.marque[data-ton="attention"] {
+  background: var(--attention-douce);
+  color: var(--attention);
+}
+
+.marque[data-ton="alerte"] {
+  background: var(--alerte-douce);
+  color: var(--alerte);
+}
+
+.oris[data-sorte="annule"] {
+  color: var(--encre-douce);
+}
+
+/* La barre de progression d'une correction : elle avance sur le temps écoulé. */
+.progression {
+  display: grid;
+  gap: 8px;
+}
+
+.progressionTete {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.chrono {
+  color: var(--encre-douce);
+  font-variant-numeric: tabular-nums;
+}
+
+.barre {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--surface-douce);
+  overflow: hidden;
+}
+
+.barre span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.5s linear;
+}

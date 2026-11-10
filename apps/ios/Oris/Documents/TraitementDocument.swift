@@ -20,6 +20,9 @@ struct TraitementDocument: View {
     @State private var redaction = false
     @State private var dialogueOuvert = false
 
+    /// Le dialogue de cette consultation : il survit à la fenêtre, avec son historique.
+    private var dialogue: DialogueCorrection { DialoguesCorrection.pour(content.encounter.id) }
+
     private var valide: Bool { [.validated, .exported].contains(document.status) }
     private var critiques: [EncounterWarning] { content.criticalWarnings }
     private var partis: [String] {
@@ -79,7 +82,13 @@ struct TraitementDocument: View {
             Button {
                 dialogueOuvert = true
             } label: {
-                Label("Corriger avec Claude", systemImage: "sparkles")
+                // Une correction qui tourne encore se voit d'ici, fenêtre fermée : on sait
+                // qu'il faut attendre avant de relire (Franck, 11/11/2026).
+                if dialogue.enApplication {
+                    Label("Correction en cours…", systemImage: "arrow.triangle.2.circlepath")
+                } else {
+                    Label("Corriger avec Claude", systemImage: "sparkles")
+                }
             }
             .buttonStyle(BoutonSecondaire())
 
@@ -113,7 +122,12 @@ struct TraitementDocument: View {
             }
         }
         .sheet(isPresented: $dialogueOuvert) {
-            CorrigerAvecClaude(client: client, encounterId: content.encounter.id, document: document) { message in
+            CorrigerAvecClaude(client: client, encounterId: content.encounter.id, document: document,
+                               dialogue: dialogue)
+        }
+        .onAppear {
+            // Fenêtre fermée ou non, une correction aboutie recharge le document.
+            dialogue.aChange = { message in
                 toast = message
                 Task { await recharger() }
             }

@@ -1,5 +1,21 @@
 # Changelog
 
+## « Corriger avec Claude » garde sa conversation, et montre où il en est — 2026-11-11
+- Franck : « mettre une barre de progression et nous indiquer si on peut sortir de la
+  fenêtre pendant que ça travaille ; si je sors et que je reviens, garder l'historique,
+  ne pas en remettre une vierge, et marquer les demandes traitées ».
+- **Barre de progression** pendant qu'une correction s'applique, avec le temps écoulé et
+  la phrase « vous pouvez fermer : la correction continue ». Oris ne sait pas combien
+  Claude mettra : la barre avance sur le temps (la moitié vers 30 s), sans jamais
+  prétendre être arrivée.
+- **Le dialogue survit à la fenêtre.** Sur l'iPhone, il vit hors de la feuille, par
+  consultation ; la fermer n'arrête rien, et le bouton devient « Correction en cours… ».
+  Sur le site, il vit hors de la page, avec une copie dans l'onglet : on peut aller voir
+  un autre patient et revenir. Rien n'est écrit ailleurs que dans l'app ou l'onglet.
+- **Chaque demande porte sa marque** : À confirmer, En cours, Traitée, Annulée,
+  Non aboutie, À préciser.
+- 545 tests serveur · 72 site · 72 iPhone au vert.
+
 ## La page de relecture refaite, et un dialogue pour corriger — 2026-11-10
 - Franck : « je m'y perds vraiment ». L'audit, sur un compte rendu réel : une page de
   **quatre écrans de haut**, **25 boutons**, le bouton « Valider » qui disparaît dès qu'on

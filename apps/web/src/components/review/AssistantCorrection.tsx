@@ -1,6 +1,13 @@
 "use client";
 
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import {
   ApiError,
@@ -16,6 +23,18 @@ import { errorMessage } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
 import styles from "./assistant.module.css";
+import {
+  abonnerDialogue,
+  duree,
+  type Echange,
+  type EtatDialogue,
+  lancerApplication,
+  lireDialogue,
+  marqueDe,
+  modifierDialogue,
+  occupe,
+  part,
+} from "./dialogueCorrection";
 
 /** Corriger avec Claude : on dit ce qui ne va pas, Oris dit ce qu'il a compris, on confirme.
  *
@@ -25,13 +44,6 @@ import styles from "./assistant.module.css";
  * la civilité — sans rien changer. Rien ne part sans un clic du praticien.
  */
 
-type Echange =
-  | { id: number; qui: "moi"; texte: string }
-  | { id: number; qui: "oris"; sorte: "attente"; texte: string }
-  | { id: number; qui: "oris"; sorte: "erreur"; texte: string }
-  | { id: number; qui: "oris"; sorte: "fait"; texte: string }
-  | { id: number; qui: "oris"; sorte: "lecture"; lecture: LectureAssistant }
-  | { id: number; qui: "oris"; sorte: "relecture"; propositions: PropositionRelecture[] };
 
 export type AssistantHandle = {
   /** Lance la relecture du document ouvert (bouton de la barre du document). */
@@ -47,6 +59,42 @@ const NATURE: Record<string, string> = {
 
 function codeDe(caught: unknown): string {
   return caught instanceof ApiError ? caught.code : "UNKNOWN";
+}
+
+const VIDE_SERVEUR: EtatDialogue = { fil: [], compteur: 0, coches: {} };
+
+/** Où en est une correction qui s'applique, et ce qu'on peut faire pendant ce temps. */
+function Progression({ depuis }: { depuis: number }) {
+  const [maintenant, setMaintenant] = useState(() => Date.now());
+  useEffect(() => {
+    const horloge = window.setInterval(() => setMaintenant(Date.now()), 500);
+    return () => window.clearInterval(horloge);
+  }, []);
+  const ecoule = (maintenant - depuis) / 1000;
+  return (
+    <div className={styles.progression}>
+      <div className={styles.progressionTete}>
+        <span>
+          {ecoule < 8 ? "J’applique votre correction…" : "Claude rédige à nouveau le document…"}
+        </span>
+        <span className={styles.chrono}>{duree(ecoule)}</span>
+      </div>
+      <div
+        className={styles.barre}
+        role="progressbar"
+        aria-label="Correction en cours"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(part(ecoule) * 100)}
+      >
+        <span style={{ width: `${part(ecoule) * 100}%` }} />
+      </div>
+      <p className={styles.garde}>
+        Vous pouvez quitter cette page : la correction continue, et vous retrouverez cette
+        conversation en revenant.
+      </p>
+    </div>
+  );
 }
 
 export const AssistantCorrection = forwardRef<
@@ -66,16 +114,23 @@ export const AssistantCorrection = forwardRef<
   { encounterId, documentId, relisible, actif, civilite, onChange },
   ref,
 ) {
-  const [fil, setFil] = useState<Echange[]>([]);
+  // Le fil vit hors de l'écran (dialogueCorrection.ts) : quitter la page ne l'efface pas,
+  // et une correction lancée continue d'arriver (Franck, 11/11/2026).
+  const { fil, coches: cochesListes } = useSyncExternalStore(
+    (prevenir) => abonnerDialogue(encounterId, prevenir),
+    () => lireDialogue(encounterId),
+    () => VIDE_SERVEUR,
+  );
+  const coches = Object.fromEntries(
+    Object.entries(cochesListes).map(([id, liste]) => [Number(id), new Set(liste)]),
+  ) as Record<number, Set<number>>;
+  const travaille = occupe(fil);
   const [saisie, setSaisie] = useState("");
-  const [occupe, setOccupe] = useState(false);
   const [dictee, setDictee] = useState(false);
-  const [coches, setCoches] = useState<Record<number, Set<number>>>({});
   const [voirConsignes, setVoirConsignes] = useState(false);
   const [consignes, rechargerConsignes] = useApi<Consignes>(
     `/encounters/${encounterId}/consignes`,
   );
-  const compteur = useRef(0);
   const micro = useRef<Dictation | null>(null);
   const bas = useRef<HTMLDivElement | null>(null);
 
@@ -84,25 +139,40 @@ export const AssistantCorrection = forwardRef<
   }, [fil]);
 
   function ajouter(echange: Omit<Echange, "id"> & Record<string, unknown>): number {
-    compteur.current += 1;
-    const id = compteur.current;
-    setFil((courant) => [...courant, { ...echange, id } as Echange]);
+    let id = 0;
+    modifierDialogue(encounterId, (etat) => {
+      id = etat.compteur + 1;
+      return { ...etat, compteur: id, fil: [...etat.fil, { ...echange, id } as Echange] };
+    });
     return id;
   }
 
   function remplacer(id: number, echange: Omit<Echange, "id"> & Record<string, unknown>) {
-    setFil((courant) =>
-      courant.map((e) => (e.id === id ? ({ ...echange, id } as Echange) : e)),
-    );
+    modifierDialogue(encounterId, (etat) => ({
+      ...etat,
+      fil: etat.fil.map((e) => (e.id === id ? ({ ...echange, id } as Echange) : e)),
+    }));
+  }
+
+  function setCoches(changement: (c: Record<number, Set<number>>) => Record<number, Set<number>>) {
+    modifierDialogue(encounterId, (etat) => {
+      const avant = Object.fromEntries(
+        Object.entries(etat.coches).map(([id, liste]) => [Number(id), new Set(liste)]),
+      ) as Record<number, Set<number>>;
+      const apres = changement(avant);
+      return {
+        ...etat,
+        coches: Object.fromEntries(Object.entries(apres).map(([id, s]) => [id, [...s]])),
+      };
+    });
   }
 
   async function demander(texte: string) {
     const demande = texte.trim();
-    if (!demande || occupe) return;
+    if (!demande || travaille) return;
     setSaisie("");
     ajouter({ qui: "moi", texte: demande });
     const attente = ajouter({ qui: "oris", sorte: "attente", texte: "Je lis votre demande…" });
-    setOccupe(true);
     try {
       const lecture = await apiRequest<LectureAssistant>(
         `/encounters/${encounterId}/assistant`,
@@ -111,8 +181,6 @@ export const AssistantCorrection = forwardRef<
       remplacer(attente, { qui: "oris", sorte: "lecture", lecture });
     } catch (caught) {
       remplacer(attente, { qui: "oris", sorte: "erreur", texte: errorMessage(codeDe(caught)) });
-    } finally {
-      setOccupe(false);
     }
   }
 
@@ -138,31 +206,31 @@ export const AssistantCorrection = forwardRef<
       return;
     }
     const attente = ajouter({ qui: "oris", sorte: "attente", texte: "J’écoute votre demande…" });
-    setOccupe(true);
     try {
       const lecture = await sendVoiceAssistant(encounterId, pcm);
       // Ce qui a été entendu s'affiche comme une demande écrite : on voit ce qu'Oris a lu.
-      setFil((courant) => {
-        const sans = courant.filter((e) => e.id !== attente);
-        compteur.current += 2;
-        return [
-          ...sans,
-          ...(lecture.demande
-            ? [{ id: compteur.current - 1, qui: "moi", texte: lecture.demande } as Echange]
-            : []),
-          { id: compteur.current, qui: "oris", sorte: "lecture", lecture } as Echange,
-        ];
+      modifierDialogue(encounterId, (etat) => {
+        const sans = etat.fil.filter((e) => e.id !== attente);
+        const compteur = etat.compteur + 2;
+        return {
+          ...etat,
+          compteur,
+          fil: [
+            ...sans,
+            ...(lecture.demande
+              ? [{ id: compteur - 1, qui: "moi", texte: lecture.demande } as Echange]
+              : []),
+            { id: compteur, qui: "oris", sorte: "lecture", lecture } as Echange,
+          ],
+        };
       });
     } catch (caught) {
       remplacer(attente, { qui: "oris", sorte: "erreur", texte: errorMessage(codeDe(caught)) });
-    } finally {
-      setOccupe(false);
     }
   }
 
   async function appliquer(id: number, corps: Record<string, unknown>) {
-    setOccupe(true);
-    remplacer(id, { qui: "oris", sorte: "attente", texte: "J’applique…" });
+    lancerApplication(encounterId, id);
     try {
       const resultat = await apiRequest<ResultatAssistant>(
         `/encounters/${encounterId}/assistant/appliquer`,
@@ -173,8 +241,6 @@ export const AssistantCorrection = forwardRef<
       onChange();
     } catch (caught) {
       remplacer(id, { qui: "oris", sorte: "erreur", texte: errorMessage(codeDe(caught)) });
-    } finally {
-      setOccupe(false);
     }
   }
 
@@ -193,10 +259,9 @@ export const AssistantCorrection = forwardRef<
   }
 
   async function relire() {
-    if (!documentId || occupe) return;
+    if (!documentId || travaille) return;
     ajouter({ qui: "moi", texte: "Relis ce document et propose des améliorations." });
     const attente = ajouter({ qui: "oris", sorte: "attente", texte: "Je relis le document…" });
-    setOccupe(true);
     try {
       const { propositions } = await apiRequest<{ propositions: PropositionRelecture[] }>(
         `/documents/${documentId}/relecture`,
@@ -215,8 +280,6 @@ export const AssistantCorrection = forwardRef<
       }
     } catch (caught) {
       remplacer(attente, { qui: "oris", sorte: "erreur", texte: errorMessage(codeDe(caught)) });
-    } finally {
-      setOccupe(false);
     }
   }
 
@@ -267,15 +330,35 @@ export const AssistantCorrection = forwardRef<
 
       {fil.length > 0 && (
         <div className={styles.fil} aria-live="polite">
-          {fil.map((echange) => {
+          {fil.map((echange, rang) => {
             if (echange.qui === "moi") {
+              // La réponse qui suit dit ce qu'est devenue la demande.
+              const marque = marqueDe(fil[rang + 1]);
               return (
-                <div key={echange.id} className={`${styles.bulle} ${styles.moi}`}>
-                  {echange.texte}
+                <div key={echange.id} className={styles.demande}>
+                  <div className={`${styles.bulle} ${styles.moi}`}>{echange.texte}</div>
+                  {marque && (
+                    <span className={styles.marque} data-ton={marque.ton}>
+                      {marque.ton === "valide" && "✓ "}
+                      {marque.texte}
+                    </span>
+                  )}
                 </div>
               );
             }
-            if (echange.sorte === "attente" || echange.sorte === "fait" || echange.sorte === "erreur") {
+            if (echange.sorte === "application") {
+              return (
+                <div key={echange.id} className={`${styles.bulle} ${styles.oris}`} role="status">
+                  <Progression depuis={echange.depuis} />
+                </div>
+              );
+            }
+            if (
+              echange.sorte === "attente" ||
+              echange.sorte === "fait" ||
+              echange.sorte === "erreur" ||
+              echange.sorte === "annule"
+            ) {
               return (
                 <div
                   key={echange.id}
@@ -326,7 +409,7 @@ export const AssistantCorrection = forwardRef<
                     <button
                       type="button"
                       className={styles.principal}
-                      disabled={occupe || retenuesIci.length === 0}
+                      disabled={travaille || retenuesIci.length === 0}
                       onClick={() =>
                         void appliquer(echange.id, {
                           nature: "redaction",
@@ -340,7 +423,7 @@ export const AssistantCorrection = forwardRef<
                     <button
                       type="button"
                       className={styles.secondaire}
-                      disabled={occupe || retenuesIci.length === 0}
+                      disabled={travaille || retenuesIci.length === 0}
                       title="Ces consignes vaudront aussi pour vos prochains documents"
                       onClick={() =>
                         void appliquer(echange.id, {
@@ -355,11 +438,11 @@ export const AssistantCorrection = forwardRef<
                     <button
                       type="button"
                       className={styles.discret}
-                      disabled={occupe}
+                      disabled={travaille}
                       onClick={() =>
                         remplacer(echange.id, {
                           qui: "oris",
-                          sorte: "fait",
+                          sorte: "annule",
                           texte: "Propositions écartées : le document n’a pas changé.",
                         })
                       }
@@ -389,7 +472,7 @@ export const AssistantCorrection = forwardRef<
                       <button
                         type="button"
                         className={styles.principal}
-                        disabled={occupe}
+                        disabled={travaille}
                         onClick={() => void appliquerLecture(echange.id, lecture)}
                       >
                         {lecture.nature === "dossier"
@@ -402,7 +485,7 @@ export const AssistantCorrection = forwardRef<
                         <button
                           type="button"
                           className={styles.secondaire}
-                          disabled={occupe}
+                          disabled={travaille}
                           title="Cette consigne vaudra aussi pour vos prochains documents"
                           onClick={() => void appliquerLecture(echange.id, lecture, true)}
                         >
@@ -412,11 +495,11 @@ export const AssistantCorrection = forwardRef<
                       <button
                         type="button"
                         className={styles.discret}
-                        disabled={occupe}
+                        disabled={travaille}
                         onClick={() =>
                           remplacer(echange.id, {
                             qui: "oris",
-                            sorte: "fait",
+                            sorte: "annule",
                             texte: "Annulé : rien n’a changé.",
                           })
                         }
@@ -444,7 +527,7 @@ export const AssistantCorrection = forwardRef<
         <div className={styles.champ} data-dictee={dictee}>
           <input
             value={saisie}
-            disabled={!actif || occupe || dictee}
+            disabled={!actif || travaille || dictee}
             aria-label="Votre demande de correction"
             placeholder={
               dictee
@@ -460,7 +543,7 @@ export const AssistantCorrection = forwardRef<
             type="button"
             className={styles.micro}
             data-actif={dictee}
-            disabled={!actif || occupe}
+            disabled={!actif || travaille}
             title={dictee ? "Arrêter la dictée" : "Dicter la demande"}
             aria-label={dictee ? "Arrêter la dictée" : "Dicter la demande"}
             onClick={() => (dictee ? void finirDictee() : void commencerDictee())}
@@ -473,7 +556,7 @@ export const AssistantCorrection = forwardRef<
           <button
             type="button"
             className={styles.envoi}
-            disabled={!actif || occupe || !saisie.trim()}
+            disabled={!actif || travaille || !saisie.trim()}
             title="Envoyer la demande"
             aria-label="Envoyer la demande"
             onClick={() => void demander(saisie)}
@@ -488,14 +571,14 @@ export const AssistantCorrection = forwardRef<
               <button
                 key={suggestion}
                 type="button"
-                disabled={occupe}
+                disabled={travaille}
                 onClick={() => void demander(suggestion)}
               >
                 {suggestion}
               </button>
             ))}
             {relisible && (
-              <button type="button" disabled={occupe || !documentId} onClick={() => void relire()}>
+              <button type="button" disabled={travaille || !documentId} onClick={() => void relire()}>
                 ✦ Relire tout le document
               </button>
             )}
