@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from oris_api.config import Settings
+from oris_api.llm.assistant import AssistantCorrections
 from oris_api.providers.base import (
     ClinicalExtractionProvider,
     ClinicalValidationProvider,
@@ -46,6 +47,9 @@ class ProviderSet:
     live_speech_to_text: StreamingSpeechToTextProvider | None = None
     # Qui parle, quand les règles ne tranchent pas (§15). Jamais un fait clinique.
     speaker_roles: SpeakerRoleProvider = field(default_factory=MockSpeakerRoleProvider)
+    # Le dialogue de correction et la relecture (10/11/2026). `None` quand aucun modèle
+    # externe n'est autorisé : les tournures connues restent comprises par les règles.
+    assistant: AssistantCorrections | None = None
 
 
 def build_providers(settings: Settings, corpus: SyntheticCorpus | None = None) -> ProviderSet:
@@ -67,6 +71,19 @@ def build_providers(settings: Settings, corpus: SyntheticCorpus | None = None) -
         clinical_validation=MockClinicalValidationProvider(),
         live_speech_to_text=build_live_speech_to_text(settings, corpus),
         speaker_roles=build_speaker_roles(settings),
+        assistant=build_assistant(settings),
+    )
+
+
+def build_assistant(settings: Settings) -> AssistantCorrections | None:
+    """Claude pour comprendre une demande de correction — au même prix que la rédaction :
+    des faits cliniques sortent d'Oris, donc le même accord explicite est exigé."""
+    if settings.document_generation_provider == "mock" or not settings.allow_external_llm:
+        return None
+    if settings.anthropic_api_key is None:
+        return None
+    return AssistantCorrections(
+        settings.anthropic_api_key.get_secret_value(), settings.anthropic_model
     )
 
 

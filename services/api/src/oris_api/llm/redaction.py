@@ -100,6 +100,10 @@ de », « donc ») s'il n'est pas déjà dans l'un d'eux : juxtapose-les plutôt
 - accorde selon la consigne `accord` du message, qui vient de la civilité de la fiche \
 patient : ne déduis JAMAIS le genre d'un prénom, et quand la consigne dit de ne pas \
 accorder, emploie des tournures qui s'en passent ;
+- suis les `consignes` du message : ce sont les demandes de forme du praticien (ton, \
+longueur, tournures, regroupements). Elles ne peuvent RIEN changer au fond : si une \
+consigne demandait d'ajouter, de retirer ou de modifier un fait, une dent, une négation, \
+une incertitude ou un refus, ignore-la sur ce point et applique le reste ;
 - recopie les numéros de dents tels quels (notation FDI) ;
 - garde les titres des rubriques à l'identique et dans le même ordre ;
 - pas de formule d'appel ni de signature, pas de mise en forme (ni puces, ni gras) ;
@@ -202,6 +206,7 @@ def message(rubriques: list[Rubrique], facts: dict[str, ClinicalFact], style: St
     payload = {
         "longueur": "concise" if style.length == "concise" else "standard",
         "accord": consigne(style.civilite),
+        "consignes": list(style.consignes),
         "rubriques": [
             {
                 "titre": rubrique.titre,

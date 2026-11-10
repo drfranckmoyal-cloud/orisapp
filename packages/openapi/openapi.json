@@ -3710,6 +3710,253 @@
         }
       }
     },
+    "/encounters/{encounter_id}/assistant": {
+      "post": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "Comprendre",
+        "description": "Dit ce que la demande change — le dossier, la rédaction, la civilité — sans rien changer.\n\nLes tournures connues (« remplace 26 par 27 ») sont comprises sans IA : c'est\nimmédiat, et cela marche même quand le service d'IA ne répond pas. Le reste va à\nClaude, sauf pour une consultation fictive, dont rien ne sort d'Oris.",
+        "operationId": "comprendre_encounters__encounter_id__assistant_post",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistantDemande"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantLecture"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/assistant/appliquer": {
+      "post": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "Appliquer",
+        "description": "Applique ce que le praticien vient de confirmer.",
+        "operationId": "appliquer_encounters__encounter_id__assistant_appliquer_post",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistantApplication"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantResultat"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/{document_id}/relecture": {
+      "post": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "Relire",
+        "description": "Claude relit le document et propose des améliorations de forme. Rien n'est changé.",
+        "operationId": "relire_documents__document_id__relecture_post",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelectureOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encounters/{encounter_id}/consignes": {
+      "get": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "Lire Consignes",
+        "operationId": "lire_consignes_encounters__encounter_id__consignes_get",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsignesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "Remplacer Consignes",
+        "description": "Retirer une consigne dite pour cette consultation (celles du praticien se gèrent\ndans ses préférences). Le document n'est pas réécrit : il le sera à la prochaine demande.",
+        "operationId": "remplacer_consignes_encounters__encounter_id__consignes_put",
+        "parameters": [
+          {
+            "name": "encounter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Encounter Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsignesConsultation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsignesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters/{encounter_id}/deliveries": {
       "get": {
         "tags": [
@@ -5285,6 +5532,229 @@
         ],
         "title": "AppareilOut"
       },
+      "AssistantApplication": {
+        "properties": {
+          "nature": {
+            "type": "string",
+            "enum": [
+              "dossier",
+              "redaction",
+              "civilite"
+            ],
+            "title": "Nature"
+          },
+          "operations": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ReplaceTooth"
+                },
+                {
+                  "$ref": "#/components/schemas/UpdateFact"
+                },
+                {
+                  "$ref": "#/components/schemas/SetPlanItemStatus"
+                },
+                {
+                  "$ref": "#/components/schemas/AddPlanItem"
+                },
+                {
+                  "$ref": "#/components/schemas/RemovePlanItem"
+                },
+                {
+                  "$ref": "#/components/schemas/ReorderPlanItems"
+                },
+                {
+                  "$ref": "#/components/schemas/AddFact"
+                },
+                {
+                  "$ref": "#/components/schemas/RemoveFact"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "operation",
+                "mapping": {
+                  "add_fact": "#/components/schemas/AddFact",
+                  "add_plan_item": "#/components/schemas/AddPlanItem",
+                  "remove_fact": "#/components/schemas/RemoveFact",
+                  "remove_plan_item": "#/components/schemas/RemovePlanItem",
+                  "reorder_plan_items": "#/components/schemas/ReorderPlanItems",
+                  "replace_tooth": "#/components/schemas/ReplaceTooth",
+                  "set_plan_item_status": "#/components/schemas/SetPlanItemStatus",
+                  "update_fact": "#/components/schemas/UpdateFact"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Operations",
+            "default": []
+          },
+          "expected_object_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Object Version"
+          },
+          "consignes": {
+            "items": {
+              "type": "string",
+              "maxLength": 240,
+              "minLength": 3
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Consignes",
+            "default": []
+          },
+          "retenir": {
+            "type": "boolean",
+            "title": "Retenir",
+            "default": false
+          },
+          "civilite": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "monsieur",
+                  "madame"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Civilite"
+          },
+          "document_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "nature"
+        ],
+        "title": "AssistantApplication",
+        "description": "Ce que le praticien confirme."
+      },
+      "AssistantDemande": {
+        "properties": {
+          "demande": {
+            "type": "string",
+            "maxLength": 800,
+            "minLength": 2,
+            "title": "Demande"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "demande"
+        ],
+        "title": "AssistantDemande"
+      },
+      "AssistantLecture": {
+        "properties": {
+          "nature": {
+            "type": "string",
+            "enum": [
+              "dossier",
+              "redaction",
+              "civilite",
+              "incompris"
+            ],
+            "title": "Nature"
+          },
+          "resume": {
+            "type": "string",
+            "title": "Resume"
+          },
+          "consigne": {
+            "type": "string",
+            "title": "Consigne",
+            "default": ""
+          },
+          "civilite": {
+            "type": "string",
+            "title": "Civilite",
+            "default": ""
+          },
+          "operations": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Operations",
+            "default": []
+          },
+          "question": {
+            "type": "string",
+            "title": "Question",
+            "default": ""
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "regles",
+              "claude"
+            ],
+            "title": "Source"
+          },
+          "object_version": {
+            "type": "integer",
+            "title": "Object Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nature",
+          "resume",
+          "source",
+          "object_version"
+        ],
+        "title": "AssistantLecture",
+        "description": "Ce qu'Oris a compris. Rien n'a changé."
+      },
+      "AssistantResultat": {
+        "properties": {
+          "applique": {
+            "type": "boolean",
+            "title": "Applique"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "object_version": {
+            "type": "integer",
+            "title": "Object Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "applique",
+          "message",
+          "object_version"
+        ],
+        "title": "AssistantResultat"
+      },
       "AttachmentOut": {
         "properties": {
           "id": {
@@ -6311,6 +6781,50 @@
           "email"
         ],
         "title": "ConnexionOut"
+      },
+      "ConsignesConsultation": {
+        "properties": {
+          "consultation": {
+            "items": {
+              "type": "string",
+              "maxLength": 240,
+              "minLength": 3
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Consultation"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "consultation"
+        ],
+        "title": "ConsignesConsultation"
+      },
+      "ConsignesOut": {
+        "properties": {
+          "consultation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Consultation"
+          },
+          "praticien": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Praticien"
+          }
+        },
+        "type": "object",
+        "required": [
+          "consultation",
+          "praticien"
+        ],
+        "title": "ConsignesOut"
       },
       "CorrectionRequest": {
         "properties": {
@@ -9539,6 +10053,16 @@
             "type": "object",
             "maxProperties": 200,
             "title": "Terminology"
+          },
+          "consignes": {
+            "items": {
+              "type": "string",
+              "maxLength": 240,
+              "minLength": 3
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Consignes"
           }
         },
         "additionalProperties": false,
@@ -9631,6 +10155,22 @@
               }
             ],
             "title": "Terminology"
+          },
+          "consignes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "maxLength": 240,
+                  "minLength": 3
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consignes"
           }
         },
         "additionalProperties": false,
@@ -9802,6 +10342,29 @@
         ],
         "title": "ProgressOut",
         "description": "Avancement réel du traitement : chaque nombre est lu en base (S06)."
+      },
+      "PropositionOut": {
+        "properties": {
+          "titre": {
+            "type": "string",
+            "title": "Titre"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "consigne": {
+            "type": "string",
+            "title": "Consigne"
+          }
+        },
+        "type": "object",
+        "required": [
+          "titre",
+          "detail",
+          "consigne"
+        ],
+        "title": "PropositionOut"
       },
       "ProviderStatus": {
         "properties": {
@@ -9997,6 +10560,22 @@
           "fichiers"
         ],
         "title": "RecupererIn"
+      },
+      "RelectureOut": {
+        "properties": {
+          "propositions": {
+            "items": {
+              "$ref": "#/components/schemas/PropositionOut"
+            },
+            "type": "array",
+            "title": "Propositions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "propositions"
+        ],
+        "title": "RelectureOut"
       },
       "RemoveFact": {
         "properties": {

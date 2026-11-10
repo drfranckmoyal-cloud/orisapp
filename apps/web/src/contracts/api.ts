@@ -1214,6 +1214,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/encounters/{encounter_id}/assistant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Comprendre
+         * @description Dit ce que la demande change — le dossier, la rédaction, la civilité — sans rien changer.
+         *
+         *     Les tournures connues (« remplace 26 par 27 ») sont comprises sans IA : c'est
+         *     immédiat, et cela marche même quand le service d'IA ne répond pas. Le reste va à
+         *     Claude, sauf pour une consultation fictive, dont rien ne sort d'Oris.
+         */
+        post: operations["comprendre_encounters__encounter_id__assistant_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/encounters/{encounter_id}/assistant/appliquer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Appliquer
+         * @description Applique ce que le praticien vient de confirmer.
+         */
+        post: operations["appliquer_encounters__encounter_id__assistant_appliquer_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/documents/{document_id}/relecture": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Relire
+         * @description Claude relit le document et propose des améliorations de forme. Rien n'est changé.
+         */
+        post: operations["relire_documents__document_id__relecture_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/encounters/{encounter_id}/consignes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lire Consignes */
+        get: operations["lire_consignes_encounters__encounter_id__consignes_get"];
+        /**
+         * Remplacer Consignes
+         * @description Retirer une consigne dite pour cette consultation (celles du praticien se gèrent
+         *     dans ses préférences). Le document n'est pas réécrit : il le sera à la prochaine demande.
+         */
+        put: operations["remplacer_consignes_encounters__encounter_id__consignes_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters/{encounter_id}/deliveries": {
         parameters: {
             query?: never;
@@ -1878,6 +1964,94 @@ export interface components {
             actif: boolean;
         };
         /**
+         * AssistantApplication
+         * @description Ce que le praticien confirme.
+         */
+        AssistantApplication: {
+            /**
+             * Nature
+             * @enum {string}
+             */
+            nature: "dossier" | "redaction" | "civilite";
+            /**
+             * Operations
+             * @default []
+             */
+            operations: (components["schemas"]["ReplaceTooth"] | components["schemas"]["UpdateFact"] | components["schemas"]["SetPlanItemStatus"] | components["schemas"]["AddPlanItem"] | components["schemas"]["RemovePlanItem"] | components["schemas"]["ReorderPlanItems"] | components["schemas"]["AddFact"] | components["schemas"]["RemoveFact"])[];
+            /** Expected Object Version */
+            expected_object_version?: number | null;
+            /**
+             * Consignes
+             * @default []
+             */
+            consignes: string[];
+            /**
+             * Retenir
+             * @default false
+             */
+            retenir: boolean;
+            /** Civilite */
+            civilite?: ("monsieur" | "madame") | null;
+            /** Document Id */
+            document_id?: string | null;
+        };
+        /** AssistantDemande */
+        AssistantDemande: {
+            /** Demande */
+            demande: string;
+        };
+        /**
+         * AssistantLecture
+         * @description Ce qu'Oris a compris. Rien n'a changé.
+         */
+        AssistantLecture: {
+            /**
+             * Nature
+             * @enum {string}
+             */
+            nature: "dossier" | "redaction" | "civilite" | "incompris";
+            /** Resume */
+            resume: string;
+            /**
+             * Consigne
+             * @default
+             */
+            consigne: string;
+            /**
+             * Civilite
+             * @default
+             */
+            civilite: string;
+            /**
+             * Operations
+             * @default []
+             */
+            operations: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Question
+             * @default
+             */
+            question: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "regles" | "claude";
+            /** Object Version */
+            object_version: number;
+        };
+        /** AssistantResultat */
+        AssistantResultat: {
+            /** Applique */
+            applique: boolean;
+            /** Message */
+            message: string;
+            /** Object Version */
+            object_version: number;
+        };
+        /**
          * AttachmentOut
          * @description Une pièce jointe. Oris ne la lit pas : elle accompagne, elle ne nourrit pas.
          */
@@ -2243,6 +2417,18 @@ export interface components {
             praticien: string;
             /** Email */
             email: string;
+        };
+        /** ConsignesConsultation */
+        ConsignesConsultation: {
+            /** Consultation */
+            consultation: string[];
+        };
+        /** ConsignesOut */
+        ConsignesOut: {
+            /** Consultation */
+            consultation: string[];
+            /** Praticien */
+            praticien: string[];
         };
         /** CorrectionRequest */
         CorrectionRequest: {
@@ -3494,6 +3680,8 @@ export interface components {
             terminology?: {
                 [key: string]: string;
             };
+            /** Consignes */
+            consignes?: string[];
         };
         /**
          * PraticienOut
@@ -3545,6 +3733,8 @@ export interface components {
             terminology?: {
                 [key: string]: string;
             } | null;
+            /** Consignes */
+            consignes?: string[] | null;
         };
         /**
          * PreuveOut
@@ -3613,6 +3803,15 @@ export interface components {
             documents: number;
             /** Termine */
             termine: boolean;
+        };
+        /** PropositionOut */
+        PropositionOut: {
+            /** Titre */
+            titre: string;
+            /** Detail */
+            detail: string;
+            /** Consigne */
+            consigne: string;
         };
         /** ProviderStatus */
         ProviderStatus: {
@@ -3693,6 +3892,11 @@ export interface components {
         RecupererIn: {
             /** Fichiers */
             fichiers: string[];
+        };
+        /** RelectureOut */
+        RelectureOut: {
+            /** Propositions */
+            propositions: components["schemas"]["PropositionOut"][];
         };
         /** RemoveFact */
         RemoveFact: {
@@ -6563,6 +6767,173 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LearningEventOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    comprendre_encounters__encounter_id__assistant_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantDemande"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantLecture"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    appliquer_encounters__encounter_id__assistant_appliquer_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantApplication"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantResultat"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    relire_documents__document_id__relecture_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelectureOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    lire_consignes_encounters__encounter_id__consignes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsignesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remplacer_consignes_encounters__encounter_id__consignes_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsignesConsultation"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsignesOut"];
                 };
             };
             /** @description Validation Error */

@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 
 from oris_api import __version__
 from oris_api.api import (
+    assistant,
     audio,
     auth,
     connecteurs,
@@ -83,6 +84,7 @@ def create_app() -> FastAPI:
     app.include_router(connecteurs.router)
     app.include_router(smilecloud.router)
     app.include_router(encounters.router)
+    app.include_router(assistant.router)
     app.include_router(deliveries.router)
     app.include_router(envoi.router)
     app.include_router(figures.router)

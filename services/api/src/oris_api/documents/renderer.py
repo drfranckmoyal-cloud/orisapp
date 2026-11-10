@@ -14,7 +14,7 @@ Les sections vides ne sont pas affichées (§32.1).
 from __future__ import annotations
 
 import re
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field, replace
 
 from oris_api.contracts import ClinicalEncounter, ClinicalFact, Procedure
@@ -81,6 +81,9 @@ class Style:
     #: « monsieur », « madame », ou vide. Elle ne sert qu'à accorder : sans elle, le
     #: rédacteur devinait le genre d'après le prénom et se trompait.
     civilite: str = ""
+    #: Consignes de forme du praticien (retenues, ou dites pour cette consultation).
+    #: Le gabarit les ignore ; le rédacteur les suit sans jamais toucher à un fait.
+    consignes: tuple[str, ...] = ()
 
     def label_of(self, concept: str, default: str) -> str:
         return self.terminology.get(concept, default)
@@ -483,7 +486,7 @@ def ranger(
     ]
 
 
-def alleger_attribution(claims: list[Claim], statuts: dict[str, str]) -> list[Claim]:
+def alleger_attribution(claims: list[Claim], statuts: Mapping[str, str]) -> list[Claim]:
     """« Selon le patient, » une fois par suite de phrases du patient, pas à chacune.
 
     Franck, le 10/11/2026, sur un compte rendu réel : quarante « Selon le patient » pour

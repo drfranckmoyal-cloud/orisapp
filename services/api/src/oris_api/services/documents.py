@@ -40,6 +40,20 @@ from oris_api.services.identity import Actor
 VALIDATABLE = frozenset({"draft_ai", "needs_review"})
 
 
+CONSIGNES_CLE = "consignes_redaction"
+
+
+def consignes_de(encounter: Encounter) -> list[str]:
+    """Les consignes de forme dites pour cette consultation seulement."""
+    brutes = encounter.metadata_json.get(CONSIGNES_CLE)
+    return [str(c) for c in brutes] if isinstance(brutes, list) else []
+
+
+def poser_consignes(encounter: Encounter, consignes: list[str]) -> None:
+    # Un nouveau dictionnaire : SQLAlchemy ne voit pas une clé changée en place.
+    encounter.metadata_json = {**encounter.metadata_json, CONSIGNES_CLE: list(consignes)}
+
+
 def operative_note_available(obj: ClinicalEncounter) -> bool:
     """Un acte non annulé a été dit : un compte rendu de soins est possible (§81)."""
     return any(procedure.status != "cancelled" for procedure in obj.procedures)
@@ -166,6 +180,7 @@ def generate(
         length=preferences.document_length,
         terminology=dict(preferences.terminology),
         civilite=(patient.civility if patient else ""),
+        consignes=(*preferences.consignes, *consignes_de(encounter)),
     )
     existing = {doc.document_type: doc for doc in list_documents(session, encounter.id)}
     wanted = document_types_for(obj, {*existing, *include})
@@ -261,6 +276,14 @@ def edit_text(session: Session, actor: Actor, document_id: UUID, content: str) -
         raise Conflict("DOCUMENT_EMPTY", str(document_id))
     if content.strip() == last.content.strip():
         raise Conflict("NO_CHANGE", str(document_id))
+
+    # Le texte s'édite à même la page et s'enregistre tout seul (10/11/2026) : dix
+    # frappes ne font pas dix versions. Tant que la version courante est déjà celle du
+    # praticien et n'a pas été validée, on la complète au lieu d'en empiler une autre.
+    if last.generator == "practitioner:manual" and last.validated_at is None:
+        last.content = content.strip()
+        session.flush()
+        return document
 
     version = DocumentVersion(
         document_id=document.id,
