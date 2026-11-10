@@ -39,6 +39,10 @@ class Settings(BaseSettings):
     clinical_extraction_provider: ExtractionProviderName = "mock"
     # Envoyer le transcript à un modèle extérieur exige un accord explicite (spec §66).
     allow_external_llm: bool = False
+    # Rendre la main dès la fin de l'écoute : le dossier se prépare pendant que le
+    # praticien passe au patient suivant (Franck, 10/11/2026 : « ça m'empêche
+    # d'enchaîner »). Éteint par défaut : les essais veulent un traitement d'un bloc.
+    traitement_en_arriere_plan: bool = False
     anthropic_api_key: SecretStr | None = None
     anthropic_model: str = "claude-sonnet-5"
     document_generation_provider: DocumentProviderName = "mock"

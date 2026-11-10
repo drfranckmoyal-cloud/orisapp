@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import threading
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from sqlalchemy import delete, func, select
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from oris_api.config import Settings
@@ -573,14 +575,69 @@ def finish(
     final_sequence: int | None = None,
     client_recorded_ms: int | None = None,
     accept_gaps: bool = False,
+    differe: bool = False,
 ) -> Encounter:
+    """Fin de l'écoute, puis traitement.
+
+    `differe` : fermer l'écoute et s'arrêter là — l'appelant lance le traitement en
+    arrière-plan (`traiter_en_arriere_plan`) et rend la main au praticien tout de suite.
+    """
     if encounter.status in {"finalizing", "transcription_failed", "generation_failed"}:
+        if differe:
+            return encounter
         return process(session, actor, encounter, providers, sink)  # reprise sans doublon
     if encounter.status not in {"recording", "paused"}:
         raise Conflict("INVALID_TRANSITION", str(encounter.id), [encounter.status, "finalizing"])
     audio.finalize(session, actor, encounter, final_sequence, client_recorded_ms, accept_gaps)
     transition(session, actor, encounter, "finalizing")
+    if differe:
+        return encounter
     return process(session, actor, encounter, providers, sink)
+
+
+def traiter_en_arriere_plan(
+    engine: Engine,
+    actor: Actor,
+    encounter_id: UUID,
+    providers: ProviderSet,
+    sink: AudioSink,
+) -> threading.Thread:
+    """Prépare le dossier pendant que le praticien passe au patient suivant.
+
+    Franck, le 10/11/2026, entre deux patients : « Oris prépare le dossier, c'est très
+    long parfois et ça m'empêche d'enchaîner ». L'app attendait la fin du traitement —
+    quatre minutes sur une consultation de vingt-six — avant de rendre l'écran. L'écoute
+    est fermée et enregistrée d'abord ; ceci fait le reste, dans sa propre session.
+
+    Si le traitement casse, la consultation ne reste pas « en préparation » pour
+    toujours : elle passe en échec avec une raison, et se relance d'un bouton.
+    """
+
+    def travail() -> None:
+        with Session(engine) as session:
+            encounter = session.get(Encounter, encounter_id)
+            if encounter is None:
+                return
+            try:
+                process(session, actor, encounter, providers, sink)
+                session.commit()
+            except Exception:
+                session.rollback()
+                logger.exception(
+                    "pipeline.background_failed", extra={"encounter_id": str(encounter_id)}
+                )
+                encounter = session.get(Encounter, encounter_id)
+                if encounter is not None and encounter.status in {"finalizing", "processing"}:
+                    set_processing_errors(
+                        encounter,
+                        [{"rule": "EXTRACTION_UNAVAILABLE", "subject_id": str(encounter_id)}],
+                    )
+                    encounter.status = "generation_failed"
+                    session.commit()
+
+    fil = threading.Thread(target=travail, name=f"oris-traitement-{encounter_id}", daemon=True)
+    fil.start()
+    return fil
 
 
 # --- Points marqués pendant l'écoute (spec §11) --------------------------------------

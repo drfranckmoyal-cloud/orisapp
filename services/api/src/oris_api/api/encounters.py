@@ -9,6 +9,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Body, Header, Response, status
 from sqlalchemy import func, select
+from sqlalchemy.engine import Engine
 
 from oris_api.api.dependencies import (
     ActorDep,
@@ -154,9 +155,14 @@ def finish(
     providers: ProvidersDep,
     sink: SinkDep,
     live: LiveDep,
+    settings: SettingsDep,
     body: EncounterFinish | None = None,
 ) -> EncounterOut:
-    """Fin de l'écoute puis traitement. 409 AUDIO_CHUNKS_MISSING s'il manque des segments."""
+    """Fin de l'écoute puis traitement. 409 AUDIO_CHUNKS_MISSING s'il manque des segments.
+
+    Avec `TRAITEMENT_EN_ARRIERE_PLAN`, la réponse part dès que l'écoute est fermée et
+    enregistrée : le dossier se prépare ensuite, et le praticien enchaîne.
+    """
     encounter = encounters.get_encounter(session, actor, encounter_id)
     # Le direct s'arrête ici. La transcription du dossier est refaite sur l'audio
     # complet, jamais reprise du direct (§14.1).
@@ -171,7 +177,18 @@ def finish(
         final_sequence=options.final_sequence,
         client_recorded_ms=options.client_recorded_ms,
         accept_gaps=options.accept_gaps,
+        differe=settings.traitement_en_arriere_plan,
     )
+    if settings.traitement_en_arriere_plan and encounter.status in {
+        "finalizing",
+        "transcription_failed",
+        "generation_failed",
+    }:
+        # L'écoute fermée doit être enregistrée avant que l'autre session ne la lise.
+        session.commit()
+        encounters.traiter_en_arriere_plan(
+            cast(Engine, session.get_bind()), actor, encounter.id, providers, sink
+        )
     return encounter_out(session, encounter)
 
 

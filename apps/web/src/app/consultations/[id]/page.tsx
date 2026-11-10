@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { TypeDocument } from "@/components/documents/TypeDocument";
 import { Icone } from "@/components/Icones";
@@ -148,6 +148,22 @@ export default function ConsultationPage() {
   const motDe = useConcepts();
   const [toast, setToast] = useState<string | null>(null);
   const [confirmerRetrait, setConfirmerRetrait] = useState<string | null>(null);
+
+  // Le dossier se prépare en arrière-plan depuis le 10/11/2026 : la page le guette et
+  // s'actualise seule, sans qu'on ait à recharger.
+  const enPreparation =
+    encounter.state === "ready" &&
+    (encounter.data.status === "finalizing" ||
+      encounter.data.status === "processing");
+  useEffect(() => {
+    if (!enPreparation) return;
+    const veille = window.setInterval(() => {
+      reloadEncounter();
+      reloadDocuments();
+      reloadClinical();
+    }, 6000);
+    return () => window.clearInterval(veille);
+  }, [enPreparation, reloadEncounter, reloadDocuments, reloadClinical]);
 
   function erreur(caught: unknown) {
     const code = caught instanceof ApiError ? caught.code : "UNKNOWN";
@@ -547,11 +563,11 @@ export default function ConsultationPage() {
       {/* Traitement coupé net (Mac en veille) : la consultation resterait « en
           traitement » pour toujours. On propose de reprendre ; le serveur refuse s'il
           travaille encore (moins de 5 min). */}
-      {data.status === "processing" && (
+      {(data.status === "processing" || data.status === "finalizing") && (
         <div className="banner banner-info" role="status">
-          Oris prépare le dossier… Si rien ne bouge après quelques minutes (Mac
-          mis en veille, serveur arrêté), relancez : Oris reprend là où il
-          s’était arrêté.{" "}
+          Oris prépare le dossier — vous pouvez passer au patient suivant, cette
+          page s’actualise seule. Si rien ne bouge après cinq minutes,
+          relancez : Oris reprend là où il s’était arrêté.{" "}
           <Bouton
             variante="secondaire"
             onClick={() =>
