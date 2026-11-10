@@ -60,7 +60,7 @@ def test_le_redacteur_recoit_la_consigne_d_accord() -> None:
 def test_sans_civilite_le_redacteur_a_l_ordre_de_ne_pas_accorder() -> None:
     """Le défaut ne doit pas être « masculin » : il doit être « n'accorde pas »."""
     sans = message([], {}, Style())
-    assert "n'accorde pas au genre" in sans
+    assert "ne les change jamais" in sans
     assert "Ne devine jamais le genre d'après le prénom" in sans
     assert "accorde au masculin" not in sans
 

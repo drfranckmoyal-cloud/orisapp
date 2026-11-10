@@ -28,10 +28,14 @@ LIBELLES: dict[str, str] = {
 CONSIGNES: dict[str, str] = {
     "monsieur": "Le patient est un homme : accorde au masculin (« le patient », « il »).",
     "madame": "La patiente est une femme : accorde au féminin (« la patiente », « elle »).",
+    # Sans civilité, on ne masculinise pas pour autant : sur un compte rendu réel, la
+    # consigne « n'accorde pas » avait transformé « directrice » en « directeur »
+    # (10/11/2026). Les mots dits font foi ; le prénom, jamais.
     "": (
-        "La civilité du patient n'est pas connue : n'accorde pas au genre. Écris « le "
-        "patient » (forme neutre d'usage) et évite « il », « elle », « venue », « venu ». "
-        "Ne devine jamais le genre d'après le prénom."
+        "La civilité du patient n'est pas renseignée. Garde les accords tels qu'ils "
+        "figurent dans les mots des faits (« suivie », « directrice », « adressé ») : ne "
+        "les change jamais. Là où rien ne l'indique, écris « le patient » sans autre "
+        "accord et évite « il » et « elle ». Ne devine jamais le genre d'après le prénom."
     ),
 }
 

@@ -16,7 +16,12 @@ import httpx
 import pytest
 
 from oris_api.domain.preferences import ajouter_consigne
-from oris_api.llm.assistant import AssistantCorrections, AssistantIndisponible, lire
+from oris_api.llm.assistant import (
+    AssistantCorrections,
+    AssistantIndisponible,
+    lire,
+    normaliser,
+)
 from tests.test_redaction_consultation import dictee
 
 
@@ -91,6 +96,70 @@ def test_reordonner_le_plan_ne_passe_pas_par_le_dialogue() -> None:
     assert lecture.nature == "incompris"
 
 
+def test_des_noms_de_champs_en_francais_sont_remis_au_contrat() -> None:
+    """Franck, le 10/11/2026 : « il a compris mais pas réalisé ». Claude rendait « valeur »
+    et « dents » — les mots qu'Oris lui montrait — et trois corrections sur quatre étaient
+    rejetées alors qu'elles étaient comprises."""
+    obj = dictee()
+    cible = obj.facts[0].fact_id
+    lecture = lire(
+        {
+            "nature": "dossier",
+            "resume": "Je corrige l'âge.",
+            "operations": [
+                {"operation": "update_fact", "fact_id": cible, "changes": {"valeur": "62 ans"}}
+            ],
+        },
+        obj,
+    )
+    assert lecture.nature == "dossier"
+    assert lecture.operations[0].model_dump(exclude_none=True) == {
+        "operation": "update_fact",
+        "fact_id": cible,
+        "changes": {"value": "62 ans"},
+    }
+
+
+def test_une_dent_remplacee_dans_un_seul_fait_garde_sa_cible() -> None:
+    obj = dictee()
+    cible = obj.facts[0].fact_id
+    operations = normaliser(
+        [{"operation": "replace_tooth", "fact_id": cible, "from_tooth": "46", "to_tooth": "36"}]
+    )
+    assert operations == [
+        {"operation": "replace_tooth", "from_tooth": "46", "to_tooth": "36", "fact_ids": [cible]}
+    ]
+
+
+def test_un_fait_ajoute_en_francais_devient_un_fait_du_contrat() -> None:
+    lecture = lire(
+        {
+            "nature": "dossier",
+            "resume": "J'ajoute l'allergie.",
+            "operations": [
+                {
+                    "operation": "add_fact",
+                    "fact": {
+                        "rubrique": "anamnesis",
+                        "concept": "allergy",
+                        "valeur": "allergie à la pénicilline",
+                        "statut": "patient_reported",
+                        "certitude": "certain",
+                        "dents": [],
+                        "champ_inconnu": "ignoré",
+                    },
+                }
+            ],
+        },
+        dictee(),
+    )
+    assert lecture.nature == "dossier"
+    fait = lecture.operations[0].model_dump()["fact"]
+    assert fait["category"] == "anamnesis"
+    assert fait["value"] == "allergie à la pénicilline"
+    assert fait["clinical_status"] == "patient_reported"
+
+
 def test_la_civilite_exige_une_valeur_connue() -> None:
     assert (
         lire({"nature": "civilite", "resume": "…", "civilite": "madame"}, dictee()).civilite
@@ -104,7 +173,9 @@ def test_claude_voit_les_faits_jamais_le_nom_du_patient() -> None:
     asyncio.run(claude.comprendre("plus court", dictee(), "madame"))
     contenu = json.loads(envoyes[0]["messages"][0]["content"])
     assert set(contenu) == {"demande", "civilite_connue", "dossier"}
-    assert set(contenu["dossier"]) == {"faits", "plan"}
+    assert set(contenu["dossier"]) == {"facts", "plan_items"}
+    # Les noms du contrat, pas des traductions : Claude réemploie ce qu'il a sous les yeux.
+    assert {"value", "teeth", "clinical_status"} <= set(contenu["dossier"]["facts"][0])
     assert "patient_id" not in envoyes[0]["messages"][0]["content"]
 
 
@@ -228,3 +299,56 @@ def test_dix_frappes_ne_font_pas_dix_versions(api: Any) -> None:
     assert seconde.status_code == 200, seconde.text
     assert seconde.json()["version"] == version
     assert "repris" in seconde.json()["content"]
+
+
+def test_les_corrections_comprises_vont_jusqu_au_bout(api: Any) -> None:
+    """Comprendre ne suffit pas : chaque forme que Claude rend doit s'appliquer."""
+    identifiant, version = consultation(api)
+    objet = api.get(f"/encounters/{identifiant}/clinical-object").json()["clinical_object"]
+    fait = objet["facts"][0]
+
+    def appliquer(operations: list[dict[str, Any]], attendue: int) -> int:
+        reponse = api.post(
+            f"/encounters/{identifiant}/assistant/appliquer",
+            json={
+                "nature": "dossier",
+                "operations": operations,
+                "expected_object_version": attendue,
+            },
+        )
+        assert reponse.status_code == 200, reponse.text
+        return int(reponse.json()["object_version"])
+
+    version = appliquer(
+        [
+            {
+                "operation": "update_fact",
+                "fact_id": fait["fact_id"],
+                "changes": {"value": "sensibilité au froid vif"},
+            }
+        ],
+        version,
+    )
+    version = appliquer(
+        [
+            {
+                "operation": "add_fact",
+                "fact": {
+                    "category": "anamnesis",
+                    "concept": "allergy",
+                    "value": "allergie à la pénicilline",
+                    "teeth": [],
+                    "assertion": "present",
+                    "temporality": "current",
+                    "clinical_status": "patient_reported",
+                    "certainty": "certain",
+                },
+            }
+        ],
+        version,
+    )
+    version = appliquer([{"operation": "remove_fact", "fact_id": fait["fact_id"]}], version)
+
+    faits = api.get(f"/encounters/{identifiant}/clinical-object").json()["clinical_object"]["facts"]
+    assert fait["fact_id"] not in {f["fact_id"] for f in faits}
+    assert any(f["value"] == "allergie à la pénicilline" for f in faits)

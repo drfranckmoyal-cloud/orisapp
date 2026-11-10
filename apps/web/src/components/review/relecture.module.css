@@ -317,12 +317,14 @@
 
 .corps {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 390px);
-  gap: 26px;
+  /* Le dialogue reste à côté du document tant que la fenêtre le permet : relégué
+     sous quatre écrans de texte, il n'était plus trouvable. */
+  grid-template-columns: minmax(0, 1fr) minmax(290px, 390px);
+  gap: 22px;
   align-items: start;
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 940px) {
   .corps {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -741,7 +743,7 @@
   scrollbar-width: thin;
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 940px) {
   .colonne {
     position: static;
     max-height: none;

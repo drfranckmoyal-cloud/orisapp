@@ -20,12 +20,20 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from typing import Any, Literal, get_args
 
 import httpx
 from pydantic import TypeAdapter, ValidationError
 
 from oris_api.contracts import ClinicalEncounter
+from oris_api.contracts.generated import (
+    ClinicalFactAssertion,
+    ClinicalFactCategory,
+    ClinicalFactCertainty,
+    ClinicalFactClinicalStatus,
+    ClinicalFactTemporality,
+    TreatmentPlanItemStatus,
+)
 from oris_api.domain.corrections import (
     AddFact,
     CorrectionOperation,
@@ -37,7 +45,7 @@ from oris_api.domain.corrections import (
 
 API_URL = "https://api.anthropic.com/v1/messages"
 API_VERSION = "2023-06-01"
-PROMPT_VERSION = "assistant-fr-1"
+PROMPT_VERSION = "assistant-fr-2"
 MAX_TOKENS = 3_000
 PROPOSITIONS_MAX = 5
 
@@ -61,9 +69,13 @@ courte à l'infinitif pour le rédacteur, réutilisable telle quelle sur un autr
 courtes »). Aucun fait clinique ne doit y figurer.
 - `civilite` — elle dit que le patient est un homme ou une femme (« c'est un patient, pas \
 une patiente », « accorde au féminin »). Renseigne `civilite`.
-- `dossier` — elle change un FAIT clinique : une dent, un statut, une décision, un constat \
-à retirer, une information que le praticien ajoute. Traduis-la en `operations`, avec les \
-identifiants (`fact_id`, `item_id`) pris dans le dossier fourni, jamais inventés.
+- `dossier` — elle change un FAIT clinique : une dent, un âge, un statut, une décision, un \
+constat à retirer, une information que le praticien ajoute. Traduis-la en `operations`, \
+avec les identifiants (`fact_id`, `item_id`) pris dans le dossier fourni, jamais inventés, \
+et les noms de champs du dossier, tels quels : `value`, `teeth`, `clinical_status`… \
+Pour changer ce qu'un fait dit, c'est `update_fact` avec `changes.value` (la phrase \
+entière, corrigée). Pour une dent, `replace_tooth` ; limite-le à certains faits avec \
+`fact_ids`. Un fait dit par le patient garde `clinical_status: patient_reported`.
 - `incompris` — tu ne sais pas ce qu'il faut changer, ou plusieurs cibles sont possibles. \
 Pose ta question dans `question`. C'est toujours mieux que de deviner.
 
@@ -113,7 +125,20 @@ class Proposition:
     consigne: str
 
 
+def _valeurs(literal: Any) -> list[str]:
+    return [str(v) for v in get_args(literal)]
+
+
 def comprendre_schema() -> dict[str, Any]:
+    dent = {"type": "string", "description": "Numéro FDI, par exemple « 26 »."}
+    axes = {
+        "assertion": {"type": "string", "enum": _valeurs(ClinicalFactAssertion)},
+        "temporality": {"type": "string", "enum": _valeurs(ClinicalFactTemporality)},
+        "clinical_status": {"type": "string", "enum": _valeurs(ClinicalFactClinicalStatus)},
+        "certainty": {"type": "string", "enum": _valeurs(ClinicalFactCertainty)},
+        "teeth": {"type": "array", "items": dent},
+        "value": {"description": "Ce qui est dit, avec les mots du praticien."},
+    }
     return {
         "type": "object",
         "additionalProperties": False,
@@ -128,6 +153,7 @@ def comprendre_schema() -> dict[str, Any]:
                 "type": "array",
                 "items": {
                     "type": "object",
+                    "additionalProperties": False,
                     "required": ["operation"],
                     "properties": {
                         "operation": {
@@ -140,13 +166,43 @@ def comprendre_schema() -> dict[str, Any]:
                                 "add_fact",
                             ],
                         },
-                        "from_tooth": {"type": "string"},
-                        "to_tooth": {"type": "string"},
-                        "fact_id": {"type": "string"},
+                        "from_tooth": dent,
+                        "to_tooth": dent,
+                        "fact_ids": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "replace_tooth : les faits visés ; omis, tous.",
+                        },
+                        "fact_id": {
+                            "type": "string",
+                            "description": "update_fact, remove_fact : le fait visé.",
+                        },
                         "item_id": {"type": "string"},
-                        "status": {"type": "string"},
-                        "changes": {"type": "object"},
-                        "fact": {"type": "object"},
+                        "status": {"type": "string", "enum": _valeurs(TreatmentPlanItemStatus)},
+                        "changes": {
+                            "type": "object",
+                            "additionalProperties": False,
+                            "description": "update_fact : seulement les champs qui changent.",
+                            "properties": axes,
+                        },
+                        "fact": {
+                            "type": "object",
+                            "additionalProperties": False,
+                            "description": "add_fact : le fait que le praticien vient de dire.",
+                            "required": ["category", "concept", "value", "clinical_status"],
+                            "properties": {
+                                "category": {
+                                    "type": "string",
+                                    "enum": _valeurs(ClinicalFactCategory),
+                                },
+                                "concept": {
+                                    "type": "string",
+                                    "description": "Identifiant court en anglais, comme ceux "
+                                    "du dossier (« allergy », « pain »).",
+                                },
+                                **axes,
+                            },
+                        },
                     },
                 },
             },
@@ -178,28 +234,110 @@ def relire_schema() -> dict[str, Any]:
 
 
 def dossier_pour_claude(obj: ClinicalEncounter) -> dict[str, Any]:
-    """Le dossier tel que Claude le voit : des faits, jamais le nom du patient."""
+    """Le dossier tel que Claude le voit : des faits, jamais le nom du patient.
+
+    Les champs portent **les noms du contrat** (`value`, `teeth`, `clinical_status`…) :
+    Claude réemploie dans ses opérations les mots qu'il a sous les yeux. Montrés en
+    français (« valeur », « dents »), il les rendait en français, et Oris rejetait trois
+    corrections sur quatre qu'il avait pourtant comprises (Franck, 10/11/2026 : « il a
+    compris mais pas réalisé »).
+    """
     plan = obj.treatment_plan
     return {
-        "faits": [
+        "facts": [
             {
                 "fact_id": f.fact_id,
-                "rubrique": f.category,
+                "category": f.category,
                 "concept": f.concept,
-                "valeur": f.value,
-                "dents": list(f.teeth),
+                "value": f.value,
+                "teeth": list(f.teeth),
                 "assertion": f.assertion,
-                "statut": f.clinical_status,
-                "temporalite": f.temporality,
-                "certitude": f.certainty,
+                "clinical_status": f.clinical_status,
+                "temporality": f.temporality,
+                "certainty": f.certainty,
             }
             for f in obj.facts
         ],
-        "plan": [
-            {"item_id": i.item_id, "action": i.action, "dents": list(i.teeth), "statut": i.status}
+        "plan_items": [
+            {"item_id": i.item_id, "action": i.action, "teeth": list(i.teeth), "status": i.status}
             for i in (plan.items if plan else [])
         ],
     }
+
+
+#: Ce que Claude écrit parfois à la place des noms du contrat. On le remet d'aplomb
+#: plutôt que de rejeter une correction comprise pour un nom de champ.
+SYNONYMES = {
+    "valeur": "value",
+    "dents": "teeth",
+    "rubrique": "category",
+    "categorie": "category",
+    "statut": "clinical_status",
+    "temporalite": "temporality",
+    "certitude": "certainty",
+}
+CHAMPS_CHANGES = {"assertion", "temporality", "clinical_status", "certainty", "teeth", "value"}
+CHAMPS_FAIT = {
+    "category",
+    "concept",
+    "value",
+    "teeth",
+    "surfaces",
+    "assertion",
+    "temporality",
+    "clinical_status",
+    "certainty",
+}
+
+
+def _contrat(objet: Any, permis: set[str]) -> dict[str, Any]:
+    if not isinstance(objet, dict):
+        return {}
+    propre = {SYNONYMES.get(str(cle), str(cle)): valeur for cle, valeur in objet.items()}
+    return {cle: valeur for cle, valeur in propre.items() if cle in permis}
+
+
+def normaliser(operations: Any) -> list[dict[str, Any]]:
+    """Remet les opérations de Claude à la forme du contrat, sans rien y ajouter."""
+    propres: list[dict[str, Any]] = []
+    for brute in operations if isinstance(operations, list) else []:
+        if not isinstance(brute, dict):
+            continue
+        nom = brute.get("operation")
+        if nom == "replace_tooth":
+            operation: dict[str, Any] = {
+                "operation": nom,
+                "from_tooth": str(brute.get("from_tooth", "")),
+                "to_tooth": str(brute.get("to_tooth", "")),
+            }
+            cibles = brute.get("fact_ids") or ([brute["fact_id"]] if brute.get("fact_id") else None)
+            if cibles:
+                operation["fact_ids"] = [str(c) for c in cibles]
+        elif nom == "update_fact":
+            operation = {
+                "operation": nom,
+                "fact_id": str(brute.get("fact_id", "")),
+                "changes": _contrat(brute.get("changes"), CHAMPS_CHANGES),
+            }
+        elif nom == "remove_fact":
+            operation = {"operation": nom, "fact_id": str(brute.get("fact_id", ""))}
+        elif nom == "set_plan_item_status":
+            operation = {
+                "operation": nom,
+                "item_id": str(brute.get("item_id", "")),
+                "status": brute.get("status"),
+            }
+        elif nom == "add_fact":
+            fait = _contrat(brute.get("fact"), CHAMPS_FAIT)
+            fait.setdefault("teeth", [])
+            fait.setdefault("assertion", "present")
+            fait.setdefault("temporality", "current")
+            fait.setdefault("certainty", "certain")
+            operation = {"operation": nom, "fact": fait}
+        else:
+            operation = dict(brute)
+        propres.append(operation)
+    return propres
 
 
 def lire(sortie: dict[str, Any], obj: ClinicalEncounter) -> Lecture:
@@ -218,7 +356,7 @@ def lire(sortie: dict[str, Any], obj: ClinicalEncounter) -> Lecture:
         return Lecture("civilite", resume, civilite=str(civilite))
     if nature == "dossier":
         try:
-            operations = OPERATIONS.validate_python(sortie.get("operations") or [])
+            operations = OPERATIONS.validate_python(normaliser(sortie.get("operations")))
         except ValidationError:
             return _incompris(
                 "J'ai compris qu'il fallait corriger le dossier, mais pas précisément quoi. "
