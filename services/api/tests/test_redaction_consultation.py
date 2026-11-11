@@ -252,3 +252,53 @@ def test_naming_the_rubric_while_dictating_decides_where_the_fact_goes() -> None
     )
     assert "erre les dents la journée" in anamnese
     assert "Anamnèse :" not in anamnese
+
+
+def test_ce_qui_reste_a_faire_va_a_la_suite_et_non_au_motif() -> None:
+    """Franck, le 11/11/2026, CR BAUMANN : « Une ordonnance de kinésithérapie est à
+    rédiger » se retrouvait dans le motif — « c'est une erreur récurrente ». Tout adressage
+    allait au motif ; seul celui qui amène le patient y a sa place."""
+    from oris_api.documents.renderer import rubrique_de
+
+    modele = dictee().facts[0]
+
+    def fait(**champs: object) -> object:
+        return modele.model_copy(update={"teeth": [], **champs})
+
+    a_rediger = fait(
+        category="other",
+        concept="referral",
+        value="ordonnance pour kinésithérapie à rédiger",
+        clinical_status="planned",
+        temporality="future",
+    )
+    assert rubrique_de(a_rediger) == "Suite de la prise en charge"
+
+    a_adresser = fait(
+        category="other",
+        concept="referral",
+        value="adresser à l'orthodontiste",
+        clinical_status="proposed",
+        temporality="future",
+    )
+    assert rubrique_de(a_adresser) == "Suite de la prise en charge"
+
+    # Le patient qui nous est adressé, lui, reste dans le motif.
+    adresse_par = fait(
+        category="other",
+        concept="referral",
+        value="adressé par son dentiste pour avis",
+        clinical_status="patient_reported",
+        temporality="past",
+    )
+    assert rubrique_de(adresse_par) == "Motif de la consultation"
+
+    # Un projet du patient n'est pas une suite de prise en charge.
+    projet = fait(
+        category="other",
+        concept="travel",
+        value="part en vacances le mois prochain",
+        clinical_status="patient_reported",
+        temporality="future",
+    )
+    assert rubrique_de(projet) == "Points d’attention / coordination"

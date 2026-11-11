@@ -344,7 +344,16 @@ def rubrique_de(fact: ClinicalFact) -> str:
         return dictee
     if category == "patient_context":
         return SITUATION
-    if concept == "referral" or category in {"chief_complaint", "symptom"}:
+    # « Adressé par le Dr X » est un motif ; « ordonnance de kiné à rédiger », « à adresser
+    # à l'orthodontiste » sont la suite. Tout adressage allait au motif, et une ordonnance à
+    # faire s'y retrouvait à chaque fois (Franck, 11/11/2026, CR BAUMANN : « c'est une
+    # erreur récurrente »). Ce qui reste à faire va à la suite, quelle que soit sa rubrique.
+    # Un projet du patient (« part en vacances le mois prochain ») n'est pas une suite de
+    # prise en charge : seul ce que le praticien prévoit l'est.
+    a_faire = status in A_FAIRE or (fact.temporality == "future" and status != "patient_reported")
+    if concept == "referral" and not a_faire:
+        return MOTIF
+    if category in {"chief_complaint", "symptom"}:
         return MOTIF
     # L'anamnèse quitte « Points d'attention » (révision du 10/10/2026) : antécédents,
     # traitements, habitudes, hygiène, alimentation et parafonctions se lisent ensemble,
@@ -371,7 +380,13 @@ def rubrique_de(fact: ClinicalFact) -> str:
         if fact.assertion != "present" or status == "refused":
             return ATTENTION
         return PROPOSITION
+    if a_faire and fact.assertion == "present":
+        return SUITE
     return ATTENTION
+
+
+#: Ce qui reste à faire après la consultation : une prescription, un adressage, un rendez-vous.
+A_FAIRE = frozenset({"planned", "deferred", "accepted", "proposed"})
 
 
 def phrase_dictee(fact: ClinicalFact) -> str | None:
