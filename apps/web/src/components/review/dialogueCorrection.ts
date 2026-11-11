@@ -1,84 +1,52 @@
 import type { LectureAssistant, PropositionRelecture } from "@/lib/api";
+import type { components } from "@/contracts/api";
 
-/** Le dialogue « Corriger avec Claude » d'une consultation, gardé hors de l'écran.
+/** Le dialogue « Corriger avec Claude » d'une consultation.
  *
- * Franck, le 11/11/2026 : « si je sors et que je reviens dans Corriger avec Claude, garder
- * l'historique, ne pas en remettre une vierge ». Le fil vit ici, par consultation : quitter
- * la page ne l'efface pas, et une correction lancée continue d'arriver. Une copie est
- * gardée dans l'onglet (sessionStorage) pour survivre à un rechargement ; rien ne quitte
- * le navigateur, et tout s'efface avec l'onglet.
+ * La conversation vit **sur le serveur** (Franck, 11/11/2026 : « garder l'historique, ne pas
+ * en remettre une vierge » — y compris l'app fermée, et d'un appareil à l'autre). Ici ne
+ * vit que ce qui part à l'instant : la demande en route, la correction qu'on vient de
+ * confirmer, les cases cochées. Le tout tient en mémoire, par consultation, pour survivre
+ * à un aller-retour vers une autre page pendant que Claude travaille.
  */
 
+export type DemandeServeur = components["schemas"]["DemandeCorrectionOut"];
+
 export type Echange =
-  | { id: number; qui: "moi"; texte: string }
-  | { id: number; qui: "oris"; sorte: "attente"; texte: string }
-  | { id: number; qui: "oris"; sorte: "application"; depuis: number }
-  | { id: number; qui: "oris"; sorte: "erreur"; texte: string }
-  | { id: number; qui: "oris"; sorte: "fait"; texte: string }
-  | { id: number; qui: "oris"; sorte: "annule"; texte: string }
-  | { id: number; qui: "oris"; sorte: "lecture"; lecture: LectureAssistant }
-  | { id: number; qui: "oris"; sorte: "relecture"; propositions: PropositionRelecture[] };
+  | { id: string; qui: "moi"; texte: string }
+  | { id: string; qui: "oris"; sorte: "attente"; texte: string }
+  | { id: string; qui: "oris"; sorte: "application"; depuis: number }
+  | { id: string; qui: "oris"; sorte: "erreur"; texte: string }
+  | { id: string; qui: "oris"; sorte: "fait"; texte: string }
+  | { id: string; qui: "oris"; sorte: "annule"; texte: string }
+  | { id: string; qui: "oris"; sorte: "lecture"; lecture: LectureAssistant }
+  | { id: string; qui: "oris"; sorte: "relecture"; propositions: PropositionRelecture[] };
 
 export type EtatDialogue = {
-  fil: Echange[];
+  /** Les demandes qui partent, avant que le serveur ne les ait enregistrées. */
+  enVol: Echange[];
+  /** Ce qu'on vient de faire sur une demande du serveur, en attendant sa relecture. */
+  surcharges: Record<string, Echange>;
+  /** Relecture : les propositions cochées, par demande. */
+  coches: Record<string, number[]>;
   compteur: number;
-  /** Relecture : les propositions cochées, par échange. */
-  coches: Record<number, number[]>;
 };
 
 export type Marque = { texte: string; ton: "neutre" | "attention" | "valide" | "alerte" };
 
-const VIDE: EtatDialogue = { fil: [], compteur: 0, coches: {} };
+const VIDE: EtatDialogue = { enVol: [], surcharges: {}, coches: {}, compteur: 0 };
 const memoire = new Map<string, EtatDialogue>();
 const abonnes = new Map<string, Set<() => void>>();
 
-function cle(encounterId: string): string {
-  return `oris.dialogue.${encounterId}`;
-}
-
-/** Relu après un rechargement : ce qui tournait alors ne reviendra pas dans cette page. */
-function rouvrir(etat: EtatDialogue): EtatDialogue {
-  return {
-    ...etat,
-    fil: etat.fil.map((echange) =>
-      echange.qui === "oris" && (echange.sorte === "attente" || echange.sorte === "application")
-        ? {
-            id: echange.id,
-            qui: "oris",
-            sorte: "erreur",
-            texte:
-              "Interrompu par le rechargement de la page. Si c’était une correction, regardez le document : elle a pu aboutir.",
-          }
-        : echange,
-    ),
-  };
-}
-
 export function lireDialogue(encounterId: string): EtatDialogue {
-  const present = memoire.get(encounterId);
-  if (present) return present;
-  let etat = VIDE;
-  try {
-    const garde = window.sessionStorage.getItem(cle(encounterId));
-    if (garde) etat = rouvrir(JSON.parse(garde) as EtatDialogue);
-  } catch {
-    // Stockage refusé ou illisible : on repart d'un fil vide, sans plus.
-  }
-  memoire.set(encounterId, etat);
-  return etat;
+  return memoire.get(encounterId) ?? VIDE;
 }
 
 export function modifierDialogue(
   encounterId: string,
   changement: (etat: EtatDialogue) => EtatDialogue,
 ): void {
-  const suivant = changement(lireDialogue(encounterId));
-  memoire.set(encounterId, suivant);
-  try {
-    window.sessionStorage.setItem(cle(encounterId), JSON.stringify(suivant));
-  } catch {
-    // Sans stockage, le fil tient quand même tant que l'onglet reste ouvert.
-  }
+  memoire.set(encounterId, changement(lireDialogue(encounterId)));
   abonnes.get(encounterId)?.forEach((prevenir) => prevenir());
 }
 
@@ -90,13 +58,60 @@ export function abonnerDialogue(encounterId: string, prevenir: () => void): () =
 }
 
 /** L'accord est donné : la demande passe « en cours », horodatée pour la barre. */
-export function lancerApplication(encounterId: string, id: number): void {
+export function lancerApplication(encounterId: string, id: string): void {
   modifierDialogue(encounterId, (etat) => ({
     ...etat,
-    fil: etat.fil.map((e) =>
-      e.id === id ? { id, qui: "oris", sorte: "application", depuis: Date.now() } : e,
-    ),
+    surcharges: {
+      ...etat.surcharges,
+      [id]: { id, qui: "oris", sorte: "application", depuis: Date.now() },
+    },
   }));
+}
+
+/** La réponse d'Oris à une demande gardée par le serveur. */
+export function reponseDe(
+  demande: DemandeServeur,
+  message: (code: string) => string,
+): Echange {
+  const id = demande.id;
+  switch (demande.etat) {
+    case "proposee":
+    case "incomprise":
+      return demande.lecture
+        ? { id, qui: "oris", sorte: "lecture", lecture: demande.lecture }
+        : { id, qui: "oris", sorte: "erreur", texte: demande.message };
+    case "relecture":
+      return { id, qui: "oris", sorte: "relecture", propositions: demande.propositions };
+    case "application":
+      return { id, qui: "oris", sorte: "application", depuis: Date.parse(demande.depuis) };
+    case "traitee":
+      return { id, qui: "oris", sorte: "fait", texte: demande.message || "Fait." };
+    case "annulee":
+      return { id, qui: "oris", sorte: "annule", texte: "Annulé : rien n’a changé." };
+    case "echec":
+      return {
+        id,
+        qui: "oris",
+        sorte: "erreur",
+        texte: demande.code ? message(demande.code) : demande.message,
+      };
+    default:
+      return { id, qui: "oris", sorte: "attente", texte: "Je lis votre demande…" };
+  }
+}
+
+/** La conversation à l'écran : celle du serveur, plus ce qui part à l'instant. */
+export function filDe(
+  historique: DemandeServeur[],
+  etat: EtatDialogue,
+  message: (code: string) => string,
+): Echange[] {
+  const fil: Echange[] = [];
+  for (const demande of historique) {
+    fil.push({ id: `${demande.id}:q`, qui: "moi", texte: demande.texte });
+    fil.push(etat.surcharges[demande.id] ?? reponseDe(demande, message));
+  }
+  return [...fil, ...etat.enVol];
 }
 
 /** Le dialogue est-il en train de travailler ? (lecture, relecture, application) */

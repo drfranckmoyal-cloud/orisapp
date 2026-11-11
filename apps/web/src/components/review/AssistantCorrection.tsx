@@ -25,9 +25,11 @@ import { useApi } from "@/lib/useApi";
 import styles from "./assistant.module.css";
 import {
   abonnerDialogue,
+  type DemandeServeur,
   duree,
   type Echange,
   type EtatDialogue,
+  filDe,
   lancerApplication,
   lireDialogue,
   marqueDe,
@@ -61,7 +63,7 @@ function codeDe(caught: unknown): string {
   return caught instanceof ApiError ? caught.code : "UNKNOWN";
 }
 
-const VIDE_SERVEUR: EtatDialogue = { fil: [], compteur: 0, coches: {} };
+const VIDE_SERVEUR: EtatDialogue = { enVol: [], surcharges: {}, coches: {}, compteur: 0 };
 
 /** Où en est une correction qui s'applique, et ce qu'on peut faire pendant ce temps. */
 function Progression({ depuis }: { depuis: number }) {
@@ -90,8 +92,8 @@ function Progression({ depuis }: { depuis: number }) {
         <span style={{ width: `${part(ecoule) * 100}%` }} />
       </div>
       <p className={styles.garde}>
-        Vous pouvez quitter cette page : la correction continue, et vous retrouverez cette
-        conversation en revenant.
+        Vous pouvez quitter cette page, et même fermer Oris : la correction continue sur le
+        serveur, et vous retrouverez cette conversation ici comme sur l’iPhone.
       </p>
     </div>
   );
@@ -114,16 +116,20 @@ export const AssistantCorrection = forwardRef<
   { encounterId, documentId, relisible, actif, civilite, onChange },
   ref,
 ) {
-  // Le fil vit hors de l'écran (dialogueCorrection.ts) : quitter la page ne l'efface pas,
-  // et une correction lancée continue d'arriver (Franck, 11/11/2026).
-  const { fil, coches: cochesListes } = useSyncExternalStore(
+  // La conversation vit sur le serveur : elle survit à la page quittée, à l'onglet fermé,
+  // et se retrouve sur l'iPhone (Franck, 11/11/2026). Ici ne vit que ce qui part à l'instant.
+  const [historique, rechargerHistorique] = useApi<DemandeServeur[]>(
+    `/encounters/${encounterId}/assistant`,
+  );
+  const etat = useSyncExternalStore(
     (prevenir) => abonnerDialogue(encounterId, prevenir),
     () => lireDialogue(encounterId),
     () => VIDE_SERVEUR,
   );
+  const fil = filDe(historique.state === "ready" ? historique.data : [], etat, errorMessage);
   const coches = Object.fromEntries(
-    Object.entries(cochesListes).map(([id, liste]) => [Number(id), new Set(liste)]),
-  ) as Record<number, Set<number>>;
+    Object.entries(etat.coches).map(([id, liste]) => [id, new Set(liste)]),
+  ) as Record<string, Set<number>>;
   const travaille = occupe(fil);
   const [saisie, setSaisie] = useState("");
   const [dictee, setDictee] = useState(false);
@@ -136,32 +142,85 @@ export const AssistantCorrection = forwardRef<
 
   useEffect(() => {
     bas.current?.scrollIntoView?.({ block: "nearest" });
-  }, [fil]);
+  }, [fil.length]);
 
-  function ajouter(echange: Omit<Echange, "id"> & Record<string, unknown>): number {
-    let id = 0;
-    modifierDialogue(encounterId, (etat) => {
-      id = etat.compteur + 1;
-      return { ...etat, compteur: id, fil: [...etat.fil, { ...echange, id } as Echange] };
+  // Une correction en cours — lancée ici, sur l'iPhone, ou avant de quitter la page — se
+  // guette jusqu'à ce qu'elle aboutisse ; le document se recharge alors.
+  const enCoursAuServeur =
+    historique.state === "ready" && historique.data.some((d) => d.etat === "application");
+  const enCoursAvant = useRef(false);
+  useEffect(() => {
+    if (enCoursAvant.current && !enCoursAuServeur) onChange();
+    enCoursAvant.current = enCoursAuServeur;
+    if (!enCoursAuServeur) return;
+    const veille = window.setInterval(rechargerHistorique, 4000);
+    return () => window.clearInterval(veille);
+  }, [enCoursAuServeur, rechargerHistorique, onChange]);
+
+  // Une relecture arrive toute cochée : décocher est plus rapide que cocher.
+  useEffect(() => {
+    if (historique.state !== "ready") return;
+    const nouvelles = historique.data.filter(
+      (d) => d.etat === "relecture" && !(d.id in etat.coches),
+    );
+    if (nouvelles.length === 0) return;
+    modifierDialogue(encounterId, (e) => ({
+      ...e,
+      coches: {
+        ...e.coches,
+        ...Object.fromEntries(
+          nouvelles.map((d) => [d.id, d.propositions.map((_p: unknown, i: number) => i)]),
+        ),
+      },
+    }));
+  }, [historique, etat.coches, encounterId]);
+
+  /** Une demande qui part : affichée tout de suite, retirée quand le serveur l'a gardée. */
+  function envoyer(texte: string, attente: string): string {
+    let id = "";
+    modifierDialogue(encounterId, (e) => {
+      const n = e.compteur + 1;
+      id = `local-${n}`;
+      return {
+        ...e,
+        compteur: n,
+        enVol: [
+          ...e.enVol,
+          { id: `${id}:q`, qui: "moi", texte },
+          { id, qui: "oris", sorte: "attente", texte: attente },
+        ],
+      };
     });
     return id;
   }
 
-  function remplacer(id: number, echange: Omit<Echange, "id"> & Record<string, unknown>) {
-    modifierDialogue(encounterId, (etat) => ({
-      ...etat,
-      fil: etat.fil.map((e) => (e.id === id ? ({ ...echange, id } as Echange) : e)),
+  function arrivee(id: string, erreur?: string) {
+    modifierDialogue(encounterId, (e) => ({
+      ...e,
+      enVol: erreur
+        ? e.enVol.map((x) =>
+            x.id === id ? ({ id, qui: "oris", sorte: "erreur", texte: erreur } as Echange) : x,
+          )
+        : e.enVol.filter((x) => x.id !== id && x.id !== `${id}:q`),
     }));
+    rechargerHistorique();
   }
 
-  function setCoches(changement: (c: Record<number, Set<number>>) => Record<number, Set<number>>) {
-    modifierDialogue(encounterId, (etat) => {
+  function oublierSurcharge(id: string) {
+    modifierDialogue(encounterId, (e) => {
+      const { [id]: _oubliee, ...reste } = e.surcharges;
+      return { ...e, surcharges: reste };
+    });
+  }
+
+  function setCoches(changement: (c: Record<string, Set<number>>) => Record<string, Set<number>>) {
+    modifierDialogue(encounterId, (e) => {
       const avant = Object.fromEntries(
-        Object.entries(etat.coches).map(([id, liste]) => [Number(id), new Set(liste)]),
-      ) as Record<number, Set<number>>;
+        Object.entries(e.coches).map(([id, liste]) => [id, new Set(liste)]),
+      ) as Record<string, Set<number>>;
       const apres = changement(avant);
       return {
-        ...etat,
+        ...e,
         coches: Object.fromEntries(Object.entries(apres).map(([id, s]) => [id, [...s]])),
       };
     });
@@ -171,16 +230,17 @@ export const AssistantCorrection = forwardRef<
     const demande = texte.trim();
     if (!demande || travaille) return;
     setSaisie("");
-    ajouter({ qui: "moi", texte: demande });
-    const attente = ajouter({ qui: "oris", sorte: "attente", texte: "Je lis votre demande…" });
+    const id = envoyer(demande, "Je lis votre demande…");
     try {
-      const lecture = await apiRequest<LectureAssistant>(
-        `/encounters/${encounterId}/assistant`,
-        { method: "POST", body: { demande } },
-      );
-      remplacer(attente, { qui: "oris", sorte: "lecture", lecture });
+      await apiRequest<LectureAssistant>(`/encounters/${encounterId}/assistant`, {
+        method: "POST",
+        body: { demande, ...(documentId ? { document_id: documentId } : {}) },
+      });
+      arrivee(id);
     } catch (caught) {
-      remplacer(attente, { qui: "oris", sorte: "erreur", texte: errorMessage(codeDe(caught)) });
+      // Une panne du service d'IA est gardée par le serveur ; une autre (réseau) ne l'est pas.
+      const code = codeDe(caught);
+      arrivee(id, code.startsWith("ANTHROPIC") ? undefined : errorMessage(code));
     }
   }
 
@@ -191,7 +251,8 @@ export const AssistantCorrection = forwardRef<
       micro.current = enregistreur;
       setDictee(true);
     } catch {
-      ajouter({ qui: "oris", sorte: "erreur", texte: errorMessage("MICROPHONE_UNAVAILABLE") });
+      const id = envoyer("(dictée)", "");
+      arrivee(id, errorMessage("MICROPHONE_UNAVAILABLE"));
     }
   }
 
@@ -201,50 +262,41 @@ export const AssistantCorrection = forwardRef<
     setDictee(false);
     if (!enregistreur) return;
     const pcm = enregistreur.stop();
+    const id = envoyer("(dictée)", "J’écoute votre demande…");
     if (pcm.length === 0) {
-      ajouter({ qui: "oris", sorte: "erreur", texte: "Rien n’a été entendu." });
+      arrivee(id, "Rien n’a été entendu.");
       return;
     }
-    const attente = ajouter({ qui: "oris", sorte: "attente", texte: "J’écoute votre demande…" });
     try {
-      const lecture = await sendVoiceAssistant(encounterId, pcm);
-      // Ce qui a été entendu s'affiche comme une demande écrite : on voit ce qu'Oris a lu.
-      modifierDialogue(encounterId, (etat) => {
-        const sans = etat.fil.filter((e) => e.id !== attente);
-        const compteur = etat.compteur + 2;
-        return {
-          ...etat,
-          compteur,
-          fil: [
-            ...sans,
-            ...(lecture.demande
-              ? [{ id: compteur - 1, qui: "moi", texte: lecture.demande } as Echange]
-              : []),
-            { id: compteur, qui: "oris", sorte: "lecture", lecture } as Echange,
-          ],
-        };
-      });
+      await sendVoiceAssistant(encounterId, pcm);
+      arrivee(id);
     } catch (caught) {
-      remplacer(attente, { qui: "oris", sorte: "erreur", texte: errorMessage(codeDe(caught)) });
+      arrivee(id, errorMessage(codeDe(caught)));
     }
   }
 
-  async function appliquer(id: number, corps: Record<string, unknown>) {
+  async function appliquer(id: string, corps: Record<string, unknown>) {
     lancerApplication(encounterId, id);
     try {
-      const resultat = await apiRequest<ResultatAssistant>(
-        `/encounters/${encounterId}/assistant/appliquer`,
-        { method: "POST", body: { ...corps, ...(documentId ? { document_id: documentId } : {}) } },
-      );
-      remplacer(id, { qui: "oris", sorte: "fait", texte: resultat.message });
+      await apiRequest<ResultatAssistant>(`/encounters/${encounterId}/assistant/appliquer`, {
+        method: "POST",
+        body: {
+          ...corps,
+          demande_id: id,
+          ...(documentId ? { document_id: documentId } : {}),
+        },
+      });
       rechargerConsignes();
       onChange();
-    } catch (caught) {
-      remplacer(id, { qui: "oris", sorte: "erreur", texte: errorMessage(codeDe(caught)) });
+    } catch {
+      // Le serveur a noté l'échec et sa raison : la conversation relue la dit.
+    } finally {
+      oublierSurcharge(id);
+      rechargerHistorique();
     }
   }
 
-  function appliquerLecture(id: number, lecture: LectureAssistant, retenir = false) {
+  function appliquerLecture(id: string, lecture: LectureAssistant, retenir = false) {
     if (lecture.nature === "dossier") {
       return appliquer(id, {
         nature: "dossier",
@@ -258,28 +310,26 @@ export const AssistantCorrection = forwardRef<
     return appliquer(id, { nature: "redaction", consignes: [lecture.consigne], retenir });
   }
 
+  async function annuler(id: string) {
+    try {
+      await apiRequest(`/encounters/${encounterId}/assistant/${id}/annuler`, { method: "POST" });
+    } finally {
+      rechargerHistorique();
+    }
+  }
+
   async function relire() {
     if (!documentId || travaille) return;
-    ajouter({ qui: "moi", texte: "Relis ce document et propose des améliorations." });
-    const attente = ajouter({ qui: "oris", sorte: "attente", texte: "Je relis le document…" });
+    const id = envoyer("Relis ce document et propose des améliorations.", "Je relis le document…");
     try {
-      const { propositions } = await apiRequest<{ propositions: PropositionRelecture[] }>(
+      await apiRequest<{ propositions: PropositionRelecture[] }>(
         `/documents/${documentId}/relecture`,
         { method: "POST" },
       );
-      if (propositions.length === 0) {
-        remplacer(attente, {
-          qui: "oris",
-          sorte: "fait",
-          texte: "Je n’ai rien à proposer : le document se lit bien tel qu’il est.",
-        });
-      } else {
-        remplacer(attente, { qui: "oris", sorte: "relecture", propositions });
-        // Tout est coché au départ : décocher est plus rapide que cocher.
-        setCoches((c) => ({ ...c, [attente]: new Set(propositions.map((_, i) => i)) }));
-      }
+      arrivee(id);
     } catch (caught) {
-      remplacer(attente, { qui: "oris", sorte: "erreur", texte: errorMessage(codeDe(caught)) });
+      const code = codeDe(caught);
+      arrivee(id, code.startsWith("ANTHROPIC") ? undefined : errorMessage(code));
     }
   }
 
@@ -301,7 +351,7 @@ export const AssistantCorrection = forwardRef<
       }
       rechargerConsignes();
     } catch (caught) {
-      ajouter({ qui: "oris", sorte: "erreur", texte: errorMessage(codeDe(caught)) });
+      arrivee(envoyer("Retirer une consigne", ""), errorMessage(codeDe(caught)));
     }
   }
 
@@ -439,13 +489,7 @@ export const AssistantCorrection = forwardRef<
                       type="button"
                       className={styles.discret}
                       disabled={travaille}
-                      onClick={() =>
-                        remplacer(echange.id, {
-                          qui: "oris",
-                          sorte: "annule",
-                          texte: "Propositions écartées : le document n’a pas changé.",
-                        })
-                      }
+                      onClick={() => void annuler(echange.id)}
                     >
                       Écarter
                     </button>
@@ -496,13 +540,7 @@ export const AssistantCorrection = forwardRef<
                         type="button"
                         className={styles.discret}
                         disabled={travaille}
-                        onClick={() =>
-                          remplacer(echange.id, {
-                            qui: "oris",
-                            sorte: "annule",
-                            texte: "Annulé : rien n’a changé.",
-                          })
-                        }
+                        onClick={() => void annuler(echange.id)}
                       >
                         Annuler
                       </button>

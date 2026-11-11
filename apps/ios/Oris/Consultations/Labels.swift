@@ -107,6 +107,11 @@ enum Labels {
         return nil
     }
 
+    /// Le message d'un code d'erreur gardé par le serveur (historique des corrections).
+    static func message(code: String) -> String {
+        messages[code] ?? "Action impossible (\(code))."
+    }
+
     static func erreur(_ error: Error) -> String {
         if case .server(_, let code, _)? = error as? APIError {
             return messages[code] ?? "Action impossible (\(code))."

@@ -13,10 +13,13 @@ struct LectureAssistant: Decodable, Equatable, Sendable {
     let operations: [JSONValue]
     let question: String
     let objectVersion: Int
+    /// La demande telle qu'elle est gardée dans l'historique de la consultation.
+    let demandeId: String?
 
     enum CodingKeys: String, CodingKey {
         case nature, demande, resume, consigne, civilite, operations, question
         case objectVersion = "object_version"
+        case demandeId = "demande_id"
     }
 }
 
@@ -32,21 +35,62 @@ struct PropositionRelecture: Decodable, Equatable, Sendable, Identifiable {
     var id: String { consigne }
 }
 
+/// Une demande de l'historique, telle que le serveur la garde.
+///
+/// La conversation vit en base (Franck, 11/11/2026) : elle survit à l'app fermée et se
+/// retrouve sur le site.
+struct DemandeServeur: Decodable, Equatable, Sendable {
+    let id: String
+    let documentId: String?
+    let texte: String
+    /// lecture, proposee, relecture, application, traitee, annulee, incomprise, echec
+    let etat: String
+    let lecture: LectureAssistant?
+    let propositions: [PropositionRelecture]
+    let message: String
+    let code: String
+    let depuis: String
+
+    enum CodingKeys: String, CodingKey {
+        case id, texte, etat, lecture, propositions, message, code, depuis
+        case documentId = "document_id"
+    }
+
+    /// Depuis quand la demande est dans son état : la barre de progression part de là.
+    var depuisLe: Date {
+        let lecteur = ISO8601DateFormatter()
+        lecteur.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = lecteur.date(from: depuis) { return date }
+        lecteur.formatOptions = [.withInternetDateTime]
+        return lecteur.date(from: depuis) ?? Date()
+    }
+}
+
 private struct Relecture: Decodable {
     let propositions: [PropositionRelecture]
 }
 
 extension APIClient {
-    /// Dit ce que la demande change, sans rien changer.
-    func comprendre(encounterId: String, demande: String) async throws -> LectureAssistant {
-        try await send("encounters/\(encounterId)/assistant", method: "POST",
-                       body: ["demande": demande], delai: 90)
+    /// La conversation de la consultation, de la première demande à la dernière.
+    func historique(encounterId: String) async throws -> [DemandeServeur] {
+        try await get("encounters/\(encounterId)/assistant")
+    }
+
+    /// Dit ce que la demande change, sans rien changer — et la garde dans l'historique.
+    func comprendre(encounterId: String, demande: String, documentId: String? = nil) async throws
+        -> LectureAssistant
+    {
+        var corps: [String: Any] = ["demande": demande]
+        if let documentId { corps["document_id"] = documentId }
+        return try await send("encounters/\(encounterId)/assistant", method: "POST",
+                              body: corps, delai: 90)
     }
 
     /// Applique une lecture que le praticien vient de confirmer.
     func appliquer(encounterId: String, documentId: String, lecture: LectureAssistant,
-                   retenir: Bool = false) async throws -> ResultatAssistant {
+                   retenir: Bool = false, demandeId: String? = nil) async throws -> ResultatAssistant {
         var corps: [String: Any] = ["nature": lecture.nature, "document_id": documentId]
+        if let demandeId { corps["demande_id"] = demandeId }
         switch lecture.nature {
         case "dossier":
             let donnees = try JSONEncoder().encode(lecture.operations)
@@ -66,11 +110,19 @@ extension APIClient {
 
     /// Applique les consignes cochées après une relecture.
     func appliquer(encounterId: String, documentId: String, consignes: [String],
-                   retenir: Bool) async throws -> ResultatAssistant {
-        try await send("encounters/\(encounterId)/assistant/appliquer", method: "POST",
-                       body: ["nature": "redaction", "document_id": documentId,
-                              "consignes": consignes, "retenir": retenir],
-                       delai: 240)
+                   retenir: Bool, demandeId: String? = nil) async throws -> ResultatAssistant {
+        var corps: [String: Any] = ["nature": "redaction", "document_id": documentId,
+                                    "consignes": consignes, "retenir": retenir]
+        if let demandeId { corps["demande_id"] = demandeId }
+        return try await send("encounters/\(encounterId)/assistant/appliquer", method: "POST",
+                              body: corps, delai: 240)
+    }
+
+    /// Le praticien écarte une proposition : rien ne change, et c'est noté.
+    func annuler(encounterId: String, demandeId: String) async throws {
+        let _: DemandeServeur = try await send(
+            "encounters/\(encounterId)/assistant/\(demandeId)/annuler", method: "POST", body: [:]
+        )
     }
 
     /// Claude relit le document et propose des améliorations de forme.

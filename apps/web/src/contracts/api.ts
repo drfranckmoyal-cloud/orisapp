@@ -2699,6 +2699,52 @@ export interface components {
              */
             sent_at: string;
         };
+        /**
+         * DemandeCorrectionOut
+         * @description Une demande de l'historique, et ce qu'elle est devenue.
+         */
+        DemandeCorrectionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Document Id */
+            document_id: string | null;
+            /** Texte */
+            texte: string;
+            /**
+             * Etat
+             * @enum {string}
+             */
+            etat: "lecture" | "proposee" | "relecture" | "application" | "traitee" | "annulee" | "incomprise" | "echec";
+            lecture?: components["schemas"]["AssistantLecture"] | null;
+            /**
+             * Propositions
+             * @default []
+             */
+            propositions: components["schemas"]["PropositionOut"][];
+            /**
+             * Message
+             * @default
+             */
+            message: string;
+            /**
+             * Code
+             * @default
+             */
+            code: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Depuis
+             * Format: date-time
+             */
+            depuis: string;
+        };
         /** DemandeExtensionOut */
         DemandeExtensionOut: {
             /** Id */
@@ -2721,6 +2767,13 @@ export interface components {
         DemandeIn: {
             /** Jour */
             jour?: string | null;
+        };
+        /** DemandeOut */
+        DemandeOut: {
+            /** Jour */
+            jour: string;
+            /** Demande Le */
+            demande_le: string;
         };
         /** DepotFaitIn */
         DepotFaitIn: {
@@ -4330,52 +4383,6 @@ export interface components {
             /** Ouvrir */
             ouvrir: ("doctolib" | "smilecloud") | null;
         };
-        /**
-         * DemandeOut
-         * @description Une demande de l'historique, et ce qu'elle est devenue.
-         */
-        oris_api__api__assistant__DemandeOut: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Document Id */
-            document_id: string | null;
-            /** Texte */
-            texte: string;
-            /**
-             * Etat
-             * @enum {string}
-             */
-            etat: "lecture" | "proposee" | "relecture" | "application" | "traitee" | "annulee" | "incomprise" | "echec";
-            lecture?: components["schemas"]["AssistantLecture"] | null;
-            /**
-             * Propositions
-             * @default []
-             */
-            propositions: components["schemas"]["PropositionOut"][];
-            /**
-             * Message
-             * @default
-             */
-            message: string;
-            /**
-             * Code
-             * @default
-             */
-            code: string;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Depuis
-             * Format: date-time
-             */
-            depuis: string;
-        };
         /** CandidatOut */
         oris_api__api__schemas__CandidatOut: {
             /** Cle */
@@ -4390,13 +4397,6 @@ export interface components {
             email: string;
             /** Coche */
             coche: boolean;
-        };
-        /** DemandeOut */
-        oris_api__api__schemas__DemandeOut: {
-            /** Jour */
-            jour: string;
-            /** Demande Le */
-            demande_le: string;
         };
         /**
          * DepotOut
@@ -5266,7 +5266,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["oris_api__api__schemas__DemandeOut"];
+                    "application/json": components["schemas"]["DemandeOut"];
                 };
             };
             /** @description Validation Error */
@@ -5324,7 +5324,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["oris_api__api__schemas__DemandeOut"][];
+                    "application/json": components["schemas"]["DemandeOut"][];
                 };
             };
         };
@@ -6909,7 +6909,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["oris_api__api__assistant__DemandeOut"][];
+                    "application/json": components["schemas"]["DemandeCorrectionOut"][];
                 };
             };
             /** @description Validation Error */
@@ -7079,7 +7079,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["oris_api__api__assistant__DemandeOut"];
+                    "application/json": components["schemas"]["DemandeCorrectionOut"];
                 };
             };
             /** @description Validation Error */

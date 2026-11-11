@@ -1,39 +1,53 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import {
-  lireDialogue,
+  type DemandeServeur,
+  type EtatDialogue,
+  filDe,
   marqueDe,
-  modifierDialogue,
   occupe,
   part,
   type Echange,
 } from "./dialogueCorrection";
 
-/** Franck, le 11/11/2026 : « si je sors et que je reviens, garder l'historique, ne pas en
- *  remettre une vierge, et marquer les demandes traitées ». */
-describe("le dialogue de correction", () => {
-  afterEach(() => window.sessionStorage.clear());
+/** Franck, le 11/11/2026 : « garder l'historique, ne pas en remettre une vierge, et marquer
+ *  les demandes traitées » — y compris l'app fermée. La conversation vit sur le serveur. */
+const VIDE: EtatDialogue = { enVol: [], surcharges: {}, coches: {}, compteur: 0 };
 
-  it("garde le fil d'une consultation quand on revient", () => {
-    modifierDialogue("c1", (etat) => ({
-      ...etat,
-      compteur: 1,
-      fil: [{ id: 1, qui: "moi", texte: "plus court" }],
-    }));
-    expect(lireDialogue("c1").fil).toHaveLength(1);
-    expect(lireDialogue("c2").fil).toHaveLength(0);
-    expect(window.sessionStorage.getItem("oris.dialogue.c1")).toContain("plus court");
+function demande(etat: DemandeServeur["etat"], extra: Partial<DemandeServeur> = {}): DemandeServeur {
+  return {
+    id: "d-1",
+    document_id: null,
+    texte: "plus court",
+    etat,
+    lecture: null,
+    propositions: [],
+    message: "",
+    code: "",
+    created_at: "2026-11-11T08:00:00Z",
+    depuis: "2026-11-11T08:00:05Z",
+    ...extra,
+  };
+}
+
+describe("le dialogue de correction", () => {
+  it("affiche la conversation du serveur, demande et réponse", () => {
+    const fil = filDe([demande("traitee", { message: "Document rédigé." })], VIDE, (c) => c);
+    expect(fil.map((e) => e.qui)).toEqual(["moi", "oris"]);
+    expect(marqueDe(fil[1])?.texte).toBe("Traitée");
   });
 
-  it("marque chaque demande d'après ce qu'elle est devenue", () => {
-    const fait: Echange = { id: 2, qui: "oris", sorte: "fait", texte: "Document rédigé." };
-    const enCours: Echange = { id: 2, qui: "oris", sorte: "application", depuis: Date.now() };
-    const annule: Echange = { id: 2, qui: "oris", sorte: "annule", texte: "Annulé." };
-    expect(marqueDe(fait)?.texte).toBe("Traitée");
-    expect(marqueDe(enCours)?.texte).toBe("En cours");
-    expect(marqueDe(annule)?.texte).toBe("Annulée");
-    expect(occupe([enCours])).toBe(true);
-    expect(occupe([fait])).toBe(false);
+  it("dit pourquoi une demande n'a pas abouti, d'après le code gardé", () => {
+    const fil = filDe([demande("echec", { code: "ANTHROPIC_AUTH" })], VIDE, () => "clé refusée");
+    expect(fil[1]).toMatchObject({ sorte: "erreur", texte: "clé refusée" });
+    expect(marqueDe(fil[1])?.texte).toBe("Non aboutie");
+  });
+
+  it("ajoute ce qui part à l'instant, et ce qu'on vient de confirmer", () => {
+    const enCours: Echange = { id: "d-1", qui: "oris", sorte: "application", depuis: Date.now() };
+    const fil = filDe([demande("proposee")], { ...VIDE, surcharges: { "d-1": enCours } }, (c) => c);
+    expect(marqueDe(fil[1])?.texte).toBe("En cours");
+    expect(occupe(fil)).toBe(true);
   });
 
   it("ne prétend jamais avoir fini", () => {

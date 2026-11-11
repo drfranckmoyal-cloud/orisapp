@@ -125,6 +125,10 @@ struct TraitementDocument: View {
             CorrigerAvecClaude(client: client, encounterId: content.encounter.id, document: document,
                                dialogue: dialogue)
         }
+        .task {
+            // Une correction lancée avant (autre appareil, app fermée) se voit ici aussi.
+            await dialogue.charger(client: client, encounterId: content.encounter.id)
+        }
         .onAppear {
             // Fenêtre fermée ou non, une correction aboutie recharge le document.
             dialogue.aChange = { message in

@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - Le dialogue, gardé hors de la fenêtre
+// MARK: - Le dialogue, gardé sur le serveur
 
 /// Une demande faite à Claude, et ce qu'elle est devenue.
 struct DemandeCorrection: Identifiable, Equatable {
@@ -19,7 +19,8 @@ struct DemandeCorrection: Identifiable, Equatable {
         case echec(String)
     }
 
-    let id: Int
+    /// L'identifiant du serveur ; « local-… » pour une demande qui part tout juste.
+    let id: String
     let texte: String
     var etat: Etat
 
@@ -35,22 +36,47 @@ struct DemandeCorrection: Identifiable, Equatable {
         case .echec: ("Non aboutie", "exclamationmark.triangle", .alerte)
         }
     }
+
+    init(id: String, texte: String, etat: Etat) {
+        self.id = id
+        self.texte = texte
+        self.etat = etat
+    }
+
+    /// Une demande telle que le serveur la garde.
+    init(_ serveur: DemandeServeur) {
+        id = serveur.id
+        texte = serveur.texte
+        switch serveur.etat {
+        case "proposee":
+            etat = serveur.lecture.map { .proposee($0) } ?? .incomprise(serveur.message)
+        case "relecture": etat = .relecture(serveur.propositions)
+        case "application": etat = .application(serveur.depuisLe)
+        case "traitee": etat = .traitee(serveur.message.isEmpty ? "Fait." : serveur.message)
+        case "annulee": etat = .annulee
+        case "incomprise": etat = .incomprise(serveur.lecture?.resume ?? serveur.message)
+        case "echec":
+            etat = .echec(serveur.code.isEmpty ? serveur.message : Labels.message(code: serveur.code))
+        default: etat = .lecture
+        }
+    }
 }
 
 /// Le dialogue de correction d'une consultation.
 ///
-/// Il vit **en dehors de la fenêtre** : la fermer n'arrête pas le travail en cours et
-/// n'efface pas l'historique (Franck, 11/11/2026 : « si je sors et que je reviens, garder
-/// l'historique, ne pas en remettre une vierge »). Il dure le temps que l'app reste
-/// ouverte ; rien n'en est écrit sur le téléphone.
+/// La conversation vit **sur le serveur** : fermer la fenêtre, quitter l'app ou passer sur
+/// le site ne l'efface pas (Franck, 11/11/2026 : « garder l'historique, ne pas en remettre
+/// une vierge » — et pas seulement tant que l'app reste ouverte). Ici ne vivent que les
+/// demandes qui partent, le temps que le serveur les enregistre.
 @MainActor
 @Observable
 final class DialogueCorrection {
     private(set) var demandes: [DemandeCorrection] = []
-    var coches: [Int: Set<String>] = [:]
+    var coches: [String: Set<String>] = [:]
     /// Appelé quand une correction a changé un document : l'écran derrière se recharge.
     var aChange: (String) -> Void = { _ in }
     private var compteur = 0
+    private var veille: Task<Void, Never>?
 
     var occupe: Bool {
         demandes.contains { demande in
@@ -69,70 +95,117 @@ final class DialogueCorrection {
         }
     }
 
-    private func ajouter(_ texte: String, _ etat: DemandeCorrection.Etat) -> Int {
-        compteur += 1
-        demandes.append(DemandeCorrection(id: compteur, texte: texte, etat: etat))
-        return compteur
+    /// Relit la conversation sur le serveur. Une correction en cours ailleurs (autre
+    /// appareil, app rouverte) se guette jusqu'à ce qu'elle aboutisse.
+    func charger(client: APIClient, encounterId: String) async {
+        guard let serveur = try? await client.historique(encounterId: encounterId) else { return }
+        let enVol = demandes.filter { $0.id.hasPrefix("local-") }
+        demandes = serveur.map(DemandeCorrection.init) + enVol
+        for demande in demandes {
+            if case .relecture(let propositions) = demande.etat, coches[demande.id] == nil {
+                coches[demande.id] = Set(propositions.map(\.consigne))
+            }
+        }
+        if serveur.contains(where: { $0.etat == "application" }) {
+            guetter(client: client, encounterId: encounterId)
+        }
     }
 
-    func poser(_ id: Int, _ etat: DemandeCorrection.Etat) {
+    private func guetter(client: APIClient, encounterId: String) {
+        guard veille == nil else { return }
+        veille = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(4))
+                guard let self else { return }
+                let avant = self.enApplication
+                await self.charger(client: client, encounterId: encounterId)
+                if avant && !self.enApplication {
+                    self.aChange("Correction terminée.")
+                }
+                if !self.enApplication { break }
+            }
+            self?.veille = nil
+        }
+    }
+
+    private func local(_ texte: String, _ etat: DemandeCorrection.Etat) -> String {
+        compteur += 1
+        let id = "local-\(compteur)"
+        demandes.append(DemandeCorrection(id: id, texte: texte, etat: etat))
+        return id
+    }
+
+    func poser(_ id: String, _ etat: DemandeCorrection.Etat) {
         if let rang = demandes.firstIndex(where: { $0.id == id }) { demandes[rang].etat = etat }
     }
 
-    func demander(_ texte: String, client: APIClient, encounterId: String) async {
+    private func retirer(_ id: String) {
+        demandes.removeAll { $0.id == id }
+    }
+
+    func demander(_ texte: String, client: APIClient, encounterId: String, documentId: String) async {
         let demande = texte.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !demande.isEmpty, !occupe else { return }
-        let id = ajouter(demande, .lecture)
+        let id = local(demande, .lecture)
         do {
-            let lecture = try await client.comprendre(encounterId: encounterId, demande: demande)
-            poser(id, lecture.nature == "incompris" ? .incomprise(lecture.resume) : .proposee(lecture))
+            _ = try await client.comprendre(encounterId: encounterId, demande: demande,
+                                            documentId: documentId)
+            retirer(id)
         } catch {
             poser(id, .echec(Labels.erreur(error)))
         }
+        // Le serveur a gardé la demande — ou sa panne : on lit la conversation telle quelle.
+        retirer(id)
+        await charger(client: client, encounterId: encounterId)
     }
 
-    func relire(client: APIClient, documentId: String) async {
+    func relire(client: APIClient, encounterId: String, documentId: String) async {
         guard !occupe else { return }
-        let id = ajouter("Relis ce document et propose des améliorations.", .lecture)
+        let id = local("Relis ce document et propose des améliorations.", .lecture)
         do {
-            let propositions = try await client.relire(documentId: documentId)
-            if propositions.isEmpty {
-                poser(id, .traitee("Rien à proposer : le document se lit bien tel qu’il est."))
-            } else {
-                coches[id] = Set(propositions.map(\.consigne))
-                poser(id, .relecture(propositions))
-            }
+            _ = try await client.relire(documentId: documentId)
         } catch {
             poser(id, .echec(Labels.erreur(error)))
         }
+        retirer(id)
+        await charger(client: client, encounterId: encounterId)
     }
 
-    func appliquer(_ id: Int, lecture: LectureAssistant, retenir: Bool,
+    func appliquer(_ id: String, lecture: LectureAssistant, retenir: Bool,
                    client: APIClient, encounterId: String, documentId: String) async {
-        await appliquer(id) {
+        await appliquer(id, client: client, encounterId: encounterId) {
             try await client.appliquer(encounterId: encounterId, documentId: documentId,
-                                       lecture: lecture, retenir: retenir)
+                                       lecture: lecture, retenir: retenir, demandeId: id)
         }
     }
 
-    func appliquer(_ id: Int, consignes: [String], retenir: Bool,
+    func appliquer(_ id: String, consignes: [String], retenir: Bool,
                    client: APIClient, encounterId: String, documentId: String) async {
-        await appliquer(id) {
+        await appliquer(id, client: client, encounterId: encounterId) {
             try await client.appliquer(encounterId: encounterId, documentId: documentId,
-                                       consignes: consignes, retenir: retenir)
+                                       consignes: consignes, retenir: retenir, demandeId: id)
         }
     }
 
-    private func appliquer(_ id: Int, _ travail: () async throws -> ResultatAssistant) async {
+    private func appliquer(_ id: String, client: APIClient, encounterId: String,
+                           _ travail: () async throws -> ResultatAssistant) async {
         guard !occupe else { return }
         poser(id, .application(Date()))
         do {
             let resultat = try await travail()
-            poser(id, .traitee(resultat.message))
             aChange(resultat.message)
         } catch {
+            // L'app a pu perdre la réponse (réseau, mise en veille) alors que le serveur
+            // a fini : la conversation relue dit ce qu'il en est vraiment.
             poser(id, .echec(Labels.erreur(error)))
         }
+        await charger(client: client, encounterId: encounterId)
+    }
+
+    func annuler(_ id: String, client: APIClient, encounterId: String) async {
+        poser(id, .annulee)
+        try? await client.annuler(encounterId: encounterId, demandeId: id)
+        await charger(client: client, encounterId: encounterId)
     }
 }
 
@@ -202,12 +275,18 @@ struct CorrigerAvecClaude: View {
                         HStack(spacing: 6) {
                             ForEach(suggestions, id: \.self) { suggestion in
                                 puce(suggestion) {
-                                    Task { await dialogue.demander(suggestion, client: client, encounterId: encounterId) }
+                                    Task {
+                                        await dialogue.demander(suggestion, client: client,
+                                                                encounterId: encounterId, documentId: document.id)
+                                    }
                                 }
                             }
                             if relisible {
                                 puce("✦ Relire tout le document") {
-                                    Task { await dialogue.relire(client: client, documentId: document.id) }
+                                    Task {
+                                        await dialogue.relire(client: client, encounterId: encounterId,
+                                                              documentId: document.id)
+                                    }
                                 }
                             }
                         }
@@ -225,7 +304,10 @@ struct CorrigerAvecClaude: View {
                             let texte = saisie
                             saisie = ""
                             clavier = false
-                            Task { await dialogue.demander(texte, client: client, encounterId: encounterId) }
+                            Task {
+                                await dialogue.demander(texte, client: client, encounterId: encounterId,
+                                                        documentId: document.id)
+                            }
                         } label: {
                             Image(systemName: "arrow.up")
                                 .font(.system(size: 16, weight: .bold))
@@ -245,6 +327,7 @@ struct CorrigerAvecClaude: View {
             .background(Teinte.fond.ignoresSafeArea())
             .navigationTitle("Corriger avec Claude")
             .navigationBarTitleDisplayMode(.inline)
+            .task { await dialogue.charger(client: client, encounterId: encounterId) }
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Fermer") { fermer() } }
             }
@@ -316,7 +399,9 @@ struct CorrigerAvecClaude: View {
                         }
                         .buttonStyle(BoutonSecondaire())
                     }
-                    Button("Annuler") { dialogue.poser(demande.id, .annulee) }
+                    Button("Annuler") {
+                        Task { await dialogue.annuler(demande.id, client: client, encounterId: encounterId) }
+                    }
                         .font(Police.interface(14, .semibold))
                         .foregroundStyle(Teinte.encreDouce)
                 }
@@ -362,7 +447,9 @@ struct CorrigerAvecClaude: View {
                     }
                     .buttonStyle(BoutonSecondaire())
                     .disabled(choisies.isEmpty)
-                    Button("Écarter") { dialogue.poser(demande.id, .annulee) }
+                    Button("Écarter") {
+                        Task { await dialogue.annuler(demande.id, client: client, encounterId: encounterId) }
+                    }
                         .font(Police.interface(14, .semibold))
                         .foregroundStyle(Teinte.encreDouce)
                 }
@@ -455,7 +542,7 @@ struct Progression: View {
                 }
                 ProgressView(value: Self.part(ecoule))
                     .tint(Teinte.accent)
-                Label("Vous pouvez fermer cette fenêtre : la correction continue, et le document se mettra à jour tout seul.",
+                Label("Vous pouvez fermer cette fenêtre, et même l’app : la correction continue sur le serveur, et vous retrouverez cette conversation.",
                       systemImage: "arrow.down.right.and.arrow.up.left")
                     .font(Police.note)
                     .foregroundStyle(Teinte.encreDouce)

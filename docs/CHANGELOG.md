@@ -1,5 +1,26 @@
 # Changelog
 
+## Les dossiers du Mac réunis avec ceux de l'iPhone, et la conversation gardée en base — 2026-11-11
+- Franck : « j'ai créé les dossiers hier sur le Mac et je ne les ai pas retrouvés sur
+  l'iPhone ». Depuis le transport du 8 octobre, le site du Mac et le serveur en ligne
+  avaient **chacun leur base**, et l'iPhone ne lit plus que le serveur. Les deux ont été
+  réunies (`scripts/fusionner_bases.py`), après sauvegarde de l'une et de l'autre :
+  30 patients, 13 consultations et 25 documents ajoutés ; 2 patients et 25 correspondants
+  créés des deux côtés réunis en une seule fiche ; la version la plus récente l'emporte.
+  Les photos ont suivi. Le Mac ouvre désormais le **site en ligne** ; sa copie locale
+  affiche un bandeau rouge « à ne plus utiliser ».
+- Au passage, une consultation faite sur l'iPhone la veille (17 h 31) était restée en
+  échec (`PLAN_STATUS_UNSUPPORTED`) : relancée, elle a abouti.
+- **La conversation « Corriger avec Claude » vit en base** (migration 0025). Franck avait
+  refusé la limite « tant que l'app reste ouverte » : chaque demande, sa réponse et ce
+  qu'elle est devenue sont gardées sur le serveur, survivent à l'app fermée et se
+  retrouvent de l'iPhone au site. Une correction en cours ailleurs se guette et recharge
+  le document quand elle aboutit.
+- **iCloud avait délesté une partie du projet** (239 fichiers, dont les essais et les
+  migrations, et l'historique git) et refusait de les rendre. Ils ont été repris de
+  GitHub ; l'historique git vit désormais hors du Bureau (`~/.oris-git`).
+- 547 tests serveur · 73 site · 73 iPhone au vert.
+
 ## « Corriger avec Claude » garde sa conversation, et montre où il en est — 2026-11-11
 - Franck : « mettre une barre de progression et nous indiquer si on peut sortir de la
   fenêtre pendant que ça travaille ; si je sors et que je reviens, garder l'historique,

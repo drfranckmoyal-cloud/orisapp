@@ -118,7 +118,7 @@ EtatDemande = Literal[
 ]
 
 
-class DemandeOut(BaseModel):
+class DemandeCorrectionOut(BaseModel):
     """Une demande de l'historique, et ce qu'elle est devenue."""
 
     id: UUID
@@ -525,8 +525,10 @@ def relire(
     return RelectureOut(propositions=sorties, demande_id=demande.id)
 
 
-@router.get("/encounters/{encounter_id}/assistant", response_model=list[DemandeOut])
-def historique(encounter_id: UUID, session: SessionDep, actor: ActorDep) -> list[DemandeOut]:
+@router.get("/encounters/{encounter_id}/assistant", response_model=list[DemandeCorrectionOut])
+def historique(
+    encounter_id: UUID, session: SessionDep, actor: ActorDep
+) -> list[DemandeCorrectionOut]:
     """La conversation de la consultation, de la première demande à la dernière.
 
     Elle est la même sur l'iPhone et sur le site, et survit à l'app fermée.
@@ -537,12 +539,12 @@ def historique(encounter_id: UUID, session: SessionDep, actor: ActorDep) -> list
         .where(DemandeCorrectionRow.encounter_id == encounter.id)
         .order_by(DemandeCorrectionRow.created_at)
     )
-    sorties: list[DemandeOut] = []
+    sorties: list[DemandeCorrectionOut] = []
     for d in demandes:
         reponse = d.reponse or {}
         lecture = reponse.get("lecture")
         sorties.append(
-            DemandeOut(
+            DemandeCorrectionOut(
                 id=d.id,
                 document_id=d.document_id,
                 texte=d.texte,
@@ -560,10 +562,12 @@ def historique(encounter_id: UUID, session: SessionDep, actor: ActorDep) -> list
     return sorties
 
 
-@router.post("/encounters/{encounter_id}/assistant/{demande_id}/annuler", response_model=DemandeOut)
+@router.post(
+    "/encounters/{encounter_id}/assistant/{demande_id}/annuler", response_model=DemandeCorrectionOut
+)
 def annuler(
     encounter_id: UUID, demande_id: UUID, session: SessionDep, actor: ActorDep
-) -> DemandeOut:
+) -> DemandeCorrectionOut:
     """Le praticien écarte une proposition : rien n'a changé, et c'est noté."""
     encounter = encounters.get_encounter(session, actor, encounter_id)
     demande = _demande(session, encounter, demande_id)
