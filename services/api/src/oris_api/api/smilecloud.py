@@ -5,7 +5,6 @@ Contrat avec l'extension Chrome : `docs/PIECES_JOINTES_SMILECLOUD.md`, § « Con
 
 from __future__ import annotations
 
-import hmac
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
@@ -17,11 +16,11 @@ from oris_api.api.dependencies import (
     MagasinDep,
     SessionDep,
     SettingsDep,
-    depuis_cette_machine,
+    extension_autorisee,
 )
 from oris_api.config import Settings
 from oris_api.services import attachments, documents, encounters, patients, smilecloud
-from oris_api.services.errors import Forbidden, NotFound, Unprocessable
+from oris_api.services.errors import NotFound, Unprocessable
 from oris_api.services.identity import Actor
 
 router = APIRouter(tags=["smilecloud"])
@@ -42,16 +41,8 @@ TITRES_DOCUMENT = {
 
 
 def _extension(request: Request, settings: Settings, authorization: str | None) -> None:
-    """L'extension tourne sur ce Mac ; le secret partagé de la journée, s'il est posé,
-    vaut aussi ici."""
-    if not depuis_cette_machine(request):
-        raise Forbidden("DEPOT_NON_LOCAL")
-    attendu = settings.journee_depot_token
-    if attendu is not None:
-        entete = authorization or ""
-        presente = entete[7:].strip() if entete.lower().startswith("bearer ") else ""
-        if not hmac.compare_digest(presente, attendu.get_secret_value()):
-            raise Forbidden("DEPOT_JETON_INVALIDE")
+    """L'extension : sur ce Mac, ou de partout avec le secret partagé."""
+    extension_autorisee(request, settings, authorization)
 
 
 # --- Côté extension -------------------------------------------------------------------

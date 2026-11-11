@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hmac
 from collections.abc import Iterator
 from typing import Annotated
 
@@ -63,6 +64,27 @@ BOUCLE_LOCALE = frozenset({"127.0.0.1", "::1", "localhost", "testclient"})
 
 def depuis_cette_machine(request: Request) -> bool:
     return request.client is not None and request.client.host in BOUCLE_LOCALE
+
+
+def extension_autorisee(request: Request, settings: Settings, authorization: str | None) -> None:
+    """Ce que l'extension Chrome appelle : la journée Doctolib, les dépôts SmileCloud.
+
+    Sur le Mac, la machine elle-même suffisait. Depuis que les dossiers vivent sur le
+    serveur en ligne (11/11/2026), l'extension doit pouvoir l'appeler de l'extérieur : le
+    **secret partagé** (`JOURNEE_DEPOT_TOKEN`) fait alors foi, d'où que vienne l'appel.
+    Sans secret posé, rien n'est ouvert hors de la machine.
+    """
+    attendu = settings.journee_depot_token
+    entete = authorization or ""
+    presente = entete[7:].strip() if entete.lower().startswith("bearer ") else ""
+    if attendu is not None and presente:
+        if hmac.compare_digest(presente, attendu.get_secret_value()):
+            return
+        raise Forbidden("DEPOT_JETON_INVALIDE")
+    if not depuis_cette_machine(request):
+        raise Forbidden("DEPOT_NON_LOCAL")
+    if attendu is not None:
+        raise Forbidden("DEPOT_JETON_INVALIDE")
 
 
 def providers(request: Request) -> ProviderSet:

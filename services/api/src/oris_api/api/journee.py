@@ -10,14 +10,13 @@ entrer un patient dans Oris reste un geste du praticien (spec §58).
 
 from __future__ import annotations
 
-import hmac
 from datetime import date
 from uuid import UUID
 
 from fastapi import APIRouter, Header, Request, status
 from sqlalchemy.orm import Session
 
-from oris_api.api.dependencies import ActorDep, SessionDep, SettingsDep
+from oris_api.api.dependencies import ActorDep, SessionDep, SettingsDep, extension_autorisee
 from oris_api.api.schemas import (
     DemandeIn,
     DemandeOut,
@@ -148,9 +147,11 @@ def annuler_demande(actor: ActorDep, settings: SettingsDep, jour: str | None = N
 
 
 @router.get("/demandes", response_model=list[DemandeOut])
-def read_demandes(request: Request, settings: SettingsDep) -> list[DemandeOut]:
-    """Les journées qu'Oris attend. Lu par l'extension, sur cette machine seulement."""
-    _seulement_ici(request)
+def read_demandes(
+    request: Request, settings: SettingsDep, authorization: str | None = Header(default=None)
+) -> list[DemandeOut]:
+    """Les journées qu'Oris attend. Lu par l'extension : sur ce Mac, ou avec le secret."""
+    extension_autorisee(request, settings, authorization)
     return [
         DemandeOut(jour=jour, demande_le=quand) for jour, quand in agenda.demandes(settings).items()
     ]
@@ -169,14 +170,7 @@ def deposer_journee(
     machine seulement. Et surtout, **aucun patient n'est créé** — la journée est rangée,
     le praticien décide ensuite, ligne par ligne, laquelle mérite un dossier.
     """
-    _seulement_ici(request)
-
-    attendu = settings.journee_depot_token
-    if attendu is not None:
-        entete = authorization or ""
-        presente = entete[7:].strip() if entete.lower().startswith("bearer ") else ""
-        if not hmac.compare_digest(presente, attendu.get_secret_value()):
-            raise Forbidden("DEPOT_JETON_INVALIDE")
+    extension_autorisee(request, settings, authorization)
 
     try:
         depot = agenda.deposer(settings, body.model_dump())
