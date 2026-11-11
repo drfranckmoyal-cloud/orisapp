@@ -20,7 +20,7 @@ fi
 echo "1/5  Envoi du code…"
 # .env, données et dépendances installées restent au serveur : on n'envoie que le code.
 rsync -a --delete \
-  --exclude '.git' --exclude 'node_modules' --exclude '.venv' --exclude '.venv.nosync' \
+  --exclude '.git' --exclude '.git-*' --exclude 'node_modules' --exclude '.venv' --exclude '.venv.nosync' \
   --exclude 'logs' --exclude '__pycache__' --exclude '.next' --exclude '*.pyc' \
   --exclude '.DS_Store' --exclude 'benchmarks/datasets' --exclude 'services/api/.env' \
   ./ "$SERVEUR:/home/oris/app/" || { echo "     échec de l'envoi."; read -r -p "Entrée pour fermer." _; exit 1; }
