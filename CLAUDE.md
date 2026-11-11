@@ -55,6 +55,16 @@ l'impose (ex. appareil photo, écoute écran verrouillé) ; elle est alors écri
 `docs/PARITE.md`. Avant de déclarer un travail fini : vérifier l'autre client, et mettre
 à jour `docs/PARITE.md`.
 
+## Publier : le site et l'iPhone ensemble (règle de Franck, 11/11/2026)
+
+« L'app ordi et téléphone toujours coordonnées et à jour en même temps. » Un seul serveur
+porte les dossiers (le site du Mac n'est plus qu'une copie figée). Toute publication passe
+par `publier-oris.command` : essais, puis serveur et site en ligne, puis app iPhone vers
+TestFlight — dans le même lot, jamais l'un sans l'autre quand les deux ont changé.
+
+Le projet vit dans `~/Claude-Projects/ORIS` (hors iCloud, qui délestait le dépôt) ; l'ancien
+chemin du Bureau est un lien vers lui.
+
 ## Workflow
 
 Before implementing a milestone:

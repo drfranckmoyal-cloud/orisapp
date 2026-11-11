@@ -135,6 +135,32 @@ Ce qui manque encore, et reste l'étape 1 de la feuille de route : le second fac
 mot de passe oublié, la création de cabinet, l'invitation d'un confrère, Pro Santé
 Connect.
 
+## Site et iPhone à jour en même temps — 11/11/2026
+
+`publier-oris.command` publie tout d'un coup : essais, serveur et site en ligne, puis
+l'app iPhone vers TestFlight. Deux réglages font le reste :
+
+- **Sur l'iPhone, une fois :** TestFlight › Oris › activer **« Mises à jour
+  automatiques »**. Chaque version envoyée s'installe seule, sans rien toucher.
+- **Pour que l'envoi à Apple se fasse sans clic** (facultatif) : une clé App Store
+  Connect. Sur appstoreconnect.apple.com › Utilisateurs et accès › Intégrations › Clés
+  App Store Connect › « + », rôle *Développeur* ; télécharger le fichier `AuthKey_….p8`
+  (une seule fois possible). Le ranger dans `~/.appstoreconnect/private_keys/`, puis
+  écrire `~/.config/oris/appstoreconnect` :
+
+  ```
+  CLE_FICHIER="$HOME/.appstoreconnect/private_keys/AuthKey_XXXXXXXXXX.p8"
+  CLE_ID="XXXXXXXXXX"
+  CLE_EMETTEUR="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  ```
+
+  Sans cette clé, `xcodebuild -exportArchive` refuse (« Failed to Use Accounts ») et le
+  script ouvre l'archive dans Xcode : il reste à cliquer « Distribute App ».
+
+L'icône « Oris » du Dock du Mac ouvre désormais le **site en ligne**. Jusqu'au 11/11 elle
+ouvrait la copie du Mac (localhost:3000), d'où les dossiers créés sur le Mac et absents
+de l'iPhone.
+
 ## Quand l'envoi en ligne de commande est refusé — 10/11/2026
 
 `xcodebuild -exportArchive` a répondu « Failed to Use Accounts » (aucun compte avec accès

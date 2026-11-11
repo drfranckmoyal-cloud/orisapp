@@ -1,8 +1,8 @@
 #!/bin/bash
 # Fabrique l'icône « Oris » et la pose dans le Dock.
 #
-# Un clic dessus : si Oris tourne déjà, le navigateur s'ouvre ; sinon tout démarre
-# (base, serveur, site) puis le navigateur s'ouvre. Rien à taper, pas de fenêtre noire.
+# Un clic dessus ouvre Oris en ligne — le même que sur l'iPhone. Rien à démarrer sur le
+# Mac, rien à taper, pas de fenêtre noire.
 #
 # À relancer si le dossier du projet est déplacé, ou pour remettre l'icône.
 
@@ -11,6 +11,7 @@ PROJET="$(cd "$(dirname "$0")/.." && pwd)"
 APPS="/Applications"
 [ -w "$APPS" ] || APPS="$HOME/Applications"
 APP="$APPS/Oris.app"
+SITE="https://51-159-130-158.nip.io"
 
 echo "Oris — fabrication de l'icône du Dock"
 echo "     projet : $PROJET"
@@ -25,29 +26,11 @@ cat > "$APP/Contents/MacOS/Oris" <<SCRIPT
 #!/bin/bash
 # Lanceur d'Oris. Fabriqué par scripts/icone-dock.command — ne pas modifier à la main.
 #
-# Le démarrage passe par le Terminal, et non par cette app directement : macOS interdit
-# à une application de /Applications de lire le dossier Bureau, où vit le projet
-# (« Operation not permitted »). Le Terminal, lui, y est déjà autorisé — et la fenêtre
-# noire qui s'ouvre est celle que Franck connaît déjà, avec ses quatre étapes.
-PROJET="$PROJET"
-
-# Délais larges : un site qui met trois secondes à répondre n'est pas un site en panne.
-pret() { curl -fs -m 8 http://localhost:8000/health >/dev/null 2>&1 && curl -fs -m 15 http://localhost:3000 >/dev/null 2>&1; }
-
-# Déjà en marche : on ouvre simplement la fenêtre, sans rien relancer.
-if pret; then
-  open http://localhost:3000
-  exit 0
-fi
-
-open -a Terminal "\$PROJET/lancer-oris.command" || {
-  osascript -e "display alert \\"Oris\\" message \\"Le dossier d'Oris est introuvable :
-
-\$PROJET
-
-S'il a été déplacé, prévenez Claude pour refaire l'icône.\\"" >/dev/null 2>&1
-  exit 1
-}
+# Il ouvre le site en ligne : le même serveur, les mêmes dossiers que l'iPhone. Jusqu'au
+# 11/11/2026 il ouvrait la copie du Mac (localhost:3000), et les dossiers créés ici
+# n'arrivaient jamais sur le téléphone (Franck : « je ne les ai pas retrouvés sur
+# l'iPhone »). Rien ne démarre sur le Mac : il n'y a rien à attendre.
+open "$SITE"
 SCRIPT
 chmod +x "$APP/Contents/MacOS/Oris"
 
@@ -93,4 +76,4 @@ fi
 
 echo
 echo "Terminé. L'icône verte « Oris » est dans votre Dock, à droite."
-echo "Un clic : Oris démarre si besoin, puis la fenêtre s'ouvre."
+echo "Un clic : Oris s'ouvre en ligne, avec les mêmes dossiers que sur l'iPhone."

@@ -233,6 +233,16 @@ d'une vraie consultation trouvent ce qu'un corpus propre ne trouvera jamais.**
 
 ## 7. Lancer Oris sur le Mac
 
+**Depuis le 11 novembre 2026 :** l'icône « Oris » du Dock ouvre le **site en ligne**, le même
+que l'iPhone, avec les mêmes dossiers. Rien à démarrer sur le Mac. Le projet vit dans
+`~/Claude-Projects/ORIS`, hors iCloud ; le raccourci du Bureau y mène. Pour publier une
+nouvelle version partout à la fois : `publier-oris.command`.
+
+Ce qui suit décrit l'ancien fonctionnement, gardé pour l'extension Chrome (journée
+Doctolib, dépôt SmileCloud), qui parle encore au serveur du Mac.
+
+### Ancien fonctionnement
+
 **Cliquez l'icône verte « Oris » dans le Dock** : base de données, serveur, site, navigateur. Deux minutes au premier démarrage, immédiat ensuite. L'icône se refait avec `scripts/icone-dock.command`. Sans elle : double-cliquez `lancer-oris.command`.
 Pour arrêter : `arreter-oris.command`. Le mode d'emploi de l'essai est dans
 `docs/UTILISER_ORIS.md`.
