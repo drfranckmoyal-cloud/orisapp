@@ -1,5 +1,22 @@
 # Changelog
 
+## Envoyer : le courriel bloqué par l'hébergeur, SmileCloud dans la fenêtre d'envoi — 2026-11-11
+- Franck a tenté deux fois d'envoyer le compte rendu de Mme B. au Dr Briquet : rien n'est
+  parti. **L'hébergeur (Scaleway) bloque l'envoi de courriels** depuis le serveur en ligne
+  (ports 25, 465 et 587 fermés en sortie, protection activée d'office). Sur le Mac l'envoi
+  passait ; depuis que tout est en ligne, il ne part plus. Le déblocage se fait dans la
+  console Scaleway, par Franck.
+- **SmileCloud devient un destinataire** de la fenêtre d'envoi, sur le site et sur
+  l'iPhone : « Dossier SmileCloud du patient », coché d'office pour un document validé
+  jamais rangé. La carte séparée disparaît.
+- **L'extension Chrome peut joindre le serveur en ligne** : ses routes (journée Doctolib,
+  dépôts SmileCloud) acceptent le secret partagé `JOURNEE_DEPOT_TOKEN`, d'où que vienne
+  l'appel. Le réglage de l'extension elle-même est demandé à la session Dental Lens.
+- **Relevé hebdomadaire des corrections** (`scripts/releve_corrections.py`, tâche planifiée
+  du lundi matin) : ce qui revient dans les corrections du praticien, pour proposer les
+  règles à changer. Il propose seulement.
+- 553 tests serveur · 73 site · 73 iPhone au vert.
+
 ## Les dossiers du Mac réunis avec ceux de l'iPhone, et la conversation gardée en base — 2026-11-11
 - Franck : « j'ai créé les dossiers hier sur le Mac et je ne les ai pas retrouvés sur
   l'iPhone ». Depuis le transport du 8 octobre, le site du Mac et le serveur en ligne

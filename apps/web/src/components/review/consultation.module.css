@@ -995,3 +995,12 @@
   font: inherit;
   cursor: pointer;
 }
+
+/* Le dossier SmileCloud du patient, premier des destinataires, à ses couleurs. */
+.destinataireSmileCloud strong {
+  color: #0096af;
+}
+
+.destinataireSmileCloud input {
+  accent-color: #0096af;
+}

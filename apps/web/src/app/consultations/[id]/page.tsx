@@ -15,7 +15,6 @@ import {
 } from "@/components/review/AssistantCorrection";
 import { CorrectionPanel } from "@/components/review/CorrectionPanel";
 import { CorrespondantRapide } from "@/components/review/CorrespondantRapide";
-import { DepotSmileCloud } from "@/components/review/DepotSmileCloud";
 import { Documentation } from "@/components/review/Documentation";
 import { EnvoiDocument } from "@/components/review/EnvoiDocument";
 import { Envois } from "@/components/review/Envois";
@@ -977,18 +976,14 @@ export default function ConsultationPage() {
                         onEditer={() =>
                           window.scrollTo({ top: 0, behavior: "smooth" })
                         }
+                        smilecloudRelie={Boolean(data.patient.smilecloud_case_id)}
+                        valide={valide}
                       />
                       <Envois
                         documentId={active.id}
                         patientId={data.patient.id}
                         envois={envoisDe(active.id)}
                         onChange={reloadAll}
-                      />
-                      {/* Le compte rendu se range là où le praticien regarde ses photos. */}
-                      <DepotSmileCloud
-                        documentId={active.id}
-                        relie={Boolean(data.patient.smilecloud_case_id)}
-                        valide={valide}
                       />
                     </>
                   ) : (
@@ -1005,17 +1000,14 @@ export default function ConsultationPage() {
                         onEditer={() =>
                           window.scrollTo({ top: 0, behavior: "smooth" })
                         }
+                        smilecloudRelie={Boolean(data.patient.smilecloud_case_id)}
+                        valide={valide}
                       />
                       <Envois
                         documentId={active.id}
                         patientId={data.patient.id}
                         envois={envoisDe(active.id)}
                         onChange={reloadAll}
-                      />
-                      <DepotSmileCloud
-                        documentId={active.id}
-                        relie={Boolean(data.patient.smilecloud_case_id)}
-                        valide={valide}
                       />
                     </details>
                   )}

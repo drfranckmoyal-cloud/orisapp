@@ -26,6 +26,8 @@ enum Teinte {
     static let attentionDouce = Color(hex: 0xFBEEDD)
     static let alerte = Color(hex: 0x9C2A1C)
     static let alerteDouce = Color(hex: 0xFBEAE7)
+    /// La couleur de SmileCloud, pour ce qui part dans son dossier.
+    static let smilecloud = Color(hex: 0x0096AF)
 
     /// Une teinte par type de document, comme sur le site.
     static func document(_ type: DocumentDocumentType) -> (encre: Color, fond: Color) {

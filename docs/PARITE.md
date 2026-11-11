@@ -52,11 +52,10 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
 
 ## Écarts voulus (imposés par l'appareil)
 
-- **Ranger un document dans SmileCloud** (10/10/2026) : carte « Dans SmileCloud » dans la
-  consultation, sur le site seulement. C'est l'extension Chrome, sur le Mac, qui fait le
-  dépôt ; un téléphone n'a pas d'extension, et le serveur en ligne n'en voit aucune. Le
-  bouton n'existe donc pas sur l'iPhone, et sur le site il reste éteint tant que le
-  patient n'est pas relié à un dossier SmileCloud.
+- **Ranger un document dans SmileCloud** (11/11/2026) : présent des deux côtés, comme un
+  destinataire de la fenêtre d'envoi (« Dossier SmileCloud du patient », coché d'office
+  pour un document validé jamais rangé). Le dépôt lui-même reste fait par l'extension
+  Chrome du Mac, qui interroge le serveur en ligne : l'iPhone peut donc le demander.
 
 - Envois : page « Envois » sur le site (envoyer depuis la liste) ; sur l'iPhone, le
   filtre « À envoyer » des Consultations, l'envoi se faisant depuis la consultation.

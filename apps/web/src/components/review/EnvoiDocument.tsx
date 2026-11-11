@@ -27,16 +27,28 @@ const RAISON: Record<string, string> = {
  * Les destinataires viennent de la fiche du patient ; le correspondant principal est
  * coché d'office. Chaque destinataire reçoit son propre message, le PDF joint.
  */
+/** Ce qu'Oris sait du dépôt du document dans le dossier SmileCloud du patient. */
+interface DepotSmileCloud {
+  etat: "absent" | "en_attente" | "depose" | "impossible";
+  raison: string;
+}
+
 export function EnvoiDocument({
   documentId,
   version,
   onEnvoye,
   onEditer,
+  smilecloudRelie = false,
+  valide = false,
 }: {
   documentId: string;
   version: number;
   onEnvoye: () => void;
   onEditer: () => void;
+  /** Le patient est relié à son dossier SmileCloud. */
+  smilecloudRelie?: boolean;
+  /** Seul un document validé part dans SmileCloud : ce qui y entre y reste. */
+  valide?: boolean;
 }) {
   const [prepare] = useApi<EnvoiPrepare>(
     `/documents/${documentId}/envoi?v=${version}`,
@@ -49,6 +61,13 @@ export function EnvoiDocument({
   const [envoi, setEnvoi] = useState<"repos" | "en_cours">("repos");
   const [resultats, setResultats] = useState<ResultatEnvoi[] | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
+  // Le dossier SmileCloud du patient est un destinataire comme les autres (Franck,
+  // 11/11/2026 : « pouvoir envoyer le CR sur le dossier SmileCloud, assez facilement »).
+  const [depot, rechargerDepot] = useApi<DepotSmileCloud>(
+    `/documents/${documentId}/smilecloud?v=${version}`,
+  );
+  const [versSmileCloud, setVersSmileCloud] = useState<boolean | null>(null);
+  const [retourSmileCloud, setRetourSmileCloud] = useState<string | null>(null);
 
   if (prepare.state !== "ready") return null;
   const donnees = prepare.data;
@@ -60,11 +79,39 @@ export function EnvoiDocument({
     .map((c) => c.cle);
   const libres = autres.map((a) => a.trim()).filter(Boolean);
   const nombre = choisis.length + libres.length;
+  const etatDepot = depot.state === "ready" ? depot.data.etat : "absent";
+  const smilecloudPossible = smilecloudRelie && valide;
+  const smilecloud =
+    smilecloudPossible && (versSmileCloud ?? etatDepot === "absent");
+  const total = nombre + (smilecloud ? 1 : 0);
+
+  async function deposerDansSmileCloud(): Promise<string> {
+    try {
+      const fait = await apiRequest<DepotSmileCloud>(`/documents/${documentId}/smilecloud`, {
+        method: "POST",
+      });
+      return fait.etat === "depose"
+        ? "Déjà rangé dans le dossier SmileCloud."
+        : "Demandé au dossier SmileCloud : l’extension Chrome le dépose à son prochain passage.";
+    } catch (caught) {
+      const code = caught instanceof ApiError ? caught.code : "UNKNOWN";
+      return `SmileCloud : ${errorMessage(code)}`;
+    } finally {
+      rechargerDepot();
+    }
+  }
 
   async function envoyer() {
     setErreur(null);
     setResultats(null);
+    setRetourSmileCloud(null);
     setEnvoi("en_cours");
+    if (smilecloud) setRetourSmileCloud(await deposerDansSmileCloud());
+    if (nombre === 0) {
+      setEnvoi("repos");
+      onEnvoye();
+      return;
+    }
     try {
       const retour = await apiRequest<ResultatEnvoi[]>(
         `/documents/${documentId}/envoi`,
@@ -131,6 +178,28 @@ export function EnvoiDocument({
 
       <fieldset className={styles.destinataires}>
         <legend>Destinataires</legend>
+        <label className={`${styles.destinataire} ${styles.destinataireSmileCloud}`}>
+          <input
+            type="checkbox"
+            checked={smilecloud}
+            disabled={!smilecloudPossible}
+            onChange={(event) => setVersSmileCloud(event.target.checked)}
+          />
+          <span>
+            <strong>Dossier SmileCloud du patient</strong>
+            <span className={styles.adresse}>
+              {!smilecloudRelie
+                ? "patient pas encore relié à son dossier SmileCloud (fiche patient)"
+                : !valide
+                  ? "après validation : ce qui entre dans SmileCloud y reste"
+                  : etatDepot === "depose"
+                    ? "déjà rangé — cochez pour l’y ranger à nouveau"
+                    : etatDepot === "en_attente"
+                      ? "demandé, en attente de l’extension Chrome"
+                      : "le PDF y est rangé avec la documentation"}
+            </span>
+          </span>
+        </label>
         {donnees.candidats.length === 0 && (
           <p className={styles.envoiNote}>
             Ni le patient ni ses correspondants n’ont d’adresse : saisissez-en
@@ -212,12 +281,14 @@ export function EnvoiDocument({
 
       <div className={styles.boutonsEnvoi}>
         <Bouton
-          disabled={!donnees.configure || nombre === 0 || envoi === "en_cours"}
+          disabled={
+            total === 0 || (nombre > 0 && !donnees.configure) || envoi === "en_cours"
+          }
           onClick={() => void envoyer()}
         >
           {envoi === "en_cours"
             ? "Envoi…"
-            : `Envoyer${nombre > 0 ? ` à ${nombre} destinataire${nombre > 1 ? "s" : ""}` : ""}`}
+            : `Envoyer${total > 0 ? ` à ${total} destinataire${total > 1 ? "s" : ""}` : ""}`}
         </Bouton>
         <Bouton variante="secondaire" onClick={() => void imprimer()}>
           Imprimer
@@ -238,6 +309,7 @@ export function EnvoiDocument({
           ))}
         </ul>
       )}
+      {retourSmileCloud && <p className={styles.envoiNote}>{retourSmileCloud}</p>}
       {erreur && <p className={styles.erreur}>{erreur}</p>}
     </section>
   );

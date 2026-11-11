@@ -132,3 +132,21 @@ extension APIClient {
         return relecture.propositions
     }
 }
+
+/// Ce qu'Oris sait du dépôt d'un document dans le dossier SmileCloud du patient.
+struct DepotSmileCloud: Decodable, Equatable, Sendable {
+    /// absent, en_attente, depose, impossible
+    let etat: String
+    let raison: String
+}
+
+extension APIClient {
+    func depotSmileCloud(documentId: String) async throws -> DepotSmileCloud {
+        try await get("documents/\(documentId)/smilecloud")
+    }
+
+    /// Demande le dépôt : l'extension Chrome du Mac le range dans le dossier du patient.
+    func deposerDansSmileCloud(documentId: String) async throws -> DepotSmileCloud {
+        try await send("documents/\(documentId)/smilecloud", method: "POST", body: [:])
+    }
+}

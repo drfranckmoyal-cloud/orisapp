@@ -226,6 +226,11 @@ struct EnvoiView: View {
     @State private var message = ""
     @State private var enCours = false
     @State private var erreur: String?
+    /// Le dossier SmileCloud du patient, destinataire comme les autres (11/11/2026).
+    @State private var smilecloud = false
+    @State private var depot: DepotSmileCloud?
+
+    private var valide: Bool { [.validated, .exported].contains(document.status) }
 
     private var adressesValides: [String] {
         adresses.map { $0.trimmingCharacters(in: .whitespaces) }.filter { $0.contains("@") }
@@ -278,6 +283,30 @@ struct EnvoiView: View {
 
         VStack(alignment: .leading, spacing: OrisSpacing.s12) {
             Text("Destinataires").font(Police.titreCarte).foregroundStyle(Teinte.encre)
+            // Le dossier SmileCloud du patient : l'extension Chrome du Mac l'y range. Un
+            // brouillon ne part pas — ce qui entre dans SmileCloud y reste.
+            Button { smilecloud.toggle() } label: {
+                HStack(alignment: .top, spacing: OrisSpacing.s12) {
+                    Image(systemName: smilecloud ? "checkmark.square.fill" : "square")
+                        .font(.system(size: 22))
+                        .foregroundStyle(smilecloud ? Teinte.smilecloud : Teinte.traitFort)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Dossier SmileCloud du patient")
+                            .font(Police.interface(15, .bold)).foregroundStyle(Teinte.smilecloud)
+                        Text(!valide ? "après validation : ce qui entre dans SmileCloud y reste"
+                             : depot?.etat == "depose" ? "déjà rangé — cochez pour l’y ranger à nouveau"
+                             : depot?.etat == "en_attente" ? "demandé, en attente de l’extension Chrome"
+                             : "le PDF y est rangé avec la documentation")
+                            .font(Police.interface(12.5, .medium))
+                            .foregroundStyle(Teinte.encreTresDouce)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(!valide)
+            .opacity(valide ? 1 : 0.5)
             ForEach(p.candidats) { c in
                 Button {
                     if coches.contains(c.cle) { coches.remove(c.cle) } else { coches.insert(c.cle) }
@@ -348,8 +377,10 @@ struct EnvoiView: View {
             Label(enCours ? "Envoi…" : "Envoyer", systemImage: "paperplane.fill")
         }
         .buttonStyle(BoutonPrincipal())
-        .disabled(enCours || !p.configure || objet.trimmingCharacters(in: .whitespaces).isEmpty
-                  || (coches.isEmpty && adressesValides.isEmpty))
+        .disabled(enCours
+                  || (coches.isEmpty && adressesValides.isEmpty && !smilecloud)
+                  || ((!coches.isEmpty || !adressesValides.isEmpty)
+                      && (!p.configure || objet.trimmingCharacters(in: .whitespaces).isEmpty)))
     }
 
     private func charger() async {
@@ -359,6 +390,8 @@ struct EnvoiView: View {
             coches = Set(p.candidats.filter(\.coche).map(\.cle))
             objet = p.objet
             message = p.message
+            depot = try? await client.depotSmileCloud(documentId: document.id)
+            smilecloud = valide && (depot?.etat ?? "absent") == "absent"
         } catch {
             erreur = Labels.erreur(error)
         }
@@ -368,6 +401,22 @@ struct EnvoiView: View {
         enCours = true
         erreur = nil
         defer { enCours = false }
+        var dits: [String] = []
+        if smilecloud {
+            do {
+                let fait = try await client.deposerDansSmileCloud(documentId: document.id)
+                dits.append(fait.etat == "depose" ? "Déjà rangé dans SmileCloud."
+                            : "Demandé au dossier SmileCloud.")
+            } catch {
+                erreur = "SmileCloud : " + Labels.erreur(error)
+                return
+            }
+        }
+        if coches.isEmpty && adressesValides.isEmpty {
+            envoye(dits.joined(separator: " "))
+            fermer()
+            return
+        }
         do {
             let resultats = try await client.envoyer(
                 documentId: document.id, destinataires: Array(coches), adresses: adressesValides,
@@ -375,7 +424,9 @@ struct EnvoiView: View {
             )
             let rates = resultats.filter { !$0.envoye }
             if rates.isEmpty {
-                envoye(resultats.count > 1 ? "Envoyé à \(resultats.count) destinataires." : "Envoyé à \(resultats.first?.destinataire ?? "")." )
+                dits.insert(resultats.count > 1 ? "Envoyé à \(resultats.count) destinataires."
+                            : "Envoyé à \(resultats.first?.destinataire ?? "").", at: 0)
+                envoye(dits.joined(separator: " "))
                 fermer()
             } else {
                 erreur = "Non parti vers : " + rates.map(\.destinataire).joined(separator: ", ")
