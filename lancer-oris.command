@@ -73,7 +73,10 @@ MOTEURS=$(curl -fs http://localhost:8000/health 2>/dev/null \
   | "$PYTHON" -c 'import json,sys; p=json.load(sys.stdin)["providers"]; print("transcription :", p["speech_to_text"], "· extraction :", p["clinical_extraction"])' 2>/dev/null)
 [ -n "$MOTEURS" ] && echo "Moteurs actifs — $MOTEURS"
 echo
-echo "Oris est ouvert sur http://localhost:3000"
+# Depuis le 11/11/2026, les dossiers vivent sur le serveur en ligne, le même que celui
+# de l'iPhone. Ce qui tourne ici ne sert plus qu'aux tâches du Mac (extension Chrome) ;
+# le site du Mac n'en a qu'une ancienne copie. On ouvre donc le site en ligne.
+echo "Vos dossiers : https://51-159-130-158.nip.io (le même que sur l'iPhone)"
 echo "Pour tout arrêter : double-cliquez arreter-oris.command"
 echo
-open http://localhost:3000
+open https://51-159-130-158.nip.io

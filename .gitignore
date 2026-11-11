@@ -49,3 +49,5 @@ xcuserdata/
 # Banc d essai : rapports de contrôle locaux
 benchmarks/reports/checks/
 logs/
+# Ancien dossier git que iCloud avait délesté (11/11/2026) : l'historique vit dans ~/.oris-git.
+.git-ancien-*

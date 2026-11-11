@@ -792,6 +792,9 @@ export interface paths {
         /**
          * Finish
          * @description Fin de l'écoute puis traitement. 409 AUDIO_CHUNKS_MISSING s'il manque des segments.
+         *
+         *     Avec `TRAITEMENT_EN_ARRIERE_PLAN`, la réponse part dès que l'écoute est fermée et
+         *     enregistrée : le dossier se prépare ensuite, et le praticien enchaîne.
          */
         post: operations["finish_encounters__encounter_id__finish_post"];
         delete?: never;
@@ -1221,7 +1224,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Historique
+         * @description La conversation de la consultation, de la première demande à la dernière.
+         *
+         *     Elle est la même sur l'iPhone et sur le site, et survit à l'app fermée.
+         */
+        get: operations["historique_encounters__encounter_id__assistant_get"];
         put?: never;
         /**
          * Comprendre
@@ -1270,6 +1279,10 @@ export interface paths {
         /**
          * Appliquer
          * @description Applique ce que le praticien vient de confirmer.
+         *
+         *     La demande de l'historique passe « en cours » et c'est enregistré tout de suite : un
+         *     autre appareil, ou l'app rouverte, voit qu'Oris travaille. Elle finit « traitée », ou
+         *     « non aboutie » avec la raison.
          */
         post: operations["appliquer_encounters__encounter_id__assistant_appliquer_post"];
         delete?: never;
@@ -1292,6 +1305,26 @@ export interface paths {
          * @description Claude relit le document et propose des améliorations de forme. Rien n'est changé.
          */
         post: operations["relire_documents__document_id__relecture_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/encounters/{encounter_id}/assistant/{demande_id}/annuler": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Annuler
+         * @description Le praticien écarte une proposition : rien n'a changé, et c'est noté.
+         */
+        post: operations["annuler_encounters__encounter_id__assistant__demande_id__annuler_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2014,11 +2047,15 @@ export interface components {
             civilite?: ("monsieur" | "madame") | null;
             /** Document Id */
             document_id?: string | null;
+            /** Demande Id */
+            demande_id?: string | null;
         };
         /** AssistantDemande */
         AssistantDemande: {
             /** Demande */
             demande: string;
+            /** Document Id */
+            document_id?: string | null;
         };
         /**
          * AssistantLecture
@@ -2066,6 +2103,8 @@ export interface components {
             source: "regles" | "claude";
             /** Object Version */
             object_version: number;
+            /** Demande Id */
+            demande_id?: string | null;
         };
         /** AssistantResultat */
         AssistantResultat: {
@@ -2682,13 +2721,6 @@ export interface components {
         DemandeIn: {
             /** Jour */
             jour?: string | null;
-        };
-        /** DemandeOut */
-        DemandeOut: {
-            /** Jour */
-            jour: string;
-            /** Demande Le */
-            demande_le: string;
         };
         /** DepotFaitIn */
         DepotFaitIn: {
@@ -3922,6 +3954,8 @@ export interface components {
         RelectureOut: {
             /** Propositions */
             propositions: components["schemas"]["PropositionOut"][];
+            /** Demande Id */
+            demande_id?: string | null;
         };
         /** RemoveFact */
         RemoveFact: {
@@ -4296,6 +4330,52 @@ export interface components {
             /** Ouvrir */
             ouvrir: ("doctolib" | "smilecloud") | null;
         };
+        /**
+         * DemandeOut
+         * @description Une demande de l'historique, et ce qu'elle est devenue.
+         */
+        oris_api__api__assistant__DemandeOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Document Id */
+            document_id: string | null;
+            /** Texte */
+            texte: string;
+            /**
+             * Etat
+             * @enum {string}
+             */
+            etat: "lecture" | "proposee" | "relecture" | "application" | "traitee" | "annulee" | "incomprise" | "echec";
+            lecture?: components["schemas"]["AssistantLecture"] | null;
+            /**
+             * Propositions
+             * @default []
+             */
+            propositions: components["schemas"]["PropositionOut"][];
+            /**
+             * Message
+             * @default
+             */
+            message: string;
+            /**
+             * Code
+             * @default
+             */
+            code: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Depuis
+             * Format: date-time
+             */
+            depuis: string;
+        };
         /** CandidatOut */
         oris_api__api__schemas__CandidatOut: {
             /** Cle */
@@ -4310,6 +4390,13 @@ export interface components {
             email: string;
             /** Coche */
             coche: boolean;
+        };
+        /** DemandeOut */
+        oris_api__api__schemas__DemandeOut: {
+            /** Jour */
+            jour: string;
+            /** Demande Le */
+            demande_le: string;
         };
         /**
          * DepotOut
@@ -5179,7 +5266,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DemandeOut"];
+                    "application/json": components["schemas"]["oris_api__api__schemas__DemandeOut"];
                 };
             };
             /** @description Validation Error */
@@ -5237,7 +5324,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DemandeOut"][];
+                    "application/json": components["schemas"]["oris_api__api__schemas__DemandeOut"][];
                 };
             };
         };
@@ -6805,6 +6892,37 @@ export interface operations {
             };
         };
     };
+    historique_encounters__encounter_id__assistant_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["oris_api__api__assistant__DemandeOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     comprendre_encounters__encounter_id__assistant_post: {
         parameters: {
             query?: never;
@@ -6930,6 +7048,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RelectureOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    annuler_encounters__encounter_id__assistant__demande_id__annuler_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                encounter_id: string;
+                demande_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["oris_api__api__assistant__DemandeOut"];
                 };
             };
             /** @description Validation Error */

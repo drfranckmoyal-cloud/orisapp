@@ -34,6 +34,9 @@ os.environ["SMILECLOUD_DIR"] = str(Path(tempfile.mkdtemp(prefix="oris-smilecloud
 # Les pièces jointes des tests vivent dans un dossier jetable, jamais celui du poste.
 os.environ["ATTACHMENT_DIR"] = str(Path(tempfile.mkdtemp(prefix="oris-pieces-")))
 os.environ["APP_ENV"] = "local"
+# Le traitement d'un bloc : un essai lit le dossier juste après la fin d'écoute. Les essais
+# du traitement en arrière-plan le lancent eux-mêmes (test_traitement_arriere_plan.py).
+os.environ["TRAITEMENT_EN_ARRIERE_PLAN"] = "false"
 DEFAULT_TEST_DATABASE_URL = "postgresql+psycopg://oris:oris@localhost:5432/oris_test"
 
 

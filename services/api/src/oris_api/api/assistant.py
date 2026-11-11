@@ -8,16 +8,18 @@ correction qui existe déjà ; la rédaction repasse par le rédacteur et tous s
 from __future__ import annotations
 
 import hashlib
+from datetime import UTC, datetime
 from typing import Annotated, Any, Literal, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Body, Header
 from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from oris_api.api.dependencies import ActorDep, ProvidersDep, SessionDep
 from oris_api.contracts.generated import DocumentDocumentType
-from oris_api.db.models import DocumentRow, Encounter, Patient
+from oris_api.db.models import DemandeCorrectionRow, DocumentRow, Encounter, Patient
 from oris_api.domain.correction_intent import interpret
 from oris_api.domain.corrections import CorrectionOperation
 from oris_api.domain.preferences import Consigne, PreferencesPatch, ajouter_consigne
@@ -38,6 +40,7 @@ from oris_api.services import (
 )
 from oris_api.services import audio as audio_service
 from oris_api.services.errors import Conflict, NotFound, ServiceError, Unprocessable
+from oris_api.services.identity import Actor
 
 router = APIRouter(tags=["assistant"])
 
@@ -54,6 +57,8 @@ class ServiceIndisponible(ServiceError):
 class AssistantDemande(BaseModel):
     model_config = ConfigDict(extra="forbid")
     demande: Annotated[str, Field(min_length=2, max_length=800)]
+    #: Le document qu'on regardait : il s'affiche avec la demande dans l'historique.
+    document_id: UUID | None = None
 
 
 class AssistantLecture(BaseModel):
@@ -70,6 +75,8 @@ class AssistantLecture(BaseModel):
     #: « regles » : compris sans IA (dents, décisions) ; « claude » : compris par Claude.
     source: Literal["regles", "claude"]
     object_version: int
+    #: La demande telle qu'elle est gardée dans l'historique de la consultation.
+    demande_id: UUID | None = None
 
 
 class AssistantApplication(BaseModel):
@@ -85,6 +92,8 @@ class AssistantApplication(BaseModel):
     civilite: Literal["monsieur", "madame"] | None = None
     #: Le document à réécrire ; absent, tous les documents rédigés de la consultation.
     document_id: UUID | None = None
+    #: La demande de l'historique que cette application conclut.
+    demande_id: UUID | None = None
 
 
 class AssistantResultat(BaseModel):
@@ -101,6 +110,67 @@ class PropositionOut(BaseModel):
 
 class RelectureOut(BaseModel):
     propositions: list[PropositionOut]
+    demande_id: UUID | None = None
+
+
+EtatDemande = Literal[
+    "lecture", "proposee", "relecture", "application", "traitee", "annulee", "incomprise", "echec"
+]
+
+
+class DemandeOut(BaseModel):
+    """Une demande de l'historique, et ce qu'elle est devenue."""
+
+    id: UUID
+    document_id: UUID | None
+    texte: str
+    etat: EtatDemande
+    lecture: AssistantLecture | None = None
+    propositions: list[PropositionOut] = []
+    #: Le message final : ce qui a été fait, ou pourquoi rien ne l'a été.
+    message: str = ""
+    #: Le code d'erreur, quand la demande n'a pas abouti : chaque appareil le traduit.
+    code: str = ""
+    created_at: datetime
+    #: Depuis quand elle est dans son état (la barre de progression part de là).
+    depuis: datetime
+
+
+def _noter(
+    session: Session,
+    actor: Actor,
+    encounter: Encounter,
+    texte: str,
+    etat: str,
+    reponse: dict[str, Any],
+    document_id: UUID | None,
+) -> DemandeCorrectionRow:
+    """Garde la demande dans l'historique de la consultation."""
+    demande = DemandeCorrectionRow(
+        encounter_id=encounter.id,
+        document_id=document_id,
+        user_id=actor.user_id,
+        texte=texte[:800],
+        etat=etat,
+        reponse=reponse,
+    )
+    session.add(demande)
+    session.flush()
+    return demande
+
+
+def _demande(session: Session, encounter: Encounter, demande_id: UUID) -> DemandeCorrectionRow:
+    demande = session.get(DemandeCorrectionRow, demande_id)
+    if demande is None or demande.encounter_id != encounter.id:
+        raise NotFound("DEMANDE_NOT_FOUND", str(demande_id))
+    return demande
+
+
+def _poser(demande: DemandeCorrectionRow, etat: str, **reponse: Any) -> None:
+    demande.etat = etat
+    # Un nouveau dictionnaire : SQLAlchemy ne voit pas une clé changée en place.
+    demande.reponse = {**demande.reponse, **reponse}
+    demande.updated_at = datetime.now(UTC)
 
 
 class ConsignesOut(BaseModel):
@@ -182,7 +252,38 @@ def comprendre(
     Claude, sauf pour une consultation fictive, dont rien ne sort d'Oris.
     """
     encounter = encounters.get_encounter(session, actor, encounter_id)
-    return _comprendre(session, encounter, body.demande.strip(), providers)
+    return _comprendre_et_noter(
+        session, actor, encounter, body.demande.strip(), providers, body.document_id
+    )
+
+
+def _comprendre_et_noter(
+    session: Session,
+    actor: Actor,
+    encounter: Encounter,
+    texte: str,
+    providers: ProviderSet,
+    document_id: UUID | None,
+) -> AssistantLecture:
+    """Comprend la demande et la garde dans l'historique — panne comprise."""
+    try:
+        lecture = _comprendre(session, encounter, texte, providers)
+    except ServiceIndisponible as panne:
+        _noter(session, actor, encounter, texte, "echec", {"code": panne.code}, document_id)
+        # La demande ratée reste dans l'historique : on l'enregistre avant de répondre.
+        session.commit()
+        raise
+    etat = "incomprise" if lecture.nature == "incompris" else "proposee"
+    demande = _noter(
+        session,
+        actor,
+        encounter,
+        texte,
+        etat,
+        {"lecture": lecture.model_dump(mode="json")},
+        document_id,
+    )
+    return lecture.model_copy(update={"demande_id": demande.id})
 
 
 @router.post("/encounters/{encounter_id}/assistant/voix", response_model=AssistantLecture)
@@ -220,7 +321,7 @@ def comprendre_a_la_voix(
         return _lecture_out(
             Lecture("incompris", raison, question=raison), "regles", obj.object_version
         )
-    return _comprendre(session, encounter, demande, providers)
+    return _comprendre_et_noter(session, actor, encounter, demande, providers, None)
 
 
 def _a_reecrire(
@@ -261,8 +362,40 @@ def appliquer(
     actor: ActorDep,
     providers: ProvidersDep,
 ) -> AssistantResultat:
-    """Applique ce que le praticien vient de confirmer."""
+    """Applique ce que le praticien vient de confirmer.
+
+    La demande de l'historique passe « en cours » et c'est enregistré tout de suite : un
+    autre appareil, ou l'app rouverte, voit qu'Oris travaille. Elle finit « traitée », ou
+    « non aboutie » avec la raison.
+    """
     encounter = encounters.get_encounter(session, actor, encounter_id)
+    demande = _demande(session, encounter, body.demande_id) if body.demande_id else None
+    if demande is not None:
+        _poser(demande, "application")
+        session.commit()
+    try:
+        message = _appliquer(session, actor, encounter, body, providers)
+    except ServiceError as refus:
+        session.rollback()
+        if demande is not None:
+            demande = _demande(session, encounter, demande.id)
+            _poser(demande, "echec", code=refus.code)
+            session.commit()
+        raise
+    if demande is not None:
+        _poser(demande, "traitee", message=message)
+    return AssistantResultat(
+        applique=True, message=message, object_version=encounter.object_version
+    )
+
+
+def _appliquer(
+    session: Session,
+    actor: Actor,
+    encounter: Encounter,
+    body: AssistantApplication,
+    providers: ProviderSet,
+) -> str:
     if encounter.status not in RELISIBLES:
         raise Conflict("ENCOUNTER_NOT_PROCESSED", str(encounter.id))
 
@@ -323,9 +456,7 @@ def appliquer(
         _reecrire(session, encounter, providers, body.document_id)
         message = "Civilité enregistrée dans la fiche ; le document est accordé."
 
-    return AssistantResultat(
-        applique=True, message=message, object_version=encounter.object_version
-    )
+    return message
 
 
 @router.post("/documents/{document_id}/relecture", response_model=RelectureOut)
@@ -359,18 +490,87 @@ def relire(
         *personalization.preferences_of(session, actor).consignes,
         *documents.consignes_de(encounter),
     ]
+    texte = "Relis ce document et propose des améliorations."
     try:
         propositions = async_bridge.run(
             lambda: assistant.relire(document.document_type, rubriques, consignes)
         )
     except AssistantIndisponible as panne:
+        _noter(session, actor, encounter, texte, "echec", {"code": panne.code}, document.id)
+        session.commit()
         raise ServiceIndisponible(panne.code, str(document_id)) from panne
-    return RelectureOut(
-        propositions=[
-            PropositionOut(titre=p.titre, detail=p.detail, consigne=p.consigne)
-            for p in propositions
-        ]
+    sorties = [
+        PropositionOut(titre=p.titre, detail=p.detail, consigne=p.consigne) for p in propositions
+    ]
+    if sorties:
+        demande = _noter(
+            session,
+            actor,
+            encounter,
+            texte,
+            "relecture",
+            {"propositions": [s.model_dump() for s in sorties]},
+            document.id,
+        )
+    else:
+        demande = _noter(
+            session,
+            actor,
+            encounter,
+            texte,
+            "traitee",
+            {"message": "Rien à proposer : le document se lit bien tel qu'il est."},
+            document.id,
+        )
+    return RelectureOut(propositions=sorties, demande_id=demande.id)
+
+
+@router.get("/encounters/{encounter_id}/assistant", response_model=list[DemandeOut])
+def historique(encounter_id: UUID, session: SessionDep, actor: ActorDep) -> list[DemandeOut]:
+    """La conversation de la consultation, de la première demande à la dernière.
+
+    Elle est la même sur l'iPhone et sur le site, et survit à l'app fermée.
+    """
+    encounter = encounters.get_encounter(session, actor, encounter_id)
+    demandes = session.scalars(
+        select(DemandeCorrectionRow)
+        .where(DemandeCorrectionRow.encounter_id == encounter.id)
+        .order_by(DemandeCorrectionRow.created_at)
     )
+    sorties: list[DemandeOut] = []
+    for d in demandes:
+        reponse = d.reponse or {}
+        lecture = reponse.get("lecture")
+        sorties.append(
+            DemandeOut(
+                id=d.id,
+                document_id=d.document_id,
+                texte=d.texte,
+                etat=cast(EtatDemande, d.etat),
+                lecture=AssistantLecture.model_validate(lecture) if lecture else None,
+                propositions=[
+                    PropositionOut.model_validate(p) for p in reponse.get("propositions", [])
+                ],
+                message=str(reponse.get("message", "")),
+                code=str(reponse.get("code", "")),
+                created_at=d.created_at,
+                depuis=d.updated_at,
+            )
+        )
+    return sorties
+
+
+@router.post("/encounters/{encounter_id}/assistant/{demande_id}/annuler", response_model=DemandeOut)
+def annuler(
+    encounter_id: UUID, demande_id: UUID, session: SessionDep, actor: ActorDep
+) -> DemandeOut:
+    """Le praticien écarte une proposition : rien n'a changé, et c'est noté."""
+    encounter = encounters.get_encounter(session, actor, encounter_id)
+    demande = _demande(session, encounter, demande_id)
+    if demande.etat in {"proposee", "relecture", "incomprise"}:
+        _poser(demande, "annulee")
+        session.flush()
+    return next(d for d in historique(encounter_id, session, actor) if d.id == demande.id)
 
 
 @router.get("/encounters/{encounter_id}/consignes", response_model=ConsignesOut)

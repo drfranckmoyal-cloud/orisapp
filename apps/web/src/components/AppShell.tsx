@@ -6,7 +6,7 @@ import { type ReactNode, useEffect, useState } from "react";
 
 import { Icone, type NomIcone } from "@/components/Icones";
 import { Symbole } from "@/components/Marque";
-import { apiRequest, type Cabinet } from "@/lib/api";
+import { API_BASE_URL, apiRequest, type Cabinet } from "@/lib/api";
 import { useApi } from "@/lib/useApi";
 
 import styles from "./AppShell.module.css";
@@ -112,8 +112,12 @@ function VoyantsConnecteurs() {
   );
 }
 
+/** Le site en ligne : le seul endroit où vivent les dossiers (D027, fusion du 11/11/2026). */
+const SITE_EN_LIGNE = "https://51-159-130-158.nip.io";
+
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const copieLocale = /^(https?:\/\/)?(localhost|127\.0\.0\.1)(:|\/|$)/.test(API_BASE_URL);
   const [cabinet] = useApi<Cabinet>("/me/cabinet");
   const [ouvert, setOuvert] = useState(false);
   // Le nombre de comptes rendus à relire, en pastille sur « Consultations ».
@@ -221,7 +225,22 @@ export function AppShell({ children }: { children: ReactNode }) {
           </button>
         </div>
       </nav>
-      <main className={styles.main}>{children}</main>
+      <main className={styles.main}>
+        {/* Depuis le 11/11/2026, les dossiers vivent sur le serveur en ligne : le site du
+            Mac n'en a qu'une copie qui ne bouge plus. Le dire en haut de chaque page, sinon
+            on y recrée des dossiers que l'iPhone ne verra jamais (Franck : « j'ai créé les
+            dossiers hier sur le Mac et je ne les ai pas retrouvés sur l'iPhone »). */}
+        {copieLocale && (
+          <div className="banner banner-critical" role="alert" style={{ marginBottom: 16 }}>
+            <strong>Copie locale, à ne plus utiliser.</strong> Vos dossiers sont sur le site
+            en ligne, le même que celui de l’iPhone : ce qui est créé ici n’y apparaîtra pas.{" "}
+            <a href={SITE_EN_LIGNE} className="link-button">
+              Ouvrir le site en ligne
+            </a>
+          </div>
+        )}
+        {children}
+      </main>
     </div>
   );
 }

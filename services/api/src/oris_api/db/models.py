@@ -198,6 +198,49 @@ class EncounterMarkRow(Base):
     created_at: Mapped[datetime] = created_at()
 
 
+#: Ce qu'est devenue une demande faite à « Corriger avec Claude ».
+ETATS_DEMANDE = (
+    "lecture",  # Claude lit la demande
+    "proposee",  # comprise : attend l'accord du praticien
+    "relecture",  # une relecture : des améliorations à cocher
+    "application",  # l'accord est donné, Oris applique
+    "traitee",
+    "annulee",
+    "incomprise",
+    "echec",
+)
+
+
+class DemandeCorrectionRow(Base):
+    """Une demande faite à « Corriger avec Claude », et ce qu'elle est devenue.
+
+    Gardée en base, et non dans l'app : Franck, le 11/11/2026, « si je sors et que je
+    reviens, garder l'historique » — y compris l'app fermée, et d'un appareil à l'autre.
+    Le texte de la demande est celui du praticien ; il n'est jamais journalisé.
+    """
+
+    __tablename__ = "demandes_correction"
+
+    id: Mapped[UUID] = uuid_pk()
+    encounter_id: Mapped[UUID] = mapped_column(
+        ForeignKey("encounters.id", ondelete="CASCADE"), index=True
+    )
+    document_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("documents.id", ondelete="SET NULL"), nullable=True
+    )
+    user_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    texte: Mapped[str] = mapped_column(Text)
+    etat: Mapped[str] = mapped_column(
+        Enum(*ETATS_DEMANDE, name="demande_etat", native_enum=False, create_constraint=True,
+             length=max(len(e) for e in ETATS_DEMANDE), validate_strings=True)
+    )
+    #: Ce qu'Oris a répondu : la lecture de Claude, les propositions d'une relecture, ou
+    #: le message final (fait, refus, panne).
+    reponse: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    created_at: Mapped[datetime] = created_at()
+    updated_at: Mapped[datetime] = updated_at()
+
+
 class TranscriptSegmentRow(Base):
     __tablename__ = "transcript_segments"
     __table_args__ = (

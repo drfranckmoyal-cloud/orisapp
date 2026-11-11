@@ -352,3 +352,54 @@ def test_les_corrections_comprises_vont_jusqu_au_bout(api: Any) -> None:
     faits = api.get(f"/encounters/{identifiant}/clinical-object").json()["clinical_object"]["facts"]
     assert fait["fact_id"] not in {f["fact_id"] for f in faits}
     assert any(f["value"] == "allergie à la pénicilline" for f in faits)
+
+
+# --- L'historique, gardé sur le serveur ---------------------------------------------
+
+
+def test_la_conversation_est_gardee_et_marquee_sur_le_serveur(api: Any) -> None:
+    """Franck, le 11/11/2026 : la conversation ne doit pas repartir vierge, même l'app
+    fermée — elle vit donc en base, et se retrouve d'un appareil à l'autre."""
+    identifiant, _ = consultation(api)
+
+    lecture = api.post(f"/encounters/{identifiant}/assistant", json={"demande": "plus court"})
+    assert lecture.status_code == 200, lecture.text
+    demande_id = lecture.json()["demande_id"]
+
+    historique = api.get(f"/encounters/{identifiant}/assistant").json()
+    assert [(d["texte"], d["etat"]) for d in historique] == [("plus court", "proposee")]
+    assert historique[0]["lecture"]["nature"] == "redaction"
+
+    applique = api.post(
+        f"/encounters/{identifiant}/assistant/appliquer",
+        json={"nature": "redaction", "consignes": ["Faire plus court"], "demande_id": demande_id},
+    )
+    assert applique.status_code == 200, applique.text
+    fini = api.get(f"/encounters/{identifiant}/assistant").json()[0]
+    assert fini["etat"] == "traitee"
+    assert fini["message"].startswith("Document rédigé")
+
+    autre = api.post(f"/encounters/{identifiant}/assistant", json={"demande": "plus court"})
+    annule = api.post(f"/encounters/{identifiant}/assistant/{autre.json()['demande_id']}/annuler")
+    assert annule.json()["etat"] == "annulee"
+    assert [d["etat"] for d in api.get(f"/encounters/{identifiant}/assistant").json()] == [
+        "traitee",
+        "annulee",
+    ]
+
+
+def test_une_application_refusee_reste_marquee_non_aboutie(api: Any) -> None:
+    identifiant, _ = consultation(api)
+    lecture = api.post(f"/encounters/{identifiant}/assistant", json={"demande": "plus court"})
+    refus = api.post(
+        f"/encounters/{identifiant}/assistant/appliquer",
+        json={
+            "nature": "dossier",
+            "operations": [{"operation": "replace_tooth", "from_tooth": "26", "to_tooth": "27"}],
+            "demande_id": lecture.json()["demande_id"],
+        },
+    )
+    assert refus.status_code == 409
+    demande = api.get(f"/encounters/{identifiant}/assistant").json()[0]
+    assert demande["etat"] == "echec"
+    assert demande["code"] == "OBJECT_VERSION_REQUIRED"
