@@ -60,17 +60,26 @@ def operative_note_available(obj: ClinicalEncounter) -> bool:
 
 
 def document_types_for(
-    obj: ClinicalEncounter, existing: Collection[str] = ()
+    obj: ClinicalEncounter,
+    existing: Collection[str] = (),
+    visit_kind: str = "consultation",
 ) -> list[DocumentDocumentType]:
     """Documents que l'objet justifie.
 
     Le compte rendu de soins n'est jamais produit d'office (§81 : le praticien le
-    demande) — mais une fois demandé, il se régénère comme les autres.
+    demande) — mais une fois demandé, il se régénère comme les autres. Le demander, c'est
+    aussi cocher « Compte rendu opératoire » avant l'enregistrement (Franck, 12/11/2026) :
+    Oris rédige alors ce compte rendu **seul**, le compte rendu de consultation restant
+    disponible sur demande. Sans acte dit, il n'y a rien à rapporter : on revient au
+    compte rendu de consultation, pour ne rien perdre de ce qui a été dit.
     """
-    types: list[DocumentDocumentType] = ["consultation_note"]
+    operatoire = visit_kind == "procedure" and operative_note_available(obj)
+    types: list[DocumentDocumentType] = []
+    if not operatoire or "consultation_note" in existing:
+        types.append("consultation_note")
     if obj.treatment_plan is not None and obj.treatment_plan.items:
         types.append("treatment_plan_text")
-    if "operative_note" in existing and operative_note_available(obj):
+    if operatoire or ("operative_note" in existing and operative_note_available(obj)):
         types.append("operative_note")
     # Le courrier d'adressage, lui aussi, n'existe que demandé ; il suit ensuite les
     # corrections comme les autres.
@@ -183,7 +192,8 @@ def generate(
         consignes=(*preferences.consignes, *consignes_de(encounter)),
     )
     existing = {doc.document_type: doc for doc in list_documents(session, encounter.id)}
-    wanted = document_types_for(obj, {*existing, *include})
+    visite = encounter.metadata_json.get("visit_kind", "consultation")
+    wanted = document_types_for(obj, {*existing, *include}, str(visite))
     if seulement:
         wanted = [t for t in wanted if t in include]
     produced: list[DocumentRow] = []

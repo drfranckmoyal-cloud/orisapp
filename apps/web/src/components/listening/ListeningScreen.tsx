@@ -32,7 +32,7 @@ import {
 import { MicrophoneSource, TestToneSource } from "@/lib/audio/sources";
 import { HttpUploadTransport } from "@/lib/audio/transport";
 import { errorMessage, formatDuration, nomPatient } from "@/lib/labels";
-import { TYPE_VISITE, type TypeVisite } from "@/lib/modeles";
+import { RESUME_VISITE, TYPE_VISITE, type TypeVisite } from "@/lib/modeles";
 
 import styles from "./listening.module.css";
 
@@ -398,25 +398,25 @@ export function ListeningScreen({
             <p className="subtitle">Nouvelle consultation</p>
             <h1>{name}</h1>
           </div>
-          <div
-            className={styles.typeVisite}
-            role="group"
-            aria-label="Type de séance"
-          >
+          {/* Ce qu'Oris rédigera à la fin, choisi avant l'écoute (Franck, 12/11/2026) :
+              il fixe aussi le déroulé affiché à côté — les points à dire diffèrent. */}
+          <fieldset className={styles.typeVisite} disabled={phase === "starting"}>
+            <legend>Ce qu’Oris rédigera</legend>
             {(["consultation", "procedure"] as const).map((type) => (
-              <button
-                key={type}
-                type="button"
-                aria-pressed={typeVisite === type}
-                disabled={phase === "starting"}
-                onClick={() => choisirType(type)}
-              >
-                {type === "procedure"
-                  ? "Acte (soins, chirurgie)"
-                  : TYPE_VISITE[type]}
-              </button>
+              <label key={type} data-choisi={typeVisite === type}>
+                <input
+                  type="radio"
+                  name="type-visite"
+                  checked={typeVisite === type}
+                  onChange={() => choisirType(type)}
+                />
+                <span>
+                  <strong>{TYPE_VISITE[type]}</strong>
+                  <small>{RESUME_VISITE[type]}</small>
+                </span>
+              </label>
             ))}
-          </div>
+          </fieldset>
           <div className={styles.statusRow}>
             <div
               className={styles.status}

@@ -182,3 +182,44 @@ def test_a_yes_no_slot_keeps_a_spoken_detail() -> None:
     )
     text = "\n".join(claim.text for claim in procedure_claims(detailed, []))
     assert "Provisoires : provisoires posés le jour même." in text
+
+
+# --- « Compte rendu opératoire » coché avant l'enregistrement (Franck, 12/11/2026) ---
+
+
+def test_checked_operative_note_replaces_the_consultation_note() -> None:
+    from oris_api.services.documents import document_types_for
+
+    avec_acte = encounter_with([procedure()], facts=[])
+    assert document_types_for(avec_acte, (), "procedure") == ["operative_note"]
+    # Demandé ensuite, le compte rendu de consultation reste disponible.
+    assert document_types_for(avec_acte, {"consultation_note"}, "procedure") == [
+        "consultation_note",
+        "operative_note",
+    ]
+    # Consultation ordinaire : rien ne change.
+    assert document_types_for(avec_acte, (), "consultation") == ["consultation_note"]
+
+
+def test_checked_operative_note_without_any_act_keeps_the_consultation_note() -> None:
+    from oris_api.services.documents import document_types_for
+
+    sans_acte = encounter_with([procedure(status="cancelled")], facts=[])
+    assert document_types_for(sans_acte, (), "procedure") == ["consultation_note"]
+
+
+def test_a_procedure_visit_writes_the_operative_note_alone(api: Any) -> None:
+    patient = api.post("/patients", json={"first_name": "Essai", "last_name": "Operatoire"}).json()
+    encounter = api.post(
+        "/encounters", json={"patient_id": patient["id"], "synthetic_case_id": "ORIS-SYN-041"}
+    ).json()
+    eid = encounter["id"]
+    started = api.post(
+        f"/encounters/{eid}/start", json={"patient_informed": True, "visit_kind": "procedure"}
+    )
+    assert started.status_code == 200
+    assert api.post(f"/encounters/{eid}/finish").status_code == 200
+    documents = documents_by_type(api, eid)
+    assert "operative_note" in documents
+    assert "consultation_note" not in documents
+    assert "Restauration composite (46)." in documents["operative_note"]["content"]

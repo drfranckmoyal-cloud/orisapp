@@ -1,5 +1,16 @@
 # Changelog
 
+## « Ce qu'Oris rédigera » : compte rendu de consultation ou opératoire, coché avant l'écoute — 2026-11-12
+- Avant l'enregistrement, deux cases bien visibles remplacent le petit sélecteur
+  « Consultation | Acte » : **Compte rendu de consultation** / **Compte rendu opératoire**,
+  chacune avec ce qu'elle contiendra. Le déroulé des points à dire suit la case cochée.
+- « Opératoire » coché : Oris rédige **le compte rendu opératoire seul** (décision de Franck) ;
+  le compte rendu de consultation reste disponible sur demande. Sans aucun acte dit, il n'y a
+  rien à rapporter : Oris revient au compte rendu de consultation.
+- Site et iPhone dans le même lot ; sur l'iPhone, la consultation s'ouvre sur le premier
+  document quand il n'y a pas de compte rendu de consultation.
+- 564 tests serveur · 73 site · 73 iPhone au vert.
+
 ## Envoyer par Gmail, par le web : l'hébergeur ne bloque plus les envois — 2026-11-12
 - Les envois aux correspondants échouaient toujours (« Messagerie injoignable ») : Scaleway
   bloque les ports de courriel tant que le compte n'a pas fait sa vérification d'identité.

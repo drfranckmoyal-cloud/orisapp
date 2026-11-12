@@ -332,25 +332,44 @@ struct StatusLine: View {
 struct ChoixSeance: View {
     @Binding var choix: VisitKind
 
+    /// Ce qu'Oris rédigera, coché avant l'écoute (Franck, 12/11/2026) : « opératoire »
+    /// fait rédiger ce compte rendu seul, et change les points à dire du déroulé.
     var body: some View {
-        HStack(spacing: 4) {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("CE QU’ORIS RÉDIGERA")
+                .font(Police.interface(11.5, .bold, relativeTo: .caption))
+                .tracking(1.1)
+                .foregroundStyle(Teinte.encreTresDouce)
             ForEach(VisitKind.allCases) { kind in
+                let coche = kind == choix
                 Button { choix = kind } label: {
-                    Text(kind.label)
-                        .font(Police.interface(15, kind == choix ? .heavy : .semibold))
-                        .foregroundStyle(kind == choix ? .white : Teinte.encreDouce)
-                        .frame(maxWidth: .infinity, minHeight: 42)
-                        .background {
-                            if kind == choix {
-                                RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Teinte.accent)
-                            }
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: coche ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 22))
+                            .foregroundStyle(coche ? Teinte.accent : Teinte.encreTresDouce)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(kind.label)
+                                .font(Police.interface(16, coche ? .heavy : .semibold))
+                                .foregroundStyle(coche ? Teinte.accent : Teinte.encre)
+                            Text(kind.resume)
+                                .font(Police.interface(13, .regular, relativeTo: .caption))
+                                .foregroundStyle(Teinte.encreDouce)
                         }
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Teinte.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(coche ? Teinte.accent : Teinte.trait, lineWidth: coche ? 2 : 1)
+                    }
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityAddTraits(kind == choix ? .isSelected : [])
+                .accessibilityAddTraits(coche ? .isSelected : [])
             }
         }
-        .padding(4)
-        .background(Teinte.surfaceDouce, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
     }
 }

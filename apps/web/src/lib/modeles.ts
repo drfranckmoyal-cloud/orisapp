@@ -38,7 +38,14 @@ export const RUBRIQUES: Record<
   ],
 };
 
+/** Ce qu'Oris rédigera : coché avant l'enregistrement. « Opératoire » fait rédiger ce
+ *  compte rendu seul (Franck, 12/11/2026) ; l'autre reste disponible sur demande. */
 export const TYPE_VISITE: Record<TypeVisite, string> = {
-  consultation: "Consultation",
-  procedure: "Acte",
+  consultation: "Compte rendu de consultation",
+  procedure: "Compte rendu opératoire",
+};
+
+export const RESUME_VISITE: Record<TypeVisite, string> = {
+  consultation: "motif, examen, diagnostic, proposition, informations",
+  procedure: "indication, intervention, protocole, résultat, suites",
 };

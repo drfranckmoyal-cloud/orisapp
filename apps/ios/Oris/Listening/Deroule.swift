@@ -7,10 +7,13 @@ enum VisitKind: String, CaseIterable, Identifiable, Sendable, Codable {
 
     var id: String { rawValue }
 
-    var label: String {
+    var label: String { documentTitle }
+
+    /// Ce que le compte rendu contiendra, en une ligne sous la case.
+    var resume: String {
         switch self {
-        case .consultation: "Consultation"
-        case .procedure: "Acte"
+        case .consultation: "motif, examen, diagnostic, proposition, informations"
+        case .procedure: "indication, intervention, protocole, résultat, suites"
         }
     }
 

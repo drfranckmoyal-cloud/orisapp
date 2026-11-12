@@ -257,32 +257,68 @@
   font-weight: var(--graisse-moyenne);
 }
 
-/* Le choix consultation / acte, avant l'écoute. */
+/* Ce qu'Oris rédigera, avant l'écoute : deux cases bien visibles. */
 .typeVisite {
-  display: inline-flex;
-  width: fit-content;
-  padding: 4px;
-  gap: 4px;
-  border-radius: var(--rayon-bouton);
-  background: var(--surface-douce);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
-.typeVisite button {
-  padding: 8px 18px;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  background: transparent;
-  font: inherit;
+.typeVisite legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-size: var(--texte-xs);
   font-weight: var(--graisse-demi);
   color: var(--encre-douce);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.typeVisite label {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border: 1.5px solid var(--trait);
+  border-radius: var(--rayon-bouton);
+  background: var(--surface);
   cursor: pointer;
 }
 
-.typeVisite button[aria-pressed="true"] {
-  background: var(--surface);
-  border-color: var(--trait-fort);
-  color: var(--accent);
+.typeVisite label[data-choisi="true"] {
+  border-color: var(--accent);
   box-shadow: var(--lumiere);
+}
+
+.typeVisite input {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--accent);
+}
+
+.typeVisite strong {
+  display: block;
+  font-weight: var(--graisse-demi);
+}
+
+.typeVisite label[data-choisi="true"] strong {
+  color: var(--accent);
+}
+
+.typeVisite small {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--texte-xs);
+  color: var(--encre-douce);
+}
+
+.typeVisite:disabled label {
+  cursor: default;
+  opacity: 0.7;
 }
 
 @media (max-width: 1150px) {

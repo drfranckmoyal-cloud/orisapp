@@ -65,7 +65,8 @@ struct ConsultationDetailView: View {
                 }
 
                 if !content.documents.isEmpty {
-                    Intercalaires(tab: $tab, documents: content.documents, aVerifier: content.reviewItemCount)
+                    Intercalaires(tab: ongletVisible(content), documents: content.documents,
+                                  aVerifier: content.reviewItemCount)
                 }
 
                 if !content.documents.isEmpty,
@@ -83,7 +84,7 @@ struct ConsultationDetailView: View {
                     Text(erreur).font(Police.note).foregroundStyle(Teinte.alerte)
                 }
 
-                switch tab {
+                switch ongletVisible(content).wrappedValue {
                 case .document(let type):
                     if let document = content.documents.first(where: { $0.documentType == type }) {
                         TraitementDocument(client: model.client, content: content, document: document,
@@ -104,6 +105,22 @@ struct ConsultationDetailView: View {
 }
 
 extension ConsultationDetailView {
+    /// L'onglet affiché : celui choisi, ou le premier document quand il n'existe pas — une
+    /// séance « opératoire » n'a pas de compte rendu de consultation (Franck, 12/11/2026).
+    fileprivate func ongletVisible(_ content: ConsultationDetailViewModel.Content) -> Binding<Tab> {
+        Binding(
+            get: {
+                if case .document(let type) = tab,
+                   !content.documents.contains(where: { $0.documentType == type }),
+                   let premier = content.documents.first {
+                    return .document(premier.documentType)
+                }
+                return tab
+            },
+            set: { tab = $0 }
+        )
+    }
+
     /// Rien n'a été entendu : rien à perdre, la consultation s'efface d'un geste.
     fileprivate func supprimerConsultation(_ content: ConsultationDetailViewModel.Content) async {
         do {
