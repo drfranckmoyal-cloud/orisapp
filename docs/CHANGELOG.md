@@ -1,5 +1,19 @@
 # Changelog
 
+## Envoyer par Gmail, par le web : l'hébergeur ne bloque plus les envois — 2026-11-12
+- Les envois aux correspondants échouaient toujours (« Messagerie injoignable ») : Scaleway
+  bloque les ports de courriel tant que le compte n'a pas fait sa vérification d'identité.
+- Oris envoie désormais **depuis la boîte du praticien par l'API de Gmail**, qui passe par
+  le web ordinaire. Portée « envoyer des e-mails » seulement : Oris ne lit rien de la boîte.
+  Autorisation donnée une fois par Franck (`scripts/autoriser_gmail.py`, client Google du
+  projet « Assistant personnel ») ; l'accès vit dans le `.env` du serveur, jamais ici.
+  SMTP reste la voie de secours quand l'accès Gmail n'est pas posé.
+- Essai réel : un courriel d'essai, sans donnée patient, parti du serveur en ligne vers
+  la boîte du praticien.
+- Nouveau message `GMAIL_AUTH_FAILED` (accès retiré dans le compte Google) sur le site et
+  l'iPhone ; l'iPhone l'aura à sa prochaine publication.
+- 561 tests serveur au vert.
+
 ## Envoyer : le courriel bloqué par l'hébergeur, SmileCloud dans la fenêtre d'envoi — 2026-11-11
 - Franck a tenté deux fois d'envoyer le compte rendu de Mme B. au Dr Briquet : rien n'est
   parti. **L'hébergeur (Scaleway) bloque l'envoi de courriels** depuis le serveur en ligne

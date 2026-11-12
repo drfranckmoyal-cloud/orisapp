@@ -78,6 +78,12 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_user: str = ""
     smtp_password: SecretStr | None = None
+    # Envoi par l'API de Gmail (le web ordinaire), prioritaire sur SMTP quand il est posé :
+    # l'hébergeur du serveur en ligne bloque les ports de courriel. Posé par
+    # `scripts/autoriser_gmail.py`, portée « envoyer » seulement.
+    gmail_client_id: str = ""
+    gmail_client_secret: SecretStr | None = None
+    gmail_refresh_token: SecretStr | None = None
     max_session_minutes: int = 90
     warn_session_minutes: int = 80
 
@@ -100,6 +106,8 @@ class Settings(BaseSettings):
         "anthropic_api_key",
         "journee_depot_token",
         "smtp_password",
+        "gmail_client_secret",
+        "gmail_refresh_token",
         mode="before",
     )
     @classmethod

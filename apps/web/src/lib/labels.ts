@@ -168,6 +168,8 @@ const ERRORS: Record<string, string> = {
   SMTP_AUTH_FAILED:
     "La messagerie a refusé l’identification : vérifiez le mot de passe d’application.",
   SMTP_RECIPIENT_REFUSED: "Adresse refusée par la messagerie.",
+  GMAIL_AUTH_FAILED:
+    "Gmail a retiré à Oris l’autorisation d’envoyer : elle est à redonner (un clic « Autoriser »).",
   SMTP_UNAVAILABLE: "Messagerie injoignable : réessayez dans un instant.",
   NO_RECIPIENT: "Cochez au moins un destinataire.",
   EMAIL_INVALID: "Une adresse saisie n’est pas valide.",
