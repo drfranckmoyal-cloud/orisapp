@@ -148,3 +148,47 @@ def test_a_refused_output_is_told_in_words_what_to_correct() -> None:
     assert dit.count("ce fait est attribué à la parole du patient") == 1
     assert "statut de cet élément de plan" in dit
     assert explication([Violation("REGLE_INCONNUE", "x")]) == ""
+
+
+# --- Une précision d'acte dite autrement n'est pas inventée (13/11/2026) ---------------
+
+
+def _acte_avec(valeur: str, dit: str):
+    from oris_api.contracts import Procedure
+
+    source = case("ORIS-SYN-041")
+    procedure = Procedure.model_validate(source.procedures[0].model_dump())
+    procedure.structured_data["detail_essai"] = valeur
+    segments = list(source.segments)
+    segments[-1] = segments[-1].model_copy(update={"text": segments[-1].text + " " + dit})
+    return source, procedure, segments
+
+
+@pytest.mark.parametrize(
+    ("valeur", "dit"),
+    [
+        ("Articaïne 4 %", "anesthésie à l'articaine 4 pour cent"),
+        ("articaine adrénalinée", "on a fait une articaïne, adrénalinée"),
+        ("fil 4/0", "suture au fil 4 0"),
+    ],
+)
+def test_a_detail_said_differently_is_accepted(valeur: str, dit: str) -> None:
+    source, procedure, segments = _acte_avec(valeur, dit)
+    violations = resolve(list(source.facts), None, [procedure], segments)
+    assert "PROCEDURE_DATA_UNSUPPORTED" not in {v.rule for v in violations}
+
+
+def test_a_detail_never_said_is_still_rejected_then_removed_not_invented() -> None:
+    from oris_api.domain.resolver import retirer_donnees_non_dites
+
+    source, procedure, segments = _acte_avec("lidocaïne 2 %", "anesthésie faite")
+    violations = resolve(list(source.facts), None, [procedure], segments)
+    assert any(v.rule == "PROCEDURE_DATA_UNSUPPORTED" for v in violations)
+
+    nettoyees, retirees = retirer_donnees_non_dites([procedure], list(source.facts), segments)
+    assert retirees == 1
+    assert "detail_essai" not in nettoyees[0].structured_data
+    assert not any(
+        v.rule == "PROCEDURE_DATA_UNSUPPORTED"
+        for v in resolve(list(source.facts), None, nettoyees, segments)
+    )

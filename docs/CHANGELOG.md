@@ -1,5 +1,19 @@
 # Changelog
 
+## Une précision d'acte dite autrement ne fait plus échouer le compte rendu opératoire — 2026-11-13
+- Première consultation en « Compte rendu opératoire » : refusée (« PROCEDURE_DATA_UNSUPPORTED »).
+  Le garde-fou exige que toute précision technique d'un acte ait été prononcée ; il comparait
+  à la lettre, et seulement aux passages cités : « Articaïne 4 % » ne retrouvait pas
+  « articaine à 4 pour cent ».
+- La comparaison ignore désormais accents, ponctuation et « % / pour cent », accepte une
+  valeur dont chaque mot porteur a été dit, et lit toute la consultation. Une précision
+  jamais dite reste refusée.
+- Dernier recours, au dernier essai seulement : si cette faute est la seule restante, la
+  précision douteuse est **retirée** (jamais inventée) plutôt que de perdre la consultation ;
+  l'emplacement vide est signalé « à compléter » par le compte rendu opératoire.
+- La consultation du 13/11 relancée : compte rendu opératoire et plan de traitement rédigés.
+- 568 tests serveur au vert.
+
 ## « Ce qu'Oris rédigera » : compte rendu de consultation ou opératoire, coché avant l'écoute — 2026-11-12
 - Avant l'enregistrement, deux cases bien visibles remplacent le petit sélecteur
   « Consultation | Acte » : **Compte rendu de consultation** / **Compte rendu opératoire**,

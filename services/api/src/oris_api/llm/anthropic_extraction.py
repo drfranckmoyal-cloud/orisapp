@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
+from dataclasses import replace
 from typing import Any
 
 import httpx
@@ -22,7 +24,7 @@ from oris_api.contracts import (
 )
 from oris_api.contracts.validation import ContractViolation
 from oris_api.domain.parole import parole_consistante
-from oris_api.domain.resolver import explication, resolve
+from oris_api.domain.resolver import explication, resolve, retirer_donnees_non_dites
 from oris_api.domain.types import ExtractionResult, GlossaryHint
 from oris_api.llm.prompt import (
     PROMPT_VERSION,
@@ -34,6 +36,8 @@ from oris_api.llm.prompt import (
 from oris_api.llm.schema_bundle import extraction_tool_schema
 from oris_api.llm.tool_output import deballer
 from oris_api.providers.base import ExtractionUnavailable, ProviderInfo
+
+logger = logging.getLogger("oris.extraction")
 
 API_URL = "https://api.anthropic.com/v1/messages"
 API_VERSION = "2023-06-01"
@@ -111,6 +115,28 @@ class AnthropicExtractionProvider:
                     segments,
                     from_extraction=True,
                 )
+                if (
+                    violations
+                    and attempt == self._max_attempts - 1
+                    and all(v.rule == "PROCEDURE_DATA_UNSUPPORTED" for v in violations)
+                ):
+                    # Dernier essai, seule faute restante : une précision d'acte non
+                    # retrouvée dans les paroles. On la retire plutôt que de perdre la
+                    # consultation entière (13/11/2026) — sans jamais rien inventer.
+                    procedures, retirees = retirer_donnees_non_dites(
+                        result.procedures, result.facts, segments
+                    )
+                    result = replace(result, procedures=procedures)
+                    logger.warning(
+                        "extraction.procedure_data_dropped", extra={"retirees": retirees}
+                    )
+                    violations = resolve(
+                        result.facts,
+                        result.treatment_plan,
+                        result.procedures,
+                        segments,
+                        from_extraction=True,
+                    )
                 if violations:
                     # Le code seul ne dit pas quoi corriger : le modèle repropose la même
                     # faute jusqu'à l'épuisement des essais (BENTALEB, 09/10/2026).

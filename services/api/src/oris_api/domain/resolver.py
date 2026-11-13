@@ -9,6 +9,7 @@ silently coerced »). Les violations ne citent que des identifiants.
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass
 
 from oris_api.contracts import ClinicalFact, Procedure, TranscriptSegment, TreatmentPlan
@@ -131,17 +132,78 @@ def check_procedures(
             violations.append(Violation("PROCEDURE_STATUS_UNSUPPORTED", pid))
         # Spec §20 / test « matériau habituel non prononcé » : toute valeur textuelle d'un
         # emplacement opératoire doit avoir été **prononcée** — dans la valeur d'un fait
-        # d'appui, dans le nom d'un concept d'appui, ou dans le texte des segments cités.
-        spoken_values = {f.value for f in evidence if isinstance(f.value, str)}
-        cited = {s for f in evidence for s in f.evidence_segment_ids}
-        spoken_text = " ".join(s.text.lower() for s in (segments or []) if s.segment_id in cited)
-        for slot, value in procedure.structured_data.items():
-            named = any(slot in f.concept for f in evidence)
-            said = isinstance(value, str) and value.strip().lower() in spoken_text
-            if isinstance(value, str) and value not in spoken_values and not named and not said:
-                violations.append(Violation("PROCEDURE_DATA_UNSUPPORTED", pid))
-                break
+        # d'appui, dans le nom d'un concept d'appui, ou dans les paroles de la consultation.
+        if donnees_non_dites(procedure, evidence, segments or []):
+            violations.append(Violation("PROCEDURE_DATA_UNSUPPORTED", pid))
     return violations
+
+
+def _normaliser(texte: str) -> str:
+    """Pour comparer ce qui est écrit à ce qui a été dit : minuscules, sans accents ni
+    ponctuation, « % » lu « pour cent ». « Articaïne 4 % » et « articaine à 4 pour cent »
+    disent la même chose ; une comparaison à la lettre refusait la consultation entière
+    (compte rendu opératoire, 13/11/2026)."""
+    texte = unicodedata.normalize("NFKD", texte.lower())
+    texte = "".join(c for c in texte if not unicodedata.combining(c))
+    texte = texte.replace("%", " pour cent ")
+    return " ".join(re.sub(r"[^0-9a-z]+", " ", texte).split())
+
+
+def _dit(valeur: str, texte: str, mots: set[str]) -> bool:
+    """La valeur figure-t-elle dans les paroles ? Telle quelle, ou mot pour mot : chacun
+    de ses mots porteurs (nombres, et mots de trois lettres ou plus) a été prononcé."""
+    v = _normaliser(valeur)
+    if not v or f" {v} " in f" {texte} ":
+        return True
+    porteurs = [m for m in v.split() if len(m) >= 3 or m.isdigit()]
+    return bool(porteurs) and all(m in mots for m in porteurs)
+
+
+def donnees_non_dites(
+    procedure: Procedure, evidence: list[ClinicalFact], segments: list[TranscriptSegment]
+) -> list[str]:
+    """Les emplacements de l'acte dont la valeur n'a été ni dite ni nommée par un fait.
+
+    Les paroles comptées sont celles de toute la consultation : une précision technique
+    (« articaïne », « fil 4/0 ») se dit souvent une phrase avant ou après le passage que
+    le fait cite. Elle doit avoir été prononcée — jamais déduite."""
+    valeurs_dites = {f.value for f in evidence if isinstance(f.value, str)}
+    texte = _normaliser(" ".join(s.text for s in segments))
+    mots = set(texte.split())
+    absents: list[str] = []
+    for slot, value in procedure.structured_data.items():
+        if not isinstance(value, str) or value in valeurs_dites:
+            continue
+        if any(slot in f.concept for f in evidence) or _dit(value, texte, mots):
+            continue
+        absents.append(slot)
+    return absents
+
+
+def retirer_donnees_non_dites(
+    procedures: list[Procedure], facts: list[ClinicalFact], segments: list[TranscriptSegment]
+) -> tuple[list[Procedure], int]:
+    """Dernier recours de l'extraction : plutôt que de perdre toute la consultation pour
+    une précision d'acte non retrouvée dans les paroles, on retire **cette précision** —
+    jamais on ne l'invente. L'emplacement redevient vide ; s'il est important, le compte
+    rendu opératoire le signale « à compléter » au praticien."""
+    by_id = {f.fact_id: f for f in facts}
+    nettoyees: list[Procedure] = []
+    retirees = 0
+    for procedure in procedures:
+        evidence = [by_id[i] for i in procedure.evidence_fact_ids if i in by_id]
+        absents = set(donnees_non_dites(procedure, evidence, segments))
+        if absents:
+            retirees += len(absents)
+            procedure = procedure.model_copy(
+                update={
+                    "structured_data": {
+                        k: v for k, v in procedure.structured_data.items() if k not in absents
+                    }
+                }
+            )
+        nettoyees.append(procedure)
+    return nettoyees, retirees
 
 
 def resolve(
