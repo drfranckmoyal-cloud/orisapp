@@ -166,6 +166,9 @@ def _demande(session: Session, encounter: Encounter, demande_id: UUID) -> Demand
     return demande
 
 
+#: Ce que dit une correction que le praticien a arrêtée en cours de route.
+ARRETEE = "Arrêté : rien n’a changé."
+
 #: Ce que dit une demande qui n'a pas abouti pour une raison imprévue.
 INTERROMPUE = "La correction s’est interrompue sur le serveur : rien n’a changé. Relancez-la."
 
@@ -406,6 +409,14 @@ def appliquer(
             session.commit()
         raise
     if demande is not None:
+        # Le praticien a pu l'arrêter pendant que Claude travaillait (15/11/2026) : on relit
+        # son état en base. Arrêtée, rien de ce travail n'est gardé.
+        session.refresh(demande)
+        if demande.etat == "annulee":
+            session.rollback()
+            return AssistantResultat(
+                applique=False, message=ARRETEE, object_version=encounter.object_version
+            )
         _poser(demande, "traitee", message=message)
     return AssistantResultat(
         applique=True, message=message, object_version=encounter.object_version
@@ -593,11 +604,16 @@ def historique(
 def annuler(
     encounter_id: UUID, demande_id: UUID, session: SessionDep, actor: ActorDep
 ) -> DemandeCorrectionOut:
-    """Le praticien écarte une proposition : rien n'a changé, et c'est noté."""
+    """Le praticien écarte une proposition, ou arrête une correction en cours.
+
+    Arrêtée en cours (15/11/2026 : « pas possible d'interrompre »), la correction n'est
+    pas tuée — Claude finit sa phrase —, mais rien de son travail n'est gardé : la route
+    qui l'applique relit l'état avant d'enregistrer, et s'efface."""
     encounter = encounters.get_encounter(session, actor, encounter_id)
     demande = _demande(session, encounter, demande_id)
-    if demande.etat in {"proposee", "relecture", "incomprise"}:
-        _poser(demande, "annulee")
+    if demande.etat in {"proposee", "relecture", "incomprise", "application"}:
+        arretee = demande.etat == "application"
+        _poser(demande, "annulee", **({"message": ARRETEE} if arretee else {}))
         session.flush()
     return next(d for d in historique(encounter_id, session, actor) if d.id == demande.id)
 

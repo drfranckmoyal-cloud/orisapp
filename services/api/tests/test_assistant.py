@@ -468,3 +468,58 @@ def test_une_version_ecrite_pendant_la_reecriture_ne_fait_pas_planter() -> None:
     document = DocumentRow(document_type="consultation_note", status="draft_ai")
     assert prochaine_version(Seance(), document) == 3  # type: ignore[arg-type]
     assert DocumentVersion  # le contrat d'unicité (document, version) reste en place
+
+
+def test_une_correction_arretee_en_cours_ne_garde_rien(
+    api: Any, migrated_engine: Any, monkeypatch: Any
+) -> None:
+    """« Pas possible d'interrompre » (15/11/2026) : arrêtée pendant que Claude travaille,
+    la correction finit sans rien enregistrer."""
+    from sqlalchemy import update
+
+    from oris_api.api import assistant as route
+    from oris_api.db.models import DemandeCorrectionRow
+
+    identifiant, _ = consultation(api)
+    lecture = api.post(f"/encounters/{identifiant}/assistant", json={"demande": "plus court"})
+    demande_id = lecture.json()["demande_id"]
+    original = route._appliquer
+
+    def puis_arretee(*args: Any, **kwargs: Any) -> str:
+        message = original(*args, **kwargs)
+        # Pendant ce temps, sur un autre écran : « Arrêter ».
+        with migrated_engine.begin() as connexion:
+            connexion.execute(
+                update(DemandeCorrectionRow)
+                .where(DemandeCorrectionRow.id == demande_id)
+                .values(etat="annulee")
+            )
+        return message
+
+    monkeypatch.setattr(route, "_appliquer", puis_arretee)
+    reponse = api.post(
+        f"/encounters/{identifiant}/assistant/appliquer",
+        json={"nature": "redaction", "consignes": ["Faire plus court"], "demande_id": demande_id},
+    )
+    assert reponse.status_code == 200
+    assert reponse.json()["applique"] is False
+    assert api.get(f"/encounters/{identifiant}/consignes").json()["consultation"] == []
+    assert api.get(f"/encounters/{identifiant}/assistant").json()[0]["etat"] == "annulee"
+
+
+def test_une_correction_en_cours_peut_etre_arretee(api: Any, migrated_engine: Any) -> None:
+    from sqlalchemy import update
+
+    from oris_api.db.models import DemandeCorrectionRow
+
+    identifiant, _ = consultation(api)
+    lecture = api.post(f"/encounters/{identifiant}/assistant", json={"demande": "plus court"})
+    demande_id = lecture.json()["demande_id"]
+    with migrated_engine.begin() as connexion:
+        connexion.execute(
+            update(DemandeCorrectionRow)
+            .where(DemandeCorrectionRow.id == demande_id)
+            .values(etat="application")
+        )
+    arret = api.post(f"/encounters/{identifiant}/assistant/{demande_id}/annuler")
+    assert arret.json()["etat"] == "annulee"

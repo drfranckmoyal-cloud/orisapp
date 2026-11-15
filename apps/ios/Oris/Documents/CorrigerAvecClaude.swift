@@ -361,7 +361,11 @@ struct CorrigerAvecClaude: View {
         case .lecture:
             cadre { Text("Je lis votre demande…").italic().foregroundStyle(Teinte.encreDouce) }
         case .application(let debut):
-            cadre { Progression(debut: debut) }
+            cadre {
+                Progression(debut: debut) {
+                    Task { await dialogue.annuler(demande.id, client: client, encounterId: encounterId) }
+                }
+            }
         case .traitee(let message):
             cadre(fond: Teinte.accentDouce) {
                 Label(message, systemImage: "checkmark").foregroundStyle(Teinte.accent)
@@ -518,6 +522,8 @@ struct CorrigerAvecClaude: View {
 /// Une réécriture prend d'ordinaire entre trente secondes et deux minutes.
 struct Progression: View {
     let debut: Date
+    /// « Pas possible d'interrompre » (15/11/2026) : arrêtée, rien de ce travail n'est gardé.
+    var arreter: (() -> Void)? = nil
 
     /// La part parcourue après `secondes` : la moitié vers 30 s, 90 % vers 100 s, jamais 100 %.
     static func part(_ secondes: TimeInterval) -> Double {
@@ -546,6 +552,11 @@ struct Progression: View {
                       systemImage: "arrow.down.right.and.arrow.up.left")
                     .font(Police.note)
                     .foregroundStyle(Teinte.encreDouce)
+                if let arreter {
+                    Button("Arrêter", action: arreter)
+                        .font(Police.interface(14, .semibold))
+                        .foregroundStyle(Teinte.encreDouce)
+                }
             }
         }
     }

@@ -66,7 +66,7 @@ function codeDe(caught: unknown): string {
 const VIDE_SERVEUR: EtatDialogue = { enVol: [], surcharges: {}, coches: {}, compteur: 0 };
 
 /** Où en est une correction qui s'applique, et ce qu'on peut faire pendant ce temps. */
-function Progression({ depuis }: { depuis: number }) {
+function Progression({ depuis, arreter }: { depuis: number; arreter: () => void }) {
   const [maintenant, setMaintenant] = useState(() => Date.now());
   useEffect(() => {
     const horloge = window.setInterval(() => setMaintenant(Date.now()), 500);
@@ -95,6 +95,10 @@ function Progression({ depuis }: { depuis: number }) {
         Vous pouvez quitter cette page, et même fermer Oris : la correction continue sur le
         serveur, et vous retrouverez cette conversation ici comme sur l’iPhone.
       </p>
+      {/* « Pas possible d'interrompre » (15/11/2026) : arrêtée, rien n'est gardé. */}
+      <button type="button" className={styles.discret} onClick={arreter}>
+        Arrêter
+      </button>
     </div>
   );
 }
@@ -314,6 +318,9 @@ export const AssistantCorrection = forwardRef<
     try {
       await apiRequest(`/encounters/${encounterId}/assistant/${id}/annuler`, { method: "POST" });
     } finally {
+      // Une correction arrêtée en cours : la barre disparaît tout de suite, sans attendre
+      // que Claude ait fini (son travail ne sera pas gardé).
+      oublierSurcharge(id);
       rechargerHistorique();
     }
   }
@@ -399,7 +406,10 @@ export const AssistantCorrection = forwardRef<
             if (echange.sorte === "application") {
               return (
                 <div key={echange.id} className={`${styles.bulle} ${styles.oris}`} role="status">
-                  <Progression depuis={echange.depuis} />
+                  <Progression
+                    depuis={echange.depuis}
+                    arreter={() => void annuler(echange.id)}
+                  />
                 </div>
               );
             }

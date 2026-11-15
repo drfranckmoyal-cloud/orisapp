@@ -1,5 +1,11 @@
 # Changelog
 
+## Un bouton « Arrêter » sur une correction en cours, site et iPhone — 2026-11-15
+- Sous la barre de progression de « Corriger avec Claude » : **Arrêter**. La demande passe
+  « annulée » tout de suite ; Claude finit sa phrase sur le serveur, mais rien de son
+  travail n'est gardé — la route qui applique relit l'état avant d'enregistrer et s'efface.
+- 580 tests serveur · 73 site · 73 iPhone au vert.
+
 ## Une correction par Claude ne reste plus jamais « en cours » — 2026-11-15
 - La relecture d'un compte rendu (M. P.) attendait depuis deux jours, sans moyen de
   l'interrompre. Cause : pendant que Claude réécrivait (quatre minutes), le document avait
