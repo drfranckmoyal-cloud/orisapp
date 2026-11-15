@@ -1,5 +1,17 @@
 # Changelog
 
+## Une correction par Claude ne reste plus jamais « en cours » — 2026-11-15
+- La relecture d'un compte rendu (M. P.) attendait depuis deux jours, sans moyen de
+  l'interrompre. Cause : pendant que Claude réécrivait (quatre minutes), le document avait
+  été validé depuis un autre écran ; la réécriture a calculé un numéro de version déjà
+  pris, a planté, et la demande est restée « en cours » pour toujours.
+- Le numéro de version se lit désormais en base au moment d'écrire.
+- Toute panne, même imprévue, rend la demande « non aboutie » avec un message clair.
+- Une demande « en cours » depuis plus de 15 minutes (serveur relancé pendant le travail)
+  est dite interrompue à la lecture suivante : l'écran cesse d'attendre.
+- La demande bloquée a été débloquée à la main ; elle peut être relancée.
+- 578 tests serveur au vert.
+
 ## Le genre du patient pris dans Doctolib, masculin par défaut — 2026-11-15
 - Franck : « que les patients aient le bon genre directement, à extraire de Doctolib
   (toujours au masculin par défaut) ».

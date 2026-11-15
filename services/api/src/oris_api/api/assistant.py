@@ -166,6 +166,23 @@ def _demande(session: Session, encounter: Encounter, demande_id: UUID) -> Demand
     return demande
 
 
+#: Ce que dit une demande qui n'a pas abouti pour une raison imprévue.
+INTERROMPUE = "La correction s’est interrompue sur le serveur : rien n’a changé. Relancez-la."
+
+#: Une demande « en cours » depuis plus longtemps n'aboutira plus : le serveur a été
+#: relancé pendant qu'il travaillait. Une réécriture dure deux minutes, rarement quatre.
+DUREE_MAX_APPLICATION_S = 15 * 60
+
+
+def _abandonnee(demande: DemandeCorrectionRow) -> bool:
+    if demande.etat != "application" or demande.updated_at is None:
+        return False
+    depuis = demande.updated_at
+    if depuis.tzinfo is None:
+        depuis = depuis.replace(tzinfo=UTC)
+    return (datetime.now(UTC) - depuis).total_seconds() > DUREE_MAX_APPLICATION_S
+
+
 def _poser(demande: DemandeCorrectionRow, etat: str, **reponse: Any) -> None:
     demande.etat = etat
     # Un nouveau dictionnaire : SQLAlchemy ne voit pas une clé changée en place.
@@ -375,11 +392,17 @@ def appliquer(
         session.commit()
     try:
         message = _appliquer(session, actor, encounter, body, providers)
-    except ServiceError as refus:
+    except Exception as erreur:
+        # Quoi qu'il arrive, la demande ne reste pas « en cours » : un écran qui attend
+        # une réponse qui ne viendra jamais, sans pouvoir l'interrompre, c'est ce qu'a vu
+        # le praticien pendant deux jours (13/11/2026).
         session.rollback()
         if demande is not None:
             demande = _demande(session, encounter, demande.id)
-            _poser(demande, "echec", code=refus.code)
+            if isinstance(erreur, ServiceError):
+                _poser(demande, "echec", code=erreur.code)
+            else:
+                _poser(demande, "echec", code="", message=INTERROMPUE)
             session.commit()
         raise
     if demande is not None:
@@ -541,6 +564,8 @@ def historique(
     )
     sorties: list[DemandeCorrectionOut] = []
     for d in demandes:
+        if _abandonnee(d):
+            _poser(d, "echec", code="", message=INTERROMPUE)
         reponse = d.reponse or {}
         lecture = reponse.get("lecture")
         sorties.append(

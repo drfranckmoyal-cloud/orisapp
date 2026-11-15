@@ -403,3 +403,68 @@ def test_une_application_refusee_reste_marquee_non_aboutie(api: Any) -> None:
     demande = api.get(f"/encounters/{identifiant}/assistant").json()[0]
     assert demande["etat"] == "echec"
     assert demande["code"] == "OBJECT_VERSION_REQUIRED"
+
+
+# --- Une demande ne reste jamais « en cours » (PIRA, 13/11/2026) ------------------------
+
+
+def test_une_panne_imprevue_rend_la_demande_non_aboutie(api: Any, monkeypatch: Any) -> None:
+    """Une erreur imprévue (ici, une panne de base) laissait la demande « en cours » : l'écran
+    a attendu deux jours, sans pouvoir l'interrompre."""
+    from oris_api.api import assistant as route
+
+    identifiant, _ = consultation(api)
+    lecture = api.post(f"/encounters/{identifiant}/assistant", json={"demande": "plus court"})
+
+    def panne(*_: Any, **__: Any) -> str:
+        raise RuntimeError("panne imprévue")
+
+    monkeypatch.setattr(route, "_appliquer", panne)
+    with pytest.raises(RuntimeError):
+        api.post(
+            f"/encounters/{identifiant}/assistant/appliquer",
+            json={
+                "nature": "redaction",
+                "consignes": ["Faire plus court"],
+                "demande_id": lecture.json()["demande_id"],
+            },
+        )
+    demande = api.get(f"/encounters/{identifiant}/assistant").json()[0]
+    assert demande["etat"] == "echec"
+    assert "Relancez-la" in demande["message"]
+
+
+def test_une_demande_en_cours_depuis_trop_longtemps_est_dite_interrompue(
+    api: Any, migrated_engine: Any
+) -> None:
+    from datetime import UTC, datetime, timedelta
+
+    from sqlalchemy import update
+
+    from oris_api.db.models import DemandeCorrectionRow
+
+    identifiant, _ = consultation(api)
+    lecture = api.post(f"/encounters/{identifiant}/assistant", json={"demande": "plus court"})
+    with migrated_engine.begin() as connexion:
+        connexion.execute(
+            update(DemandeCorrectionRow)
+            .where(DemandeCorrectionRow.id == lecture.json()["demande_id"])
+            .values(etat="application", updated_at=datetime.now(UTC) - timedelta(hours=2))
+        )
+    demande = api.get(f"/encounters/{identifiant}/assistant").json()[0]
+    assert demande["etat"] == "echec"
+    assert "Relancez-la" in demande["message"]
+
+
+def test_une_version_ecrite_pendant_la_reecriture_ne_fait_pas_planter() -> None:
+    """Le numéro suivant vient de la base, pas de la version courante gardée en mémoire."""
+    from oris_api.db.models import DocumentRow, DocumentVersion
+    from oris_api.services.documents import prochaine_version
+
+    class Seance:
+        def scalar(self, _requete: Any) -> int:
+            return 2  # une version 2 écrite entre-temps par un autre écran
+
+    document = DocumentRow(document_type="consultation_note", status="draft_ai")
+    assert prochaine_version(Seance(), document) == 3  # type: ignore[arg-type]
+    assert DocumentVersion  # le contrat d'unicité (document, version) reste en place

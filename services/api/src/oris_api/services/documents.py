@@ -9,7 +9,7 @@ from functools import partial
 from typing import Literal, cast
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from oris_api.contracts import ClinicalEncounter
@@ -164,6 +164,20 @@ def current_version(session: Session, document: DocumentRow) -> DocumentVersion 
     return session.get(DocumentVersion, document.current_version_id)
 
 
+def prochaine_version(session: Session, document: DocumentRow) -> int:
+    """Le numéro de la version suivante, lu en base à l'instant.
+
+    Pas « version courante + 1 » : une réécriture par Claude dure plusieurs minutes, et
+    pendant ce temps le praticien a pu modifier ou valider le document depuis un autre
+    écran. La version courante gardée en mémoire était alors périmée, et le numéro
+    calculé existait déjà — la relecture de M. P. a planté et l'écran a attendu deux
+    jours (13/11/2026)."""
+    plus_haute = session.scalar(
+        select(func.max(DocumentVersion.version)).where(DocumentVersion.document_id == document.id)
+    )
+    return (plus_haute or 0) + 1
+
+
 def generate(
     session: Session,
     encounter: Encounter,
@@ -211,11 +225,10 @@ def generate(
             )
             session.add(document)
             session.flush()
-        last = current_version(session, document)
         info = providers.document_generation.info
         version = DocumentVersion(
             document_id=document.id,
-            version=(last.version + 1) if last else 1,
+            version=prochaine_version(session, document),
             content=generated.content,
             claims=[
                 {
@@ -297,7 +310,7 @@ def edit_text(session: Session, actor: Actor, document_id: UUID, content: str) -
 
     version = DocumentVersion(
         document_id=document.id,
-        version=last.version + 1,
+        version=prochaine_version(session, document),
         content=content.strip(),
         claims=[],
         supported_fact_ids=[],
