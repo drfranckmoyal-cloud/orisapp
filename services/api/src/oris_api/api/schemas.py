@@ -497,6 +497,8 @@ class RendezVousDepot(BaseModel):
     patient: str = ""
     prenom: str = ""
     nom: str = ""
+    #: « M. », « Mme »… lu dans Doctolib (15/11/2026) ; vide si l'extension ne le voit pas.
+    civilite: str = ""
     motif: str = ""
     statut: str = ""
     recherche: str = ""

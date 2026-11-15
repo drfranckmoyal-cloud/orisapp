@@ -22,6 +22,7 @@ import json
 import logging
 import os
 import tempfile
+import unicodedata
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -56,6 +57,9 @@ class RendezVous:
     motif: str
     statut: str
     smilecloud: EtatSmileCloud
+    #: « monsieur », « madame », ou vide si Doctolib ne l'a pas dit (Franck, 15/11/2026 :
+    #: « le bon genre directement, à extraire de Doctolib »).
+    civilite: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -115,6 +119,21 @@ def _jour_sur(valeur: object) -> str:
 CIVILITES: frozenset[str] = frozenset({"M", "Mme", "Mlle", "Mr", "Dr"})
 
 
+_MASCULINS = frozenset({"m", "mr", "monsieur", "h", "homme", "masculin"})
+_FEMININS = frozenset({"mme", "madame", "mlle", "mademoiselle", "f", "femme", "feminin"})
+
+
+def civilite_de(texte: str) -> str:
+    """« M. », « Mme », « Madame », « F »… → « monsieur », « madame », ou vide."""
+    mot = unicodedata.normalize("NFKD", (texte or "").strip().lower())
+    mot = "".join(c for c in mot if c.isalpha())
+    if mot in _MASCULINS:
+        return "monsieur"
+    if mot in _FEMININS:
+        return "madame"
+    return ""
+
+
 def separer_nom(patient: str) -> tuple[str, str]:
     """« M. DROIT Justine » → (« Justine », « DROIT »). Doctolib écrit le nom en capitales.
 
@@ -151,6 +170,9 @@ def _rendez_vous(brut: object) -> RendezVous | None:
         prenom, nom = separer_nom(_texte(brut.get("patient")))
     if not nom and not prenom:
         return None
+    # La civilité : un champ à part, ou le « M. » / « Mme » devant le nom Doctolib.
+    premier = (_texte(brut.get("patient")).split() or [""])[0]
+    civilite = civilite_de(_texte(brut.get("civilite"))) or civilite_de(premier)
     return RendezVous(
         heure=_texte(brut.get("heure")),
         prenom=prenom,
@@ -158,6 +180,7 @@ def _rendez_vous(brut: object) -> RendezVous | None:
         motif=_texte(brut.get("motif")),
         statut=_texte(brut.get("statut")),
         smilecloud=_etat(brut.get("recherche")),
+        civilite=civilite,
     )
 
 
@@ -248,6 +271,7 @@ def deposer(settings: Settings, livraison: dict[str, Any]) -> Depot:
                     "motif": rdv.motif,
                     "statut": rdv.statut,
                     "recherche": rdv.smilecloud,
+                    "civilite": rdv.civilite,
                 }
                 for rdv in lignes
             ],
@@ -402,3 +426,22 @@ def lire_semaine(settings: Settings, depuis: str, jours: int = 7) -> list[Journe
         lire(settings, (premier + timedelta(days=i)).isoformat())
         for i in range(max(1, min(jours, 31)))
     ]
+
+
+def _sans_accents(texte: str) -> str:
+    texte = unicodedata.normalize("NFKD", texte.casefold())
+    return " ".join("".join(c for c in texte if not unicodedata.combining(c)).split())
+
+
+def civilite_connue(settings: Settings, prenom: str, nom: str) -> str:
+    """La civilité que Doctolib donne à ce patient, d'après les journées déposées.
+
+    Le nom doit correspondre exactement (accents et casse mis à part) : une civilité
+    ne se prête pas à un homonyme approximatif. Rien de sûr : vide."""
+    cherche = (_sans_accents(prenom), _sans_accents(nom))
+    for fichier in sorted(settings.journee_dir.glob("????-??-??.json"), reverse=True):
+        journee = _relire(fichier, fichier.stem)
+        for rdv in journee.rendezvous if journee else ():
+            if rdv.civilite and (_sans_accents(rdv.prenom), _sans_accents(rdv.nom)) == cherche:
+                return rdv.civilite
+    return ""

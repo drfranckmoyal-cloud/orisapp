@@ -8,7 +8,13 @@ from uuid import UUID
 
 from fastapi import APIRouter, Body, File, Form, Header, Response, UploadFile, status
 
-from oris_api.api.dependencies import ActorDep, MagasinDep, ProvidersDep, SessionDep
+from oris_api.api.dependencies import (
+    ActorDep,
+    MagasinDep,
+    ProvidersDep,
+    SessionDep,
+    SettingsDep,
+)
 from oris_api.api.schemas import (
     AttachmentOut,
     CorrespondentOut,
@@ -24,6 +30,7 @@ from oris_api.db.models import Attachment
 from oris_api.domain.types import AudioChunk
 from oris_api.providers.base import TranscriptionUnavailable
 from oris_api.services import (
+    agenda,
     async_bridge,
     attachments,
     audio,
@@ -57,8 +64,16 @@ def list_patients(
 
 
 @router.post("", response_model=PatientOut, status_code=status.HTTP_201_CREATED)
-def create_patient(body: PatientCreate, session: SessionDep, actor: ActorDep) -> PatientOut:
-    patient = patients.create_patient(session, actor, **body.model_dump())
+def create_patient(
+    body: PatientCreate, session: SessionDep, actor: ActorDep, settings: SettingsDep
+) -> PatientOut:
+    champs = body.model_dump()
+    # Le bon genre d'emblée (Franck, 15/11/2026) : celui que Doctolib donne au patient,
+    # quand l'agenda le connaît. Sinon la fiche reste « non précisée », que les documents
+    # accordent au masculin — et qu'une prochaine journée Doctolib pourra encore préciser.
+    if not champs.get("civility"):
+        champs["civility"] = agenda.civilite_connue(settings, body.first_name, body.last_name)
+    patient = patients.create_patient(session, actor, **champs)
     return PatientOut.model_validate(patient)
 
 

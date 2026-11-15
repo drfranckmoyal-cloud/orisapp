@@ -57,12 +57,13 @@ def test_le_redacteur_recoit_la_consigne_d_accord() -> None:
     assert "accorde au féminin" in feminin
 
 
-def test_sans_civilite_le_redacteur_a_l_ordre_de_ne_pas_accorder() -> None:
-    """Le défaut ne doit pas être « masculin » : il doit être « n'accorde pas »."""
+def test_sans_civilite_le_redacteur_accorde_au_masculin_sans_toucher_aux_mots_dits() -> None:
+    """Franck, 15/11/2026 : masculin par défaut. Mais « directrice » dicté reste
+    « directrice » (10/11/2026), et le prénom ne fait jamais foi."""
     sans = message([], {}, Style())
+    assert "accorde au masculin par défaut" in sans
     assert "ne les change jamais" in sans
     assert "Ne devine jamais le genre d'après le prénom" in sans
-    assert "accorde au masculin" not in sans
 
 
 def test_la_consigne_inconnue_retombe_sur_la_prudence() -> None:

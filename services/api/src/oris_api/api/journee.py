@@ -28,7 +28,7 @@ from oris_api.api.schemas import (
     RendezVousOut,
 )
 from oris_api.config import Settings
-from oris_api.services import agenda, patients, rapprochement
+from oris_api.services import agenda, audit, patients, rapprochement
 from oris_api.services.errors import Forbidden, Unprocessable
 from oris_api.services.identity import Actor
 
@@ -69,6 +69,27 @@ def _dossier_de(prenom: str, nom: str, connus: list[tuple[str, str]]) -> UUID | 
     return UUID(propose.cle) if propose.certain and propose.cle else None
 
 
+def _preciser_civilites(
+    session: Session, actor: Actor, journee: agenda.Journee, connus: list[tuple[str, str]]
+) -> None:
+    """Une fiche sans civilité prend celle que Doctolib donne au patient (15/11/2026).
+
+    Seulement quand le dossier est reconnu sans aucun doute, et jamais par-dessus une
+    civilité déjà posée : celle que le praticien a choisie fait foi."""
+    for rdv in journee.rendezvous:
+        if not rdv.civilite:
+            continue
+        patient_id = _dossier_de(rdv.prenom, rdv.nom, connus)
+        if patient_id is None:
+            continue
+        patient = patients.get_patient(session, actor, patient_id)
+        if not patient.civility:
+            patient.civility = rdv.civilite
+            audit.record(
+                session, actor, "patient.updated", "patient", patient.id, fields=["civility"]
+            )
+
+
 def _livraison(settings: Settings, jour: str) -> LivraisonOut | None:
     tentative = agenda.derniere_livraison(settings, jour)
     return LivraisonOut(**tentative) if tentative else None
@@ -80,6 +101,7 @@ def read_journee(
 ) -> JourneeOut:
     journee = agenda.lire(settings, jour)
     connus = _dossiers_connus(session, actor)
+    _preciser_civilites(session, actor, journee, connus)
     return JourneeOut(
         jour=journee.jour,
         agenda=journee.agenda,

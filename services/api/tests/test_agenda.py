@@ -449,3 +449,73 @@ def test_a_trace_is_never_erased_by_the_very_write_that_creates_it(tmp_path: Pat
 
     tentative = agenda.derniere_livraison(reglage, vieux_jour)
     assert tentative is not None and tentative["rendezvous"] == 1
+
+
+# --- La civilité lue dans Doctolib (Franck, 15/11/2026) ---------------------------------
+
+
+@pytest.mark.parametrize(
+    ("ligne", "attendue"),
+    [
+        ({**RDV, "patient": "Mme MOREAU Chloé", "prenom": "", "nom": ""}, "madame"),
+        ({**RDV, "patient": "M. DROIT Justin", "prenom": "", "nom": ""}, "monsieur"),
+        ({**RDV, "civilite": "Madame"}, "madame"),
+        ({**RDV, "civilite": "M"}, "monsieur"),
+        (RDV, ""),
+    ],
+)
+def test_the_civility_is_read_from_doctolib(
+    tmp_path: Path, ligne: dict[str, Any], attendue: str
+) -> None:
+    reglage = reglages(tmp_path)
+    agenda.deposer(reglage, livraison([ligne]))
+    (rdv,) = agenda.lire(reglage, JOUR).rendezvous
+    assert rdv.civilite == attendue
+
+
+def test_a_new_patient_takes_the_civility_doctolib_gives(api: Any, tmp_path: Path) -> None:
+    from oris_api.config import get_settings
+    from oris_api.main import app
+
+    agenda.deposer(reglages(tmp_path), livraison([{**RDV, "civilite": "Mme"}]))
+    app.dependency_overrides[get_settings] = lambda: reglages(tmp_path)
+    try:
+        connue = api.post("/patients", json={"first_name": "Chloe", "last_name": "MOREAU"})
+        inconnue = api.post("/patients", json={"first_name": "Paul", "last_name": "Inconnu"})
+        choisie = api.post(
+            "/patients",
+            json={"first_name": "Chloé", "last_name": "Moreau", "civility": "monsieur"},
+        )
+    finally:
+        app.dependency_overrides.pop(get_settings, None)
+    assert connue.json()["civility"] == "madame"
+    assert inconnue.json()["civility"] == ""  # accordé au masculin par les documents
+    assert choisie.json()["civility"] == "monsieur"  # le choix du praticien fait foi
+
+
+def test_reading_the_day_fills_an_empty_civility_but_never_overrides(
+    api: Any, tmp_path: Path
+) -> None:
+    from oris_api.config import get_settings
+    from oris_api.main import app
+
+    vide = api.post("/patients", json={"first_name": "Chloé", "last_name": "Moreau"}).json()
+    posee = api.post(
+        "/patients", json={"first_name": "Ali", "last_name": "Benali", "civility": "monsieur"}
+    ).json()
+    agenda.deposer(
+        reglages(tmp_path),
+        livraison(
+            [
+                {**RDV, "civilite": "Mme"},
+                {**RDV, "prenom": "Ali", "nom": "Benali", "civilite": "Mme"},
+            ]
+        ),
+    )
+    app.dependency_overrides[get_settings] = lambda: reglages(tmp_path)
+    try:
+        assert api.get("/journee", params={"jour": JOUR}).status_code == 200
+    finally:
+        app.dependency_overrides.pop(get_settings, None)
+    assert api.get(f"/patients/{vide['id']}").json()["civility"] == "madame"
+    assert api.get(f"/patients/{posee['id']}").json()["civility"] == "monsieur"

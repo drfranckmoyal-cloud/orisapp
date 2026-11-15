@@ -29,6 +29,7 @@ locales sont acceptées ; un jeton facultatif part en en-tête `Authorization: B
       "patient": "Justine DROIT",
       "prenom": "Justine",
       "nom": "DROIT",
+      "civilite": "Mme",
       "motif": "Contrôle périodique",
       "statut": "À venir",
       "dossier_cemedis": ""
@@ -37,6 +38,11 @@ locales sont acceptées ; un jeton facultatif part en en-tête `Authorization: B
   "diagnostic": { "lignes": 13, "retenus": 11, "ignorees": 2, "agendas": ["…"] }
 }
 ```
+
+`civilite` (15/11/2026) : « M. », « Mme », « Madame »… tel que Doctolib le donne, vide
+s'il ne le dit pas. Oris l'accepte aussi en tête de `patient` (« Mme DROIT Justine »). Il
+sert à poser la civilité d'une fiche **vide** (création, ou lecture de la journée quand le
+dossier est reconnu sans doute) ; il ne remplace jamais celle que le praticien a choisie.
 
 `prenom` et `nom` sont déjà séparés (Doctolib écrit « M. DROIT Justine »). Le
 `diagnostic` dit ce que l'extension a vu à l'écran : une liste vide s'explique au lieu de

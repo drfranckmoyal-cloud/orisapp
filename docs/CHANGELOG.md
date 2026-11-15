@@ -1,5 +1,18 @@
 # Changelog
 
+## Le genre du patient pris dans Doctolib, masculin par défaut — 2026-11-15
+- Franck : « que les patients aient le bon genre directement, à extraire de Doctolib
+  (toujours au masculin par défaut) ».
+- Une journée Doctolib peut porter la civilité de chaque rendez-vous (`civilite`, ou
+  « M. » / « Mme » devant le nom). Oris la retient, et s'en sert : à la **création** d'une
+  fiche (si le nom correspond exactement à un rendez-vous) et à la **lecture de la journée**
+  (pour un dossier reconnu sans doute). Seulement sur une fiche sans civilité : celle que le
+  praticien a choisie fait toujours foi.
+- Fiche sans civilité : les documents accordent désormais **au masculin par défaut**, sans
+  jamais toucher aux accords des mots dits (« directrice » reste « directrice »).
+- La lecture de la civilité dans Doctolib est demandée à l'extension (session Dental Lens).
+- 575 tests serveur au vert.
+
 ## Une précision d'acte dite autrement ne fait plus échouer le compte rendu opératoire — 2026-11-13
 - Première consultation en « Compte rendu opératoire » : refusée (« PROCEDURE_DATA_UNSUPPORTED »).
   Le garde-fou exige que toute précision technique d'un acte ait été prononcée ; il comparait
