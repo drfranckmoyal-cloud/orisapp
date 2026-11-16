@@ -138,6 +138,7 @@ export const AssistantCorrection = forwardRef<
   const [saisie, setSaisie] = useState("");
   const [dictee, setDictee] = useState(false);
   const [voirConsignes, setVoirConsignes] = useState(false);
+  const [civiliteEnCours, setCiviliteEnCours] = useState<"" | "monsieur" | "madame">("");
   const [consignes, rechargerConsignes] = useApi<Consignes>(
     `/encounters/${encounterId}/consignes`,
   );
@@ -362,6 +363,27 @@ export const AssistantCorrection = forwardRef<
     }
   }
 
+  /**
+   * La fiche ne dit ni Monsieur ni Madame : Oris le demande une fois, ici, au lieu de
+   * laisser corriger « C’est une femme » après coup (relevé du 16/11/2026 : dix fois en
+   * une semaine). Sans passer par Claude : la réponse est un clic, pas une phrase à lire.
+   */
+  async function poserCivilite(valeur: "monsieur" | "madame") {
+    setCiviliteEnCours(valeur);
+    try {
+      await apiRequest<ResultatAssistant>(`/encounters/${encounterId}/assistant/appliquer`, {
+        method: "POST",
+        body: { nature: "civilite", civilite: valeur },
+      });
+      onChange();
+    } catch (caught) {
+      const texte = valeur === "madame" ? "C’est une femme" : "C’est un homme";
+      arrivee(envoyer(texte, ""), errorMessage(codeDe(caught)));
+    } finally {
+      setCiviliteEnCours("");
+    }
+  }
+
   const retenues = consignes.state === "ready" ? consignes.data.praticien : [];
   const dIci = consignes.state === "ready" ? consignes.data.consultation : [];
   const suggestions = [
@@ -384,6 +406,32 @@ export const AssistantCorrection = forwardRef<
           Dites ce qui ne va pas, comme à un assistant. Rien ne change sans votre accord.
         </p>
       </header>
+
+      {actif && civilite === "" && (
+        <div className={styles.civilite} role="group" aria-label="Civilité du patient">
+          <p className={styles.garde}>
+            {civiliteEnCours === "madame"
+              ? "J’accorde le document au féminin…"
+              : "La fiche ne dit pas Monsieur ou Madame : le document est accordé au masculin."}
+          </p>
+          <div className={styles.choix}>
+            <button
+              type="button"
+              disabled={civiliteEnCours !== ""}
+              onClick={() => void poserCivilite("madame")}
+            >
+              Madame
+            </button>
+            <button
+              type="button"
+              disabled={civiliteEnCours !== ""}
+              onClick={() => void poserCivilite("monsieur")}
+            >
+              Monsieur
+            </button>
+          </div>
+        </div>
+      )}
 
       {fil.length > 0 && (
         <div className={styles.fil} aria-live="polite">

@@ -12,11 +12,13 @@ struct PatientSummary: Codable, Equatable, Sendable, Identifiable {
     var consultations: Int? = nil
     var derniereConsultation: String? = nil
     var aRelire: Int? = nil
+    /// « monsieur », « madame », ou vide quand la fiche ne le dit pas.
+    var civility: String? = nil
 
     var displayName: String { "\(firstName) \(lastName)" }
 
     enum CodingKeys: String, CodingKey {
-        case id, consultations
+        case id, consultations, civility
         case firstName = "first_name"
         case lastName = "last_name"
         case derniereConsultation = "derniere_consultation"

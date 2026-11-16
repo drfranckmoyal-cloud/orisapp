@@ -54,6 +54,10 @@ def test_a_known_concept_is_written_and_an_unknown_one_is_flagged() -> None:
     # « crowns » manquait : le compte rendu affichait « à rédiger ».
     assert "couronnes" in fact_sentence(fact("crowns"))
     assert fact_sentence(fact("licorne_dentaire")).startswith(UNRENDERED_PREFIX)
+    # Relevé du 16/11/2026 : « laxative_use » sortait en « à rédiger » dans un compte rendu.
+    for concept in ("laxative_use", "vomiting_pattern", "bulimia_pattern", "eating_disorder"):
+        assert not fact_sentence(fact(concept)).startswith(UNRENDERED_PREFIX), concept
+    assert "laxatifs" in fact_sentence(fact("laxative_use"))
 
 
 def vocabulaire() -> Any:

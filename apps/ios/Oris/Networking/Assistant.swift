@@ -108,6 +108,13 @@ extension APIClient {
                               body: corps, delai: 240)
     }
 
+    /// La fiche ne disait ni Monsieur ni Madame : le praticien répond d'un geste, sans
+    /// passer par Claude (relevé du 16/11/2026). Tous les documents rédigés sont accordés.
+    func poserCivilite(encounterId: String, civilite: String) async throws -> ResultatAssistant {
+        try await send("encounters/\(encounterId)/assistant/appliquer", method: "POST",
+                       body: ["nature": "civilite", "civilite": civilite], delai: 240)
+    }
+
     /// Applique les consignes cochées après une relecture.
     func appliquer(encounterId: String, documentId: String, consignes: [String],
                    retenir: Bool, demandeId: String? = nil) async throws -> ResultatAssistant {

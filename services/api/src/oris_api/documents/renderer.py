@@ -265,7 +265,8 @@ NEGATION = re.compile(
 )
 INCERTITUDE = re.compile(
     r"\b(possible\w*|peut[- ]être|probable\w*|suspicion|suspect\w*|incertain\w*|"
-    r"doute\w*|semble\w*|évoqu\w*|hypoth\w*|potentiel\w*|à confirmer|éventuel\w*)",
+    r"doute\w*|semble\w*|évoqu\w*|envisag\w*|hypoth\w*|potentiel\w*|à confirmer|"
+    r"éventuel\w*)",
     re.IGNORECASE,
 )
 PATIENT = re.compile(

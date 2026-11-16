@@ -23,7 +23,7 @@ reporte ensuite dans le code, et cette liste est régénérée.*
 traitées par Oris. Les quelques termes présents servent à *reconnaître* le mot quand il
 est prononcé, pas à rédiger l'acte.
 
-**269 termes** connus aujourd'hui, en 16 thèmes.
+**275 termes** connus aujourd'hui, en 16 thèmes.
 
 ## Sommaire
 
@@ -40,7 +40,7 @@ est prononcé, pas à rédiger l'acte.
 - [Actes — prothèse et collage](#actes-prothèse-et-collage) — 12 termes
 - [Actes — chirurgie et anesthésie](#actes-chirurgie-et-anesthésie) — 9 termes
 - [Informations données au patient](#informations-données-au-patient) — 13 termes
-- [Antécédents, traitements et terrain](#antécédents-traitements-et-terrain) — 11 termes
+- [Antécédents, traitements et terrain](#antécédents-traitements-et-terrain) — 17 termes
 - [Suite et contrôle](#suite-et-contrôle) — 8 termes
 - [Matériaux, produits et instruments](#matériaux-produits-et-instruments) — 14 termes
 
@@ -430,16 +430,22 @@ est prononcé, pas à rédiger l'acte.
 | Terme écrit dans le compte rendu | Précision conservée |
 |---|---|
 | allergie | ce qui a été dit est repris (nom de produit, mots du patient) |
+| anorexie mentale | ce qui a été dit est repris (nom de produit, mots du patient) |
 | antécédent cardiaque | ce qui a été dit est repris (nom de produit, mots du patient) |
 | antécédent de radiothérapie | le libellé suffit |
 | antécédents médicaux | ce qui a été dit est repris (nom de produit, mots du patient) |
 | anxiété dentaire | le libellé suffit |
 | bisphosphonates | ce qui a été dit est repris (nom de produit, mots du patient) |
+| boulimie | ce qui a été dit est repris (nom de produit, mots du patient) |
+| crises de boulimie | ce qui a été dit est repris (nom de produit, mots du patient) |
 | diabète | le libellé suffit |
 | grossesse | le libellé suffit |
+| prise de laxatifs | ce qui a été dit est repris (nom de produit, mots du patient) |
 | tabagisme | « libellé : valeur » (hémostase : obtenue) |
 | traitement anticoagulant | ce qui a été dit est repris (nom de produit, mots du patient) |
 | traitement dentaire antérieur | ce qui a été dit est repris (nom de produit, mots du patient) |
+| trouble des conduites alimentaires | ce qui a été dit est repris (nom de produit, mots du patient) |
+| vomissements | ce qui a été dit est repris (nom de produit, mots du patient) |
 
 **À ajouter dans ce thème**
 

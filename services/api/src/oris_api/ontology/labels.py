@@ -308,6 +308,14 @@ THEMES: dict[str, dict[str, ConceptLabel]] = {
         "smoking": c("tabagisme", "statement"),
         "previous_dental_treatment": c("traitement dentaire antérieur", "show"),
         "dental_anxiety": c("anxiété dentaire"),
+        # Troubles des conduites alimentaires (relevé du 16/11/2026) : l'extraction les
+        # nommait déjà, mais le document affichait « à rédiger : élément non reconnu ».
+        "eating_disorder": c("trouble des conduites alimentaires", "show"),
+        "anorexia_nervosa": c("anorexie mentale", "show"),
+        "bulimia_nervosa": c("boulimie", "show"),
+        "bulimia_pattern": c("crises de boulimie", "show"),
+        "vomiting_pattern": c("vomissements", "show"),
+        "laxative_use": c("prise de laxatifs", "show"),
     },
     "Suite et contrôle": {
         "next_visit": c("prochaine séance", "statement"),

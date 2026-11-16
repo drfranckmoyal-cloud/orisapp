@@ -161,7 +161,11 @@ Détail par jalon : `docs/CHANGELOG.md`. Décisions techniques : `docs/IMPLEMENT
   qu'il a compris — le dossier clinique, la rédaction, ou la civilité du patient — et
   rien ne change sans votre accord. Une consigne de rédaction peut valoir pour ce
   document seulement, ou être retenue pour tous les suivants. Le même dialogue est sur
-  l'iPhone.
+  l'iPhone. Une demande en deux parties (« le motif n'est pas bon et c'est une femme »)
+  est comprise ; une réponse à la question d'Oris est lue comme telle (16/11/2026).
+- **Monsieur ou Madame ?** Quand la fiche ne le dit pas, le document pose la question :
+  un clic, et le document est accordé (16/11/2026, après dix « c'est une femme » en une
+  semaine).
 - **« Relecture par Claude »** : il relit le document et propose des améliorations de
   forme à cocher. Il ne propose jamais de toucher à un fait.
 - « Selon le patient » ne se répète plus à chaque phrase : une fois par suite de propos

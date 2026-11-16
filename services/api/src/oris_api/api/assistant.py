@@ -248,13 +248,45 @@ def _comprendre(
         return _lecture_out(lecture, "regles", obj.object_version, demande)
 
     patient = session.get(Patient, encounter.patient_id)
+    precedent = _question_en_suspens(session, encounter)
     try:
         lecture = async_bridge.run(
-            lambda: assistant.comprendre(demande, obj, patient.civility if patient else "")
+            lambda: assistant.comprendre(
+                demande, obj, patient.civility if patient else "", precedent
+            )
         )
     except AssistantIndisponible as panne:
         raise ServiceIndisponible(panne.code, str(encounter.id)) from panne
     return _lecture_out(lecture, "claude", obj.object_version, demande)
+
+
+#: Une question d'Oris reste « en suspens » ce temps-là : la demande suivante y répond
+#: sans doute. Au-delà, le praticien est passé à autre chose.
+SUSPENS_S = 30 * 60
+
+
+def _question_en_suspens(session: Session, encounter: Encounter) -> dict[str, str] | None:
+    """La dernière demande de la consultation, si Oris n'y a répondu que par une question.
+
+    Relevé du 16/11/2026 : après « le motif n'est pas bon », le praticien a donné le bon
+    motif en une phrase, et Oris, qui avait oublié la question, ne l'a pas compris non plus.
+    """
+    derniere = session.scalars(
+        select(DemandeCorrectionRow)
+        .where(DemandeCorrectionRow.encounter_id == encounter.id)
+        .order_by(DemandeCorrectionRow.created_at.desc())
+        .limit(1)
+    ).first()
+    if derniere is None or derniere.etat != "incomprise" or derniere.created_at is None:
+        return None
+    quand = derniere.created_at
+    if quand.tzinfo is None:
+        quand = quand.replace(tzinfo=UTC)
+    if (datetime.now(UTC) - quand).total_seconds() > SUSPENS_S:
+        return None
+    lecture = derniere.reponse.get("lecture") or {}
+    question = str(lecture.get("question") or lecture.get("resume") or "")
+    return {"demande": derniere.texte, "question": question}
 
 
 @router.post("/encounters/{encounter_id}/assistant", response_model=AssistantLecture)
@@ -393,8 +425,9 @@ def appliquer(
     if demande is not None:
         _poser(demande, "application")
         session.commit()
+    jointe = _civilite_jointe(demande, body)
     try:
-        message = _appliquer(session, actor, encounter, body, providers)
+        message = _appliquer(session, actor, encounter, body, providers, jointe)
     except Exception as erreur:
         # Quoi qu'il arrive, la demande ne reste pas « en cours » : un écran qui attend
         # une réponse qui ne viendra jamais, sans pouvoir l'interrompre, c'est ce qu'a vu
@@ -423,15 +456,45 @@ def appliquer(
     )
 
 
+def _civilite_jointe(demande: DemandeCorrectionRow | None, body: AssistantApplication) -> str:
+    """La civilité comprise avec une autre demande (« … et c'est une femme »).
+
+    Elle est relue dans la lecture gardée par le serveur, pas dans ce qu'envoie l'appareil :
+    le site et l'iPhone n'ont rien à changer pour en profiter.
+    """
+    if demande is None or body.nature == "civilite":
+        return ""
+    civilite = (demande.reponse.get("lecture") or {}).get("civilite")
+    return civilite if civilite in {"monsieur", "madame"} else ""
+
+
+def _poser_civilite(session: Session, actor: Actor, encounter: Encounter, civilite: str) -> bool:
+    """Enregistre la civilité dans la fiche ; dit si elle a changé."""
+    patient = session.get(Patient, encounter.patient_id)
+    if patient is None:
+        raise NotFound("PATIENT_NOT_FOUND", str(encounter.patient_id))
+    if patient.civility == civilite:
+        return False
+    patient.civility = civilite
+    audit.record(session, actor, "patient.updated", "patient", patient.id, fields=["civility"])
+    session.flush()
+    return True
+
+
 def _appliquer(
     session: Session,
     actor: Actor,
     encounter: Encounter,
     body: AssistantApplication,
     providers: ProviderSet,
+    civilite_jointe: str = "",
 ) -> str:
     if encounter.status not in RELISIBLES:
         raise Conflict("ENCOUNTER_NOT_PROCESSED", str(encounter.id))
+    # Avant la réécriture : les documents refaits sont accordés du premier coup.
+    civilite_posee = bool(civilite_jointe) and _poser_civilite(
+        session, actor, encounter, civilite_jointe
+    )
 
     if body.nature == "dossier":
         if not body.operations or not all(isinstance(o, PERMISES) for o in body.operations):
@@ -482,14 +545,18 @@ def _appliquer(
         if body.civilite is None:
             raise Unprocessable("CIVILITE_REQUIRED", str(encounter.id))
         patient = session.get(Patient, encounter.patient_id)
-        if patient is None:
-            raise NotFound("PATIENT_NOT_FOUND", str(encounter.patient_id))
-        patient.civility = body.civilite
-        audit.record(session, actor, "patient.updated", "patient", patient.id, fields=["civility"])
-        session.flush()
-        _reecrire(session, encounter, providers, body.document_id)
-        message = "Civilité enregistrée dans la fiche ; le document est accordé."
+        ancienne = patient.civility if patient else ""
+        _poser_civilite(session, actor, encounter, body.civilite)
+        if not ancienne and body.civilite == "monsieur":
+            # Sans civilité, les documents sont déjà accordés au masculin : les réécrire
+            # coûterait deux minutes pour rien.
+            message = "Civilité enregistrée dans la fiche ; le document était déjà au masculin."
+        else:
+            _reecrire(session, encounter, providers, body.document_id)
+            message = "Civilité enregistrée dans la fiche ; le document est accordé."
 
+    if civilite_posee:
+        message += " Civilité enregistrée dans la fiche."
     return message
 
 

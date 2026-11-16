@@ -47,7 +47,7 @@ logger = logging.getLogger("oris.redaction")
 
 API_URL = "https://api.anthropic.com/v1/messages"
 API_VERSION = "2023-06-01"
-PROMPT_VERSION = "redaction-fr-5"
+PROMPT_VERSION = "redaction-fr-6"
 MAX_TOKENS = 6_000
 MAX_ATTEMPTS = 3
 #: Un appel qui échoue (réseau, surcharge, délai) se retente, après une courte pause.
@@ -56,7 +56,10 @@ TOOL_NAME = "rediger_compte_rendu"
 #: Les deux garde-fous qui s'appuient sur un vocabulaire : quand le modèle perd
 #: l'incertitude ou le refus, lui dire quels mots Oris reconnaît vaut mieux que le
 #: laisser deviner trois fois de suite puis retomber sur un gabarit (TOTEL, 09/10/2026).
-MOTS_INCERTITUDE = "« possible », « probable », « suspicion », « à confirmer », « non confirmé »"
+MOTS_INCERTITUDE = (
+    "« possible », « probable », « suspicion », « évoqué », « envisagé », « à confirmer », "
+    "« non confirmé »"
+)
 MOTS_REFUS = "« refuse », « décline », « ne souhaite pas »"
 MOTS_NEGATION = "« pas de », « absence de », « aucun », « sans », « jamais »"
 
@@ -113,8 +116,10 @@ Oris contrôle ta copie et la refuse **en entier** si elle perd une négation, u
 incertitude ou un refus — il les reconnaît à des mots, et les tournures voisines ne \
 suffisent pas. Emploie donc, pour une absence : « pas de », « absence de », « aucun », \
 « sans » ; pour une incertitude : « possible », « probable », « suspicion », \
-« à confirmer », « non confirmé » ; pour un refus : « refuse », « décline », « ne \
-souhaite pas ».
+« évoqué », « envisagé », « à confirmer », « non confirmé » ; pour un refus : « refuse », \
+« décline », « ne souhaite pas ». Un seul de ces mots suffit : une option « évoquée » ou \
+« envisagée » porte déjà son doute, n'y ajoute pas « non confirmée » (le praticien le \
+retirait à chaque fois).
 
 Mise en page, pour un texte aéré et lisible d'un coup d'œil :
 - découpe chaque rubrique en paragraphes courts, une idée chacun (une à trois phrases) ; \

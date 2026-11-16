@@ -45,7 +45,7 @@ from oris_api.domain.corrections import (
 
 API_URL = "https://api.anthropic.com/v1/messages"
 API_VERSION = "2023-06-01"
-PROMPT_VERSION = "assistant-fr-3"
+PROMPT_VERSION = "assistant-fr-4"
 MAX_TOKENS = 3_000
 PROPOSITIONS_MAX = 5
 
@@ -78,6 +78,16 @@ entière, corrigée). Pour une dent, `replace_tooth` ; limite-le à certains fai
 `fact_ids`. Un fait dit par le patient garde `clinical_status: patient_reported`.
 - `incompris` — tu ne sais pas ce qu'il faut changer, ou plusieurs cibles sont possibles. \
 Pose ta question dans `question`. C'est toujours mieux que de deviner.
+
+Une demande peut dire deux choses à la fois (« le motif n'est pas bon et c'est une \
+femme ») : ne la rejette pas pour autant. Classe-la selon l'autre partie et renseigne \
+AUSSI `civilite` ; dis les deux dans `resume`. Si tu ne comprends que la civilité, \
+prends la nature `civilite` et pose dans `question` ta question sur le reste.
+
+`echange_precedent`, quand il est fourni, est ta question restée sans réponse sur cette \
+consultation, avec la demande qui l'avait amenée. La demande actuelle y répond peut-être : \
+une simple phrase après « le motif n'est pas bon » est le bon motif, dit par le praticien \
+— `update_fact` sur le fait du motif, `changes.value` = sa phrase, mot pour mot.
 
 Règles absolues :
 - n'invente rien : une opération `add_fact` ne contient que ce que le praticien vient \
@@ -342,20 +352,52 @@ def normaliser(operations: Any) -> list[dict[str, Any]]:
     return propres
 
 
-def lire(sortie: dict[str, Any], obj: ClinicalEncounter) -> Lecture:
+def lire(sortie: dict[str, Any], obj: ClinicalEncounter, connue: str = "") -> Lecture:
     """Contrôle la réponse de Claude. Ce qui ne tient pas debout redevient une question."""
     nature = sortie.get("nature")
     resume = str(sortie.get("resume") or "").strip()
+    # La civilité peut accompagner une autre demande (relevé du 16/11/2026 : « le motif
+    # n'est pas bon et c'est une femme » finissait en « pas compris », les deux parties
+    # perdues). Elle voyage avec la lecture et s'applique avec elle.
+    brute = sortie.get("civilite")
+    civilite = str(brute) if brute in {"monsieur", "madame"} else ""
+    # Claude recopie parfois la civilité déjà connue : elle n'est pas une demande.
+    jointe = civilite if civilite != connue else ""
+    if nature == "civilite":
+        jointe = civilite
+    lecture = _lire_nature(nature, resume, sortie, obj, jointe)
+    if lecture.nature == "incompris" and jointe:
+        # Le reste n'est pas compris, la civilité si : on l'enregistre, et on demande.
+        question = lecture.question
+        return Lecture(
+            "civilite",
+            f"{_accord(jointe)} {question}".strip(),
+            civilite=jointe,
+            question=question,
+        )
+    return lecture
+
+
+def _accord(civilite: str) -> str:
+    return (
+        "J'accorderai le document au féminin."
+        if civilite == "madame"
+        else "J'accorderai le document au masculin."
+    )
+
+
+def _lire_nature(
+    nature: Any, resume: str, sortie: dict[str, Any], obj: ClinicalEncounter, civilite: str
+) -> Lecture:
     if nature == "redaction":
         consigne = " ".join(str(sortie.get("consigne") or "").split())
         if len(consigne) < 3:
             return _incompris("Je n'ai pas su tirer une consigne de rédaction de cette demande.")
-        return Lecture("redaction", resume, consigne=consigne[:240])
+        return Lecture("redaction", resume, consigne=consigne[:240], civilite=civilite)
     if nature == "civilite":
-        civilite = sortie.get("civilite")
-        if civilite not in {"monsieur", "madame"}:
+        if not civilite:
             return _incompris("Dites-moi s'il s'agit d'un homme ou d'une femme.")
-        return Lecture("civilite", resume, civilite=str(civilite))
+        return Lecture("civilite", resume, civilite=civilite)
     if nature == "dossier":
         try:
             operations = OPERATIONS.validate_python(normaliser(sortie.get("operations")))
@@ -375,7 +417,7 @@ def lire(sortie: dict[str, Any], obj: ClinicalEncounter) -> Lecture:
             element = getattr(operation, "item_id", None)
             if element is not None and element not in elements:
                 return _incompris("Je n'ai pas retrouvé cette étape dans le plan. Laquelle ?")
-        return Lecture("dossier", resume, operations=operations)
+        return Lecture("dossier", resume, operations=operations, civilite=civilite)
     question = str(sortie.get("question") or resume).strip()
     return _incompris(question or "Je n'ai pas compris ce qu'il faut changer.")
 
@@ -400,15 +442,21 @@ class AssistantCorrections:
         self._timeout = timeout_s
         self.version = f"{model}/{PROMPT_VERSION}"
 
-    async def comprendre(self, demande: str, obj: ClinicalEncounter, civilite: str = "") -> Lecture:
-        contenu = json.dumps(
-            {
-                "demande": demande,
-                "civilite_connue": civilite or "non précisée",
-                "dossier": dossier_pour_claude(obj),
-            },
-            ensure_ascii=False,
-        )
+    async def comprendre(
+        self,
+        demande: str,
+        obj: ClinicalEncounter,
+        civilite: str = "",
+        precedent: dict[str, str] | None = None,
+    ) -> Lecture:
+        message: dict[str, Any] = {
+            "demande": demande,
+            "civilite_connue": civilite or "non précisée",
+            "dossier": dossier_pour_claude(obj),
+        }
+        if precedent:
+            message["echange_precedent"] = precedent
+        contenu = json.dumps(message, ensure_ascii=False)
         sortie = await self._appeler(
             COMPRENDRE_PROMPT,
             contenu,
@@ -418,7 +466,7 @@ class AssistantCorrections:
                 comprendre_schema(),
             ),
         )
-        return lire(sortie, obj)
+        return lire(sortie, obj, civilite)
 
     async def relire(
         self, document_type: str, rubriques: list[dict[str, str]], consignes: list[str]

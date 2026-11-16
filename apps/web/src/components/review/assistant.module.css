@@ -36,6 +36,14 @@
   font-size: 14px;
 }
 
+.civilite {
+  display: grid;
+  gap: 6px;
+  padding: 10px 18px;
+  background: var(--attention-douce);
+  border-bottom: 1px solid var(--trait);
+}
+
 .sous {
   margin: 5px 0 0;
   color: var(--encre-douce);

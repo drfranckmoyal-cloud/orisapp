@@ -1,5 +1,29 @@
 # Changelog
 
+## Quatre règles tirées du relevé des corrections — 2026-11-16
+Relevé de la semaine du 9 au 16/11 ; Franck : « applique tout ».
+- **Monsieur ou Madame, demandé une fois.** « C'est une femme » avait été écrit 10 fois en
+  une semaine. Quand la fiche ne dit rien, le document affiche (site et iPhone) « La fiche
+  ne dit pas Monsieur ou Madame » avec deux boutons, sans passer par Claude. « Madame »
+  enregistre la fiche et réaccorde les documents rédigés ; « Monsieur » enregistre la fiche
+  sans réécrire (le masculin était déjà le défaut).
+- **Une demande en deux parties.** « Le motif n'est pas bon et c'est une femme » finissait
+  en « pas compris ». La civilité accompagne désormais l'autre demande et s'applique avec
+  elle (relue côté serveur : rien à changer sur les appareils) ; si seule la civilité est
+  comprise, Oris l'enregistre et pose sa question sur le reste. La question restée sans
+  réponse depuis moins de 30 minutes est rendue à Claude avec la demande suivante : une
+  phrase donnée après « le motif n'est pas bon » est lue comme le bon motif (prompt
+  `assistant-fr-4`).
+- **« Évoqué » ou « envisagé » suffit à dire le doute.** Le rédacteur ajoutait « non
+  confirmée » à une option évoquée, et le praticien le retirait. Les deux mots sont admis par
+  le contrôle, et la consigne dit de ne pas empiler (prompt `redaction-fr-6`). Le doute reste
+  exigé : une phrase sans aucun mot de doute est toujours refusée.
+- **Les troubles des conduites alimentaires dans le vocabulaire** : prise de laxatifs,
+  vomissements, crises de boulimie, boulimie, anorexie mentale, trouble des conduites
+  alimentaires. Le compte rendu affichait « À rédiger : élément « laxative_use » non reconnu
+  ». 275 termes (prompt `extraction-fr-8`).
+- 588 tests serveur · 73 site au vert ; app iPhone compilée.
+
 ## Un bouton « Arrêter » sur une correction en cours, site et iPhone — 2026-11-15
 - Sous la barre de progression de « Corriger avec Claude » : **Arrêter**. La demande passe
   « annulée » tout de suite ; Claude finit sa phrase sur le serveur, mais rien de son

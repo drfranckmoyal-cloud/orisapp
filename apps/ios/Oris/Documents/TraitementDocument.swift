@@ -19,6 +19,7 @@ struct TraitementDocument: View {
     @State private var confirmerSuppression = false
     @State private var redaction = false
     @State private var dialogueOuvert = false
+    @State private var civiliteEnCours = ""
 
     /// Le dialogue de cette consultation : il survit à la fenêtre, avec son historique.
     private var dialogue: DialogueCorrection { DialoguesCorrection.pour(content.encounter.id) }
@@ -72,6 +73,27 @@ struct TraitementDocument: View {
                     }
                     .buttonStyle(BoutonSecondaire())
                     .disabled(redaction)
+                }
+                .padding(12)
+                .background(Teinte.attentionDouce, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
+
+            // La fiche ne dit ni Monsieur ni Madame : Oris le demande une fois, comme sur
+            // le site, au lieu de laisser corriger « C’est une femme » après coup.
+            if !valide && content.encounter.patient.civility == "" {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(civiliteEnCours == "madame"
+                         ? "J’accorde le document au féminin…"
+                         : "La fiche ne dit pas Monsieur ou Madame : le document est accordé au masculin.")
+                        .font(Police.interface(13.5, .semibold))
+                        .foregroundStyle(Teinte.attention)
+                    HStack(spacing: 8) {
+                        Button("Madame") { Task { await poserCivilite("madame") } }
+                            .buttonStyle(BoutonSecondaire())
+                        Button("Monsieur") { Task { await poserCivilite("monsieur") } }
+                            .buttonStyle(BoutonSecondaire())
+                    }
+                    .disabled(!civiliteEnCours.isEmpty)
                 }
                 .padding(12)
                 .background(Teinte.attentionDouce, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
@@ -181,6 +203,20 @@ struct TraitementDocument: View {
         do {
             _ = try await client.redigerANouveau(documentId: document.id)
             toast = "Document rédigé à nouveau."
+            await recharger()
+        } catch {
+            erreur = Labels.erreur(error)
+        }
+    }
+
+    private func poserCivilite(_ valeur: String) async {
+        civiliteEnCours = valeur
+        erreur = nil
+        defer { civiliteEnCours = "" }
+        do {
+            let resultat = try await client.poserCivilite(encounterId: content.encounter.id,
+                                                          civilite: valeur)
+            toast = resultat.message
             await recharger()
         } catch {
             erreur = Labels.erreur(error)

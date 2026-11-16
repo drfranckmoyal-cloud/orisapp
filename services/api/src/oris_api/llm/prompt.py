@@ -13,7 +13,7 @@ from oris_api.documents.operative_templates import TEMPLATES
 from oris_api.domain.types import GlossaryHint
 from oris_api.ontology.labels import CONCEPTS
 
-PROMPT_VERSION = "extraction-fr-7"
+PROMPT_VERSION = "extraction-fr-8"
 
 SYSTEM_PROMPT = """Tu es un moteur d'extraction clinique dentaire. Tu ne rédiges pas de \
 compte rendu. Tu convertis uniquement les informations explicitement présentes dans les \

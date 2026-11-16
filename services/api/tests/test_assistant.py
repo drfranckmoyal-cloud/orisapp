@@ -523,3 +523,113 @@ def test_une_correction_en_cours_peut_etre_arretee(api: Any, migrated_engine: An
         )
     arret = api.post(f"/encounters/{identifiant}/assistant/{demande_id}/annuler")
     assert arret.json()["etat"] == "annulee"
+
+
+# --- Une demande en deux parties (relevé du 16/11/2026) --------------------------------
+
+
+def test_la_civilite_dite_avec_autre_chose_voyage_avec_la_lecture() -> None:
+    lecture = lire(
+        {
+            "nature": "redaction",
+            "resume": "…",
+            "consigne": "Faire des phrases courtes",
+            "civilite": "madame",
+        },
+        dictee(),
+    )
+    assert (lecture.nature, lecture.civilite) == ("redaction", "madame")
+
+
+def test_la_civilite_seule_comprise_est_gardee_et_le_reste_demande() -> None:
+    """« le motif n'est pas bon et c'est une femme » : plus de « pas compris » sec."""
+    lecture = lire(
+        {
+            "nature": "incompris",
+            "resume": "…",
+            "question": "Quel est le bon motif ?",
+            "civilite": "madame",
+        },
+        dictee(),
+    )
+    assert lecture.nature == "civilite" and lecture.civilite == "madame"
+    assert "féminin" in lecture.resume and "Quel est le bon motif ?" in lecture.resume
+
+
+def test_une_civilite_deja_connue_n_est_pas_une_demande() -> None:
+    lecture = lire(
+        {"nature": "incompris", "resume": "…", "question": "Lequel ?", "civilite": "madame"},
+        dictee(),
+        connue="madame",
+    )
+    assert lecture.nature == "incompris" and lecture.civilite == ""
+
+
+def test_claude_recoit_la_question_restee_en_suspens() -> None:
+    claude, envoyes = assistant({"nature": "incompris", "resume": "…", "question": "?"})
+    precedent = {"demande": "le motif n'est pas bon", "question": "Quel est le bon motif ?"}
+    asyncio.run(claude.comprendre("Bilan des espaces", dictee(), "", precedent))
+    message = json.loads(envoyes[0]["messages"][0]["content"])
+    assert message["echange_precedent"] == precedent
+    asyncio.run(claude.comprendre("plus court", dictee()))
+    assert "echange_precedent" not in json.loads(envoyes[1]["messages"][0]["content"])
+
+
+def test_la_civilite_jointe_s_applique_avec_la_consigne(api: Any, migrated_engine: Any) -> None:
+    from sqlalchemy import select, update
+
+    from oris_api.db.models import DemandeCorrectionRow
+
+    identifiant, _ = consultation(api)
+    lecture = api.post(f"/encounters/{identifiant}/assistant", json={"demande": "plus court"})
+    demande_id = lecture.json()["demande_id"]
+    with migrated_engine.begin() as connexion:
+        reponse = connexion.execute(
+            select(DemandeCorrectionRow.reponse).where(DemandeCorrectionRow.id == demande_id)
+        ).scalar_one()
+        reponse["lecture"]["civilite"] = "madame"
+        connexion.execute(
+            update(DemandeCorrectionRow)
+            .where(DemandeCorrectionRow.id == demande_id)
+            .values(reponse=reponse)
+        )
+    applique = api.post(
+        f"/encounters/{identifiant}/assistant/appliquer",
+        json={"nature": "redaction", "consignes": ["Faire plus court"], "demande_id": demande_id},
+    )
+    assert applique.status_code == 200, applique.text
+    assert "Civilité enregistrée" in applique.json()["message"]
+    rencontre = api.get(f"/encounters/{identifiant}").json()
+    assert api.get(f"/patients/{rencontre['patient']['id']}").json()["civility"] == "madame"
+
+
+def test_une_question_restee_sans_reponse_est_retrouvee(api: Any, migrated_engine: Any) -> None:
+    from sqlalchemy.orm import Session
+
+    from oris_api.api import assistant as route
+    from oris_api.db.models import Encounter
+
+    identifiant, _ = consultation(api)
+    with Session(migrated_engine) as session:
+        rencontre = session.get(Encounter, identifiant)
+        assert route._question_en_suspens(session, rencontre) is None
+    # Une demande que les règles ne comprennent pas : Oris répond par une question.
+    api.post(f"/encounters/{identifiant}/assistant", json={"demande": "le motif n'est pas bon"})
+    with Session(migrated_engine) as session:
+        rencontre = session.get(Encounter, identifiant)
+        suspens = route._question_en_suspens(session, rencontre)
+    assert suspens is not None and suspens["demande"] == "le motif n'est pas bon"
+
+
+def test_monsieur_sur_une_fiche_vide_ne_reecrit_rien(api: Any) -> None:
+    """Sans civilité, Oris accorde déjà au masculin : répondre « Monsieur » ne coûte pas
+    deux minutes de réécriture."""
+    identifiant, _ = consultation(api)
+    applique = api.post(
+        f"/encounters/{identifiant}/assistant/appliquer",
+        json={"nature": "civilite", "civilite": "monsieur"},
+    )
+    assert applique.status_code == 200, applique.text
+    assert "déjà au masculin" in applique.json()["message"]
+    rencontre = api.get(f"/encounters/{identifiant}").json()
+    assert rencontre["patient"]["civility"] == "monsieur"

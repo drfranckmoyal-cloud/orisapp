@@ -354,3 +354,16 @@ def test_the_plan_titles_get_a_second_try_and_their_fallback_leaves_a_trace() ->
     replis = [e for e in lignes if e.get("event") == "redaction.repli"]
     assert [e["document_type"] for e in replis] == ["treatment_plan_text"]
     assert "Hors sujet" not in stream.getvalue(), "le journal ne porte aucun texte rédigé"
+
+
+def test_an_option_evoked_or_considered_already_carries_its_doubt() -> None:
+    """Relevé du 16/11/2026 : « greffe papillaire évoquée…, non confirmée à ce stade » —
+    le praticien retirait chaque fois le « non confirmé » ajouté à une option évoquée."""
+    from oris_api.documents.renderer import INCERTITUDE
+    from oris_api.llm.redaction import SYSTEM_PROMPT
+
+    assert INCERTITUDE.search("Une greffe papillaire est évoquée.")
+    assert INCERTITUDE.search("Une extraction des dents de sagesse est envisagée.")
+    # Le doute reste exigé : une phrase sans aucun de ces mots ne le porte pas.
+    assert not INCERTITUDE.search("Une greffe papillaire est réalisée.")
+    assert "n'y ajoute pas « non confirmée »" in SYSTEM_PROMPT

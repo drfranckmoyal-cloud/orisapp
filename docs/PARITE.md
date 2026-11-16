@@ -80,6 +80,9 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
 - **Civilité du patient** (27/10/2026) : présente des deux côtés — trois choix dans la
   fiche (Monsieur, Madame, non précisée). Site : dans le cadre « Informations », et aussi
   à la création d'un patient. iPhone : dans la section Identité de la fiche. Aucun écart.
+  Depuis le 16/11/2026, la question « Monsieur ou Madame ? » s'affiche aussi sur le document
+  quand la fiche ne dit rien : site, dans « Corriger avec Claude » ; iPhone, au-dessus du
+  bouton « Corriger avec Claude ». Aucun écart.
 
 - **Écran de connexion** (26/10/2026) : sur l'iPhone, Paramètres › Connexion à Oris
   demande l'adresse électronique et le mot de passe, et l'app obtient son jeton. Le site
