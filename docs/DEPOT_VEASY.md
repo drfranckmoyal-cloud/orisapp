@@ -116,3 +116,6 @@ dossier ouvert de la session, après l'avoir ouvert sur le bon patient et vérif
 après ; si Veasy est au premier plan, la demande attend (au-delà de 10 essais, le document
 part sans commentaire). Essai réussi sur le dossier 13005043 ; **étendu à tous les
 dossiers le 25/11/2026 avec l'accord de Franck**.
+
+Texte complété le 25/11/2026 à la demande de Franck (extension 0.73.1) : « Compte rendu
+ORIS déposé ce jour le JJ/MM/AAAA. Disponible dans l'onglet "Documents" ».
