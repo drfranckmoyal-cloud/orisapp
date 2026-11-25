@@ -169,3 +169,76 @@
   cursor: pointer;
   color: inherit;
 }
+
+
+/* Relecture : une grille d'aperçus (25/11/2026). */
+.grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.case {
+  position: relative;
+  aspect-ratio: 1;
+}
+
+.caseBouton {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--trait);
+  border-radius: 10px;
+  background: var(--surface-douce);
+  cursor: zoom-in;
+}
+
+.caseBouton:hover {
+  border-color: var(--accent);
+  box-shadow: var(--lumiere);
+}
+
+.caseImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.caseType {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-size: 12px;
+  font-weight: var(--graisse-forte);
+  letter-spacing: 0.06em;
+  color: var(--encre-tres-douce);
+}
+
+.caseRetirer {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.55);
+  color: #fff;
+  font-size: 15px;
+  line-height: 22px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.case:hover .caseRetirer,
+.caseRetirer:focus-visible {
+  opacity: 1;
+}

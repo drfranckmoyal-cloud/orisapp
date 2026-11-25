@@ -56,6 +56,7 @@
 }
 
 .corps {
+  position: relative;
   min-height: 320px;
   display: grid;
   place-items: center;
@@ -130,4 +131,31 @@
 .telecharger:hover {
   color: var(--encre);
   text-decoration: underline;
+}
+
+
+/* Passer d'une photo à l'autre sans refermer (25/11/2026). */
+.fleche {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  width: 42px;
+  height: 42px;
+  margin-top: -21px;
+  border: 1px solid var(--trait-fort);
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.88);
+  color: var(--encre);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--lumiere);
+}
+
+.flecheGauche {
+  left: 12px;
+}
+
+.flecheDroite {
+  right: 12px;
 }

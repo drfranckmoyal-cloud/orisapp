@@ -118,6 +118,14 @@ export function PiecesJointes({
     }
   }
 
+  /** La pièce d'à côté dans la liste, pour feuilleter sans refermer l'aperçu. */
+  function voisin(pas: number): (() => void) | undefined {
+    if (!apercu || liste.length < 2) return undefined;
+    const ici = liste.findIndex((p) => p.id === apercu.id);
+    const suivant = liste[(ici + pas + liste.length) % liste.length];
+    return suivant ? () => setApercu(suivant) : undefined;
+  }
+
   return (
     <div className={`${styles.bloc} ${compact ? styles.compact : ""}`}>
       <div
@@ -192,7 +200,47 @@ export function PiecesJointes({
         </EtatVide>
       )}
 
-      {liste.length > 0 && (
+      {/* Dans la relecture, des aperçus plutôt que des noms de fichiers (Franck,
+          25/11/2026) : on reconnaît une photo d'un coup d'œil, un clic l'ouvre en grand. */}
+      {liste.length > 0 && compact && (
+        <ul className={styles.grille}>
+          {liste.map((piece) => (
+            <li key={piece.id} className={styles.case}>
+              <button
+                type="button"
+                className={styles.caseBouton}
+                onClick={() => setApercu(piece)}
+                title={`${piece.filename} · ${poids(piece.byte_size)} · ${formatDateTime(piece.created_at)}`}
+              >
+                {piece.media_type.startsWith("image/") ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    className={styles.caseImage}
+                    src={`${API_BASE_URL}/patients/attachments/${piece.id}/apercu`}
+                    alt={piece.filename}
+                    loading="lazy"
+                  />
+                ) : (
+                  <span className={styles.caseType}>
+                    {piece.filename.split(".").pop()?.toUpperCase()}
+                  </span>
+                )}
+              </button>
+              <button
+                type="button"
+                className={styles.caseRetirer}
+                onClick={() => void retirer(piece)}
+                title="Retirer cette pièce"
+                aria-label={`Retirer ${piece.filename}`}
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {liste.length > 0 && !compact && (
         <ul className={styles.liste}>
           {liste.map((piece) => (
             <li key={piece.id} className={styles.piece}>
@@ -247,6 +295,8 @@ export function PiecesJointes({
             apercu.media_type.startsWith("image/") ? "apercu" : "contenu"
           }`}
           onFermer={() => setApercu(null)}
+          onPrecedent={voisin(-1)}
+          onSuivant={voisin(1)}
         />
       )}
     </div>

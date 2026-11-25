@@ -25,18 +25,25 @@ export function Apercu({
   piece,
   url,
   onFermer,
+  onPrecedent,
+  onSuivant,
 }: {
   piece: Attachment;
   url: string;
   onFermer: () => void;
+  /** Passer d'une pièce à l'autre sans refermer (← →), quand il y en a plusieurs. */
+  onPrecedent?: (() => void) | undefined;
+  onSuivant?: (() => void) | undefined;
 }) {
   useEffect(() => {
     const surTouche = (evenement: KeyboardEvent) => {
       if (evenement.key === "Escape") onFermer();
+      if (evenement.key === "ArrowLeft") onPrecedent?.();
+      if (evenement.key === "ArrowRight") onSuivant?.();
     };
     document.addEventListener("keydown", surTouche);
     return () => document.removeEventListener("keydown", surTouche);
-  }, [onFermer]);
+  }, [onFermer, onPrecedent, onSuivant]);
 
   return (
     <div
@@ -55,6 +62,26 @@ export function Apercu({
         </header>
 
         <div className={styles.corps}>
+          {onPrecedent && (
+            <button
+              type="button"
+              className={`${styles.fleche} ${styles.flecheGauche}`}
+              onClick={onPrecedent}
+              aria-label="Pièce précédente"
+            >
+              ‹
+            </button>
+          )}
+          {onSuivant && (
+            <button
+              type="button"
+              className={`${styles.fleche} ${styles.flecheDroite}`}
+              onClick={onSuivant}
+              aria-label="Pièce suivante"
+            >
+              ›
+            </button>
+          )}
           {IMAGES.has(piece.media_type) ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={url} alt={piece.filename} className={styles.image} />

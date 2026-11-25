@@ -1,5 +1,12 @@
 # Changelog
 
+## Relecture : la bibliothèque montre des aperçus, plus des noms de fichiers — 2026-11-25
+- Franck : « au lieu du nom des images il faut des aperçus consultables ». Dans la colonne de
+  droite de la relecture, les pièces du patient forment une grille de vignettes carrées ; un
+  clic ouvre la pièce en grand, les flèches (‹ › ou ← →) passent à la suivante sans refermer.
+  Le nom, le poids et la date restent au survol ; « × » pour retirer une pièce.
+- La fiche patient garde sa liste détaillée.
+
 ## Premier dépôt réel dans Veasy — 2026-11-25
 - Compte rendu d'essai (aucune donnée clinique) déposé dans le dossier Veasy de Franck,
   désigné par lui pour l'essai : demandé depuis la relecture, déposé par l'extension Dental
