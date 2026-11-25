@@ -2577,6 +2577,124 @@
         }
       }
     },
+    "/veasy/a-relier": {
+      "get": {
+        "tags": [
+          "veasy"
+        ],
+        "summary": "A Relier",
+        "description": "Les patients à relier, ou dont le lien et le courriel sont à revérifier : jamais\ncontrôlés d'abord, puis ceux dont le dernier contrôle a vieilli. Par lots.",
+        "operationId": "a_relier_veasy_a_relier_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ARelierOut"
+                  },
+                  "title": "Response A Relier Veasy A Relier Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/veasy/relies": {
+      "post": {
+        "tags": [
+          "veasy"
+        ],
+        "summary": "Noter Relies",
+        "description": "Ce que l'extension a trouvé pour chaque patient soumis.\n\n- « relie » : un seul dossier, nom, prénom et date exacts, fiche relue concordante — le\n  lien est posé sans geste du praticien (sa demande), jamais par-dessus un lien existant ;\n- « verifie » : le lien existant concorde ;\n- « lien_douteux » : le lien existant vise la fiche d'un autre — il est retiré, et le\n  praticien le voit ;\n- « aucun », « plusieurs », « sans_naissance » : rien n'est posé, le praticien tranche.\nLe courriel de la fiche Veasy remplit celui de la fiche Oris s'il est vide — jamais\npar-dessus une adresse saisie par le praticien.",
+        "operationId": "noter_relies_veasy_relies_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReliesIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "title": "Response Noter Relies Veasy Relies Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters": {
       "get": {
         "tags": [
@@ -5937,6 +6055,39 @@
   },
   "components": {
     "schemas": {
+      "ARelierOut": {
+        "properties": {
+          "patient_id": {
+            "type": "string",
+            "title": "Patient Id"
+          },
+          "nom": {
+            "type": "string",
+            "title": "Nom"
+          },
+          "prenom": {
+            "type": "string",
+            "title": "Prenom"
+          },
+          "date_naissance": {
+            "type": "string",
+            "title": "Date Naissance"
+          },
+          "veasy_id": {
+            "type": "string",
+            "title": "Veasy Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "patient_id",
+          "nom",
+          "prenom",
+          "date_naissance",
+          "veasy_id"
+        ],
+        "title": "ARelierOut"
+      },
       "AddFact": {
         "properties": {
           "operation": {
@@ -7505,6 +7656,24 @@
           "praticien"
         ],
         "title": "ConsignesOut"
+      },
+      "ControleOut": {
+        "properties": {
+          "statut": {
+            "type": "string",
+            "title": "Statut"
+          },
+          "le": {
+            "type": "string",
+            "title": "Le"
+          }
+        },
+        "type": "object",
+        "required": [
+          "statut",
+          "le"
+        ],
+        "title": "ControleOut"
       },
       "CorrectionRequest": {
         "properties": {
@@ -11567,6 +11736,55 @@
         ],
         "title": "RelectureOut"
       },
+      "RelieIn": {
+        "properties": {
+          "patient_id": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Patient Id"
+          },
+          "statut": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Statut"
+          },
+          "veasy_id": {
+            "type": "string",
+            "maxLength": 32,
+            "title": "Veasy Id",
+            "default": ""
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Email",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "patient_id",
+          "statut"
+        ],
+        "title": "RelieIn"
+      },
+      "ReliesIn": {
+        "properties": {
+          "relies": {
+            "items": {
+              "$ref": "#/components/schemas/RelieIn"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Relies"
+          }
+        },
+        "type": "object",
+        "required": [
+          "relies"
+        ],
+        "title": "ReliesIn"
+      },
       "RemoveFact": {
         "properties": {
           "operation": {
@@ -12520,6 +12738,16 @@
             },
             "type": "array",
             "title": "Candidats"
+          },
+          "controle": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ControleOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",

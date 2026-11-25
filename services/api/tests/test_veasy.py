@@ -21,7 +21,7 @@ from tests.conftest import documents_by_type, run_synthetic
 @pytest.fixture(autouse=True)
 def file_vide() -> None:
     """Chaque essai part d'une file de dépôts vide."""
-    for fichier in ("demandes.json", "dossiers.json"):
+    for fichier in ("demandes.json", "dossiers.json", "controles.json"):
         (Path(os.environ["VEASY_DIR"]) / fichier).unlink(missing_ok=True)
 
 
@@ -133,3 +133,65 @@ def test_the_veasy_file_is_matched_then_confirmed_like_smilecloud(api: Any) -> N
     # Le numéro de dossier affiché entre parenthèses n'est pas celui de la fiche.
     assert api.put(f"/patients/{pid}/veasy", json={"veasy_id": "001001016896"}).status_code == 422
     assert api.put(f"/patients/{pid}/veasy", json={"veasy_id": None}).json()["etat"] == "trouve"
+
+
+def test_the_extension_links_a_sure_match_without_a_click_and_brings_the_email(
+    api: Any,
+) -> None:
+    """« Le rattachement Veasy est inefficace » (Franck, 26/11/2026) : l'extension relie
+    elle-même ce qui est sûr, et rapporte le courriel de la fiche Veasy."""
+    sur = api.post(
+        "/patients",
+        json={"first_name": "Justine", "last_name": "DROIT", "birth_date": "1984-03-02"},
+    ).json()
+    sans_date = api.post("/patients", json={"first_name": "Paul", "last_name": "SANSDATE"}).json()
+    douteux = api.post("/patients", json={"first_name": "Ali", "last_name": "DOUTE"}).json()
+    api.put(f"/patients/{douteux['id']}/veasy", json={"veasy_id": "12344249"})
+    saisi = api.post(
+        "/patients",
+        json={"first_name": "Eve", "last_name": "SAISIE", "email": "eve@cabinet.example"},
+    ).json()
+
+    a_relier = {p["patient_id"]: p for p in api.get("/veasy/a-relier").json()}
+    assert {sur["id"], sans_date["id"], douteux["id"], saisi["id"]} <= set(a_relier)
+    assert a_relier[sur["id"]]["date_naissance"] == "1984-03-02"
+    assert a_relier[douteux["id"]]["veasy_id"] == "12344249"
+
+    reponse = api.post(
+        "/veasy/relies",
+        json={
+            "relies": [
+                {
+                    "patient_id": sur["id"],
+                    "statut": "relie",
+                    "veasy_id": "13005043",
+                    "email": "justine@example.org",
+                },
+                {"patient_id": sans_date["id"], "statut": "sans_naissance"},
+                {"patient_id": douteux["id"], "statut": "lien_douteux"},
+                {
+                    "patient_id": saisi["id"],
+                    "statut": "relie",
+                    "veasy_id": "11111111",
+                    "email": "autre@example.org",
+                },
+            ]
+        },
+    ).json()
+    assert reponse == {"notes": 4, "relies": 2}
+
+    lien = api.get(f"/patients/{sur['id']}/veasy").json()
+    assert (lien["etat"], lien["veasy_id"], lien["controle"]["statut"]) == (
+        "relie",
+        "13005043",
+        "relie",
+    )
+    assert api.get(f"/patients/{sur['id']}").json()["email"] == "justine@example.org"
+    # Le lien douteux est retiré, et le praticien le voit.
+    vu = api.get(f"/patients/{douteux['id']}/veasy").json()
+    assert (vu["veasy_id"], vu["controle"]["statut"]) == (None, "lien_douteux")
+    # Une adresse saisie par le praticien n'est jamais écrasée.
+    assert api.get(f"/patients/{saisi['id']}").json()["email"] == "eve@cabinet.example"
+    # Les patients contrôlés ne reviennent pas au lot suivant.
+    restants = {p["patient_id"] for p in api.get("/veasy/a-relier").json()}
+    assert sur["id"] not in restants and sans_date["id"] not in restants

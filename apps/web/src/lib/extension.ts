@@ -10,7 +10,17 @@
  */
 export type CibleDepot = "smilecloud" | "veasy";
 
-export function prevenirExtension(cible: CibleDepot): void {
+export function prevenirExtension(
+  cible: CibleDepot,
+  type: "oris:depot" | "oris:relier" = "oris:depot",
+): void {
   if (typeof window === "undefined") return;
-  window.postMessage({ source: "oris", type: "oris:depot", cible }, window.location.origin);
+  // « oris:relier » (26/11/2026) : un patient pas encore relié à Veasy est ouvert ; que
+  // l'extension cherche son dossier tout de suite. Toujours sans aucune donnée.
+  window.postMessage(
+    type === "oris:relier"
+      ? { source: "oris", type }
+      : { source: "oris", type, cible },
+    window.location.origin,
+  );
 }

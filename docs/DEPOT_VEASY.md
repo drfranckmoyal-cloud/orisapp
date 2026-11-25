@@ -119,3 +119,23 @@ dossiers le 25/11/2026 avec l'accord de Franck**.
 
 Texte complété le 25/11/2026 à la demande de Franck (extension 0.73.1) : « Compte rendu
 ORIS déposé ce jour le JJ/MM/AAAA. Disponible dans l'onglet "Documents" ».
+
+
+## Rattachement automatique et courriel (Franck, 26/11/2026)
+
+« Le rattachement Veasy est inefficace » : l'extension (Dental Lens D174, 0.75.0) cherche
+elle-même le dossier de chaque patient et rapporte le courriel de la fiche Veasy (onglet
+Administratif), pour « Envoyer au patient ».
+
+- `GET /veasy/a-relier` → `[{patient_id, nom, prenom, date_naissance, veasy_id}]` : les
+  patients sans lien ou sans courriel, jamais contrôlés d'abord, puis ceux dont le contrôle
+  a vieilli (3 j « aucun », 7 j « plusieurs »/« sans_naissance », 30 j « relie »/« verifie »,
+  1 j « lien_douteux »). Lots de 40.
+- `POST /veasy/relies {"relies": [{patient_id, statut, veasy_id, email}]}` :
+  `relie` pose le lien sans geste (un seul dossier, nom/prénom/date exacts, fiche relue
+  concordante ; jamais par-dessus un lien existant) ; `verifie` confirme ; `lien_douteux`
+  **retire** le lien et le praticien le voit ; `aucun`/`plusieurs`/`sans_naissance` ne
+  posent rien. Le courriel remplit la fiche Oris seulement si elle n'en a pas.
+- Page de relecture : le cadre Veasy dit l'issue du dernier contrôle ; un patient non relié
+  déclenche `window.postMessage({source:"oris", type:"oris:relier"})` pour un contrôle
+  immédiat.

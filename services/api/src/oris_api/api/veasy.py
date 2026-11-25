@@ -8,10 +8,12 @@ Deux côtés, comme pour SmileCloud :
 
 from __future__ import annotations
 
+import re
 from uuid import UUID
 
 from fastapi import APIRouter, Header, Request, Response
 from pydantic import BaseModel, Field
+from sqlalchemy import select
 
 from oris_api.api.dependencies import (
     ActorDep,
@@ -246,6 +248,12 @@ class CandidatVeasyOut(BaseModel):
     pour_cent: int
 
 
+class ControleOut(BaseModel):
+    #: « relie », « verifie », « aucun », « plusieurs », « sans_naissance », « lien_douteux ».
+    statut: str
+    le: str
+
+
 class VeasyPatientOut(BaseModel):
     veasy_id: str | None
     #: Le nom du dossier relié, tel que Veasy l'écrit (si la liste le connaît).
@@ -253,6 +261,8 @@ class VeasyPatientOut(BaseModel):
     #: « relie », « trouve », « a_confirmer », « ambigu », « absent », « sans_liste ».
     etat: str
     candidats: list[CandidatVeasyOut]
+    #: Le dernier contrôle fait par l'extension (rattachement automatique), s'il y en a eu.
+    controle: ControleOut | None = None
 
 
 class LienVeasyIn(BaseModel):
@@ -261,6 +271,14 @@ class LienVeasyIn(BaseModel):
 
 
 def _vue(settings: Settings, patient: Patient) -> VeasyPatientOut:
+    vue = _vue_lien(settings, patient)
+    dernier = veasy.controle(settings, str(patient.id))
+    if dernier:
+        vue.controle = ControleOut(statut=dernier.get("statut", ""), le=dernier.get("le", ""))
+    return vue
+
+
+def _vue_lien(settings: Settings, patient: Patient) -> VeasyPatientOut:
     if patient.veasy_id:
         connu = veasy.dossier(settings, patient.veasy_id)
         return VeasyPatientOut(
@@ -317,3 +335,124 @@ def relier(
     audit.record(session, actor, "patient.updated", "patient", patient.id, fields=["veasy_id"])
     session.flush()
     return _vue(settings, patient)
+
+
+# --- Rattachement automatique, par l'extension (Franck, 26/11/2026) -------------------
+
+COURRIEL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+LOT = 40
+
+
+class ARelierOut(BaseModel):
+    patient_id: str
+    nom: str
+    prenom: str
+    #: AAAA-MM-JJ, ou vide : sans date, l'extension ne relie pas d'elle-même.
+    date_naissance: str
+    #: Le lien existant, à revérifier ; vide s'il n'y en a pas.
+    veasy_id: str
+
+
+@router.get("/veasy/a-relier", response_model=list[ARelierOut])
+def a_relier(
+    request: Request,
+    session: SessionDep,
+    settings: SettingsDep,
+    authorization: str | None = Header(default=None),
+) -> list[ARelierOut]:
+    """Les patients à relier, ou dont le lien et le courriel sont à revérifier : jamais
+    contrôlés d'abord, puis ceux dont le dernier contrôle a vieilli. Par lots."""
+    extension_autorisee(request, settings, authorization)
+    candidats = [
+        p
+        for p in session.scalars(select(Patient))
+        if (not p.veasy_id or not p.email) and veasy.a_revoir(settings, str(p.id))
+    ]
+    jamais = [p for p in candidats if veasy.controle(settings, str(p.id)) is None]
+    deja = [p for p in candidats if veasy.controle(settings, str(p.id)) is not None]
+    return [
+        ARelierOut(
+            patient_id=str(p.id),
+            nom=p.last_name,
+            prenom=p.first_name,
+            date_naissance=p.birth_date.isoformat() if p.birth_date else "",
+            veasy_id=p.veasy_id or "",
+        )
+        for p in (jamais + deja)[:LOT]
+    ]
+
+
+class RelieIn(BaseModel):
+    patient_id: str = Field(max_length=64)
+    statut: str = Field(max_length=20)
+    veasy_id: str = Field(default="", max_length=32)
+    email: str = Field(default="", max_length=200)
+
+
+class ReliesIn(BaseModel):
+    relies: list[RelieIn] = Field(max_length=200)
+
+
+@router.post("/veasy/relies")
+def noter_relies(
+    body: ReliesIn,
+    request: Request,
+    session: SessionDep,
+    settings: SettingsDep,
+    authorization: str | None = Header(default=None),
+) -> dict[str, int]:
+    """Ce que l'extension a trouvé pour chaque patient soumis.
+
+    - « relie » : un seul dossier, nom, prénom et date exacts, fiche relue concordante — le
+      lien est posé sans geste du praticien (sa demande), jamais par-dessus un lien existant ;
+    - « verifie » : le lien existant concorde ;
+    - « lien_douteux » : le lien existant vise la fiche d'un autre — il est retiré, et le
+      praticien le voit ;
+    - « aucun », « plusieurs », « sans_naissance » : rien n'est posé, le praticien tranche.
+    Le courriel de la fiche Veasy remplit celui de la fiche Oris s'il est vide — jamais
+    par-dessus une adresse saisie par le praticien.
+    """
+    extension_autorisee(request, settings, authorization)
+    issues: dict[str, str] = {}
+    poses = 0
+    for r in body.relies:
+        if r.statut not in veasy.STATUTS:
+            continue
+        try:
+            patient = session.get(Patient, UUID(r.patient_id))
+        except ValueError:
+            continue
+        if patient is None:
+            continue
+        champs: list[str] = []
+        numero = r.veasy_id.strip()
+        if r.statut == "relie" and numero.isdigit() and not patient.veasy_id:
+            patient.veasy_id = numero
+            champs.append("veasy_id")
+            poses += 1
+        if r.statut == "lien_douteux" and patient.veasy_id:
+            patient.veasy_id = None
+            champs.append("veasy_id")
+        courriel = r.email.strip()
+        if (
+            r.statut in {"relie", "verifie"}
+            and courriel
+            and COURRIEL.match(courriel)
+            and not patient.email
+        ):
+            patient.email = courriel
+            champs.append("email")
+        if champs:
+            audit.record(
+                session,
+                None,
+                "patient.updated",
+                "patient",
+                patient.id,
+                organization_id=patient.organization_id,
+                fields=champs,
+                source="veasy",
+            )
+        issues[str(patient.id)] = r.statut
+    veasy.noter_controles(settings, issues)
+    return {"notes": len(issues), "relies": poses}

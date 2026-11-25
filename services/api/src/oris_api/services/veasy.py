@@ -210,3 +210,67 @@ def proposer(settings: Settings, nom_patient: str) -> rapprochement.Proposition:
     return rapprochement.proposer(
         nom_patient, ((d["veasy_id"], d["nom"]) for d in dossiers(settings))
     )
+
+
+# --- Rattachement automatique (Franck, 26/11/2026) -----------------------------------
+#
+# « Le rattachement Veasy est inefficace » : l'extension cherche elle-même le dossier de
+# chaque patient (nom, prénom ET date de naissance exacts, un seul dossier, fiche relue
+# concordante) et le relie sans geste du praticien. Elle rapporte aussi le courriel de la
+# fiche Veasy. Ce qui n'est pas sûr (aucun, plusieurs, pas de date) reste au praticien.
+# Ici, seulement le relevé des contrôles : quand, et avec quelle issue.
+
+STATUTS = frozenset({"relie", "verifie", "aucun", "plusieurs", "sans_naissance", "lien_douteux"})
+
+#: Après quel délai un patient est de nouveau soumis à l'extension.
+REVOIR_APRES = {
+    "relie": timedelta(days=30),
+    "verifie": timedelta(days=30),
+    "aucun": timedelta(days=3),
+    "plusieurs": timedelta(days=7),
+    "sans_naissance": timedelta(days=7),
+    "lien_douteux": timedelta(days=1),
+}
+
+
+def _fichier_controles(settings: Settings) -> Path:
+    settings.veasy_dir.mkdir(parents=True, exist_ok=True)
+    return settings.veasy_dir / "controles.json"
+
+
+def controles(settings: Settings) -> dict[str, dict[str, str]]:
+    try:
+        brut = json.loads(_fichier_controles(settings).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return {k: v for k, v in brut.items() if isinstance(v, dict)} if isinstance(brut, dict) else {}
+
+
+def noter_controles(settings: Settings, issues: dict[str, str]) -> None:
+    tous = controles(settings)
+    maintenant = _maintenant()
+    for patient_id, statut in issues.items():
+        tous[patient_id] = {"statut": statut, "le": maintenant}
+    fichier = _fichier_controles(settings)
+    descripteur, temporaire = tempfile.mkstemp(dir=fichier.parent, suffix=".tmp")
+    with os.fdopen(descripteur, "w", encoding="utf-8") as sortie:
+        json.dump(tous, sortie, ensure_ascii=False)
+    os.chmod(temporaire, 0o600)
+    os.replace(temporaire, fichier)
+
+
+def a_revoir(settings: Settings, patient_id: str) -> bool:
+    """Ce patient doit-il être (re)soumis à l'extension ? Jamais contrôlé : oui."""
+    dernier = controles(settings).get(patient_id)
+    if not dernier:
+        return True
+    delai = REVOIR_APRES.get(dernier.get("statut", ""), timedelta(days=1))
+    try:
+        quand = datetime.fromisoformat(dernier["le"])
+    except (KeyError, ValueError):
+        return True
+    return datetime.now(UTC) - quand > delai
+
+
+def controle(settings: Settings, patient_id: str) -> dict[str, str] | None:
+    return controles(settings).get(patient_id)

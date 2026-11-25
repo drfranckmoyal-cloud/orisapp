@@ -817,6 +817,56 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/veasy/a-relier": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A Relier
+         * @description Les patients à relier, ou dont le lien et le courriel sont à revérifier : jamais
+         *     contrôlés d'abord, puis ceux dont le dernier contrôle a vieilli. Par lots.
+         */
+        get: operations["a_relier_veasy_a_relier_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/veasy/relies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Noter Relies
+         * @description Ce que l'extension a trouvé pour chaque patient soumis.
+         *
+         *     - « relie » : un seul dossier, nom, prénom et date exacts, fiche relue concordante — le
+         *       lien est posé sans geste du praticien (sa demande), jamais par-dessus un lien existant ;
+         *     - « verifie » : le lien existant concorde ;
+         *     - « lien_douteux » : le lien existant vise la fiche d'un autre — il est retiré, et le
+         *       praticien le voit ;
+         *     - « aucun », « plusieurs », « sans_naissance » : rien n'est posé, le praticien tranche.
+         *     Le courriel de la fiche Veasy remplit celui de la fiche Oris s'il est vide — jamais
+         *     par-dessus une adresse saisie par le praticien.
+         */
+        post: operations["noter_relies_veasy_relies_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters": {
         parameters: {
             query?: never;
@@ -2055,6 +2105,19 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ARelierOut */
+        ARelierOut: {
+            /** Patient Id */
+            patient_id: string;
+            /** Nom */
+            nom: string;
+            /** Prenom */
+            prenom: string;
+            /** Date Naissance */
+            date_naissance: string;
+            /** Veasy Id */
+            veasy_id: string;
+        };
         /** AddFact */
         AddFact: {
             /**
@@ -2635,6 +2698,13 @@ export interface components {
             consultation: string[];
             /** Praticien */
             praticien: string[];
+        };
+        /** ControleOut */
+        ControleOut: {
+            /** Statut */
+            statut: string;
+            /** Le */
+            le: string;
         };
         /** CorrectionRequest */
         CorrectionRequest: {
@@ -4244,6 +4314,28 @@ export interface components {
             /** Demande Id */
             demande_id?: string | null;
         };
+        /** RelieIn */
+        RelieIn: {
+            /** Patient Id */
+            patient_id: string;
+            /** Statut */
+            statut: string;
+            /**
+             * Veasy Id
+             * @default
+             */
+            veasy_id: string;
+            /**
+             * Email
+             * @default
+             */
+            email: string;
+        };
+        /** ReliesIn */
+        ReliesIn: {
+            /** Relies */
+            relies: components["schemas"]["RelieIn"][];
+        };
         /** RemoveFact */
         RemoveFact: {
             /**
@@ -4618,6 +4710,7 @@ export interface components {
             etat: string;
             /** Candidats */
             candidats: components["schemas"]["CandidatVeasyOut"][];
+            controle?: components["schemas"]["ControleOut"] | null;
         };
         /** VoyantOut */
         VoyantOut: {
@@ -6377,6 +6470,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VeasyPatientOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    a_relier_veasy_a_relier_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ARelierOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    noter_relies_veasy_relies_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReliesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: number;
+                    };
                 };
             };
             /** @description Validation Error */

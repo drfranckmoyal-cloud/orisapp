@@ -1,5 +1,14 @@
 # Changelog
 
+## Veasy : rattachement automatique et courriel du patient — 2026-11-26
+- Franck trouvait le rattachement Veasy inefficace et voulait le courriel du patient pour
+  « Envoyer au patient ». L'extension cherche seule le dossier Veasy (nom, prénom et date de
+  naissance exacts, un seul dossier, fiche relue concordante) : Oris pose le lien sans geste,
+  et reprend le courriel de la fiche Veasy si la fiche Oris n'en a pas. Un lien vers la fiche
+  d'un autre est retiré et signalé. Le reste (aucun, plusieurs, sans date) reste au
+  praticien, avec l'explication dans le cadre Veasy. Routes `/veasy/a-relier`, `/veasy/relies`.
+- 593 tests serveur au vert.
+
 ## Numéro Veasy : le bon, expliqué ; liste des correspondants au-dessus de la page — 2026-11-25
 - Deux dépôts refusés (à juste titre, rien n'est parti) : un patient avait été relié au
   « numéro de dossier » affiché entre parenthèses dans Veasy (001001016896), qui ne désigne

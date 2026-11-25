@@ -30,6 +30,8 @@ interface LienSmileCloud {
 }
 
 interface LienVeasy {
+  /** Le dernier contrôle de l'extension (rattachement automatique, 26/11/2026). */
+  controle?: { statut: string; le: string } | null;
   etat: EtatLien;
   nom: string | null;
   veasy_id: string | null;
@@ -134,6 +136,13 @@ function CibleVeasy(props: CibleProps) {
           })),
         }
       : null;
+  const relie = lien.state === "ready" && lien.data.etat === "relie";
+  // Pas encore relié : l'extension le cherche tout de suite (même pont que le dépôt).
+  useEffect(() => {
+    if (lien.state === "ready" && lien.data.etat !== "relie")
+      prevenirExtension("veasy", "oris:relier");
+  }, [lien]);
+  const controle = lien.state === "ready" ? lien.data.controle : null;
   return (
     <Cible
       {...props}
@@ -143,8 +152,47 @@ function CibleVeasy(props: CibleProps) {
       relier={(cle) => ({ veasy_id: cle })}
       rechargerLien={recharger}
       saisieManuelle
+      note={noteControle(controle ?? null, relie)}
     />
   );
+}
+
+/** Ce que l'extension a trouvé en cherchant seule le dossier Veasy du patient. */
+function noteControle(
+  controle: { statut: string; le: string } | null,
+  relie: boolean,
+): { texte: string; ton?: "alerte" } | null {
+  if (!controle) return null;
+  const le = controle.le ? ` le ${formatDateTime(controle.le)}` : "";
+  if (relie && (controle.statut === "relie" || controle.statut === "verifie"))
+    return {
+      texte: `Relié et vérifié par l’extension${le} (nom, prénom, date de naissance).`,
+    };
+  switch (controle.statut) {
+    case "aucun":
+      return {
+        texte:
+          "L’extension n’a trouvé aucun dossier Veasy à ce nom et cette date de naissance.",
+      };
+    case "plusieurs":
+      return {
+        texte:
+          "Plusieurs dossiers Veasy correspondent : choisissez le bon, ou saisissez son numéro.",
+      };
+    case "sans_naissance":
+      return {
+        texte:
+          "Ajoutez la date de naissance dans la fiche patient : Oris pourra le relier tout seul.",
+      };
+    case "lien_douteux":
+      return {
+        texte:
+          "Le lien précédent visait la fiche Veasy d’un autre patient : il a été retiré.",
+        ton: "alerte",
+      };
+    default:
+      return null;
+  }
 }
 
 interface CibleProps {
@@ -165,6 +213,7 @@ function Cible({
   relier,
   rechargerLien,
   saisieManuelle = false,
+  note = null,
 }: CibleProps & {
   cible: "smilecloud" | "veasy";
   libelle: string;
@@ -172,6 +221,7 @@ function Cible({
   relier: (cle: string | null) => Record<string, string | null>;
   rechargerLien: () => void;
   saisieManuelle?: boolean;
+  note?: { texte: string; ton?: "alerte" } | null;
 }) {
   const [depot, rechargerDepot] = useApi<Depot>(
     `/documents/${documentId}/${cible}?v=${version}`,
@@ -240,6 +290,12 @@ function Cible({
           </button>
         )}
       </div>
+
+      {note && (
+        <p className={styles.etat} data-ton={note.ton}>
+          {note.texte}
+        </p>
+      )}
 
       {vue && !relie && (
         <div className={styles.verif}>
