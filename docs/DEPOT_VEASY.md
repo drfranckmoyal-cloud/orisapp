@@ -97,3 +97,12 @@ Points à établir par la session Dental Lens, sur la vraie page :
   Dental Lens ne serait **pas** vu par elle. À trancher avec Franck : faut-il que les
   comptes rendus d'Oris remontent aussi chez CEMEDIS ?
 - **Vérifier l'arrivée** : `success` + `idDocument` dans la réponse suffisent comme preuve.
+
+
+## Premier dépôt réel — 25/11/2026
+
+Sur le dossier désigné par Franck pour l'essai (le sien, Veasy n° 13005043), un compte
+rendu d'essai sans contenu clinique : demandé depuis la page de relecture, PDF retiré par
+l'extension (0.71.1) à 22 h 59, déposé, réussite signalée ; **vu dans Veasy**, onglet
+Documents : « Oris - compte rendu de consultation 25-11-2026 (953443).pdf », origine
+« Externe ». Le circuit est éprouvé de bout en bout.

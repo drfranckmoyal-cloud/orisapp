@@ -1,5 +1,10 @@
 # Changelog
 
+## Premier dépôt réel dans Veasy — 2026-11-25
+- Compte rendu d'essai (aucune donnée clinique) déposé dans le dossier Veasy de Franck,
+  désigné par lui pour l'essai : demandé depuis la relecture, déposé par l'extension Dental
+  Lens 0.71.1, vu dans l'onglet Documents de Veasy. Détail dans `docs/DEPOT_VEASY.md`.
+
 ## Relecture : « Envoyer sur le dossier SmileCloud / Veasy » en tête de colonne — 2026-11-25
 - Franck : enlever « Corriger le dossier à la main » et « À vérifier » (jamais utilisés),
   mettre en évidence deux boutons d'envoi, et le correspondant du patient, bien visibles.
