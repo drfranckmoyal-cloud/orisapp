@@ -291,7 +291,7 @@ function Cible({
             >
               <input
                 inputMode="numeric"
-                placeholder={`ou n° de dossier ${libelle}`}
+                placeholder={`ou n° de la fiche ${libelle} (dans son adresse)`}
                 aria-label={`Numéro du dossier ${libelle}`}
                 value={numero}
                 onChange={(event) => setNumero(event.target.value)}
@@ -304,6 +304,13 @@ function Cible({
                 Relier
               </Bouton>
             </form>
+          )}
+          {saisieManuelle && (
+            <small>
+              Le numéro de la fiche se lit dans l’adresse de la page Veasy du
+              patient : …/Consultation/<strong>13005043</strong>. Ce n’est pas
+              le numéro entre parenthèses à côté de son nom.
+            </small>
           )}
         </div>
       )}

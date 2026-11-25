@@ -1,5 +1,14 @@
 # Changelog
 
+## Numéro Veasy : le bon, expliqué ; liste des correspondants au-dessus de la page — 2026-11-25
+- Deux dépôts refusés (à juste titre, rien n'est parti) : un patient avait été relié au
+  « numéro de dossier » affiché entre parenthèses dans Veasy (001001016896), qui ne désigne
+  pas la fiche. Oris refuse désormais ce genre de numéro (zéros de tête, longueur) et dit
+  lequel prendre : celui de l'adresse de la fiche (…/Consultation/13005043). Le lien erroné
+  a été retiré de la fiche concernée, à relier de nouveau.
+- « Choisir un correspondant » : la liste s'ouvre vers la droite, au-dessus de la page ;
+  ouverte vers la gauche, elle passait sous le compte rendu.
+
 ## Une barre d'état pour chaque envoi SmileCloud et Veasy — 2026-11-25
 - Franck : « on n'est pas sûr en regardant si l'envoi et le dépôt sont validés ou non ».
   Sous chaque grand bouton, trois étapes : **Demandé → Pris par l'extension → Déposé**,

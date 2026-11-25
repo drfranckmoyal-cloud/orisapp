@@ -307,7 +307,11 @@ def relier(
     n'est pas indispensable pour relier un patient qu'on connaît."""
     patient = patients.get_patient(session, actor, patient_id)
     numero = (body.veasy_id or "").strip()
-    if numero and not numero.isdigit():
+    # Le numéro attendu est celui de l'adresse de la fiche Veasy (…/Consultation/13005043).
+    # Le « numéro de dossier » affiché entre parenthèses à côté du nom (000002001370,
+    # 001001016896…) ne désigne pas la fiche : saisi le 25/11/2026, il a fait refuser deux
+    # dépôts. On le reconnaît à ses zéros de tête et à sa longueur.
+    if numero and not (numero.isdigit() and not numero.startswith("0") and 6 <= len(numero) <= 10):
         raise Unprocessable("VEASY_NUMERO_INVALIDE")
     patient.veasy_id = numero or None
     audit.record(session, actor, "patient.updated", "patient", patient.id, fields=["veasy_id"])

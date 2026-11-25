@@ -74,7 +74,7 @@ def test_a_validated_document_goes_to_veasy_and_teaches_the_patient_number(api: 
 
 def test_a_contretemps_keeps_the_request_open_and_a_refusal_closes_it(api: Any) -> None:
     encounter, note = _note_validee(api)
-    api.put(f"/patients/{encounter['patient']['id']}/veasy", json={"veasy_id": "42"})
+    api.put(f"/patients/{encounter['patient']['id']}/veasy", json={"veasy_id": "12344249"})
     api.post(f"/documents/{note['id']}/validate", json={"acknowledged_warning_codes": []})
     api.post(f"/documents/{note['id']}/veasy")
     (demande,) = api.get("/veasy/demandes").json()
@@ -113,8 +113,8 @@ def test_the_veasy_file_is_matched_then_confirmed_like_smilecloud(api: Any) -> N
         "/veasy/dossiers",
         json={
             "dossiers": [
-                {"veasy_id": "777", "nom": nom, "date_naissance": "1980-01-02"},
-                {"veasy_id": "888", "nom": "AUTRE Personne"},
+                {"veasy_id": "13005043", "nom": nom, "date_naissance": "1980-01-02"},
+                {"veasy_id": "22222222", "nom": "AUTRE Personne"},
                 {"veasy_id": "pas-un-numero", "nom": "IGNORE Moi"},
             ]
         },
@@ -124,10 +124,12 @@ def test_the_veasy_file_is_matched_then_confirmed_like_smilecloud(api: Any) -> N
     vue = api.get(f"/patients/{pid}/veasy").json()
     assert vue["etat"] == "trouve"
     assert [(c["veasy_id"], c["date_naissance"]) for c in vue["candidats"]] == [
-        ("777", "1980-01-02")
+        ("13005043", "1980-01-02")
     ]
 
-    relie = api.put(f"/patients/{pid}/veasy", json={"veasy_id": "777"}).json()
+    relie = api.put(f"/patients/{pid}/veasy", json={"veasy_id": "13005043"}).json()
     assert (relie["etat"], relie["nom"]) == ("relie", nom)
     assert api.put(f"/patients/{pid}/veasy", json={"veasy_id": "abc"}).status_code == 422
+    # Le numéro de dossier affiché entre parenthèses n'est pas celui de la fiche.
+    assert api.put(f"/patients/{pid}/veasy", json={"veasy_id": "001001016896"}).status_code == 422
     assert api.put(f"/patients/{pid}/veasy", json={"veasy_id": None}).json()["etat"] == "trouve"

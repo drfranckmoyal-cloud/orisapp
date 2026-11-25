@@ -158,7 +158,8 @@ const ERRORS: Record<string, string> = {
     "Le traitement est encore en cours (moins de 5 minutes) : patientez, il se termine tout seul.",
   SMILECLOUD_NON_RELIE: "Reliez d’abord ce patient à son dossier SmileCloud.",
   VEASY_NON_RELIE: "Vérifiez d’abord le dossier Veasy de ce patient.",
-  VEASY_NUMERO_INVALIDE: "Un numéro de dossier Veasy ne contient que des chiffres.",
+  VEASY_NUMERO_INVALIDE:
+    "Ce n’est pas le bon numéro : prenez celui de l’adresse de la fiche Veasy (…/Consultation/13005043, 8 chiffres), pas le numéro entre parenthèses à côté du nom.",
   SMILECLOUD_INVALIDE: "Identifiant de dossier SmileCloud non reconnu.",
   DEVICE_FROM_THIS_MAC_ONLY:
     "Un nouvel appareil s’autorise depuis le Mac du cabinet uniquement.",
