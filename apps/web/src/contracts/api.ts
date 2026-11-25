@@ -390,7 +390,7 @@ export interface paths {
         };
         /**
          * Read Demandes
-         * @description Les journées qu'Oris attend. Lu par l'extension, sur cette machine seulement.
+         * @description Les journées qu'Oris attend. Lu par l'extension : sur ce Mac, ou avec le secret.
          */
         get: operations["read_demandes_journee_demandes_get"];
         put?: never;
@@ -684,6 +684,89 @@ export interface paths {
          * @description Rapatrier les fichiers cochés. Vidéos et CBCT sont écartés d'office, et le disent.
          */
         post: operations["recuperer_patients__patient_id__smilecloud_recuperer_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/veasy/demandes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Demandes */
+        get: operations["demandes_veasy_demandes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/veasy/depot/{demande_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retirer Le Document
+         * @description Le PDF à déposer, fabriqué à la demande, remis, et oublié.
+         */
+        get: operations["retirer_le_document_veasy_depot__demande_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/veasy/depose": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Noter Depot
+         * @description L'extension a déposé le document — ou dit pourquoi non.
+         *
+         *     Un dépôt réussi apprend à Oris le numéro Veasy du patient, s'il ne le savait pas :
+         *     jamais par-dessus un numéro déjà retenu.
+         */
+        post: operations["noter_depot_veasy_depose_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/documents/{document_id}/veasy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Etat Depot */
+        get: operations["etat_depot_documents__document_id__veasy_get"];
+        put?: never;
+        /**
+         * Deposer Dans Veasy
+         * @description Ranger ce document dans le dossier Veasy du patient.
+         *
+         *     Seul un document validé part : ce qui entre dans le dossier médical y reste.
+         */
+        post: operations["deposer_dans_veasy_documents__document_id__veasy_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1322,7 +1405,11 @@ export interface paths {
         put?: never;
         /**
          * Annuler
-         * @description Le praticien écarte une proposition : rien n'a changé, et c'est noté.
+         * @description Le praticien écarte une proposition, ou arrête une correction en cours.
+         *
+         *     Arrêtée en cours (15/11/2026 : « pas possible d'interrompre »), la correction n'est
+         *     pas tuée — Claude finit sa phrase —, mais rien de son travail n'est gardé : la route
+         *     qui l'applique relit l'état avant d'enregistrer, et s'efface.
          */
         post: operations["annuler_encounters__encounter_id__assistant__demande_id__annuler_post"];
         delete?: never;
@@ -2775,6 +2862,23 @@ export interface components {
             /** Demande Le */
             demande_le: string;
         };
+        /** DemandeVeasyOut */
+        DemandeVeasyOut: {
+            /** Id */
+            id: string;
+            /** Document Id */
+            document_id: string;
+            /** Nom Fichier */
+            nom_fichier: string;
+            patient: components["schemas"]["PatientVeasyOut"];
+            /** Demande Le */
+            demande_le: string;
+            /**
+             * Essais
+             * @default 0
+             */
+            essais: number;
+        };
         /** DepotFaitIn */
         DepotFaitIn: {
             /** Id */
@@ -2789,6 +2893,43 @@ export interface components {
              * @default false
              */
             reessayer: boolean;
+        };
+        /** DepotVeasyFaitIn */
+        DepotVeasyFaitIn: {
+            /** Id */
+            id: string;
+            /**
+             * Raison
+             * @default
+             */
+            raison: string;
+            /**
+             * Reessayer
+             * @default false
+             */
+            reessayer: boolean;
+            /**
+             * Veasy Patient Id
+             * @default
+             */
+            veasy_patient_id: string;
+        };
+        /**
+         * DepotVeasyOut
+         * @description Où en est le dépôt d'un document dans Veasy.
+         */
+        DepotVeasyOut: {
+            /** Etat */
+            etat: string;
+            /** Demande Le */
+            demande_le?: string | null;
+            /** Depose Le */
+            depose_le?: string | null;
+            /**
+             * Raison
+             * @default
+             */
+            raison: string;
         };
         /**
          * DictationOut
@@ -3698,6 +3839,20 @@ export interface components {
             /** Smilecloud Case Id */
             smilecloud_case_id?: string | null;
         };
+        /**
+         * PatientVeasyOut
+         * @description De quoi retrouver le dossier dans Veasy, et rien de plus.
+         */
+        PatientVeasyOut: {
+            /** Prenom */
+            prenom: string;
+            /** Nom */
+            nom: string;
+            /** Date Naissance */
+            date_naissance: string;
+            /** Veasy Id */
+            veasy_id: string;
+        };
         /** PhrasePreuveOut */
         PhrasePreuveOut: {
             /** Index */
@@ -4059,6 +4214,11 @@ export interface components {
              * @default
              */
             nom: string;
+            /**
+             * Civilite
+             * @default
+             */
+            civilite: string;
             /**
              * Motif
              * @default
@@ -5312,7 +5472,9 @@ export interface operations {
     read_demandes_journee_demandes_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                authorization?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -5325,6 +5487,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DemandeOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -5848,6 +6019,169 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SmileCloudPatientOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    demandes_veasy_demandes_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DemandeVeasyOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retirer_le_document_veasy_depot__demande_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                demande_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    noter_depot_veasy_depose_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DepotVeasyFaitIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    etat_depot_documents__document_id__veasy_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepotVeasyOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deposer_dans_veasy_documents__document_id__veasy_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepotVeasyOut"];
                 };
             };
             /** @description Validation Error */

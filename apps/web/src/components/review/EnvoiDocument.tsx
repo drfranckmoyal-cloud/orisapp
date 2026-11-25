@@ -68,6 +68,14 @@ export function EnvoiDocument({
   );
   const [versSmileCloud, setVersSmileCloud] = useState<boolean | null>(null);
   const [retourSmileCloud, setRetourSmileCloud] = useState<string | null>(null);
+  // Le dossier Veasy du patient (Franck, 25/11/2026) : même chemin, par l'extension
+  // Chrome dans la session Veasy. Décoché d'office tant que le premier vrai dépôt n'a
+  // pas été vérifié de bout en bout.
+  const [depotVeasy, rechargerVeasy] = useApi<DepotSmileCloud>(
+    `/documents/${documentId}/veasy?v=${version}`,
+  );
+  const [versVeasy, setVersVeasy] = useState(false);
+  const [retourVeasy, setRetourVeasy] = useState<string | null>(null);
 
   if (prepare.state !== "ready") return null;
   const donnees = prepare.data;
@@ -83,7 +91,25 @@ export function EnvoiDocument({
   const smilecloudPossible = smilecloudRelie && valide;
   const smilecloud =
     smilecloudPossible && (versSmileCloud ?? etatDepot === "absent");
-  const total = nombre + (smilecloud ? 1 : 0);
+  const etatVeasy = depotVeasy.state === "ready" ? depotVeasy.data.etat : "absent";
+  const veasy = valide && versVeasy;
+  const total = nombre + (smilecloud ? 1 : 0) + (veasy ? 1 : 0);
+
+  async function deposerDansVeasy(): Promise<string> {
+    try {
+      const fait = await apiRequest<DepotSmileCloud>(`/documents/${documentId}/veasy`, {
+        method: "POST",
+      });
+      return fait.etat === "depose"
+        ? "Déjà rangé dans le dossier Veasy."
+        : "Demandé au dossier Veasy : l’extension Chrome le dépose à son prochain passage.";
+    } catch (caught) {
+      const code = caught instanceof ApiError ? caught.code : "UNKNOWN";
+      return `Veasy : ${errorMessage(code)}`;
+    } finally {
+      rechargerVeasy();
+    }
+  }
 
   async function deposerDansSmileCloud(): Promise<string> {
     try {
@@ -105,8 +131,13 @@ export function EnvoiDocument({
     setErreur(null);
     setResultats(null);
     setRetourSmileCloud(null);
+    setRetourVeasy(null);
     setEnvoi("en_cours");
     if (smilecloud) setRetourSmileCloud(await deposerDansSmileCloud());
+    if (veasy) {
+      setRetourVeasy(await deposerDansVeasy());
+      setVersVeasy(false);
+    }
     if (nombre === 0) {
       setEnvoi("repos");
       onEnvoye();
@@ -197,6 +228,28 @@ export function EnvoiDocument({
                     : etatDepot === "en_attente"
                       ? "demandé, en attente de l’extension Chrome"
                       : "le PDF y est rangé avec la documentation"}
+            </span>
+          </span>
+        </label>
+        <label className={`${styles.destinataire} ${styles.destinataireSmileCloud}`}>
+          <input
+            type="checkbox"
+            checked={veasy}
+            disabled={!valide}
+            onChange={(event) => setVersVeasy(event.target.checked)}
+          />
+          <span>
+            <strong>Dossier Veasy du patient</strong>
+            <span className={styles.adresse}>
+              {!valide
+                ? "après validation : ce qui entre dans Veasy y reste"
+                : etatVeasy === "depose"
+                  ? "déjà rangé — cochez pour l’y ranger à nouveau"
+                  : etatVeasy === "en_attente"
+                    ? "demandé, en attente de l’extension Chrome"
+                    : etatVeasy === "impossible" && depotVeasy.state === "ready"
+                      ? `pas déposé : ${depotVeasy.data.raison}`
+                      : "le PDF est rangé dans les documents du patient"}
             </span>
           </span>
         </label>
@@ -310,6 +363,7 @@ export function EnvoiDocument({
         </ul>
       )}
       {retourSmileCloud && <p className={styles.envoiNote}>{retourSmileCloud}</p>}
+      {retourVeasy && <p className={styles.envoiNote}>{retourVeasy}</p>}
       {erreur && <p className={styles.erreur}>{erreur}</p>}
     </section>
   );

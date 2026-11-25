@@ -1257,19 +1257,47 @@
           "journee"
         ],
         "summary": "Read Demandes",
-        "description": "Les journées qu'Oris attend. Lu par l'extension, sur cette machine seulement.",
+        "description": "Les journées qu'Oris attend. Lu par l'extension : sur ce Mac, ou avec le secret.",
         "operationId": "read_demandes_journee_demandes_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
+                  "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/DemandeOut"
                   },
-                  "type": "array",
                   "title": "Response Read Demandes Journee Demandes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -2114,6 +2142,265 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SmileCloudPatientOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/veasy/demandes": {
+      "get": {
+        "tags": [
+          "veasy"
+        ],
+        "summary": "Demandes",
+        "operationId": "demandes_veasy_demandes_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DemandeVeasyOut"
+                  },
+                  "title": "Response Demandes Veasy Demandes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/veasy/depot/{demande_id}": {
+      "get": {
+        "tags": [
+          "veasy"
+        ],
+        "summary": "Retirer Le Document",
+        "description": "Le PDF à déposer, fabriqué à la demande, remis, et oublié.",
+        "operationId": "retirer_le_document_veasy_depot__demande_id__get",
+        "parameters": [
+          {
+            "name": "demande_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Demande Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/veasy/depose": {
+      "post": {
+        "tags": [
+          "veasy"
+        ],
+        "summary": "Noter Depot",
+        "description": "L'extension a déposé le document — ou dit pourquoi non.\n\nUn dépôt réussi apprend à Oris le numéro Veasy du patient, s'il ne le savait pas :\njamais par-dessus un numéro déjà retenu.",
+        "operationId": "noter_depot_veasy_depose_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DepotVeasyFaitIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Noter Depot Veasy Depose Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/{document_id}/veasy": {
+      "get": {
+        "tags": [
+          "veasy"
+        ],
+        "summary": "Etat Depot",
+        "operationId": "etat_depot_documents__document_id__veasy_get",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepotVeasyOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "veasy"
+        ],
+        "summary": "Deposer Dans Veasy",
+        "description": "Ranger ce document dans le dossier Veasy du patient.\n\nSeul un document validé part : ce qui entre dans le dossier médical y reste.",
+        "operationId": "deposer_dans_veasy_documents__document_id__veasy_post",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepotVeasyOut"
                 }
               }
             }
@@ -3979,7 +4266,7 @@
           "assistant"
         ],
         "summary": "Annuler",
-        "description": "Le praticien écarte une proposition : rien n'a changé, et c'est noté.",
+        "description": "Le praticien écarte une proposition, ou arrête une correction en cours.\n\nArrêtée en cours (15/11/2026 : « pas possible d'interrompre »), la correction n'est\npas tuée — Claude finit sa phrase —, mais rien de son travail n'est gardé : la route\nqui l'applique relit l'état avant d'enregistrer, et s'efface.",
         "operationId": "annuler_encounters__encounter_id__assistant__demande_id__annuler_post",
         "parameters": [
           {
@@ -7755,6 +8042,43 @@
         ],
         "title": "DemandeOut"
       },
+      "DemandeVeasyOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "document_id": {
+            "type": "string",
+            "title": "Document Id"
+          },
+          "nom_fichier": {
+            "type": "string",
+            "title": "Nom Fichier"
+          },
+          "patient": {
+            "$ref": "#/components/schemas/PatientVeasyOut"
+          },
+          "demande_le": {
+            "type": "string",
+            "title": "Demande Le"
+          },
+          "essais": {
+            "type": "integer",
+            "title": "Essais",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "document_id",
+          "nom_fichier",
+          "patient",
+          "demande_le"
+        ],
+        "title": "DemandeVeasyOut"
+      },
       "DepotFaitIn": {
         "properties": {
           "id": {
@@ -7779,6 +8103,78 @@
           "id"
         ],
         "title": "DepotFaitIn"
+      },
+      "DepotVeasyFaitIn": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Id"
+          },
+          "raison": {
+            "type": "string",
+            "maxLength": 300,
+            "title": "Raison",
+            "default": ""
+          },
+          "reessayer": {
+            "type": "boolean",
+            "title": "Reessayer",
+            "default": false
+          },
+          "veasy_patient_id": {
+            "type": "string",
+            "maxLength": 32,
+            "title": "Veasy Patient Id",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "DepotVeasyFaitIn"
+      },
+      "DepotVeasyOut": {
+        "properties": {
+          "etat": {
+            "type": "string",
+            "title": "Etat"
+          },
+          "demande_le": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demande Le"
+          },
+          "depose_le": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Depose Le"
+          },
+          "raison": {
+            "type": "string",
+            "title": "Raison",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "etat"
+        ],
+        "title": "DepotVeasyOut",
+        "description": "Où en est le dépôt d'un document dans Veasy."
       },
       "DictationOut": {
         "properties": {
@@ -10141,6 +10537,35 @@
         "type": "object",
         "title": "PatientUpdate"
       },
+      "PatientVeasyOut": {
+        "properties": {
+          "prenom": {
+            "type": "string",
+            "title": "Prenom"
+          },
+          "nom": {
+            "type": "string",
+            "title": "Nom"
+          },
+          "date_naissance": {
+            "type": "string",
+            "title": "Date Naissance"
+          },
+          "veasy_id": {
+            "type": "string",
+            "title": "Veasy Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "prenom",
+          "nom",
+          "date_naissance",
+          "veasy_id"
+        ],
+        "title": "PatientVeasyOut",
+        "description": "De quoi retrouver le dossier dans Veasy, et rien de plus."
+      },
       "PhrasePreuveOut": {
         "properties": {
           "index": {
@@ -10943,6 +11368,11 @@
           "nom": {
             "type": "string",
             "title": "Nom",
+            "default": ""
+          },
+          "civilite": {
+            "type": "string",
+            "title": "Civilite",
             "default": ""
           },
           "motif": {

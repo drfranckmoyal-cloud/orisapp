@@ -1,5 +1,16 @@
 # Changelog
 
+## Déposer le compte rendu dans le dossier Veasy du patient (côté Oris) — 2026-11-25
+- Franck : « il faut qu'Oris puisse déposer directement le compte rendu dans le dossier
+  Veasy du patient ». Il a choisi l'extension Dental Lens pour la partie navigateur.
+- Fenêtre d'envoi, site et iPhone : case **« Dossier Veasy du patient »** (document validé
+  seulement ; décochée d'office jusqu'au premier dépôt réel vérifié).
+- Serveur : file de dépôts Veasy (`/veasy/demandes`, `/veasy/depot/{id}`, `/veasy/depose`),
+  numéro Veasy du patient appris au premier dépôt réussi (migration 0026). Contrat et ce
+  qu'on sait de Veasy : `docs/DEPOT_VEASY.md`.
+- Reste à faire par la session Dental Lens : retrouver le dossier et déposer le PDF.
+- 591 tests serveur · 73 site · 73 iPhone au vert.
+
 ## Quatre règles tirées du relevé des corrections — 2026-11-16
 Relevé de la semaine du 9 au 16/11 ; Franck : « applique tout ».
 - **Monsieur ou Madame, demandé une fois.** « C'est une femme » avait été écrit 10 fois en

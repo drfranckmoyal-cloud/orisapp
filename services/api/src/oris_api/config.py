@@ -68,6 +68,8 @@ class Settings(BaseSettings):
     journee_dir: Path = Path.home() / "Library" / "Application Support" / "Oris" / "journees"
     # SmileCloud : liste des dossiers, galeries lues, demandes en cours. Hors iCloud.
     smilecloud_dir: Path = Path.home() / "Library" / "Application Support" / "Oris" / "smilecloud"
+    # Veasy (Visiodent) : les dépôts de documents en attente, servis par l'extension Chrome.
+    veasy_dir: Path = Path.home() / "Library" / "Application Support" / "Oris" / "veasy"
     # Secret partagé, facultatif : renseigné, le dépôt l'exige en `Authorization: Bearer`.
     # Le dépôt n'accepte de toute façon que les appels venus de cette machine.
     journee_depot_token: SecretStr | None = None

@@ -157,3 +157,15 @@ extension APIClient {
         try await send("documents/\(documentId)/smilecloud", method: "POST", body: [:])
     }
 }
+
+extension APIClient {
+    /// Où en est le dépôt du document dans le dossier Veasy du patient (25/11/2026).
+    func depotVeasy(documentId: String) async throws -> DepotSmileCloud {
+        try await get("documents/\(documentId)/veasy")
+    }
+
+    /// Demande le dépôt : l'extension Chrome, dans la session Veasy, le range.
+    func deposerDansVeasy(documentId: String) async throws -> DepotSmileCloud {
+        try await send("documents/\(documentId)/veasy", method: "POST", body: [:])
+    }
+}

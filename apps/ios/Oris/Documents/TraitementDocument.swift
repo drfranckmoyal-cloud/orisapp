@@ -265,6 +265,10 @@ struct EnvoiView: View {
     /// Le dossier SmileCloud du patient, destinataire comme les autres (11/11/2026).
     @State private var smilecloud = false
     @State private var depot: DepotSmileCloud?
+    /// Le dossier Veasy du patient (25/11/2026), décoché d'office tant que le premier vrai
+    /// dépôt n'a pas été vérifié de bout en bout.
+    @State private var veasy = false
+    @State private var depotVeasy: DepotSmileCloud?
 
     private var valide: Bool { [.validated, .exported].contains(document.status) }
 
@@ -333,6 +337,30 @@ struct EnvoiView: View {
                              : depot?.etat == "depose" ? "déjà rangé — cochez pour l’y ranger à nouveau"
                              : depot?.etat == "en_attente" ? "demandé, en attente de l’extension Chrome"
                              : "le PDF y est rangé avec la documentation")
+                            .font(Police.interface(12.5, .medium))
+                            .foregroundStyle(Teinte.encreTresDouce)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(!valide)
+            .opacity(valide ? 1 : 0.5)
+
+            Button { veasy.toggle() } label: {
+                HStack(alignment: .top, spacing: OrisSpacing.s12) {
+                    Image(systemName: veasy ? "checkmark.square.fill" : "square")
+                        .font(.system(size: 22))
+                        .foregroundStyle(veasy ? Teinte.accent : Teinte.traitFort)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Dossier Veasy du patient")
+                            .font(Police.interface(15, .bold)).foregroundStyle(Teinte.accent)
+                        Text(!valide ? "après validation : ce qui entre dans Veasy y reste"
+                             : depotVeasy?.etat == "depose" ? "déjà rangé — cochez pour l’y ranger à nouveau"
+                             : depotVeasy?.etat == "en_attente" ? "demandé, en attente de l’extension Chrome"
+                             : depotVeasy?.etat == "impossible" ? "pas déposé : \(depotVeasy?.raison ?? "")"
+                             : "le PDF est rangé dans les documents du patient")
                             .font(Police.interface(12.5, .medium))
                             .foregroundStyle(Teinte.encreTresDouce)
                     }
@@ -414,7 +442,7 @@ struct EnvoiView: View {
         }
         .buttonStyle(BoutonPrincipal())
         .disabled(enCours
-                  || (coches.isEmpty && adressesValides.isEmpty && !smilecloud)
+                  || (coches.isEmpty && adressesValides.isEmpty && !smilecloud && !veasy)
                   || ((!coches.isEmpty || !adressesValides.isEmpty)
                       && (!p.configure || objet.trimmingCharacters(in: .whitespaces).isEmpty)))
     }
@@ -428,6 +456,7 @@ struct EnvoiView: View {
             message = p.message
             depot = try? await client.depotSmileCloud(documentId: document.id)
             smilecloud = valide && (depot?.etat ?? "absent") == "absent"
+            depotVeasy = try? await client.depotVeasy(documentId: document.id)
         } catch {
             erreur = Labels.erreur(error)
         }
@@ -445,6 +474,16 @@ struct EnvoiView: View {
                             : "Demandé au dossier SmileCloud.")
             } catch {
                 erreur = "SmileCloud : " + Labels.erreur(error)
+                return
+            }
+        }
+        if veasy {
+            do {
+                let fait = try await client.deposerDansVeasy(documentId: document.id)
+                dits.append(fait.etat == "depose" ? "Déjà rangé dans Veasy."
+                            : "Demandé au dossier Veasy.")
+            } catch {
+                erreur = "Veasy : " + Labels.erreur(error)
                 return
             }
         }

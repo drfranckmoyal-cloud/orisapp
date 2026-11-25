@@ -31,6 +31,7 @@ from oris_api.api import (
     personalization,
     smilecloud,
     synthetic,
+    veasy,
 )
 from oris_api.api.schemas import ApiErrorBody
 from oris_api.config import get_settings
@@ -83,6 +84,7 @@ def create_app() -> FastAPI:
     app.include_router(journee.router)
     app.include_router(connecteurs.router)
     app.include_router(smilecloud.router)
+    app.include_router(veasy.router)
     app.include_router(encounters.router)
     app.include_router(assistant.router)
     app.include_router(deliveries.router)
