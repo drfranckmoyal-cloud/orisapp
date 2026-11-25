@@ -106,3 +106,13 @@ rendu d'essai sans contenu clinique : demandé depuis la page de relecture, PDF 
 l'extension (0.71.1) à 22 h 59, déposé, réussite signalée ; **vu dans Veasy**, onglet
 Documents : « Oris - compte rendu de consultation 25-11-2026 (953443).pdf », origine
 « Externe ». Le circuit est éprouvé de bout en bout.
+
+## Commentaire dans les actes — 25/11/2026
+
+Demande de Franck : à chaque dépôt, une ligne « Compte rendu ORIS déposé ce jour le
+JJ/MM/AAAA » dans la section Actes du dossier Veasy. Fait par l'extension (Dental Lens
+D172, 0.72.1) juste après un dépôt neuf, par `Act/Home/SaveActSPOComment` (Id 0) dans le
+dossier ouvert de la session, après l'avoir ouvert sur le bon patient et vérifié avant et
+après ; si Veasy est au premier plan, la demande attend (au-delà de 10 essais, le document
+part sans commentaire). Essai réussi sur le dossier 13005043 ; **étendu à tous les
+dossiers le 25/11/2026 avec l'accord de Franck**.
