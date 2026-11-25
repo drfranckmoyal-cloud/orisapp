@@ -145,6 +145,16 @@ def noter(
     return None
 
 
+def noter_pris(settings: Settings, demande_id: str) -> None:
+    """L'extension a retiré le PDF : le dépôt est en route (barre d'état, 25/11/2026)."""
+    demandes = _lire(settings)
+    for d in demandes:
+        if d.get("id") == demande_id:
+            d["pris_le"] = _maintenant()
+            _ecrire(settings, demandes)
+            return
+
+
 def dernier_depot(settings: Settings, document_id: UUID) -> dict[str, Any] | None:
     for d in reversed(_vivantes(_lire(settings))):
         if d.get("document_id") == str(document_id):

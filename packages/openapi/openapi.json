@@ -8339,6 +8339,17 @@
             ],
             "title": "Demande Le"
           },
+          "pris_le": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pris Le"
+          },
           "depose_le": {
             "anyOf": [
               {
@@ -12677,6 +12688,17 @@
               }
             ],
             "title": "Demande Le"
+          },
+          "pris_le": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pris Le"
           },
           "depose_le": {
             "anyOf": [

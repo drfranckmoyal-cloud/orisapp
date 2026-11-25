@@ -156,6 +156,7 @@ def test_a_report_is_filed_into_the_patients_smilecloud_without_leaving_oris(api
     # L'extension retire le PDF, le dépose dans SmileCloud, et le dit.
     pdf = api.get(f"/smilecloud/depot/{attendues[0]['id']}")
     assert pdf.status_code == 200
+    assert api.get(f"/documents/{note['id']}/smilecloud").json()["pris_le"] is not None
     assert pdf.content[:4] == b"%PDF"
     assert api.post("/smilecloud/depose", json={"id": attendues[0]["id"]}).json() == {"note": True}
 

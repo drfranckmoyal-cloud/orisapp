@@ -1,5 +1,14 @@
 # Changelog
 
+## Une barre d'état pour chaque envoi SmileCloud et Veasy — 2026-11-25
+- Franck : « on n'est pas sûr en regardant si l'envoi et le dépôt sont validés ou non ».
+  Sous chaque grand bouton, trois étapes : **Demandé → Pris par l'extension → Déposé**,
+  puis l'issue en toutes lettres : en vert « ✓ Déposé dans le dossier … le … — vérifié par
+  l'extension », en rouge « ✕ Pas déposé : raison. Rien n'est entré dans le dossier », en
+  orange l'attente et sa raison. Le serveur note le moment où l'extension prend le PDF
+  (`pris_le`).
+- iPhone : « ✓ déposé (vérifié) » / « ✕ pas déposé : raison » dans la fenêtre d'envoi.
+
 ## Dépôts SmileCloud et Veasy : l'extension prévenue dès le clic — 2026-11-25
 - Franck : « pourquoi pas immédiatement au clic ? ». Le serveur ne peut pas réveiller
   l'extension ; c'est elle qui vient voir la file, à intervalles. Désormais, quand le clic

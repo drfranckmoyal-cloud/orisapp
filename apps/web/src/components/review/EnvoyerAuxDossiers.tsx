@@ -15,10 +15,13 @@ interface Depot {
   etat: "absent" | "en_attente" | "depose" | "impossible";
   raison: string;
   demande_le?: string | null;
+  /** Quand l'extension a pris le PDF : le dépôt est en route. */
+  pris_le?: string | null;
   depose_le?: string | null;
 }
 
-type EtatLien = "relie" | "trouve" | "a_confirmer" | "ambigu" | "absent" | "sans_liste";
+type EtatLien =
+  "relie" | "trouve" | "a_confirmer" | "ambigu" | "absent" | "sans_liste";
 
 interface LienSmileCloud {
   etat: EtatLien;
@@ -30,7 +33,12 @@ interface LienVeasy {
   etat: EtatLien;
   nom: string | null;
   veasy_id: string | null;
-  candidats: { veasy_id: string; nom: string; date_naissance: string; pour_cent: number }[];
+  candidats: {
+    veasy_id: string;
+    nom: string;
+    date_naissance: string;
+    pour_cent: number;
+  }[];
 }
 
 interface Candidat {
@@ -78,7 +86,9 @@ export function EnvoyerAuxDossiers({
 }
 
 function CibleSmileCloud(props: CibleProps) {
-  const [lien, recharger] = useApi<LienSmileCloud>(`/patients/${props.patientId}/smilecloud`);
+  const [lien, recharger] = useApi<LienSmileCloud>(
+    `/patients/${props.patientId}/smilecloud`,
+  );
   const vue =
     lien.state === "ready"
       ? {
@@ -104,16 +114,22 @@ function CibleSmileCloud(props: CibleProps) {
 }
 
 function CibleVeasy(props: CibleProps) {
-  const [lien, recharger] = useApi<LienVeasy>(`/patients/${props.patientId}/veasy`);
+  const [lien, recharger] = useApi<LienVeasy>(
+    `/patients/${props.patientId}/veasy`,
+  );
   const vue =
     lien.state === "ready"
       ? {
           etat: lien.data.etat,
-          nom: lien.data.nom ?? (lien.data.veasy_id ? `dossier n° ${lien.data.veasy_id}` : null),
+          nom:
+            lien.data.nom ??
+            (lien.data.veasy_id ? `dossier n° ${lien.data.veasy_id}` : null),
           candidats: lien.data.candidats.map((c) => ({
             cle: c.veasy_id,
             nom: c.nom,
-            detail: c.date_naissance ? `né(e) le ${dateCourte(c.date_naissance)}` : undefined,
+            detail: c.date_naissance
+              ? `né(e) le ${dateCourte(c.date_naissance)}`
+              : undefined,
             pour_cent: c.pour_cent,
           })),
         }
@@ -157,7 +173,9 @@ function Cible({
   rechargerLien: () => void;
   saisieManuelle?: boolean;
 }) {
-  const [depot, rechargerDepot] = useApi<Depot>(`/documents/${documentId}/${cible}?v=${version}`);
+  const [depot, rechargerDepot] = useApi<Depot>(
+    `/documents/${documentId}/${cible}?v=${version}`,
+  );
   const [occupe, setOccupe] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [numero, setNumero] = useState("");
@@ -174,13 +192,19 @@ function Cible({
     return () => window.clearInterval(minuterie);
   }, [enCours, rechargerDepot]);
 
-  async function agir(chemin: string, methode: "POST" | "PUT", corps?: unknown) {
+  async function agir(
+    chemin: string,
+    methode: "POST" | "PUT",
+    corps?: unknown,
+  ) {
     setOccupe(true);
     setErreur(null);
     try {
       await apiRequest(chemin, { method: methode, body: corps });
     } catch (caught) {
-      setErreur(errorMessage(caught instanceof ApiError ? caught.code : "UNKNOWN"));
+      setErreur(
+        errorMessage(caught instanceof ApiError ? caught.code : "UNKNOWN"),
+      );
     } finally {
       setOccupe(false);
       rechargerLien();
@@ -202,7 +226,9 @@ function Cible({
         </span>
         <span className={styles.nomDossier}>
           <strong>Dossier {libelle}</strong>
-          {relie ? `vérifié : ${vue?.nom ?? "dossier relié"}` : "à vérifier avant le premier envoi"}
+          {relie
+            ? `vérifié : ${vue?.nom ?? "dossier relié"}`
+            : "à vérifier avant le premier envoi"}
         </span>
         {relie && (
           <button
@@ -219,12 +245,16 @@ function Cible({
         <div className={styles.verif}>
           {vue.etat === "sans_liste" && (
             <span>
-              La liste des dossiers {libelle} n’est pas encore arrivée : l’extension Chrome la
-              livrera.
+              La liste des dossiers {libelle} n’est pas encore arrivée :
+              l’extension Chrome la livrera.
             </span>
           )}
-          {vue.etat === "absent" && <span>Aucun dossier {libelle} ne ressemble à ce nom.</span>}
-          {(vue.etat === "trouve" || vue.etat === "a_confirmer" || vue.etat === "ambigu") && (
+          {vue.etat === "absent" && (
+            <span>Aucun dossier {libelle} ne ressemble à ce nom.</span>
+          )}
+          {(vue.etat === "trouve" ||
+            vue.etat === "a_confirmer" ||
+            vue.etat === "ambigu") && (
             <span>
               {vue.etat === "trouve"
                 ? "Un dossier porte ce nom. Confirmez que c’est bien ce patient :"
@@ -236,7 +266,10 @@ function Cible({
           {vue.candidats.map((c) => (
             <div key={c.cle} className={styles.candidat}>
               <span>
-                <strong>{c.nom}</strong> <small>{c.detail ?? ""} · {c.pour_cent} %</small>
+                <strong>{c.nom}</strong>{" "}
+                <small>
+                  {c.detail ?? ""} · {c.pour_cent} %
+                </small>
               </span>
               <Bouton
                 variante="secondaire"
@@ -252,7 +285,8 @@ function Cible({
               className={styles.saisie}
               onSubmit={(event) => {
                 event.preventDefault();
-                if (numero.trim()) void agir(lienPatient, "PUT", relier(numero.trim()));
+                if (numero.trim())
+                  void agir(lienPatient, "PUT", relier(numero.trim()));
               }}
             >
               <input
@@ -262,7 +296,11 @@ function Cible({
                 value={numero}
                 onChange={(event) => setNumero(event.target.value)}
               />
-              <Bouton variante="secondaire" type="submit" disabled={occupe || !numero.trim()}>
+              <Bouton
+                variante="secondaire"
+                type="submit"
+                disabled={occupe || !numero.trim()}
+              >
                 Relier
               </Bouton>
             </form>
@@ -280,16 +318,20 @@ function Cible({
           )
         }
       >
-        {occupe || enCours ? "Dépôt en cours…" : `Envoyer sur le dossier ${libelle}`}
+        {occupe || enCours
+          ? "Dépôt en cours…"
+          : `Envoyer sur le dossier ${libelle}`}
       </button>
 
-      <p className={styles.etat} data-ton={tonDe(etatDepot)}>
-        {!valide
-          ? "Validez d’abord le document : ce qui entre dans le dossier y reste."
-          : !relie
-            ? `Vérifiez d’abord le dossier ${libelle} ci-dessus.`
-            : texteDe(etatDepot, libelle)}
-      </p>
+      {!valide || !relie ? (
+        <p className={styles.etat}>
+          {!valide
+            ? "Validez d’abord le document : ce qui entre dans le dossier y reste."
+            : `Vérifiez d’abord le dossier ${libelle} ci-dessus.`}
+        </p>
+      ) : (
+        <BarreEtat depot={etatDepot} libelle={libelle} />
+      )}
       {erreur && (
         <p className={styles.etat} data-ton="alerte">
           {erreur}
@@ -299,20 +341,77 @@ function Cible({
   );
 }
 
-function texteDe(depot: Depot | null, libelle: string): string {
-  if (!depot || depot.etat === "absent") return "Pas encore envoyé.";
-  if (depot.etat === "en_attente")
-    return depot.raison
-      ? `Dépôt en cours — pas encore fait : ${depot.raison}`
-      : `Dépôt en cours dans ${libelle}…`;
-  if (depot.etat === "impossible") return `Pas déposé : ${depot.raison}`;
-  return `Déposé dans ${libelle}${depot.depose_le ? ` le ${formatDateTime(depot.depose_le)}` : ""}.`;
-}
-
-function tonDe(depot: Depot | null): "ok" | "alerte" | undefined {
-  if (depot?.etat === "depose") return "ok";
-  if (depot?.etat === "impossible") return "alerte";
-  return undefined;
+/** L'envoi en trois étapes, et son issue écrite en toutes lettres (Franck, 25/11/2026 :
+ * « on n'est pas sûr, en regardant, si l'envoi et le dépôt sont validés ou non »).
+ * Demandé → pris par l'extension (le PDF est parti du serveur) → déposé dans le dossier,
+ * vérifié par l'extension. Un échec le dit en rouge, avec sa raison. */
+function BarreEtat({
+  depot,
+  libelle,
+}: {
+  depot: Depot | null;
+  libelle: string;
+}) {
+  if (!depot || depot.etat === "absent") {
+    return <p className={styles.etat}>Pas encore envoyé dans {libelle}.</p>;
+  }
+  const etapes = [
+    { nom: "Demandé", quand: depot.demande_le, fait: true },
+    {
+      nom: "Pris par l’extension",
+      quand: depot.pris_le,
+      fait: Boolean(depot.pris_le) || depot.etat !== "en_attente",
+    },
+    {
+      nom: `Déposé dans ${libelle}`,
+      quand: depot.depose_le,
+      fait: depot.etat === "depose",
+    },
+  ];
+  const echec = depot.etat === "impossible";
+  return (
+    <div className={styles.barreEtat}>
+      <ol className={styles.etapes} aria-label={`Envoi dans ${libelle}`}>
+        {etapes.map((etape, rang) => {
+          const etat = etape.fait
+            ? "fait"
+            : echec && rang === 2
+              ? "echec"
+              : "attente";
+          return (
+            <li key={etape.nom} className={styles.etape} data-etat={etat}>
+              <span className={styles.pastilleEtape} aria-hidden="true">
+                {etat === "fait" ? "✓" : etat === "echec" ? "✕" : rang + 1}
+              </span>
+              <span>{etape.nom}</span>
+            </li>
+          );
+        })}
+      </ol>
+      {depot.etat === "depose" && (
+        <p className={styles.issue} data-ton="ok">
+          ✓ Déposé dans le dossier {libelle}
+          {depot.depose_le ? ` le ${formatDateTime(depot.depose_le)}` : ""} —
+          vérifié par l’extension.
+        </p>
+      )}
+      {echec && (
+        <p className={styles.issue} data-ton="alerte">
+          ✕ Pas déposé : {depot.raison || "raison inconnue"}. Rien n’est entré
+          dans le dossier.
+        </p>
+      )}
+      {depot.etat === "en_attente" && (
+        <p className={styles.issue} data-ton="attente">
+          {depot.raison
+            ? `En attente : ${depot.raison}. Oris réessaie tout seul.`
+            : depot.pris_le
+              ? `Dépôt en cours dans ${libelle}…`
+              : "En attente de l’extension Chrome (Mac allumé, Chrome ouvert)…"}
+        </p>
+      )}
+    </div>
+  );
 }
 
 function dateCourte(iso: string): string {

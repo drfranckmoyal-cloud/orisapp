@@ -13,6 +13,7 @@ Aucun nom de patient ni de galerie ne passe dans les journaux techniques.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import re
@@ -242,6 +243,16 @@ def noter_depot(
             d["termine"] = True
 
     return _modifier(settings, demande_id, changer)
+
+
+def noter_pris(settings: Settings, demande_id: str) -> None:
+    """L'extension a retiré le PDF : le dépôt est en route (barre d'état, 25/11/2026)."""
+
+    def changer(d: dict[str, Any]) -> None:
+        d["pris_le"] = _maintenant()
+
+    with contextlib.suppress(SmileCloudInvalide):
+        _modifier(settings, demande_id, changer)
 
 
 def dernier_depot(settings: Settings, document_id: UUID) -> dict[str, Any] | None:

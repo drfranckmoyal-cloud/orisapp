@@ -2978,6 +2978,8 @@ export interface components {
             etat: string;
             /** Demande Le */
             demande_le?: string | null;
+            /** Pris Le */
+            pris_le?: string | null;
             /** Depose Le */
             depose_le?: string | null;
             /**
@@ -4678,6 +4680,8 @@ export interface components {
             etat: string;
             /** Demande Le */
             demande_le?: string | null;
+            /** Pris Le */
+            pris_le?: string | null;
             /** Depose Le */
             depose_le?: string | null;
             /**

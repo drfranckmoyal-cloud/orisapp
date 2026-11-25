@@ -54,8 +54,12 @@ def test_a_validated_document_goes_to_veasy_and_teaches_the_patient_number(api: 
     assert demande["patient"]["veasy_id"] == "123456"
     assert "patient_id" not in demande and "organisation_id" not in demande
 
+    assert api.get(f"/documents/{note['id']}/veasy").json()["pris_le"] is None
     pdf = api.get(f"/veasy/depot/{demande['id']}")
     assert (pdf.status_code, pdf.content[:4]) == (200, b"%PDF")
+    # La barre d'état le sait : l'extension a pris le document, le dépôt est en route.
+    en_route = api.get(f"/documents/{note['id']}/veasy").json()
+    assert (en_route["etat"], en_route["pris_le"] is not None) == ("en_attente", True)
     fait = api.post("/veasy/depose", json={"id": demande["id"], "veasy_patient_id": "123456"})
     assert fait.json() == {"note": True}
 

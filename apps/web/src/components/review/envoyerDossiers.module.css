@@ -156,3 +156,85 @@
   border-radius: 8px;
   font: inherit;
 }
+
+
+/* La barre d'état de l'envoi : trois étapes, puis l'issue en toutes lettres. */
+.barreEtat {
+  display: grid;
+  gap: 8px;
+}
+
+.etapes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.etape {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 4px solid var(--trait);
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--encre-douce);
+}
+
+.etape[data-etat="fait"] {
+  border-top-color: #1f7a4d;
+  color: var(--encre);
+}
+
+.etape[data-etat="echec"] {
+  border-top-color: #b3261e;
+  color: #b3261e;
+}
+
+.pastilleEtape {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface-douce);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.etape[data-etat="fait"] .pastilleEtape {
+  background: #1f7a4d;
+  color: #fff;
+}
+
+.etape[data-etat="echec"] .pastilleEtape {
+  background: #b3261e;
+  color: #fff;
+}
+
+.issue {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: var(--graisse-demi);
+}
+
+.issue[data-ton="ok"] {
+  background: #e3f2ea;
+  color: #14533b;
+}
+
+.issue[data-ton="alerte"] {
+  background: #fbe4e2;
+  color: #8c1d18;
+}
+
+.issue[data-ton="attente"] {
+  background: #fdf1dc;
+  color: #7a4b00;
+}

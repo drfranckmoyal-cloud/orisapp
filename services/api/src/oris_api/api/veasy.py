@@ -87,6 +87,7 @@ def retirer_le_document(
         raise NotFound("DEMANDE_INCONNUE", demande_id)
     acteur = Actor(UUID(d["organisation_id"]), UUID(d["praticien_id"]))
     sortie = documents.export_document(session, acteur, UUID(d["document_id"]), "pdf", magasin)
+    veasy.noter_pris(settings, demande_id)
     return Response(
         content=sortie.payload,
         media_type=sortie.media_type,
@@ -142,6 +143,8 @@ class DepotVeasyOut(BaseModel):
     #: « absent » (jamais demandé), « en_attente », « depose », « impossible ».
     etat: str
     demande_le: str | None = None
+    #: Quand l'extension a retiré le PDF : le dépôt est en route.
+    pris_le: str | None = None
     depose_le: str | None = None
     raison: str = ""
 
@@ -152,12 +155,16 @@ def _etat(settings: Settings, document_id: UUID) -> DepotVeasyOut:
         return DepotVeasyOut(etat="absent")
     if not dernier.get("termine"):
         return DepotVeasyOut(
-            etat="en_attente", demande_le=dernier["demande_le"], raison=dernier.get("raison", "")
+            etat="en_attente",
+            demande_le=dernier["demande_le"],
+            pris_le=dernier.get("pris_le"),
+            raison=dernier.get("raison", ""),
         )
     raison = dernier.get("raison", "")
     return DepotVeasyOut(
         etat="impossible" if raison else "depose",
         demande_le=dernier["demande_le"],
+        pris_le=dernier.get("pris_le"),
         depose_le=dernier.get("depose_le"),
         raison=raison,
     )

@@ -334,7 +334,8 @@ struct EnvoiView: View {
                         Text("Dossier SmileCloud du patient")
                             .font(Police.interface(15, .bold)).foregroundStyle(Teinte.smilecloud)
                         Text(!valide ? "après validation : ce qui entre dans SmileCloud y reste"
-                             : depot?.etat == "depose" ? "déjà rangé — cochez pour l’y ranger à nouveau"
+                             : depot?.etat == "depose" ? "✓ déposé (vérifié) — cochez pour l’y ranger à nouveau"
+                             : depot?.etat == "impossible" ? "✕ pas déposé : \(depot?.raison ?? "")"
                              : depot?.etat == "en_attente" ? "dépôt en cours, par le Chrome du Mac (allumé)"
                              : "le PDF y est rangé avec la documentation")
                             .font(Police.interface(12.5, .medium))
@@ -357,9 +358,9 @@ struct EnvoiView: View {
                         Text("Dossier Veasy du patient")
                             .font(Police.interface(15, .bold)).foregroundStyle(Teinte.accent)
                         Text(!valide ? "après validation : ce qui entre dans Veasy y reste"
-                             : depotVeasy?.etat == "depose" ? "déjà rangé — cochez pour l’y ranger à nouveau"
+                             : depotVeasy?.etat == "depose" ? "✓ déposé (vérifié) — cochez pour l’y ranger à nouveau"
                              : depotVeasy?.etat == "en_attente" ? "dépôt en cours, par le Chrome du Mac (allumé)"
-                             : depotVeasy?.etat == "impossible" ? "pas déposé : \(depotVeasy?.raison ?? "")"
+                             : depotVeasy?.etat == "impossible" ? "✕ pas déposé : \(depotVeasy?.raison ?? "")"
                              : "le PDF est rangé dans les documents du patient")
                             .font(Police.interface(12.5, .medium))
                             .foregroundStyle(Teinte.encreTresDouce)
