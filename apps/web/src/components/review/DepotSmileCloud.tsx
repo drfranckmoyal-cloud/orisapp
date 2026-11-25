@@ -102,7 +102,7 @@ export function DepotSmileCloud({
           depot?.raison ? (
             `Demandé, pas encore abouti — ${depot.raison}. Oris réessaie tout seul.`
           ) : (
-            "Demandé : l’extension Chrome le dépose à son prochain passage."
+            "Dépôt en cours dans le dossier SmileCloud…"
           )
         ) : etat === "impossible" ? (
           <span className={styles.refus}>Pas déposé — {depot?.raison}</span>

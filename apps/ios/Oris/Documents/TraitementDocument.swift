@@ -335,7 +335,7 @@ struct EnvoiView: View {
                             .font(Police.interface(15, .bold)).foregroundStyle(Teinte.smilecloud)
                         Text(!valide ? "après validation : ce qui entre dans SmileCloud y reste"
                              : depot?.etat == "depose" ? "déjà rangé — cochez pour l’y ranger à nouveau"
-                             : depot?.etat == "en_attente" ? "demandé, en attente de l’extension Chrome"
+                             : depot?.etat == "en_attente" ? "dépôt en cours, par le Chrome du Mac (allumé)"
                              : "le PDF y est rangé avec la documentation")
                             .font(Police.interface(12.5, .medium))
                             .foregroundStyle(Teinte.encreTresDouce)
@@ -358,7 +358,7 @@ struct EnvoiView: View {
                             .font(Police.interface(15, .bold)).foregroundStyle(Teinte.accent)
                         Text(!valide ? "après validation : ce qui entre dans Veasy y reste"
                              : depotVeasy?.etat == "depose" ? "déjà rangé — cochez pour l’y ranger à nouveau"
-                             : depotVeasy?.etat == "en_attente" ? "demandé, en attente de l’extension Chrome"
+                             : depotVeasy?.etat == "en_attente" ? "dépôt en cours, par le Chrome du Mac (allumé)"
                              : depotVeasy?.etat == "impossible" ? "pas déposé : \(depotVeasy?.raison ?? "")"
                              : "le PDF est rangé dans les documents du patient")
                             .font(Police.interface(12.5, .medium))
@@ -471,7 +471,7 @@ struct EnvoiView: View {
             do {
                 let fait = try await client.deposerDansSmileCloud(documentId: document.id)
                 dits.append(fait.etat == "depose" ? "Déjà rangé dans SmileCloud."
-                            : "Demandé au dossier SmileCloud.")
+                            : "Dépôt en cours dans SmileCloud (Chrome du Mac).")
             } catch {
                 erreur = "SmileCloud : " + Labels.erreur(error)
                 return
@@ -481,7 +481,7 @@ struct EnvoiView: View {
             do {
                 let fait = try await client.deposerDansVeasy(documentId: document.id)
                 dits.append(fait.etat == "depose" ? "Déjà rangé dans Veasy."
-                            : "Demandé au dossier Veasy.")
+                            : "Dépôt en cours dans Veasy (Chrome du Mac).")
             } catch {
                 erreur = "Veasy : " + Labels.erreur(error)
                 return

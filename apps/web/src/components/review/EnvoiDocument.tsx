@@ -10,6 +10,7 @@ import {
   fetchDocumentExport,
   type ResultatEnvoi,
 } from "@/lib/api";
+import { prevenirExtension } from "@/lib/extension";
 import { errorMessage } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
@@ -100,9 +101,10 @@ export function EnvoiDocument({
       const fait = await apiRequest<DepotSmileCloud>(`/documents/${documentId}/veasy`, {
         method: "POST",
       });
+      prevenirExtension("veasy");
       return fait.etat === "depose"
         ? "Déjà rangé dans le dossier Veasy."
-        : "Demandé au dossier Veasy : l’extension Chrome le dépose à son prochain passage.";
+        : "Dépôt en cours dans le dossier Veasy.";
     } catch (caught) {
       const code = caught instanceof ApiError ? caught.code : "UNKNOWN";
       return `Veasy : ${errorMessage(code)}`;
@@ -116,9 +118,10 @@ export function EnvoiDocument({
       const fait = await apiRequest<DepotSmileCloud>(`/documents/${documentId}/smilecloud`, {
         method: "POST",
       });
+      prevenirExtension("smilecloud");
       return fait.etat === "depose"
         ? "Déjà rangé dans le dossier SmileCloud."
-        : "Demandé au dossier SmileCloud : l’extension Chrome le dépose à son prochain passage.";
+        : "Dépôt en cours dans le dossier SmileCloud.";
     } catch (caught) {
       const code = caught instanceof ApiError ? caught.code : "UNKNOWN";
       return `SmileCloud : ${errorMessage(code)}`;
@@ -226,7 +229,7 @@ export function EnvoiDocument({
                   : etatDepot === "depose"
                     ? "déjà rangé — cochez pour l’y ranger à nouveau"
                     : etatDepot === "en_attente"
-                      ? "demandé, en attente de l’extension Chrome"
+                      ? "dépôt en cours"
                       : "le PDF y est rangé avec la documentation"}
             </span>
           </span>
@@ -246,7 +249,7 @@ export function EnvoiDocument({
                 : etatVeasy === "depose"
                   ? "déjà rangé — cochez pour l’y ranger à nouveau"
                   : etatVeasy === "en_attente"
-                    ? "demandé, en attente de l’extension Chrome"
+                    ? "dépôt en cours"
                     : etatVeasy === "impossible" && depotVeasy.state === "ready"
                       ? `pas déposé : ${depotVeasy.data.raison}`
                       : "le PDF est rangé dans les documents du patient"}

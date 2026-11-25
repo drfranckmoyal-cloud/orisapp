@@ -1,5 +1,14 @@
 # Changelog
 
+## Dépôts SmileCloud et Veasy : l'extension prévenue dès le clic — 2026-11-25
+- Franck : « pourquoi pas immédiatement au clic ? ». Le serveur ne peut pas réveiller
+  l'extension ; c'est elle qui vient voir la file, à intervalles. Désormais, quand le clic
+  vient du site ouvert dans le même Chrome, la page la prévient directement
+  (`window.postMessage`, sans aucune donnée : « va voir la file »), et l'écran suit le dépôt
+  toutes les 3 s jusqu'à « Déposé ». Messages : « Dépôt en cours… » au lieu de « au
+  prochain passage ». La partie extension est demandée à la session Dental Lens.
+- iPhone : messages alignés (« dépôt en cours, par le Chrome du Mac »).
+
 ## Relecture : la bibliothèque montre des aperçus, plus des noms de fichiers — 2026-11-25
 - Franck : « au lieu du nom des images il faut des aperçus consultables ». Dans la colonne de
   droite de la relecture, les pièces du patient forment une grille de vignettes carrées ; un

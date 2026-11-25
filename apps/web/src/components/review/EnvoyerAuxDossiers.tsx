@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Bouton } from "@/components/ui";
 import { ApiError, apiRequest } from "@/lib/api";
+import { prevenirExtension } from "@/lib/extension";
 import { errorMessage, formatDateTime } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
@@ -163,6 +164,15 @@ function Cible({
 
   const relie = vue?.etat === "relie";
   const etatDepot = depot.state === "ready" ? depot.data : null;
+  const enCours = etatDepot?.etat === "en_attente";
+
+  // Tant que le dépôt est en cours, l'écran le suit : il passe de lui-même à « Déposé »
+  // (ou dit pourquoi non) sans qu'on ait à recharger la page.
+  useEffect(() => {
+    if (!enCours) return;
+    const minuterie = window.setInterval(rechargerDepot, 3000);
+    return () => window.clearInterval(minuterie);
+  }, [enCours, rechargerDepot]);
 
   async function agir(chemin: string, methode: "POST" | "PUT", corps?: unknown) {
     setOccupe(true);
@@ -264,9 +274,13 @@ function Cible({
         type="button"
         className={`${styles.grand} ${cible === "smilecloud" ? styles.grandSc : styles.grandVeasy}`}
         disabled={!pret}
-        onClick={() => void agir(`/documents/${documentId}/${cible}`, "POST")}
+        onClick={() =>
+          void agir(`/documents/${documentId}/${cible}`, "POST").then(() =>
+            prevenirExtension(cible),
+          )
+        }
       >
-        {occupe ? "Envoi…" : `Envoyer sur le dossier ${libelle}`}
+        {occupe || enCours ? "Dépôt en cours…" : `Envoyer sur le dossier ${libelle}`}
       </button>
 
       <p className={styles.etat} data-ton={tonDe(etatDepot)}>
@@ -289,8 +303,8 @@ function texteDe(depot: Depot | null, libelle: string): string {
   if (!depot || depot.etat === "absent") return "Pas encore envoyé.";
   if (depot.etat === "en_attente")
     return depot.raison
-      ? `Demandé — pas encore déposé : ${depot.raison}`
-      : "Demandé : l’extension Chrome le dépose à son prochain passage.";
+      ? `Dépôt en cours — pas encore fait : ${depot.raison}`
+      : `Dépôt en cours dans ${libelle}…`;
   if (depot.etat === "impossible") return `Pas déposé : ${depot.raison}`;
   return `Déposé dans ${libelle}${depot.depose_le ? ` le ${formatDateTime(depot.depose_le)}` : ""}.`;
 }
