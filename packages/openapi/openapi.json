@@ -2418,6 +2418,165 @@
         }
       }
     },
+    "/veasy/dossiers": {
+      "post": {
+        "tags": [
+          "veasy"
+        ],
+        "summary": "Deposer Dossiers",
+        "description": "La liste des dossiers Veasy, relevée par l'extension.",
+        "operationId": "deposer_dossiers_veasy_dossiers_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DossiersVeasyIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "title": "Response Deposer Dossiers Veasy Dossiers Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patients/{patient_id}/veasy": {
+      "get": {
+        "tags": [
+          "veasy"
+        ],
+        "summary": "Lire Lien",
+        "operationId": "lire_lien_patients__patient_id__veasy_get",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VeasyPatientOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "veasy"
+        ],
+        "summary": "Relier",
+        "description": "Le praticien confirme le dossier Veasy de ce patient — ou le délie.\n\nUn numéro saisi à la main est accepté (il se lit dans Veasy) : la liste des dossiers\nn'est pas indispensable pour relier un patient qu'on connaît.",
+        "operationId": "relier_patients__patient_id__veasy_put",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LienVeasyIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VeasyPatientOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/encounters": {
       "get": {
         "tags": [
@@ -6772,6 +6931,34 @@
         "type": "object",
         "title": "CabinetPatch"
       },
+      "CandidatVeasyOut": {
+        "properties": {
+          "veasy_id": {
+            "type": "string",
+            "title": "Veasy Id"
+          },
+          "nom": {
+            "type": "string",
+            "title": "Nom"
+          },
+          "date_naissance": {
+            "type": "string",
+            "title": "Date Naissance"
+          },
+          "pour_cent": {
+            "type": "integer",
+            "title": "Pour Cent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "veasy_id",
+          "nom",
+          "date_naissance",
+          "pour_cent"
+        ],
+        "title": "CandidatVeasyOut"
+      },
       "ChunkReceiptOut": {
         "properties": {
           "sequence": {
@@ -8402,6 +8589,32 @@
         ],
         "title": "DossierIn"
       },
+      "DossierVeasyIn": {
+        "properties": {
+          "veasy_id": {
+            "type": "string",
+            "maxLength": 32,
+            "title": "Veasy Id"
+          },
+          "nom": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Nom"
+          },
+          "date_naissance": {
+            "type": "string",
+            "maxLength": 10,
+            "title": "Date Naissance",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "veasy_id",
+          "nom"
+        ],
+        "title": "DossierVeasyIn"
+      },
       "DossiersIn": {
         "properties": {
           "dossiers": {
@@ -8418,6 +8631,23 @@
           "dossiers"
         ],
         "title": "DossiersIn"
+      },
+      "DossiersVeasyIn": {
+        "properties": {
+          "dossiers": {
+            "items": {
+              "$ref": "#/components/schemas/DossierVeasyIn"
+            },
+            "type": "array",
+            "maxItems": 50000,
+            "title": "Dossiers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dossiers"
+        ],
+        "title": "DossiersVeasyIn"
       },
       "EcartIn": {
         "properties": {
@@ -9788,6 +10018,24 @@
         },
         "type": "object",
         "title": "LienIn"
+      },
+      "LienVeasyIn": {
+        "properties": {
+          "veasy_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Veasy Id"
+          }
+        },
+        "type": "object",
+        "title": "LienVeasyIn"
       },
       "LiveSegmentOut": {
         "properties": {
@@ -12226,6 +12474,51 @@
           "claim_index"
         ],
         "title": "ValidationIssueOut"
+      },
+      "VeasyPatientOut": {
+        "properties": {
+          "veasy_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Veasy Id"
+          },
+          "nom": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nom"
+          },
+          "etat": {
+            "type": "string",
+            "title": "Etat"
+          },
+          "candidats": {
+            "items": {
+              "$ref": "#/components/schemas/CandidatVeasyOut"
+            },
+            "type": "array",
+            "title": "Candidats"
+          }
+        },
+        "type": "object",
+        "required": [
+          "veasy_id",
+          "nom",
+          "etat",
+          "candidats"
+        ],
+        "title": "VeasyPatientOut"
       },
       "VoyantOut": {
         "properties": {

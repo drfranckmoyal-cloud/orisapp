@@ -53,6 +53,24 @@ Le PDF à déposer (`application/pdf`), fabriqué à la demande.
   ferme, la raison est montrée au praticien. **En cas de doute sur le patient, ne rien
   déposer.** Un document médical dans le mauvais dossier est la faute à ne jamais faire.
 
+### Vérifier le dossier avant le premier dépôt (25/11/2026)
+
+Franck veut « une vérification de matching des dossiers comme pour SmileCloud ». Le dépôt
+n'est accepté que pour un patient **relié** à son dossier Veasy (`VEASY_NON_RELIE` sinon) :
+`veasy_id` est donc toujours rempli dans `GET /veasy/demandes`, et l'extension n'a plus à
+chercher le patient — elle dépose dans `patientId = veasy_id`.
+
+Pour que le praticien puisse relier en un clic, l'extension livre la liste des dossiers :
+
+```
+POST /veasy/dossiers
+{"dossiers": [{"veasy_id": "123456", "nom": "DROIT Justine", "date_naissance": "1984-03-02"}]}
+→ {"dossiers": <nombre retenu>}
+```
+
+Oris propose alors les plus ressemblants (avec la date de naissance) et le praticien
+confirme. À défaut de liste, il peut saisir le numéro du dossier lu dans Veasy.
+
 ## Ce qu'on sait de Veasy (lu dans l'extension CEMEDIS, sans rien y modifier)
 
 Veasy = `https://patient.visiodent.com`. Un document s'y enregistre par :

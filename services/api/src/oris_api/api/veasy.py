@@ -182,6 +182,10 @@ def deposer_dans_veasy(
     document = documents.get_document(session, actor, document_id)
     encounter = encounters.get_encounter(session, actor, document.encounter_id)
     patient = patients.get_patient(session, actor, encounter.patient_id)
+    # Comme pour SmileCloud : le dossier se vérifie avant le premier dépôt (Franck,
+    # 25/11/2026). Un compte rendu dans le mauvais dossier est la faute à ne jamais faire.
+    if not patient.veasy_id:
+        raise Unprocessable("VEASY_NON_RELIE")
     if documents.current_version(session, document) is None:
         raise Unprocessable("DOCUMENT_EMPTY")
     if document.status not in DEPOSABLE:
@@ -201,3 +205,104 @@ def deposer_dans_veasy(
         praticien_id=actor.user_id,
     )
     return _etat(settings, document_id)
+
+
+# --- Relier le patient à son dossier Veasy -------------------------------------------
+
+
+class DossierVeasyIn(BaseModel):
+    veasy_id: str = Field(max_length=32)
+    nom: str = Field(max_length=200)
+    date_naissance: str = Field(default="", max_length=10)
+
+
+class DossiersVeasyIn(BaseModel):
+    dossiers: list[DossierVeasyIn] = Field(max_length=50_000)
+
+
+@router.post("/veasy/dossiers")
+def deposer_dossiers(
+    body: DossiersVeasyIn,
+    request: Request,
+    settings: SettingsDep,
+    authorization: str | None = Header(default=None),
+) -> dict[str, int]:
+    """La liste des dossiers Veasy, relevée par l'extension."""
+    extension_autorisee(request, settings, authorization)
+    return {"dossiers": veasy.deposer_dossiers(settings, [d.model_dump() for d in body.dossiers])}
+
+
+class CandidatVeasyOut(BaseModel):
+    veasy_id: str
+    nom: str
+    date_naissance: str
+    pour_cent: int
+
+
+class VeasyPatientOut(BaseModel):
+    veasy_id: str | None
+    #: Le nom du dossier relié, tel que Veasy l'écrit (si la liste le connaît).
+    nom: str | None
+    #: « relie », « trouve », « a_confirmer », « ambigu », « absent », « sans_liste ».
+    etat: str
+    candidats: list[CandidatVeasyOut]
+
+
+class LienVeasyIn(BaseModel):
+    #: Le numéro du dossier Veasy, ou `null` pour délier.
+    veasy_id: str | None = Field(default=None, max_length=32)
+
+
+def _vue(settings: Settings, patient: Patient) -> VeasyPatientOut:
+    if patient.veasy_id:
+        connu = veasy.dossier(settings, patient.veasy_id)
+        return VeasyPatientOut(
+            veasy_id=patient.veasy_id,
+            nom=connu["nom"] if connu else None,
+            etat="relie",
+            candidats=[],
+        )
+    if not veasy.dossiers(settings):
+        return VeasyPatientOut(veasy_id=None, nom=None, etat="sans_liste", candidats=[])
+    proposition = veasy.proposer(settings, f"{patient.first_name} {patient.last_name}")
+    candidats = []
+    for c in proposition.candidats:
+        d = veasy.dossier(settings, c.cle) or {}
+        candidats.append(
+            CandidatVeasyOut(
+                veasy_id=c.cle,
+                nom=c.nom,
+                date_naissance=d.get("date_naissance", ""),
+                pour_cent=c.pour_cent,
+            )
+        )
+    return VeasyPatientOut(veasy_id=None, nom=None, etat=proposition.etat, candidats=candidats)
+
+
+@router.get("/patients/{patient_id}/veasy", response_model=VeasyPatientOut)
+def lire_lien(
+    patient_id: UUID, session: SessionDep, actor: ActorDep, settings: SettingsDep
+) -> VeasyPatientOut:
+    return _vue(settings, patients.get_patient(session, actor, patient_id))
+
+
+@router.put("/patients/{patient_id}/veasy", response_model=VeasyPatientOut)
+def relier(
+    patient_id: UUID,
+    body: LienVeasyIn,
+    session: SessionDep,
+    actor: ActorDep,
+    settings: SettingsDep,
+) -> VeasyPatientOut:
+    """Le praticien confirme le dossier Veasy de ce patient — ou le délie.
+
+    Un numéro saisi à la main est accepté (il se lit dans Veasy) : la liste des dossiers
+    n'est pas indispensable pour relier un patient qu'on connaît."""
+    patient = patients.get_patient(session, actor, patient_id)
+    numero = (body.veasy_id or "").strip()
+    if numero and not numero.isdigit():
+        raise Unprocessable("VEASY_NUMERO_INVALIDE")
+    patient.veasy_id = numero or None
+    audit.record(session, actor, "patient.updated", "patient", patient.id, fields=["veasy_id"])
+    session.flush()
+    return _vue(settings, patient)

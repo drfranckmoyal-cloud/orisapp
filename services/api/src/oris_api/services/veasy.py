@@ -20,6 +20,7 @@ from typing import Any
 from uuid import UUID, uuid4
 
 from oris_api.config import Settings
+from oris_api.services import rapprochement
 
 #: Une demande que personne n'a servie en un jour ne le sera plus : on l'oublie, et le
 #: praticien la redemande. Douze heures, c'était trop court pour une demande du soir.
@@ -149,3 +150,53 @@ def dernier_depot(settings: Settings, document_id: UUID) -> dict[str, Any] | Non
         if d.get("document_id") == str(document_id):
             return d
     return None
+
+
+# --- Les dossiers Veasy, pour relier un patient d'Oris au sien ----------------------
+#
+# Franck, 25/11/2026 : « demande une vérification de matching des dossiers comme pour
+# SmileCloud ». L'extension livre la liste des dossiers Veasy ; Oris propose les plus
+# ressemblants, le praticien confirme. Le dépôt ne part qu'une fois le dossier relié.
+
+
+def _fichier_dossiers(settings: Settings) -> Path:
+    settings.veasy_dir.mkdir(parents=True, exist_ok=True)
+    return settings.veasy_dir / "dossiers.json"
+
+
+def deposer_dossiers(settings: Settings, dossiers: list[dict[str, str]]) -> int:
+    propres = [
+        {
+            "veasy_id": str(d.get("veasy_id", "")).strip(),
+            "nom": str(d.get("nom", "")).strip(),
+            "date_naissance": str(d.get("date_naissance", "")).strip(),
+        }
+        for d in dossiers
+        if str(d.get("veasy_id", "")).strip().isdigit() and str(d.get("nom", "")).strip()
+    ]
+    fichier = _fichier_dossiers(settings)
+    descripteur, temporaire = tempfile.mkstemp(dir=fichier.parent, suffix=".tmp")
+    with os.fdopen(descripteur, "w", encoding="utf-8") as sortie:
+        json.dump({"le": _maintenant(), "dossiers": propres}, sortie, ensure_ascii=False)
+    os.chmod(temporaire, 0o600)
+    os.replace(temporaire, fichier)
+    return len(propres)
+
+
+def dossiers(settings: Settings) -> list[dict[str, str]]:
+    try:
+        brut = json.loads(_fichier_dossiers(settings).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    liste = brut.get("dossiers") if isinstance(brut, dict) else None
+    return [d for d in liste if isinstance(d, dict)] if isinstance(liste, list) else []
+
+
+def dossier(settings: Settings, veasy_id: str) -> dict[str, str] | None:
+    return next((d for d in dossiers(settings) if d["veasy_id"] == veasy_id), None)
+
+
+def proposer(settings: Settings, nom_patient: str) -> rapprochement.Proposition:
+    return rapprochement.proposer(
+        nom_patient, ((d["veasy_id"], d["nom"]) for d in dossiers(settings))
+    )

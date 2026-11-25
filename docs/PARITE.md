@@ -100,3 +100,16 @@ l'autre, dans le même lot. Ce fichier dit où en est l'égalité.*
 - Supprimer une ligne : glisser vers la gauche sur l'iPhone, corbeille en bout de ligne
   sur le site.
 - Site : téléversement par glisser-déposer, copie du texte pour le logiciel du cabinet.
+
+
+## Relecture : colonne de droite du site (25/11/2026)
+
+Franck a fait réorganiser la colonne de droite de la page de relecture du **site** :
+« Envoyer sur le dossier SmileCloud / Veasy » en tête (avec la vérification du dossier
+avant le premier envoi), le correspondant du patient juste dessous, puis « Corriger avec
+Claude ». « Corriger le dossier à la main » et « À vérifier » en sont retirés.
+
+Sur l'**iPhone**, l'écran n'a pas de colonne de droite : les envois SmileCloud et Veasy
+restent dans la fenêtre d'envoi, et **la vérification du dossier Veasy se fait sur le
+site** (l'iPhone le dit si le dossier n'est pas encore vérifié). Écart à combler si
+Franck le demande sur le téléphone.

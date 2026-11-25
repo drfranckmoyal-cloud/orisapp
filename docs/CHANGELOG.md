@@ -1,5 +1,17 @@
 # Changelog
 
+## Relecture : « Envoyer sur le dossier SmileCloud / Veasy » en tête de colonne — 2026-11-25
+- Franck : enlever « Corriger le dossier à la main » et « À vérifier » (jamais utilisés),
+  mettre en évidence deux boutons d'envoi, et le correspondant du patient, bien visibles.
+- Colonne de droite du site : cadre **Envoyer le document** (SmileCloud et Veasy, un grand
+  bouton chacun, l'état du dépôt dessous), puis **Correspondant de ce patient** (choisir
+  dans la liste ou créer), puis « Corriger avec Claude ».
+- Veasy se vérifie comme SmileCloud : Oris propose les dossiers dont le nom ressemble
+  (avec la date de naissance), le praticien confirme ; ou saisit le numéro du dossier. Le
+  dépôt n'est possible qu'une fois le dossier vérifié (`VEASY_NON_RELIE`). La liste des
+  dossiers Veasy est à livrer par l'extension (`POST /veasy/dossiers`).
+- 592 tests serveur · 73 site au vert.
+
 ## Déposer le compte rendu dans le dossier Veasy du patient (côté Oris) — 2026-11-25
 - Franck : « il faut qu'Oris puisse déposer directement le compte rendu dans le dossier
   Veasy du patient ». Il a choisi l'extension Dental Lens pour la partie navigateur.

@@ -38,6 +38,8 @@ enum Labels {
         "SENDING_EMAIL_MISSING": "Renseignez votre adresse d’envoi dans Paramètres.",
         "SMTP_AUTH_FAILED": "La messagerie a refusé l’identification : vérifiez le mot de passe d’application.",
         "SMTP_RECIPIENT_REFUSED": "Adresse refusée par la messagerie.",
+        "VEASY_NON_RELIE": "Vérifiez d’abord le dossier Veasy de ce patient (sur le site, page de relecture).",
+        "VEASY_NUMERO_INVALIDE": "Un numéro de dossier Veasy ne contient que des chiffres.",
         "GMAIL_AUTH_FAILED": "Gmail a retiré à Oris l’autorisation d’envoyer : elle est à redonner (un clic « Autoriser »).",
         "SMTP_UNAVAILABLE": "Messagerie injoignable : réessayez dans un instant.",
         "NO_RECIPIENT": "Cochez au moins un destinataire.",

@@ -1,0 +1,158 @@
+/* « Envoyer sur le dossier SmileCloud / Veasy » : bien visibles, en tête de la colonne de
+   droite (Franck, 25/11/2026). Une cible = un cadre, un grand bouton, son état. */
+
+.cadre {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1.5px solid var(--trait);
+  border-radius: var(--rayon-bouton);
+  background: var(--surface);
+  box-shadow: var(--lumiere);
+}
+
+.titreCadre {
+  margin: 0;
+  font-size: var(--texte-xs);
+  font-weight: var(--graisse-demi);
+  color: var(--encre-douce);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cible {
+  display: grid;
+  gap: 8px;
+  padding: 10px 0 2px;
+  border-top: 1px solid var(--trait);
+}
+
+.cible:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.entete {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.logo {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.logoSc {
+  background: #0096af;
+}
+
+.logoVeasy {
+  background: #2f6fde;
+}
+
+.nomDossier {
+  min-width: 0;
+  font-size: var(--texte-xs);
+  color: var(--encre-douce);
+}
+
+.nomDossier strong {
+  display: block;
+  color: var(--encre);
+  font-size: 14px;
+}
+
+.lien {
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--encre-douce);
+  font: inherit;
+  font-size: var(--texte-xs);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.grand {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: var(--rayon-bouton);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: var(--graisse-demi);
+  cursor: pointer;
+}
+
+.grandSc {
+  background: #0096af;
+}
+
+.grandVeasy {
+  background: #2f6fde;
+}
+
+.grand:disabled {
+  background: var(--surface-douce);
+  color: var(--encre-douce);
+  cursor: not-allowed;
+}
+
+.etat {
+  margin: 0;
+  font-size: var(--texte-xs);
+  color: var(--encre-douce);
+}
+
+.etat[data-ton="ok"] {
+  color: var(--valide, #1f7a4d);
+}
+
+.etat[data-ton="alerte"] {
+  color: var(--alerte, #b3261e);
+}
+
+.verif {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--surface-douce);
+  font-size: 13px;
+}
+
+.candidat {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.candidat small {
+  color: var(--encre-douce);
+}
+
+.saisie {
+  display: flex;
+  gap: 6px;
+}
+
+.saisie input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--trait-fort);
+  border-radius: 8px;
+  font: inherit;
+}

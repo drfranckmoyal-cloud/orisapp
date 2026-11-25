@@ -773,6 +773,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/veasy/dossiers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deposer Dossiers
+         * @description La liste des dossiers Veasy, relevée par l'extension.
+         */
+        post: operations["deposer_dossiers_veasy_dossiers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/veasy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lire Lien */
+        get: operations["lire_lien_patients__patient_id__veasy_get"];
+        /**
+         * Relier
+         * @description Le praticien confirme le dossier Veasy de ce patient — ou le délie.
+         *
+         *     Un numéro saisi à la main est accepté (il se lit dans Veasy) : la liste des dossiers
+         *     n'est pas indispensable pour relier un patient qu'on connaît.
+         */
+        put: operations["relier_patients__patient_id__veasy_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/encounters": {
         parameters: {
             query?: never;
@@ -2396,6 +2440,17 @@ export interface components {
             /** Sending Email */
             sending_email?: string | null;
         };
+        /** CandidatVeasyOut */
+        CandidatVeasyOut: {
+            /** Veasy Id */
+            veasy_id: string;
+            /** Nom */
+            nom: string;
+            /** Date Naissance */
+            date_naissance: string;
+            /** Pour Cent */
+            pour_cent: number;
+        };
         /** ChunkReceiptOut */
         ChunkReceiptOut: {
             /** Sequence */
@@ -3031,10 +3086,27 @@ export interface components {
             /** Case Id */
             case_id: string;
         };
+        /** DossierVeasyIn */
+        DossierVeasyIn: {
+            /** Veasy Id */
+            veasy_id: string;
+            /** Nom */
+            nom: string;
+            /**
+             * Date Naissance
+             * @default
+             */
+            date_naissance: string;
+        };
         /** DossiersIn */
         DossiersIn: {
             /** Dossiers */
             dossiers: components["schemas"]["DossierIn"][];
+        };
+        /** DossiersVeasyIn */
+        DossiersVeasyIn: {
+            /** Dossiers */
+            dossiers: components["schemas"]["DossierVeasyIn"][];
         };
         /** EcartIn */
         EcartIn: {
@@ -3556,6 +3628,11 @@ export interface components {
         LienIn: {
             /** Case Id */
             case_id?: string | null;
+        };
+        /** LienVeasyIn */
+        LienVeasyIn: {
+            /** Veasy Id */
+            veasy_id?: string | null;
         };
         /**
          * LiveSegmentOut
@@ -4528,6 +4605,17 @@ export interface components {
             fact_id: string | null;
             /** Claim Index */
             claim_index: number | null;
+        };
+        /** VeasyPatientOut */
+        VeasyPatientOut: {
+            /** Veasy Id */
+            veasy_id: string | null;
+            /** Nom */
+            nom: string | null;
+            /** Etat */
+            etat: string;
+            /** Candidats */
+            candidats: components["schemas"]["CandidatVeasyOut"][];
         };
         /** VoyantOut */
         VoyantOut: {
@@ -6182,6 +6270,109 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DepotVeasyOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deposer_dossiers_veasy_dossiers_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DossiersVeasyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: number;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    lire_lien_patients__patient_id__veasy_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VeasyPatientOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    relier_patients__patient_id__veasy_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LienVeasyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VeasyPatientOut"];
                 };
             };
             /** @description Validation Error */

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { TypeDocument } from "@/components/documents/TypeDocument";
 import { Icone } from "@/components/Icones";
 import { JetonPraticien } from "@/components/JetonPraticien";
 import { PiecesJointes } from "@/components/patients/PiecesJointes";
@@ -13,13 +12,12 @@ import {
   AssistantCorrection,
   type AssistantHandle,
 } from "@/components/review/AssistantCorrection";
-import { CorrectionPanel } from "@/components/review/CorrectionPanel";
 import { CorrespondantRapide } from "@/components/review/CorrespondantRapide";
 import { Documentation } from "@/components/review/Documentation";
 import { EnvoiDocument } from "@/components/review/EnvoiDocument";
 import { Envois } from "@/components/review/Envois";
 import { PlanVisuel } from "@/components/review/PlanVisuel";
-import { RailRevision } from "@/components/review/RailRevision";
+import { EnvoyerAuxDossiers } from "@/components/review/EnvoyerAuxDossiers";
 import type { Selection } from "@/components/review/SourcePanel";
 import {
   type EtatTexte,
@@ -52,7 +50,6 @@ import {
   formatDuration,
 } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
-import { useConcepts } from "@/lib/useConcepts";
 
 /** Pendant l'écoute ou le traitement, le serveur refuse la suppression : on ne la propose pas. */
 const EN_COURS = new Set(["recording", "paused", "finalizing", "processing"]);
@@ -113,7 +110,7 @@ export default function ConsultationPage() {
     `/encounters/${id}/clinical-object`,
   );
   const [transcript] = useApi<TranscriptView>(`/encounters/${id}/transcript`);
-  const [learning, reloadLearning] = useApi<LearningEventView[]>(
+  const [, reloadLearning] = useApi<LearningEventView[]>(
     `/encounters/${id}/learning-events`,
   );
   const [audio] = useApi<AudioSessionView>(`/encounters/${id}/audio`);
@@ -144,7 +141,6 @@ export default function ConsultationPage() {
   >("fermee");
   // Les fichiers rapatriés de SmileCloud rechargent la liste des pièces jointes.
   const [versionPieces, setVersionPieces] = useState(0);
-  const motDe = useConcepts();
   const [toast, setToast] = useState<string | null>(null);
   const [confirmerRetrait, setConfirmerRetrait] = useState<string | null>(null);
 
@@ -786,14 +782,6 @@ export default function ConsultationPage() {
                 </div>
               )}
 
-              {/* Le correspondant se choisit ici : plus besoin d'ouvrir la fiche du patient. */}
-              {!shadow && (
-                <CorrespondantRapide
-                  patientId={data.patient.id}
-                  onChange={() => setVersionEnvoi((v) => v + 1)}
-                />
-              )}
-
               <div className={mise.page}>
                 {confirmerRetrait === active.id && (
                   <div className="banner banner-critical" role="alertdialog">
@@ -1017,8 +1005,28 @@ export default function ConsultationPage() {
           )}
         </section>
 
-        {/* 4. À droite : corriger d'abord, vérifier ensuite, le reste rangé dessous. */}
+        {/* 4. À droite (Franck, 25/11/2026) : envoyer dans les dossiers, le correspondant,
+            puis corriger avec Claude ; le reste rangé dessous. « Corriger le dossier à la
+            main » et « À vérifier » sont retirés : il ne s'en servait jamais. */}
         <aside className={mise.colonne}>
+          {active && !shadow && (
+            <EnvoyerAuxDossiers
+              patientId={data.patient.id}
+              documentId={active.id}
+              version={active.version}
+              valide={valide}
+            />
+          )}
+
+          {!shadow && (
+            <Carte titre="Correspondant de ce patient">
+              <CorrespondantRapide
+                patientId={data.patient.id}
+                onChange={() => setVersionEnvoi((v) => v + 1)}
+              />
+            </Carte>
+          )}
+
           {object && !shadow && (
             <AssistantCorrection
               ref={assistant}
@@ -1059,37 +1067,7 @@ export default function ConsultationPage() {
               </ul>
             </Carte>
           )}
-          {object && active && (
-            <RailRevision
-              document={active}
-              clinicalObject={object}
-              versions={
-                clinical.state === "ready" ? clinical.data.versions : []
-              }
-              transcript={transcript.state === "ready" ? transcript.data : null}
-              learning={learning.state === "ready" ? learning.data : []}
-              marks={marks.state === "ready" ? marks.data : []}
-              selection={selection}
-              onSelect={setSelection}
-              motDe={motDe}
-            />
-          )}
 
-          {/* Le formulaire fait par fait reste là pour qui préfère cocher que dire. */}
-          {object && !shadow && (
-            <details className={mise.replie}>
-              <summary>Corriger le dossier à la main</summary>
-              <p className="muted" style={{ marginTop: 0 }}>
-                Une correction modifie d’abord le dossier clinique ; Oris
-                réécrit ensuite tous les documents.
-              </p>
-              <CorrectionPanel
-                encounter={data}
-                clinicalObject={object}
-                onCorrected={reloadAll}
-              />
-            </details>
-          )}
 
           {/* Les pièces du patient, ici et pas ailleurs : aller les voir obligeait à
               quitter le compte rendu, donc à perdre le fil (Franck, 10/10/2026). La
