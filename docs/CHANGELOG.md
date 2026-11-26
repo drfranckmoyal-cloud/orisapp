@@ -8,7 +8,10 @@
   Les originaux restent intacts dans les pièces jointes. Vaut aussi pour SmileCloud et Veasy.
 - Un message qui dépasserait encore 24 Mo est refusé par Oris avant l'envoi, avec la raison
   (`MESSAGE_TOO_LARGE`), au lieu d'un courriel d'échec reçu après coup.
-- 596 tests serveur au vert.
+- Franck, le même jour : « les pièces jointes ne doivent pas dépasser 15 Mo, il faut réduire
+  directement à la génération du PDF ». Un PDF de plus de 15 Mo est refait avec des photos
+  plus petites (1600, 1280, 1024 puis 800 pixels), jusqu'à passer dessous.
+- 597 tests serveur au vert.
 
 ## Veasy : rattachement automatique et courriel du patient — 2026-11-26
 - Franck trouvait le rattachement Veasy inefficace et voulait le courriel du patient pour

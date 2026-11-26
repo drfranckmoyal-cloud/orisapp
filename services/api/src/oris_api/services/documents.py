@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Collection, Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from functools import partial
 from typing import Literal, cast
@@ -36,6 +36,12 @@ from oris_api.services.attachments import Magasin
 from oris_api.services.clinical_store import load_current
 from oris_api.services.errors import Conflict, NotFound
 from oris_api.services.identity import Actor
+
+#: Poids maximal d'un PDF d'Oris, pièce jointe d'un courriel ou dépôt dans un dossier
+#: (Franck, 26/11/2026). Beaucoup de messageries refusent au-delà.
+PDF_MAX = 15 * 1024 * 1024
+#: Les photos de plus en plus petites, jusqu'à ce que le PDF tienne sous PDF_MAX.
+REDUCTIONS = ((1600, 80), (1280, 75), (1024, 70), (800, 65))
 
 VALIDATABLE = frozenset({"draft_ai", "needs_review"})
 
@@ -481,6 +487,15 @@ def export_document(
     )
     if fmt == "pdf":
         payload = render_pdf(context, cabinet)
+        # Franck, 26/11/2026 : « les pièces jointes ne doivent pas dépasser 15 Mo ». Trop
+        # lourd : on refait le PDF avec des photos plus petites, jusqu'à passer dessous.
+        for cote, qualite in REDUCTIONS:
+            if len(payload) <= PDF_MAX or not photos or magasin is None:
+                break
+            context = replace(
+                context, figures=figures.a_imprimer(session, magasin, document.id, cote, qualite)
+            )
+            payload = render_pdf(context, cabinet)
     else:
         payload = render_text(context, structured=fmt == "structured").encode("utf-8")
 

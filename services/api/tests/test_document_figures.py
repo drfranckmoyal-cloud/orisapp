@@ -111,3 +111,25 @@ def test_the_practitioner_chooses_each_photo_size(api: Any) -> None:
     assert [f["format"] for f in choisi] == ["demi", "large"]
     pdf = api.get(f"/documents/{note['id']}/export", params={"format": "pdf"})
     assert pdf.content.startswith(b"%PDF")
+
+
+def test_a_pdf_too_heavy_is_remade_with_smaller_photos(api: Any, monkeypatch: Any) -> None:
+    """Franck, 26/11/2026 : « les pièces jointes ne doivent pas dépasser 15 Mo ». Le plafond
+    est abaissé ici pour l'essai ; la règle est la même."""
+    from PIL import Image
+
+    from oris_api.services import documents
+
+    encounter = consultation_traitee(api)
+    patient_id = encounter["patient"]["id"]
+    note = documents_by_type(api, encounter["id"])["consultation_note"]
+    tampon = io.BytesIO()
+    Image.effect_noise((3000, 2000), 90).convert("RGB").save(tampon, format="JPEG", quality=95)
+    lourde = deposer(api, patient_id, "bruit.jpg", tampon.getvalue())
+    api.put(f"/documents/{note['id']}/figures", json={"figures": [{"attachment_id": lourde}]})
+
+    pleine = api.get(f"/documents/{note['id']}/export", params={"format": "pdf"}).content
+    monkeypatch.setattr(documents, "PDF_MAX", len(pleine) // 2)
+    allegee = api.get(f"/documents/{note['id']}/export", params={"format": "pdf"}).content
+    assert len(allegee) <= len(pleine) // 2
+    assert allegee.count(b"/Type /Page\n") == pleine.count(b"/Type /Page\n")

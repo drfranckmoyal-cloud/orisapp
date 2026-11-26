@@ -18,7 +18,7 @@ from oris_api.services import audit
 from oris_api.services.attachments import Magasin, read_attachment
 from oris_api.services.errors import NotFound, Unprocessable
 from oris_api.services.identity import Actor
-from oris_api.services.images import IMPRIMABLES, pour_impression
+from oris_api.services.images import COTE_IMPRESSION, IMPRIMABLES, pour_impression
 
 MAX_FIGURES = 12
 
@@ -94,13 +94,19 @@ def remplacer(
     return figures_de(session, document.id)
 
 
-def a_imprimer(session: Session, magasin: Magasin, document_id: UUID) -> tuple[Figure, ...]:
+def a_imprimer(
+    session: Session,
+    magasin: Magasin,
+    document_id: UUID,
+    cote: int = COTE_IMPRESSION,
+    qualite: int = 85,
+) -> tuple[Figure, ...]:
     """Les photos du document, lues du magasin. Une photo disparue du disque est sautée
     plutôt que de faire échouer tout le document : sa pièce jointe le signale déjà."""
     imprimees: list[Figure] = []
     for figure, piece in figures_de(session, document_id):
         try:
-            contenu = pour_impression(read_attachment(magasin, piece))
+            contenu = pour_impression(read_attachment(magasin, piece), cote, qualite)
             imprimees.append(Figure(contenu, figure.caption, figure.format))
         except NotFound:
             continue
