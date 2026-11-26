@@ -18,7 +18,7 @@ from oris_api.services import audit
 from oris_api.services.attachments import Magasin, read_attachment
 from oris_api.services.errors import NotFound, Unprocessable
 from oris_api.services.identity import Actor
-from oris_api.services.images import IMPRIMABLES, affichable
+from oris_api.services.images import IMPRIMABLES, pour_impression
 
 MAX_FIGURES = 12
 
@@ -100,7 +100,7 @@ def a_imprimer(session: Session, magasin: Magasin, document_id: UUID) -> tuple[F
     imprimees: list[Figure] = []
     for figure, piece in figures_de(session, document_id):
         try:
-            contenu, _ = affichable(read_attachment(magasin, piece), piece.media_type)
+            contenu = pour_impression(read_attachment(magasin, piece))
             imprimees.append(Figure(contenu, figure.caption, figure.format))
         except NotFound:
             continue

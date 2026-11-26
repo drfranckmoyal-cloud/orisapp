@@ -29,6 +29,24 @@ def en_jpeg(contenu: bytes, qualite: int = 90) -> bytes:
         return tampon.getvalue()
 
 
+#: Côté le plus long d'une photo posée dans un PDF. Pleine largeur d'une page A4 (18 cm)
+#: à 280 points par pouce : la photo reste nette à l'impression et à l'écran, sans peser
+#: les 10 à 20 Mo d'un original (le 26/11/2026, un compte rendu de 64 Mo a été refusé
+#: par Gmail, limité à 25 Mo).
+COTE_IMPRESSION = 2000
+
+
+def pour_impression(contenu: bytes, cote: int = COTE_IMPRESSION, qualite: int = 85) -> bytes:
+    """Une photo prête pour le PDF : redressée, ramenée à `cote` pixels au plus, en JPEG."""
+    with Image.open(io.BytesIO(contenu)) as image:
+        redressee = ImageOps.exif_transpose(image) or image
+        redressee = redressee.convert("RGB")
+        redressee.thumbnail((cote, cote), Image.Resampling.LANCZOS)
+        tampon = io.BytesIO()
+        redressee.save(tampon, format="JPEG", quality=qualite, optimize=True)
+        return tampon.getvalue()
+
+
 def affichable(contenu: bytes, media_type: str) -> tuple[bytes, str]:
     """Le contenu tel qu'un navigateur ou un PDF sait l'afficher, et son type."""
     if media_type in HEIC:

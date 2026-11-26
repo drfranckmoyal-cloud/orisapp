@@ -103,3 +103,25 @@ def test_gmail_passe_avant_smtp_quand_il_est_pose() -> None:
     # Vide dans .env = absent : on reste sur SMTP.
     vide = Settings(**base, gmail_client_id="client", gmail_refresh_token="  ")
     assert isinstance(messagerie_de(vide), SmtpMessagerie)
+
+
+def test_a_message_too_heavy_for_gmail_is_refused_before_sending() -> None:
+    """Gmail ne le dirait que par un courriel d'échec reçu après coup (26/11/2026)."""
+    from oris_api.services.courriel import TAILLE_MAX
+
+    google = Google()
+    messagerie = GmailMessagerie("client", "secret", "durable", poster=google)
+    lourd = construire(
+        "praticien@example.org",
+        "Dr Essai",
+        "confrere@example.org",
+        "Compte rendu",
+        "Bonjour,",
+        b"%PDF" + b"x" * TAILLE_MAX,
+        "cr.pdf",
+        uuid4(),
+    )
+    with pytest.raises(EnvoiImpossible) as echec:
+        messagerie.envoyer(lourd)
+    assert echec.value.code == "MESSAGE_TOO_LARGE"
+    assert google.recu == []

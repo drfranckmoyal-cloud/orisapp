@@ -1,5 +1,15 @@
 # Changelog
 
+## Comptes rendus avec photos : de nouveau envoyables par courriel — 2026-11-26
+- Le CR de Kessy TOTEL EBOUKOURE envoyé au Dr Phan est revenu en échec (« Votre message
+  n'a pas été envoyé ») : 64 Mo, les photos d'origine posées telles quelles dans le PDF ;
+  Gmail refuse au-delà de 25 Mo. Les photos d'un PDF sont désormais ramenées à 2000 pixels
+  de côté (nettes à l'impression pleine page), en JPEG : quelques centaines de Ko chacune.
+  Les originaux restent intacts dans les pièces jointes. Vaut aussi pour SmileCloud et Veasy.
+- Un message qui dépasserait encore 24 Mo est refusé par Oris avant l'envoi, avec la raison
+  (`MESSAGE_TOO_LARGE`), au lieu d'un courriel d'échec reçu après coup.
+- 596 tests serveur au vert.
+
 ## Veasy : rattachement automatique et courriel du patient — 2026-11-26
 - Franck trouvait le rattachement Veasy inefficace et voulait le courriel du patient pour
   « Envoyer au patient ». L'extension cherche seule le dossier Veasy (nom, prénom et date de

@@ -39,6 +39,18 @@ class EnvoiImpossible(RuntimeError):
         self.code = code
 
 
+#: Gmail refuse un message de plus de 25 Mo, pièces jointes comprises, et ne le dit que
+#: par un courriel d'échec reçu après coup. Oris le dit avant, au praticien.
+TAILLE_MAX = 24 * 1024 * 1024
+
+
+def verifier_taille(message: EmailMessage) -> bytes:
+    brut = message.as_bytes()
+    if len(brut) > TAILLE_MAX:
+        raise EnvoiImpossible("MESSAGE_TOO_LARGE")
+    return brut
+
+
 @dataclass
 class SmtpMessagerie:
     hote: str
@@ -50,6 +62,7 @@ class SmtpMessagerie:
     def envoyer(self, message: EmailMessage) -> None:
         # Liste de certificats fournie avec Oris : le Python de python.org n'utilise pas
         # celle du Mac, et la vérification du serveur ne doit jamais être désactivée.
+        verifier_taille(message)
         contexte = ssl.create_default_context(cafile=certifi.where())
         try:
             with smtplib.SMTP(self.hote, self.port, timeout=self.delai_s) as serveur:
@@ -126,8 +139,8 @@ class GmailMessagerie:
         return jeton
 
     def envoyer(self, message: EmailMessage) -> None:
+        brut = base64.urlsafe_b64encode(verifier_taille(message)).decode()
         jeton = self._jeton_du_moment()
-        brut = base64.urlsafe_b64encode(message.as_bytes()).decode()
         try:
             code, _ = self.poster(
                 ENVOI_GMAIL,
